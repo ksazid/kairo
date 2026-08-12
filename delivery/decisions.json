@@ -82,6 +82,23 @@
       "decidedBy": "Sazid Khan",
       "decidedAt": "2026-08-12T22:01:00+02:00",
       "blocks": []
+    },
+    {
+      "id": "DEC-007",
+      "sliceId": "VS-07",
+      "question": "How should Kairo treat OpenReply for Instagram engagement and conversion automation?",
+      "status": "approved",
+      "options": [
+        "Keep OpenReply as a deferred reference/evaluation candidate for a future deterministic Instagram EngagementAutomationAdapter",
+        "Adopt OpenReply as a V1 core dependency",
+        "Run OpenReply as an unrestricted Dynamic Skill"
+      ],
+      "decision": "Keep OpenReply as a deferred, non-V1 reference and evaluation candidate for future Instagram engagement/conversion automation. If later promoted, reuse or adapt only the useful deterministic patterns behind Kairo-owned channel/engagement ports, including comment-to-DM, tracked-link attribution, rate limiting, webhook handling and engagement outcome capture. Do not adopt OpenReply's separate Workspace/auth model, Redis/BullMQ requirement, inbox/community-management surface or direct credentials as Kairo Core dependencies. Dynamic Skills may recommend an engagement strategy, but deterministic Kairo adapters must execute social actions and retain credentials, idempotency, audit and outcome state.",
+      "ownerRole": "product-and-architecture",
+      "rationale": "OpenReply demonstrates useful official-Meta-API patterns that could later strengthen Kairo's conversion and Performance Memory loop, but its current product/runtime model overlaps Kairo-owned tenancy and operational concerns and includes capabilities explicitly outside V1. Deferring it preserves current scope while keeping a valuable implementation reference available for a later engagement/conversion phase.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-13T00:21:00+02:00",
+      "blocks": []
     }
   ]
 }
