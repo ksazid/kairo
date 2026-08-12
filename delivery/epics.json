@@ -1,1 +1,1 @@
-{"schemaVersion":1,"epics":[]}
+{"schemaVersion":1,"epics":[{"id":"EP-01","title":"Foundation and Brand Context","status":"proposed","sliceIds":["VS-01","VS-02"]},{"id":"EP-02","title":"Discovery and Content Intelligence","status":"proposed","sliceIds":["VS-03","VS-04","VS-05","VS-06"]},{"id":"EP-03","title":"Distribution and Performance Learning","status":"proposed","sliceIds":["VS-07","VS-08","VS-09"]},{"id":"EP-04","title":"Pilot Operations and Controls","status":"proposed","sliceIds":["VS-10"]}]}
