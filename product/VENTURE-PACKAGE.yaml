@@ -1,0 +1,181 @@
+package: kairo-approved-venture
+version: 1.0
+status: approved_for_pes
+approved_on: 2026-08-12
+innovation_framework: IVF-v1.0
+venture: Kairo
+internal_namespace: CIE
+category: Content Intelligence Engine
+recommendation: proceed_with_conditions
+primary_client: web
+secondary_client: native_mobile_later
+
+artifacts:
+  prd:
+    path: PRD.md
+    document_id: CIE-PRD-001
+    version: 1.0
+    status: approved
+  trd:
+    path: TRD.md
+    document_id: CIE-TRD-001
+    version: 1.0
+    status: approved
+  design:
+    path: DESIGN.md
+    document_id: CIE-DESIGN-001
+    version: 1.0
+    status: approved
+    approved_reference_sha256: dac322756cfd9606ce0941332e83fbcf0fdbbfda76d4b254cd10a10adbe689f1
+  glossary:
+    path: GLOSSARY.md
+    document_id: CIE-GLOSSARY-001
+    version: 1.0
+    status: approved
+  skills_architecture:
+    path: ../evaluation/SKILLS-ARCHITECTURE.md
+    status: approved_input_to_trd
+  decisions:
+    path: ../decisions/DECISIONS.md
+    status: authoritative
+
+pes_handoff:
+  status: ready
+  governance: technology_neutral_pes
+  implementation_profile: pes-web-ai
+  required_files:
+    - PRD.md
+    - TRD.md
+    - DESIGN.md
+    - GLOSSARY.md
+    - VENTURE-PACKAGE.yaml
+  requirement_range: FR-01..FR-20
+  candidate_slice_range: VS-01..VS-10
+  final_slice_decomposition_owned_by: PES
+  implementation_methodology: Superpowers_inside_PES_Loop
+  merge_authority: human
+
+approved_technology_direction:
+  web: Next.js + React + TypeScript
+  api_and_workers: Node.js + TypeScript modular monolith
+  python_boundary: approved for agent/runtime components such as Hermes integration
+  system_of_record: PostgreSQL
+  semantic_index: Qdrant with TurboQuant preferred subject to benchmark
+  semantic_fallback: pgvector
+  object_storage: private S3-compatible
+  durable_jobs: PostgreSQL-backed for V1
+  agent_runtime: Hermes preferred but replaceable
+  agent_runtime_fallback: direct-model runtime
+  agent_control_plane: native by default; Paperclip evaluation candidate only
+  skills: dynamic governed Brand-aware Skill Registry
+  publishing: deterministic channel adapters
+  initial_channels:
+    - Instagram
+    - LinkedIn
+
+non_replaceable_platform_controls:
+  - workspace_and_brand_isolation
+  - truth_and_claims_gate
+  - publishing_authorisation
+  - approved_version_enforcement
+  - spend_and_workflow_budgets
+  - secrets_policy
+  - metric_provenance
+  - brand_learning_policy
+  - skill_approval_and_benchmarking
+  - cross_brand_privacy
+
+required_validation_spikes:
+  hermes:
+    status: required_before_promotion
+    prove:
+      - role_invocation
+      - skill_injection
+      - cancellation
+      - bounded_budgets
+      - provider_routing
+      - validated_structured_output
+  paperclip:
+    status: evaluation_only
+    separate_approval_required: true
+    prove:
+      - hermes_adapter_reliability
+      - brand_scope_isolation
+      - cie_remains_source_of_truth
+      - budget_enforcement
+      - audit_retention
+      - outage_safety
+      - removability_without_domain_rewrite
+      - operational_value_exceeds_complexity
+  qdrant_turboquant:
+    status: benchmark_required
+    measure:
+      - recall
+      - latency
+      - storage
+      - tenant_filter_correctness
+      - cost
+  skill_sandbox:
+    status: required
+    prove:
+      - version_pinning
+      - permission_declaration
+      - safe_loading
+      - prompt_injection_resistance
+      - no_unapproved_network_or_secret_access
+  social_channels:
+    status: feasibility_required
+    channels:
+      - Instagram
+      - LinkedIn
+
+v1_conditions:
+  - retain_initial_icp_of_creators_founders_and_lean_operators_managing_approximately_2_to_10_brands_until_evidence_changes_it
+  - prove_discover_create_measure_learn_before_broad_social_suite_expansion
+  - web_first_mobile_later_unless_separately_approved
+  - strict_brand_knowledge_and_performance_memory_isolation
+  - human_approval_required_before_external_publication
+  - no_paid_advertising_or_autonomous_spend
+  - external_agent_runtime_and_control_plane_dependencies_must_remain_replaceable
+  - paperclip_requires_spike_and_separate_approval_before_adoption
+  - dynamic_governed_skill_registry_not_frozen_third_party_skill_set
+  - preserve_approved_minimalist_design_baseline
+  - preserve_approved_glossary_as_canonical_vocabulary
+  - atlas_is_integration_and_distribution_hypothesis_not_proven_demand
+  - measure_opportunity_acceptance_content_approval_time_savings_willingness_to_pay_cost_privacy_and_safety
+
+v1_exclusions:
+  - unrestricted_autonomous_publishing
+  - paid_ad_execution
+  - autonomous_spend
+  - enterprise_access_hierarchy
+  - full_crm
+  - social_inbox_suite
+  - influencer_marketplace
+  - full_seo_platform
+  - full_email_marketing_platform
+  - community_management_suite
+  - unrestricted_social_listening
+  - unrestricted_scraping
+  - full_video_editor
+  - expensive_video_generation_as_core
+  - digital_asset_management_suite
+  - white_label_complexity
+  - billing_complexity_beyond_pilot_need
+  - guaranteed_performance_claims
+  - causal_attribution_without_evidence
+  - atlas_specific_domain_logic
+  - microservices
+  - kubernetes
+  - kafka
+  - mandatory_redis
+  - mandatory_paperclip
+  - mandatory_evolver
+  - standalone_turbovec_as_production_dependency
+
+naming:
+  customer_facing_name: Kairo
+  stable_internal_namespace: CIE
+  public_launch_name_validation:
+    trademark_and_domain_check: required_before_public_launch
+    status: pending
