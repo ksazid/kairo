@@ -1,20 +1,23 @@
 # VS-01 Certification Evidence
 
-Status: Running — awaiting exact-head human certification approval
+Status: Passed — human certification approved
 Slice: VS-01 — Account, Workspace and Brand
 PR: #3
+Certified candidate: `ed76065fbdcebb0483b7a872b1e5f771535cc20f`
+Approved by: Sazid Khan
+Approved at: 2026-08-12T20:47:00+02:00
 
 ## Certification scope
 
 Certification covers only FR-01 and FR-02 within the approved VS-01 boundary. It does not authorize release, deployment or production-enable behavior.
 
-## Reviewed implementation baseline
+## Exact-head gate evidence
 
-The testing/review head `ae885f6f631a4472875b0c17eaea05eb38c804fd` passed all required automated gates before this certification-state transition:
+The certification candidate `ed76065fbdcebb0483b7a872b1e5f771535cc20f` passed all required exact-head gates before human approval:
 
-- Product Intake — success;
-- Security baseline — success;
-- CI / PES preflight — success;
+- Product Intake — success — GitHub Actions run `31628964097`;
+- Security baseline — success — GitHub Actions run `31628964080`;
+- CI / PES preflight / runtime verification — success — GitHub Actions run `31628964111`;
 - strict TypeScript type checking — success;
 - domain and API tests — success;
 - PostgreSQL 18 migration/repository integration tests — success;
@@ -59,6 +62,6 @@ Evidence:
 - PostgreSQL Row-Level Security remains defence-in-depth evaluation, not a VS-01 acceptance requirement.
 - Release, production deployment and production-enable remain explicitly unapproved.
 
-## Pass condition
+## Human gate result
 
-The certification candidate is the exact PR head produced by this certification-state commit after Product Intake, Security and CI/runtime verification pass again. Human certification approval must bind that exact 40-character SHA before lifecycle may transition to `certified`.
+On 2026-08-12 the Product Owner explicitly approved VS-01 certification for the exact candidate SHA above and authorized merge of PR #3. That authorization does not extend to release, deployment or production-enable.
