@@ -1,0 +1,72 @@
+import type { BrandOpportunityDto } from "@kairo/contracts";
+import { opportunityAction } from "./opportunity-actions";
+
+export function OpportunityList({
+  brandId,
+  opportunities,
+  returnTo,
+  emptyTitle = "No strong opportunity right now.",
+  emptyBody = "Kairo found no candidate that cleared the current relevance, evidence and audience-fit thresholds. It will not fill this space with weak recommendations.",
+}: {
+  brandId: string;
+  opportunities: BrandOpportunityDto[];
+  returnTo: string;
+  emptyTitle?: string;
+  emptyBody?: string;
+}) {
+  if (opportunities.length === 0) {
+    return <section className="opportunity-empty" aria-live="polite"><p className="eyebrow">Hunter</p><h2>{emptyTitle}</h2><p>{emptyBody}</p></section>;
+  }
+
+  return <div className="opportunity-list">{opportunities.map((item) => <OpportunityCard key={item.id} brandId={brandId} item={item} returnTo={returnTo} />)}</div>;
+}
+
+function OpportunityCard({ brandId, item, returnTo }: { brandId: string; item: BrandOpportunityDto; returnTo: string }) {
+  const relevance = scoreLabel(item.scores.relevance);
+  const evidence = scoreLabel(item.scores.evidence);
+  const freshness = relativeTime(item.createdAt);
+  const terminal = item.status === "ignored" || item.status === "developing";
+
+  return (
+    <article className={`opportunity-card ${terminal ? "muted-card" : ""}`}>
+      <div className="opportunity-meta" aria-label="Opportunity signals">
+        <span className={`signal-chip ${relevance.tone}`}>{relevance.label} relevance</span>
+        <span className={`signal-chip ${evidence.tone}`}>{evidence.label} evidence</span>
+        <span className="signal-chip neutral">{freshness}</span>
+        {item.status !== "new" ? <span className="signal-chip neutral">{statusLabel(item.status)}</span> : null}
+      </div>
+      <h2>{item.title}</h2>
+      <p className="opportunity-rationale">{item.rationale}</p>
+      <div className="why-now"><span>Why now</span><p>{item.whyNow}</p></div>
+      <div className="opportunity-actions">
+        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "develop", returnTo)}><button className="primary-button" type="submit">Develop</button></form> : null}
+        {item.status === "new" ? <form action={opportunityAction.bind(null, brandId, item.id, "save", returnTo)}><button className="secondary-button" type="submit">Save</button></form> : null}
+        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "ignore", returnTo)}><button className="text-action" type="submit">Ignore</button></form> : null}
+        {item.status === "developing" ? <p className="action-note">Ready for the next Research/Angle slice.</p> : null}
+      </div>
+    </article>
+  );
+}
+
+function scoreLabel(value: number): { label: string; tone: string } {
+  if (value >= .8) return { label: "High", tone: "strong" };
+  if (value >= .6) return { label: "Medium", tone: "medium" };
+  return { label: "Low", tone: "neutral" };
+}
+
+function statusLabel(status: BrandOpportunityDto["status"]): string {
+  if (status === "saved") return "Saved";
+  if (status === "ignored") return "Ignored";
+  if (status === "developing") return "Developing";
+  return "New";
+}
+
+function relativeTime(value: string): string {
+  const delta = Date.now() - Date.parse(value);
+  if (!Number.isFinite(delta) || delta < 0) return "New";
+  const hours = Math.floor(delta / 3_600_000);
+  if (hours < 1) return "New";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? "1d ago" : `${days}d ago`;
+}
