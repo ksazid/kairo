@@ -1,0 +1,38 @@
+{
+  "stage": "pilot",
+  "commercialUse": false,
+  "deploymentMode": "advisor-recommended",
+  "approvedSelection": false,
+  "singleProvider": null,
+  "splitProviders": {
+    "frontend": null,
+    "api": null,
+    "database": null
+  },
+  "frontend": "nextjs",
+  "backend": "aspnet-container",
+  "database": "postgresql",
+  "databaseRequirements": {
+    "connectionPooling": true,
+    "sameProviderPreferred": false,
+    "dataResidencyRequired": false,
+    "backupsRequired": true,
+    "pointInTimeRecoveryRequired": false
+  },
+  "traffic": "low",
+  "bandwidth": "low",
+  "coldStartsAccepted": true,
+  "previewDeploymentsRequired": true,
+  "edgeExecutionRequired": false,
+  "backgroundJobsRequired": false,
+  "regionRequirements": [],
+  "monthlyBudgetUsd": 0,
+  "releasePolicy": {
+    "sameCertifiedSha": true,
+    "apiFirst": true,
+    "requireApiHealthCheck": true,
+    "requireEndToEndSmokeTest": true,
+    "requireRollbackPlan": true
+  },
+  "notes": "Choose single-provider, split, or advisor-recommended for frontend, API and database. Human approval is required before provider configuration or deployment."
+}
