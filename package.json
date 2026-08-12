@@ -1,13 +1,12 @@
 {
-  "name": "product-engineering-starter",
-  "version": "0.2.0",
-  "private": false,
-  "description": "Governed open-source starter for building secure web products from an approved PRD and TRD.",
+  "name": "kairo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kairo — Content Intelligence for Brands",
   "license": "MIT",
   "type": "module",
-  "engines": {
-    "node": ">=22.13"
-  },
+  "engines": {"node": ">=24"},
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "product:intake": "node scripts/intake.mjs",
     "planning:generate": "node scripts/planning.mjs",
@@ -30,6 +29,15 @@
     "preflight": "npm run planning:validate && npm run governance:validate && npm run dashboard:check && node --check scripts/*.mjs && node --check dashboard/app.js",
     "certify": "npm run preflight",
     "engineering:advise": "node scripts/advisor.mjs",
-    "profile:show": "node scripts/show-profile.mjs"
+    "profile:show": "node scripts/show-profile.mjs",
+    "runtime:typecheck": "npm run typecheck --workspaces --if-present",
+    "runtime:test": "npm run test --workspaces --if-present",
+    "runtime:build": "npm run build --workspaces --if-present",
+    "runtime:verify": "npm run runtime:typecheck && npm run runtime:test && npm run runtime:build"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10"
   }
 }

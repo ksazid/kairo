@@ -1,0 +1,22 @@
+{
+  "name": "@kairo/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "next build"
+  },
+  "dependencies": {
+    "@kairo/contracts": "0.1.0",
+    "@kairo/design-tokens": "0.1.0",
+    "next": "16.2.12",
+    "openid-client": "6.8.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3"
+  }
+}
