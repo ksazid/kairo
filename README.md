@@ -6,7 +6,7 @@
 
 Kairo is the customer-facing product name for the approved **Content Intelligence Engine (CIE)** venture.
 
-This repository was created from the Product Engineering Starter (PES) template. PES remains the governance and delivery framework; Kairo's approved product definition now lives under `product/`.
+This repository was created from the Product Engineering Starter (PES) template. PES remains the governance and delivery framework; Kairo's approved product definition will live under `product/`.
 
 ## Approved product authority
 
@@ -41,7 +41,7 @@ Kairo uses the approved **PES Web/AI profile** direction:
 
 ## Current state
 
-Product definition: approved and imported.
+Product definition: approved in Innovation Hub; repository import is being established through governed PES intake.
 
 PES lifecycle: intake/planning only. No active runtime slice yet.
 
