@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "@kairo/design-tokens/tokens.css";
 import "./globals.css";
 import "./interaction-review.css";
+import "./discovery.css";
 
 export const metadata: Metadata = {
   title: "Kairo — Content Intelligence",
