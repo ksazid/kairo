@@ -3,6 +3,7 @@ import type {
   AccountDto,
   CreateKnowledgeSourceRequest,
   CreateWorkspaceWithBrandRequest,
+  OpportunityAction,
   ProblemDetails,
   PutBrandBrainFieldRequest,
 } from "@kairo/contracts";
@@ -13,10 +14,12 @@ import {
   ResourceNotFoundError,
   type KairoRepository,
 } from "@kairo/domain";
+import { DiscoveryService, type DiscoveryRepository } from "@kairo/domain/discovery-service";
 import type { IdentityVerifier } from "./auth";
 
 export interface BuildAppOptions {
   store: KairoRepository;
+  discoveryStore?: DiscoveryRepository;
   identityVerifier: IdentityVerifier;
   logger?: boolean;
 }
@@ -24,6 +27,7 @@ export interface BuildAppOptions {
 export function buildApp(options: BuildAppOptions): FastifyInstance {
   const app = Fastify({ logger: options.logger ?? false });
   const service = new KairoService(options.store);
+  const discovery = options.discoveryStore ? new DiscoveryService(options.discoveryStore) : null;
 
   app.addHook("onRequest", async (request, reply) => { reply.header("x-correlation-id", request.id); });
 
@@ -113,6 +117,25 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
     if (!account) return;
     return service.removeKnowledgeSource(account.id, request.params.brandId, request.params.sourceId);
   });
+
+  if (discovery) {
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/opportunities", async (request, reply) => {
+      const account = await authenticate(request, reply, service, options.identityVerifier);
+      if (!account) return;
+      return discovery.list(account.id, request.params.brandId);
+    });
+
+    for (const action of ["save", "ignore", "develop"] as const satisfies readonly OpportunityAction[]) {
+      app.post<{ Params: { brandId: string; opportunityId: string } }>(
+        `/api/v1/brands/:brandId/opportunities/:opportunityId/${action}`,
+        async (request, reply) => {
+          const account = await authenticate(request, reply, service, options.identityVerifier);
+          if (!account) return;
+          return discovery.act(account.id, request.params.brandId, request.params.opportunityId, action);
+        },
+      );
+    }
+  }
 
   return app;
 }
