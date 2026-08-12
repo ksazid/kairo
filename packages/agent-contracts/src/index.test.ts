@@ -67,7 +67,7 @@ describe("VS-03 agent and tool boundaries", () => {
       input: { query: "AI agents" },
       timeoutMs: 8_000,
     });
-    expect(request.scope.brandId).toBe("brand-1");
+    expect(request.scope).toEqual({ visibility: "brand-private", workspaceId: "workspace-1", brandId: "brand-1" });
 
     expect(() => prepareToolRequest({
       capability: "arbitrary-network",
