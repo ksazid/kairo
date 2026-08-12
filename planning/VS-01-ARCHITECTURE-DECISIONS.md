@@ -1,18 +1,18 @@
-# VS-01 Architecture Decision Proposal
+# VS-01 Architecture Decisions
 
-Status: Prepared for human approval
+Status: Approved
 Slice: VS-01 — Account, Workspace and Brand
-Prepared: 2026-08-12
+Approved: 2026-08-12 by Sazid Khan
 
 ## DEC-001 — Authentication/session approach
 
-**Recommendation:** Managed standards-based OIDC/OAuth provider behind a Kairo-owned provider-neutral identity/session adapter.
+**Decision:** Managed standards-based OIDC/OAuth provider behind a Kairo-owned provider-neutral identity/session adapter.
 
 ### Why
 - Matches the approved TRD requirement for replaceable providers and deterministic authorization.
 - Avoids spending VS-01 on building and operating identity infrastructure.
 - Keeps Kairo authoritative for Workspace/Brand membership and server-side authorization rather than delegating tenant policy to the identity vendor.
-- Allows the exact managed provider to be selected/configured later without changing Kairo domain contracts.
+- Allows the exact managed provider to be configured later without changing Kairo domain contracts.
 
 ### Constraints
 - Authorization Code + PKCE for browser/client flows where applicable.
@@ -23,7 +23,7 @@ Prepared: 2026-08-12
 
 ## DEC-002 — TypeScript API framework
 
-**Recommendation:** Fastify.
+**Decision:** Fastify.
 
 ### Why
 - It is the first framework direction named by the approved TRD.
@@ -36,8 +36,6 @@ Prepared: 2026-08-12
 - Provider and persistence SDKs remain adapters.
 - Framework choice must not alter approved API, tenant-isolation or error-contract policy.
 
-## Human gate
+## Human authorization
 
-Approval of this proposal should update `DEC-001` and `DEC-002` to `approved` in `delivery/decisions.json` and allow VS-01 to advance toward scope/runtime implementation approval.
-
-Approval of these architecture choices is **not** release or production-enable approval.
+The Product Owner explicitly approved DEC-001, DEC-002 and VS-01 runtime implementation on 2026-08-12. This approval does **not** authorize release, production deployment or production-enable behavior.
