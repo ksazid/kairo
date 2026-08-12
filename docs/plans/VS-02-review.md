@@ -1,6 +1,6 @@
 # VS-02 Specification, Architecture, Security and UI Review
 
-Status: Findings addressed — exact-head rerun required
+Status: Passed — ready for certification preparation
 Slice: VS-02 — Brand Brain and Knowledge
 PR: #6
 Requirements: FR-03, FR-04
@@ -50,22 +50,29 @@ Bounded follow-ups, not certification blockers for VS-02:
 
 ## UI/accessibility review
 
-The approved calm, content-first Kairo baseline is preserved. Brand Brain uses structured sections instead of a dense configuration/dashboard layout; state is communicated with text plus semantic indicators, not colour alone; important fields have persistent labels; loading/error/empty states are explicit; desktop collapses to a single flow on smaller viewports; reduced-motion support remains inherited from the shell.
+PASS against the approved Kairo design baseline.
+
+Brand Brain uses structured sections rather than a dense configuration/dashboard layout; state is communicated with text plus semantic indicators, not colour alone; important fields have persistent labels; loading/error/empty states are explicit; desktop collapses to a single flow on smaller viewports; reduced-motion support remains inherited from the shell.
 
 Two review findings were corrected before testing:
 1. Source removal originally executed from a single destructive button. It now requires a deliberate disclosure + `Confirm removal` action and explains DEC-006 impact before execution.
 2. Existing desktop navigation and source-action controls could fall below the 44px interaction baseline. The review override raises those interactive targets to at least 44px.
 
-## Deterministic evidence before review fixes
+## Deterministic evidence
 
 Core head `a599d4f145f1036b5f22834e3c7549ea2c7064bf`:
 - Product Intake run 31637863323 — success
 - Security baseline run 31637863452 — success
-- CI run 31637863370 — success, including TypeScript, API/domain tests, PostgreSQL 18 integration tests and web build
+- CI run 31637863370 — success
 
 UI head `6880264ca4d12fa03dc6767d2f09c7ebb2f6af29`:
 - Product Intake run 31638484890 — success
 - Security baseline run 31638484895 — success
 - CI run 31638485079 — success
 
-The review-fix head must pass all exact-head gates again before lifecycle advances to `testing`.
+Final reviewed implementation head `baa725a025fba8cbcad58d0c53c9c436886dbbe5`:
+- Product Intake run 31638943264 — success
+- Security baseline run 31638943336 — success
+- CI run 31638943391 — success, including preflight, strict TypeScript checks, domain/API tests, PostgreSQL 18 integration tests and Next.js production build.
+
+No release, deployment or production-enable approval is implied by this review.
