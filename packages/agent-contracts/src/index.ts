@@ -5,6 +5,8 @@ export class AgentContractError extends Error {
 export type AgentRole = "hunter";
 export type PrivacyClass = "global-public" | "brand-private";
 export type QualityTier = "economy" | "balanced" | "high";
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
 export type InvocationScope =
   | { visibility: "global-public" }
@@ -22,11 +24,17 @@ export interface OutputSchemaRef {
   version: string;
 }
 
+export interface AgentTaskInput {
+  instruction: string;
+  context: Record<string, JsonValue>;
+}
+
 export interface AgentInvocationInput {
   role: AgentRole;
   scope: InvocationScope;
   approvedContextVersion: string;
   capabilities: string[];
+  task: AgentTaskInput;
   outputSchema: OutputSchemaRef;
   budget: AgentBudget;
 }
@@ -154,15 +162,18 @@ const ALLOWED_CAPABILITIES = new Set([
   "public-content-fetch",
 ]);
 
+const FORBIDDEN_CONTEXT_KEY = /(api[-_]?key|access[-_]?token|refresh[-_]?token|authorization|password|secret|cookie|session[-_]?token|private[-_]?key)/i;
+
 export function prepareAgentInvocation(input: AgentInvocationInput): AgentInvocationRequest {
   if (input.role !== "hunter") throw new AgentContractError("agent role is not enabled in VS-03");
   const scope = prepareScope(input.scope);
   const approvedContextVersion = requiredText(input.approvedContextVersion, "approvedContextVersion", 160);
   const capabilities = uniqueCapabilities(input.capabilities);
   if (!capabilities.length) throw new AgentContractError("at least one capability is required");
+  const task = prepareTask(input.task);
   const outputSchema = prepareOutputSchema(input.outputSchema);
   const budget = prepareBudget(input.budget);
-  return { role: input.role, scope, approvedContextVersion, capabilities, outputSchema, budget };
+  return { role: input.role, scope, approvedContextVersion, capabilities, task, outputSchema, budget };
 }
 
 export function prepareModelPolicy(input: ModelPolicyInput): ModelPolicy {
@@ -183,7 +194,28 @@ export function prepareToolRequest(input: ToolRequestInput): ToolRequest {
   const scope = prepareScope(input.scope);
   const timeoutMs = boundedInteger(input.timeoutMs, "timeoutMs", 100, 300_000);
   if (!input.input || typeof input.input !== "object" || Array.isArray(input.input)) throw new AgentContractError("tool input must be an object");
+  rejectForbiddenKeys(input.input, "tool.input");
   return { capability, scope, input: { ...input.input }, timeoutMs };
+}
+
+function prepareTask(task: AgentTaskInput): AgentTaskInput {
+  if (!task || typeof task !== "object") throw new AgentContractError("task is required");
+  const instruction = requiredText(task.instruction, "task.instruction", 8_000);
+  if (!task.context || typeof task.context !== "object" || Array.isArray(task.context)) throw new AgentContractError("task.context must be an object");
+  rejectForbiddenKeys(task.context, "task.context");
+  return { instruction, context: structuredClone(task.context) };
+}
+
+function rejectForbiddenKeys(value: unknown, path: string): void {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => rejectForbiddenKeys(item, `${path}[${index}]`));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+    if (FORBIDDEN_CONTEXT_KEY.test(key)) throw new AgentContractError(`${path} contains forbidden secret-like field ${key}`);
+    rejectForbiddenKeys(nested, `${path}.${key}`);
+  }
 }
 
 function prepareScope(scope: InvocationScope): InvocationScope {
