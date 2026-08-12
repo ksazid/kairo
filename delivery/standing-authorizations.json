@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "authorizations": [
+    {
+      "id": "AUTH-001",
+      "scope": "VS-03..VS-10",
+      "sliceIds": [
+        "VS-03",
+        "VS-04",
+        "VS-05",
+        "VS-06",
+        "VS-07",
+        "VS-08",
+        "VS-09",
+        "VS-10"
+      ],
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-13T00:45:00+02:00",
+      "grants": [
+        "scope",
+        "implementation"
+      ],
+      "conditions": [
+        "Applies only to the existing approved PRD/TRD/Design Baseline and the already-defined slice requirements and exclusions; it does not authorize product scope expansion.",
+        "Permits necessary UI/UX work within approved scope, Superpowers execution, deterministic tests, review, CI/security fixes and bounded refactoring required to pass gates.",
+        "Material architecture or policy decisions that require evidence remain separate human decisions, including DEC-003 and DEC-004.",
+        "Certification is not pre-approved and must bind the exact tested 40-character commit SHA.",
+        "Merge of certification candidates is not pre-approved by this standing authorization.",
+        "Release, deployment and production-enable are not authorized.",
+        "One active vertical slice remains the default; future slice activation may translate this standing authorization into typed scope/implementation approvals only after dependencies and blocking decisions are satisfied."
+      ],
+      "status": "active"
+    }
+  ]
+}
