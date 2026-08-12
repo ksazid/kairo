@@ -70,18 +70,18 @@
       "id": "DEC-006",
       "sliceId": "VS-02",
       "question": "What deletion propagation policy applies when a private Brand knowledge source is removed or replaced?",
-      "status": "pending",
+      "status": "approved",
       "options": [
         "Delete raw source and source-only derived retrieval data; retain content-free audit tombstone; preserve user-confirmed facts; mark unsupported AI-inferred facts stale until reconfirmed or re-supported",
         "Delete all derived Brand Brain facts including user-confirmed facts",
         "Retain derived private memory after the source is removed"
       ],
-      "decision": null,
+      "decision": "Delete raw private source content and source-only derived retrieval data; retain only a content-free audit tombstone; preserve user-confirmed facts as independent authoritative Brand Brain input; mark AI-inferred facts stale when they lose all active supporting sources until reconfirmed or re-supported; replacement creates new provenance/version links rather than silently mutating historical evidence.",
       "ownerRole": "product-security-and-architecture",
-      "rationale": null,
-      "decidedBy": null,
-      "decidedAt": null,
-      "blocks": ["implementation", "certification"]
+      "rationale": "This makes source removal meaningful for privacy and retrieval while preserving user-confirmed Brand facts whose authority no longer depends on the deleted source. It also prevents stale unsupported inferences from continuing to influence Kairo as authoritative context.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-12T22:01:00+02:00",
+      "blocks": []
     }
   ]
 }
