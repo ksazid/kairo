@@ -4,45 +4,52 @@ import {
   prepareAgentInvocation,
   prepareModelPolicy,
   prepareToolRequest,
+  type AgentInvocationInput,
 } from "./index";
+
+function invocation(overrides: Partial<AgentInvocationInput> = {}): AgentInvocationInput {
+  return {
+    role: "hunter",
+    scope: { visibility: "global-public" },
+    approvedContextVersion: "global-public@1",
+    capabilities: ["public-content-search"],
+    task: { instruction: "Rank this public evidence.", context: { evidence: [{ title: "AI agents", sourceUrl: "https://example.com" }] } },
+    outputSchema: { name: "hunter-candidates", version: "1" },
+    budget: { maxOutputTokens: 1500, maxToolCalls: 4, maxCostUsd: 0.05, timeoutMs: 30_000 },
+    ...overrides,
+  };
+}
 
 describe("VS-03 agent and tool boundaries", () => {
   it("allows a bounded global-public Hunter invocation", () => {
-    const request = prepareAgentInvocation({
-      role: "hunter",
-      scope: { visibility: "global-public" },
-      approvedContextVersion: "global-public@1",
-      capabilities: ["public-content-search", "public-content-search"],
-      outputSchema: { name: "hunter-candidates", version: "1" },
-      budget: { maxOutputTokens: 1500, maxToolCalls: 4, maxCostUsd: 0.05, timeoutMs: 30_000 },
-    });
-
+    const request = prepareAgentInvocation(invocation({ capabilities: ["public-content-search", "public-content-search"] }));
     expect(request.capabilities).toEqual(["public-content-search"]);
     expect(request.scope).toEqual({ visibility: "global-public" });
+    expect(request.task.context).toMatchObject({ evidence: [{ title: "AI agents" }] });
   });
 
   it.each(["shell.exec", "secrets.read", "database.write", "social.publish"])(
     "rejects prohibited capability %s before a runtime can see it",
-    (capability) => {
-      expect(() => prepareAgentInvocation({
-        role: "hunter",
-        scope: { visibility: "global-public" },
-        approvedContextVersion: "global-public@1",
-        capabilities: [capability],
-        outputSchema: { name: "hunter-candidates", version: "1" },
-        budget: { maxOutputTokens: 1000, maxToolCalls: 1, maxCostUsd: 0.02, timeoutMs: 10_000 },
-      })).toThrow(AgentContractError);
-    },
+    (capability) => expect(() => prepareAgentInvocation(invocation({ capabilities: [capability] }))).toThrow(AgentContractError),
   );
 
   it("requires complete tenant scope for Brand-private invocation", () => {
-    expect(() => prepareAgentInvocation({
-      role: "hunter",
+    expect(() => prepareAgentInvocation(invocation({
       scope: { visibility: "brand-private", workspaceId: "", brandId: "brand-1" },
       approvedContextVersion: "brand-1@2",
-      capabilities: ["public-content-search"],
-      outputSchema: { name: "brand-relevance", version: "1" },
-      budget: { maxOutputTokens: 1000, maxToolCalls: 2, maxCostUsd: 0.03, timeoutMs: 15_000 },
+    }))).toThrow(AgentContractError);
+  });
+
+  it("rejects secret-like fields from agent and tool context", () => {
+    expect(() => prepareAgentInvocation(invocation({
+      task: { instruction: "Rank", context: { brand: { apiKey: "should-never-arrive" } } },
+    }))).toThrow(AgentContractError);
+
+    expect(() => prepareToolRequest({
+      capability: "public-content-search",
+      scope: { visibility: "global-public" },
+      input: { query: "AI agents", authorization: "Bearer no" },
+      timeoutMs: 8_000,
     })).toThrow(AgentContractError);
   });
 
@@ -54,7 +61,6 @@ describe("VS-03 agent and tool boundaries", () => {
       maxOutputTokens: 1200,
       allowedProviders: ["openai", "openrouter", "openai"],
     });
-
     expect(policy.allowedProviders).toEqual(["openai", "openrouter"]);
     expect("apiKey" in policy).toBe(false);
     expect("token" in policy).toBe(false);
