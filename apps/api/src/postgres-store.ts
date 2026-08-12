@@ -17,9 +17,8 @@ export class PgKairoRepository implements KairoRepository {
     const client = await this.pool.connect();
     try {
       await client.query("begin");
-      await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [
-        `${identity.provider}\u0000${identity.subject}`,
-      ]);
+      const identityLockKey = JSON.stringify([identity.provider, identity.subject]);
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [identityLockKey]);
 
       const existing = await client.query<AccountRow>(
         `select a.id, a.email, a.display_name
