@@ -104,6 +104,54 @@ export interface CreateKnowledgeSourceRequest {
   contentHash?: string;
 }
 
+export interface PublicSignalDto {
+  id: string;
+  title: string;
+  summary?: string;
+  sourceUrl: string;
+  duplicateKey: string;
+  platform: string;
+  publisher?: string;
+  author?: string;
+  publishedAt?: string;
+  retrievedAt: string;
+  provider: string;
+  providerVersion?: string;
+  contentHash?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type OpportunityStatus = "new" | "saved" | "ignored" | "developing";
+export type OpportunityAction = "save" | "ignore" | "develop";
+
+export interface OpportunityScoresDto {
+  relevance: number;
+  evidence: number;
+  novelty: number;
+  timeliness: number;
+  brandAuthority: number;
+  audienceFit: number;
+  overall: number;
+  scoringVersion: string;
+}
+
+export interface BrandOpportunityDto {
+  id: string;
+  workspaceId: string;
+  brandId: string;
+  title: string;
+  rationale: string;
+  whyNow: string;
+  developmentDirection: string;
+  status: OpportunityStatus;
+  signalIds: string[];
+  scores: OpportunityScoresDto;
+  brandContextVersion: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProblemDetails {
   type: string;
   title: string;
