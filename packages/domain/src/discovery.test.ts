@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { DomainValidationError } from "./index";
 import {
-  DomainValidationError,
   evaluateOpportunity,
   materiallySimilarOpportunity,
   preparePublicSignal,
   transitionOpportunityStatus,
-} from "./index";
+} from "./discovery";
 
 describe("VS-03 discovery domain", () => {
   it("normalizes public Signal provenance without accepting local/private source URLs", () => {
