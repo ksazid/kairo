@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-02","activeTask":"integration-test-isolation-fix","branch":"kairo/vs-02","lastSuccessfulStep":"certification-attempt-1-blocked","attempts":1,"blockers":[],"nextPermittedAction":"verify-serialized-postgres-integration-suite"}
+{"schemaVersion":1,"activeSlice":"VS-02","activeTask":"certification-attempt-2","branch":"kairo/vs-02","lastSuccessfulStep":"serialized-postgres-suite-green","attempts":1,"blockers":[],"nextPermittedAction":"certify-exact-head"}
