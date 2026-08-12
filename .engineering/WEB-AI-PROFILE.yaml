@@ -1,0 +1,102 @@
+id: pes-web-ai
+name: PES Web/AI Implementation Profile
+version: 1.0
+status: established-for-kairo
+product: Kairo
+internal_namespace: CIE
+authority:
+  governance: PES remains technology-neutral and unchanged
+  product: product/PRD.md
+  technical: product/TRD.md
+  design: product/DESIGN.md
+  glossary: product/GLOSSARY.md
+  venture_package: product/VENTURE-PACKAGE.yaml
+implementation:
+  architecture: TypeScript modular monolith with asynchronous workers
+  web:
+    framework: Next.js
+    language: TypeScript
+    ui: React
+  api_workers:
+    language: TypeScript
+    framework: pending DEC-002
+  python:
+    allowed_only_for: approved agent/runtime components such as Hermes integration
+    business_source_of_truth: prohibited
+  persistence:
+    authoritative: PostgreSQL
+    semantic: Qdrant/TurboQuant preferred subject to DEC-003 benchmark
+    semantic_fallback: PgVector
+  jobs: PostgreSQL-backed durable jobs for V1
+  object_storage: private S3-compatible behind an application-owned port
+  agent_runtime:
+    preferred: Hermes
+    fallback: DirectModelRuntime
+  agent_control_plane:
+    default: native
+    paperclip: evaluation-only
+  publishing: deterministic channel adapters only
+  package_manager: npm
+runtime_gates:
+  before_any_runtime:
+    - approved active slice
+    - approved scope record
+    - approved implementation record
+    - no blocking pending decision for implementation
+  before_relevant_certification:
+    - deterministic tests
+    - tenant-isolation tests
+    - migration checks
+    - AI evaluation/regression checks where AI behaviour changed
+    - Skill security/provenance checks where executable Skills changed
+    - preflight
+  external_dependency_promotion:
+    hermes: validation spike required
+    qdrant_turboquant: benchmark required
+    paperclip: separate explicit approval required
+    third_party_skills: sandbox and provenance validation required
+    instagram_linkedin: exact API feasibility required
+security:
+  non_replaceable_controls:
+    - workspace_and_brand_isolation
+    - truth_and_claims_gate
+    - publishing_authorisation
+    - approved_version_enforcement
+    - spend_and_workflow_budgets
+    - secret_policy
+    - metric_provenance
+    - brand_learning_policy
+    - skill_approval_and_benchmarking
+    - cross_brand_privacy
+testing:
+  deterministic:
+    - domain
+    - api
+    - postgres_integration
+    - migrations
+    - tenant_isolation
+    - state_transitions
+    - idempotency
+    - publishing_reconciliation
+    - adapter_contracts
+  ai_evaluation:
+    - hunter_relevance
+    - research_factuality
+    - angle_quality
+    - brand_fit
+    - hook_quality
+    - critic_truth_gate
+    - skill_routing
+    - performance_interpretation
+  adversarial:
+    - prompt_injection
+    - cross_brand_leakage
+    - fabricated_experience
+    - malicious_skills
+    - stale_claims
+    - conflicting_sources
+delivery:
+  orchestration: PES/Loop
+  implementation_methodology: Superpowers
+  merge_authority: human
+  production_deployment: human-approved only
