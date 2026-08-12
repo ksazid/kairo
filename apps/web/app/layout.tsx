@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "@kairo/design-tokens/tokens.css";
 import "./globals.css";
+import "./interaction-review.css";
 
 export const metadata: Metadata = {
   title: "Kairo — Content Intelligence",

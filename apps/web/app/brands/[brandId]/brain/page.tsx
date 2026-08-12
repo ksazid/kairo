@@ -237,7 +237,13 @@ function KnowledgeSourceRow({ brandId, source }: { brandId: string; source: Know
         <div className="source-actions">
           {source.status === "active" ? <form action={setKnowledgeSourceEnabledAction.bind(null, brandId, source.id, false)}><button className="tertiary-button" type="submit">Disable</button></form> : null}
           {source.status === "disabled" ? <form action={setKnowledgeSourceEnabledAction.bind(null, brandId, source.id, true)}><button className="tertiary-button" type="submit">Enable</button></form> : null}
-          <form action={removeKnowledgeSourceAction.bind(null, brandId, source.id)}><button className="danger-button" type="submit">Remove</button></form>
+          <details className="remove-confirm">
+            <summary>Remove source</summary>
+            <div className="remove-confirm-panel">
+              <p>This permanently removes the private source and source-only derived context. Confirmed Brand Brain facts remain.</p>
+              <form action={removeKnowledgeSourceAction.bind(null, brandId, source.id)}><button className="danger-button" type="submit">Confirm removal</button></form>
+            </div>
+          </details>
         </div>
       ) : null}
     </article>

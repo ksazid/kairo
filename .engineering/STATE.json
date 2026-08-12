@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-02","activeTask":"brand-brain-web-workspace","branch":"kairo/vs-02","lastSuccessfulStep":"core-domain-api-green","attempts":0,"blockers":[],"nextPermittedAction":"ui-ci-verification"}
+{"schemaVersion":1,"activeSlice":"VS-02","activeTask":"review-fixes","branch":"kairo/vs-02","lastSuccessfulStep":"ui-runtime-green","attempts":0,"blockers":[],"nextPermittedAction":"exact-head-review-fix-verification"}

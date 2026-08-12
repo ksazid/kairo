@@ -1,0 +1,9 @@
+.nav-item { min-height: 44px; }
+.tertiary-button, .danger-button { min-height: 44px; }
+.next-panel .primary-button { margin-top: 18px; }
+.remove-confirm { width: 100%; border-top: 1px solid var(--k-neutral-200); margin-top: 2px; }
+.remove-confirm summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: var(--k-danger); font-size: 13px; font-weight: 700; }
+.remove-confirm summary::marker { color: var(--k-neutral-400); }
+.remove-confirm-panel { padding: 0 0 10px; }
+.remove-confirm-panel p { margin: 0 0 10px; color: var(--k-neutral-700); font-size: 12px; line-height: 18px; }
+.remove-confirm-panel form { margin: 0; }
