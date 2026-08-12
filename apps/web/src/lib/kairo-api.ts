@@ -2,10 +2,12 @@ import { cookies } from "next/headers";
 import type {
   BrandBrainFieldDto,
   BrandDto,
+  BrandOpportunityDto,
   CreateKnowledgeSourceRequest,
   CreateWorkspaceWithBrandRequest,
   CreateWorkspaceWithBrandResponse,
   KnowledgeSourceDto,
+  OpportunityAction,
   PutBrandBrainFieldRequest,
   SessionResponse,
 } from "@kairo/contracts";
@@ -80,4 +82,15 @@ export async function setKnowledgeSourceEnabled(brandId: string, sourceId: strin
 
 export async function removeKnowledgeSource(brandId: string, sourceId: string): Promise<KnowledgeSourceDto> {
   return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/sources/${encodeURIComponent(sourceId)}`, { method: "DELETE" }), "Unable to remove Knowledge source");
+}
+
+export async function getOpportunities(brandId: string): Promise<BrandOpportunityDto[]> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/opportunities`), "Unable to load Opportunities");
+}
+
+export async function actOnOpportunity(brandId: string, opportunityId: string, action: OpportunityAction): Promise<BrandOpportunityDto> {
+  return bodyOrError(
+    await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(opportunityId)}/${action}`, { method: "POST" }),
+    `Unable to ${action} Opportunity`,
+  );
 }
