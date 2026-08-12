@@ -40,3 +40,47 @@ jobs:
           name: pes-dashboard
           path: dashboard/
           if-no-files-found: error
+
+  semantic-benchmark:
+    if: github.event_name == 'pull_request' && github.head_ref == 'kairo/vs-03'
+    runs-on: ubuntu-latest
+    services:
+      semantic-postgres:
+        image: pgvector/pgvector:0.8.6-pg18-trixie
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kairo_semantic
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      qdrant:
+        image: qdrant/qdrant:v1.18.0
+        ports:
+          - 6333:6333
+    env:
+      SEMANTIC_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/kairo_semantic
+      QDRANT_URL: http://127.0.0.1:6333
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24}
+      - run: npm install --no-audit --no-fund
+      - name: Wait for Qdrant
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:6333/healthz >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Run VS-03 semantic benchmark
+        run: node scripts/semantic-benchmark.mjs | tee semantic-benchmark.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vs03-semantic-benchmark
+          path: semantic-benchmark.log
+          if-no-files-found: error
