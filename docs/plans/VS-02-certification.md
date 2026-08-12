@@ -1,10 +1,12 @@
 # VS-02 Certification Evidence
 
-Status: Running — certification attempt 2
+Status: Certified — human-approved, unreleased
 Slice: VS-02 — Brand Brain and Knowledge
 PR: #6
 Requirements: FR-03, FR-04
 Decision: DEC-006
+Certified candidate: `2da955e6d587ab182ca250c57a96f89311495c81`
+Human approval: 2026-08-13T00:07:00+02:00
 
 ## Certification scope
 
@@ -26,6 +28,15 @@ It passed:
 - Product Intake run 31639842653 — success;
 - Security baseline run 31639842471 — success;
 - CI run 31639842562 — success, including repository preflight, strict TypeScript checks, all domain/API tests, PostgreSQL 18 integration tests and Next.js production build.
+
+### Certification attempt 2 — passed
+
+Exact candidate `2da955e6d587ab182ca250c57a96f89311495c81` passed:
+- Product Intake run 31640100578 — success;
+- Security baseline run 31640100564 — success;
+- CI run 31640100568 — success, including repository preflight, strict TypeScript checks, all domain/API tests, PostgreSQL 18 integration tests and Next.js production build.
+
+Sazid Khan explicitly approved certification and merge at 2026-08-13T00:07:00+02:00. Certification is bound to the exact candidate SHA above.
 
 ## FR-03 — Brand Brain
 
@@ -65,6 +76,6 @@ The approved Kairo calm, content-first design is preserved. Field state uses tex
 
 Not certification blockers because they remain disabled or belong to later slices: actual object upload/content sniffing/malware scanner execution; vector indexing/deletion propagation; Qdrant/PgVector promotion under VS-03; Hermes and Agent Reach; PostgreSQL RLS defence-in-depth evaluation; release; deployment; production enablement.
 
-## Pass condition
+## Release boundary
 
-The certification-attempt-2 state commit containing this evidence becomes the exact candidate. Product Intake, Security and CI must pass again on that candidate SHA. Human certification approval must bind that exact 40-character SHA before lifecycle may transition to `certified` or PR #6 may merge.
+VS-02 is certified but unreleased. Release, deployment and production-enable remain explicitly unauthorized.
