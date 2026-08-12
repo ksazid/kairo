@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-02","activeTask":"testing-complete","branch":"kairo/vs-02","lastSuccessfulStep":"review-fixes-green","attempts":0,"blockers":[],"nextPermittedAction":"certification-prep"}
+{"schemaVersion":1,"activeSlice":"VS-02","activeTask":"certification","branch":"kairo/vs-02","lastSuccessfulStep":"testing-head-green","attempts":0,"blockers":[],"nextPermittedAction":"certify-exact-head"}
