@@ -32,6 +32,18 @@ describePostgres("PostgreSQL VS-01 repository", () => {
     expect(count.rows[0]?.count).toBe("1");
   });
 
+  it("serializes concurrent first login for the same external identity", async () => {
+    const identity = { provider: "https://issuer.test", subject: "concurrent-user", email: "same@example.com" };
+    const [first, second] = await Promise.all([
+      repository.resolveAccount(identity),
+      repository.resolveAccount(identity),
+    ]);
+
+    expect(second.id).toBe(first.id);
+    const count = await pool.query<{ count: string }>("select count(*)::text as count from accounts");
+    expect(count.rows[0]?.count).toBe("1");
+  });
+
   it("creates Workspace ownership and Brand atomically", async () => {
     const account = await repository.resolveAccount({ provider: "https://issuer.test", subject: "alice" });
     const created = await repository.createWorkspaceWithBrand(account.id, {

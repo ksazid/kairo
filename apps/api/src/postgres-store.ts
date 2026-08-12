@@ -14,23 +14,26 @@ export class PgKairoRepository implements KairoRepository {
   constructor(private readonly pool: Pool) {}
 
   async resolveAccount(identity: ExternalIdentity): Promise<AccountDto> {
-    const existing = await this.pool.query<{
-      id: string;
-      email: string | null;
-      display_name: string | null;
-    }>(
-      `select a.id, a.email, a.display_name
-         from external_identities ei
-         join accounts a on a.id = ei.account_id
-        where ei.provider = $1 and ei.subject = $2`,
-      [identity.provider, identity.subject],
-    );
-    const row = existing.rows[0];
-    if (row) return toAccount(row);
-
     const client = await this.pool.connect();
     try {
       await client.query("begin");
+      await client.query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [
+        `${identity.provider}\u0000${identity.subject}`,
+      ]);
+
+      const existing = await client.query<AccountRow>(
+        `select a.id, a.email, a.display_name
+           from external_identities ei
+           join accounts a on a.id = ei.account_id
+          where ei.provider = $1 and ei.subject = $2`,
+        [identity.provider, identity.subject],
+      );
+      const row = existing.rows[0];
+      if (row) {
+        await client.query("commit");
+        return toAccount(row);
+      }
+
       const accountId = randomUUID();
       await client.query(
         `insert into accounts (id, email, display_name) values ($1, $2, $3)`,
