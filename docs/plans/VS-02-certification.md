@@ -1,6 +1,6 @@
 # VS-02 Certification Evidence
 
-Status: Running — awaiting exact-head human certification approval
+Status: Attempt 1 failed — returned to testing
 Slice: VS-02 — Brand Brain and Knowledge
 PR: #6
 Requirements: FR-03, FR-04
@@ -12,49 +12,24 @@ Certification covers only the approved Brand Brain and private Knowledge boundar
 
 ## Reviewed implementation baseline
 
-Testing head `85b1d27e4214bf14fce52eca01800f3c21cecb38` passed:
-- Product Intake run 31639211266 — success;
-- Security baseline run 31639211264 — success;
-- CI run 31639211268 — success, including repository preflight, strict TypeScript checks, domain/API tests, PostgreSQL 18 migration/integration tests and Next.js production build.
+Testing head `85b1d27e4214bf14fce52eca01800f3c21cecb38` passed Product Intake run 31639211266, Security baseline run 31639211264 and CI run 31639211268.
 
-## FR-03 — Brand Brain
+## Attempt 1
 
-Evidence includes Workspace/Brand scoped Brand Brain records; explicit `inferred`, `confirmed` and `stale` state; user correction/confirmation as authoritative context; optimistic concurrency; protection against inference downgrading confirmed facts; and a responsive Brand Brain UI for Identity, Positioning, Audience, Voice, Content strategy, Goals and Boundaries with explicit loading/error/unset/success states.
+Candidate `e8be7112d5471cb9f1a277309246a5e29249ef9c` passed Product Intake run 31639448975 and Security baseline run 31639448876, but CI run 31639448872 failed during PostgreSQL integration tests.
 
-## FR-04 — Knowledge and sources
+The failure exposed a test-isolation defect: the VS-01 and VS-02 integration-test files shared one PostgreSQL database while Vitest executed files in parallel. Both files used `TRUNCATE` setup against overlapping tables, which allowed one file to erase or lock data while the other file was still executing. Symptoms included an identity-reuse mismatch, a `Brand not found` in the DEC-006 test, and a PostgreSQL deadlock during concurrent truncation.
 
-Evidence includes Brand-private URL/website, note, pasted, research, product and quarantined document records; no private raw source text in DTOs; explicit active/disabled/removed/quarantined lifecycle; safe not-found behavior for foreign Brand/source identifiers; URL registration without a network fetcher; document metadata kept quarantined; and deliberate confirmation before destructive source removal.
+This candidate is therefore not certifiable. The slice returned to `testing`; the failed candidate and run are preserved as evidence.
 
-## DEC-006 deletion evidence
+## Corrective action
 
-On private source removal Kairo atomically:
-1. deletes source-only relational derivations and support links;
-2. redacts source title, URI, raw content, content type, size, hash and object locator;
-3. retains a content-free audit tombstone;
-4. preserves user-confirmed Brand Brain facts;
-5. marks inferred facts stale when they lose all support;
-6. records the removal audit event.
+The API test command is changed to `vitest run --no-file-parallelism`, serializing test files that share the external PostgreSQL test database. Tests within each file remain sequential by default. No product/domain policy is weakened and no failing assertion is removed.
 
-This behavior is covered by memory/API and real PostgreSQL regression tests.
+A new certification candidate may be created only after the corrected testing head passes Product Intake, Security and the full CI/runtime/PostgreSQL/Next build again.
 
-## Architecture and security evidence
+## FR-03 / FR-04 and DEC-006 evidence
 
-- PostgreSQL remains authoritative and Fastify stays at the transport boundary.
-- Every new Brand-owned relational record carries Workspace/Brand scope.
-- No S3 vendor, malware vendor, Hermes, Agent Reach, Qdrant or other provider becomes mandatory or authoritative in VS-02.
-- URL sources are records only; no SSRF-capable fetch path exists in this slice.
-- Unsafe local/private URL literals and embedded credentials are rejected.
-- Document ingestion remains fail-closed/quarantined.
-- Release workflow and infrastructure paths remain protected.
+The functional, architecture, security and UI evidence remains as documented in `docs/plans/VS-02-review.md`. The failed attempt does not change the approved scope or implementation semantics; it changes the deterministic test harness so shared-database integration suites cannot corrupt each other's setup state.
 
-## UI/accessibility evidence
-
-The approved Kairo calm, content-first design is preserved. Field state uses text plus semantic indicators; controls have persistent labels and visible focus inheritance; responsive layouts collapse to one primary flow; reduced motion remains supported; important interactive targets meet the 44px baseline; and destructive source removal is two-step with explicit DEC-006 impact.
-
-## Known bounded items
-
-Not certification blockers because they remain disabled or belong to later slices: actual object upload/content sniffing/malware scanner execution; vector indexing/deletion propagation; Qdrant/PgVector promotion under VS-03; Hermes and Agent Reach; PostgreSQL RLS defence-in-depth evaluation; release; deployment; production enablement.
-
-## Pass condition
-
-The exact certification-state commit containing this evidence must pass Product Intake, Security and CI again. Human certification approval must bind that exact 40-character candidate SHA before lifecycle may transition to `certified` or PR #6 may merge.
+Release, deployment and production-enable remain unapproved.
