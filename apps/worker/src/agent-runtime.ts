@@ -1,6 +1,5 @@
 import type {
   AgentInvocationRequest,
-  AgentRuntimeMetadata,
   AgentRuntimePort,
   AgentRuntimeResult,
   ModelGatewayPort,
@@ -14,7 +13,6 @@ export class AgentRuntimeError extends Error {
 }
 
 type OutputValidator = (value: unknown) => boolean;
-
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
 export interface HermesBridgeRuntimeOptions {
@@ -25,20 +23,11 @@ export interface HermesBridgeRuntimeOptions {
 }
 
 interface HermesBridgeResponse {
-  policy?: {
-    fingerprint?: string;
-    enabledTools?: string[];
-    runtimeVersion?: string;
-  };
+  policy?: { fingerprint?: string; enabledTools?: string[]; runtimeVersion?: string };
   output?: unknown;
   metadata?: {
-    provider?: string;
-    model?: string;
-    modelVersion?: string;
-    inputTokens?: number;
-    outputTokens?: number;
-    costUsd?: number;
-    latencyMs?: number;
+    provider?: string; model?: string; modelVersion?: string;
+    inputTokens?: number; outputTokens?: number; costUsd?: number; latencyMs?: number;
   };
 }
 
@@ -77,7 +66,6 @@ export class HermesBridgeRuntime implements AgentRuntimePort {
             maxCostUsd: request.budget.maxCostUsd,
             timeoutMs: request.budget.timeoutMs,
           },
-          // Intentionally omit Kairo capabilities. Hermes is reasoning-only in VS-03.
           enabledTools: [],
           policyFingerprint: HERMES_POLICY_FINGERPRINT,
         }),
@@ -86,8 +74,9 @@ export class HermesBridgeRuntime implements AgentRuntimePort {
       if (!response.ok) throw new AgentRuntimeError(`Hermes bridge returned ${response.status}`);
 
       const payload = await response.json() as HermesBridgeResponse;
-      if (payload.policy?.fingerprint !== HERMES_POLICY_FINGERPRINT) throw new AgentRuntimeError("Hermes policy fingerprint mismatch");
-      if (!Array.isArray(payload.policy.enabledTools) || payload.policy.enabledTools.length !== 0) {
+      const policy = payload.policy;
+      if (!policy || policy.fingerprint !== HERMES_POLICY_FINGERPRINT) throw new AgentRuntimeError("Hermes policy fingerprint mismatch");
+      if (!Array.isArray(policy.enabledTools) || policy.enabledTools.length !== 0) {
         throw new AgentRuntimeError("Hermes runtime did not attest to a zero-tool profile");
       }
       if (!validator(payload.output)) throw new AgentRuntimeError("Hermes output failed Kairo schema validation");
@@ -96,7 +85,7 @@ export class HermesBridgeRuntime implements AgentRuntimePort {
         output: payload.output as TOutput,
         metadata: {
           runtime: "hermes",
-          ...(payload.policy.runtimeVersion ? { runtimeVersion: payload.policy.runtimeVersion } : {}),
+          ...(policy.runtimeVersion ? { runtimeVersion: policy.runtimeVersion } : {}),
           ...(payload.metadata?.provider ? { provider: payload.metadata.provider } : {}),
           ...(payload.metadata?.model ? { model: payload.metadata.model } : {}),
           ...(payload.metadata?.modelVersion ? { modelVersion: payload.metadata.modelVersion } : {}),
@@ -157,10 +146,7 @@ export class DirectModelRuntime implements AgentRuntimePort {
 }
 
 export class AgentRuntimeRouter implements AgentRuntimePort {
-  constructor(
-    private readonly primary: AgentRuntimePort | null,
-    private readonly fallback: AgentRuntimePort,
-  ) {}
+  constructor(private readonly primary: AgentRuntimePort | null, private readonly fallback: AgentRuntimePort) {}
 
   async invoke<TOutput>(request: AgentInvocationRequest): Promise<AgentRuntimeResult<TOutput>> {
     if (!this.primary) return this.fallback.invoke<TOutput>(request);
@@ -175,10 +161,7 @@ export class AgentRuntimeRouter implements AgentRuntimePort {
 
 export { HERMES_POLICY_FINGERPRINT };
 
-function schemaKey(name: string, version: string): string {
-  return `${name}@${version}`;
-}
-
+function schemaKey(name: string, version: string): string { return `${name}@${version}`; }
 function numberOrUndefined(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
