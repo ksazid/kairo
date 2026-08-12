@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { buildApp } from "./app";
 import { OidcJwtVerifier } from "./auth";
+import { PgDiscoveryRepository } from "./discovery-postgres-store";
 import { PgKairoRepository } from "./postgres-store";
 
 function requiredEnv(name: string): string {
@@ -12,6 +13,7 @@ function requiredEnv(name: string): string {
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const app = buildApp({
   store: new PgKairoRepository(pool),
+  discoveryStore: new PgDiscoveryRepository(pool),
   identityVerifier: new OidcJwtVerifier({
     issuer: requiredEnv("OIDC_ISSUER"),
     audience: requiredEnv("OIDC_AUDIENCE"),
