@@ -78,8 +78,12 @@ jobs:
           done
           exit 1
       - name: Run VS-03 semantic benchmark
-        run: node scripts/semantic-benchmark.mjs | tee semantic-benchmark.log
+        shell: bash
+        run: |
+          set -o pipefail
+          node scripts/semantic-benchmark.mjs | tee semantic-benchmark.log
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: vs03-semantic-benchmark
           path: semantic-benchmark.log
