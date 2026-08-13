@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "sliceId": "VS-10",
   "title": "Pilot Operations, Safety and Cost Controls",
-  "status": "active",
-  "lifecycle": "ready-for-implementation",
+  "status": "completed",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-20"],
@@ -41,26 +41,36 @@
     "notes": [
       "Adds internal pilot workflow diagnostics, authorised retry/disable controls, execution-cost accounting, budgets and operational telemetry for FR-20.",
       "Operator access remains least-privilege and Brand-scoped; diagnostic records do not include sensitive content by default.",
-      "High-risk security review is mandatory before certification; production release remains separately governed."
+      "High-risk security review passed before certification; production release remains separately governed."
     ]
   },
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-10@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T17:57:00+02:00","rationale":"AUTH-001 authorizes the already-defined frozen FR-20 VS-10 scope; no V1 scope expansion is authorized."},
     {"type":"policy","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
     {"type":"implementation","status":"approved","version":"VS-10@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T17:57:00+02:00","rationale":"AUTH-001 authorizes runtime implementation, UI/UX work, tests, review, CI/security fixes and bounded refactoring within frozen FR-20 scope."},
-    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
+    {"type":"certification","status":"approved","version":"VS-10@1.0","commitSha":"27c15b0dda1914c24fae71f87c7eb94c99886525","by":"Sazid Khan","at":"2026-08-13T20:42:00+02:00","rationale":"Product owner approved certification of the exact reviewed VS-10 candidate after CI #264, Security baseline #239 and Product Intake #213 passed and the high-risk review closed both prior blockers."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":0,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "certification": {
+    "status":"passed",
+    "commitSha":"27c15b0dda1914c24fae71f87c7eb94c99886525",
+    "evidence":[
+      "PR #22 high-risk review closeout",
+      "GitHub Actions CI run 31731398678 (#264)",
+      "GitHub Actions Security baseline run 31731398748 (#239)",
+      "GitHub Actions Product Intake run 31731398555 (#213)",
+      "Human certification approval at 2026-08-13T20:42:00+02:00 bound to 27c15b0dda1914c24fae71f87c7eb94c99886525"
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
     "specification":"docs/slices/VS-10.md",
-    "implementationPr":null,
+    "implementationPr":"https://github.com/ksazid/kairo/pull/22",
     "evidence":["docs/plans/VS-10-activation.md","delivery/context/VS-10.md"]
   },
   "maxAttempts": 3
