@@ -3,7 +3,7 @@
   "sliceId": "VS-08",
   "title": "Performance Tracking",
   "status": "active",
-  "lifecycle": "ready-for-implementation",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -115,14 +115,14 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 0,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
     "evidence": []
   },
@@ -142,10 +142,13 @@
   },
   "links": {
     "specification": "docs/slices/VS-08.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/19",
     "evidence": [
       "docs/plans/VS-08-activation.md",
-      "delivery/context/VS-08.md"
+      "delivery/context/VS-08.md",
+      "docs/plans/VS-08-implementation.md",
+      "docs/plans/VS-08-review.md",
+      "docs/plans/VS-08-certification.md"
     ]
   },
   "maxAttempts": 3

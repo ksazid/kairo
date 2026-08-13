@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-08","activeTask":"metric-provenance-and-freshness-contracts","branch":"kairo/vs-08","lastSuccessfulStep":"vs-07-certified-merged-and-vs-08-activated","attempts":0,"blockers":[],"nextPermittedAction":"implement-performance-metric-domain-tests"}
+{"schemaVersion":1,"activeSlice":"VS-08","activeTask":"exact-sha-certification-preparation","branch":"kairo/vs-08","lastSuccessfulStep":"vs-08-full-verification-and-review-passed","attempts":0,"blockers":[],"nextPermittedAction":"run-exact-head-ci-and-request-human-certification"}
