@@ -3,7 +3,7 @@
   "sliceId": "VS-06",
   "title": "Critic, Judge and Approval",
   "status": "active",
-  "lifecycle": "ready-for-implementation",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -121,14 +121,14 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 0,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
     "evidence": []
   },
@@ -148,10 +148,13 @@
   },
   "links": {
     "specification": "docs/slices/VS-06.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/15",
     "evidence": [
       "docs/plans/VS-06-activation.md",
-      "delivery/context/VS-06.md"
+      "delivery/context/VS-06.md",
+      "docs/plans/VS-06-implementation.md",
+      "docs/plans/VS-06-review.md",
+      "docs/plans/VS-06-certification.md"
     ]
   },
   "maxAttempts": 3
