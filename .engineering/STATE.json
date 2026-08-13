@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-05","activeTask":"activation-and-superpowers-planning","branch":"kairo/vs-05","lastSuccessfulStep":"vs-04-certified-and-merged","attempts":0,"blockers":[],"nextPermittedAction":"merge-vs-05-activation-then-write-superpowers-implementation-plan"}
+{"schemaVersion":1,"activeSlice":"VS-05","activeTask":"ci-and-certification","branch":"kairo/vs-05","lastSuccessfulStep":"vs-05-local-typecheck-tests-and-governance-passed","attempts":0,"blockers":[],"nextPermittedAction":"confirm-ci-then-present-exact-sha-for-human-certification"}

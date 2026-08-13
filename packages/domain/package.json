@@ -8,7 +8,9 @@
     "./discovery": "./src/discovery.ts",
     "./discovery-service": "./src/discovery-service.ts",
     "./research": "./src/research.ts",
-    "./research-service": "./src/research-service.ts"
+    "./research-service": "./src/research-service.ts",
+    "./campaign": "./src/campaign.ts",
+    "./campaign-service": "./src/campaign-service.ts"
   },
   "types": "./src/index.ts",
   "scripts": {

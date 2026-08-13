@@ -1,0 +1,1 @@
+"use client";export default function ErrorState({reset}:{reset:()=>void}){return <main className="workspace-main campaigns-main"><p className="eyebrow">Campaigns unavailable</p><h1>Your draft work is still safe.</h1><p className="lede">Kairo could not load this workspace right now.</p><button className="primary-button" onClick={reset}>Try again</button></main>}
