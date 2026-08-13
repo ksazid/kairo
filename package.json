@@ -22,6 +22,7 @@
     "dashboard:serve": "node scripts/dashboard-server.mjs",
     "delivery-graph:check": "node scripts/delivery-graph.mjs",
     "deployment:advise": "node scripts/deployment-advisor.mjs",
+    "db:migrate": "node scripts/migrate.mjs",
     "security:classify": "node scripts/security-classify.mjs",
     "knowledge:export": "node scripts/knowledge-export.mjs",
     "optimize:context": "node scripts/optimize-context.mjs",
