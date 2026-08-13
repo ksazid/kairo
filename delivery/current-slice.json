@@ -1,1 +1,156 @@
-{"schemaVersion":2,"sliceId":"VS-05","title":"Campaign and Content Studio","status":"active","lifecycle":"implementing","riskLevel":"medium","implementationMode":"runtime-enabled","requirements":["FR-10","FR-11"],"owners":{"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},"dependencies":["VS-04"],"blockers":[],"allowedPaths":["apps/web/**","apps/api/**","apps/worker/**","services/hermes-runtime/**","packages/contracts/**","packages/domain/**","packages/agent-contracts/**","packages/skill-sdk/**","packages/design-tokens/**","packages/observability/**","tests/**","docs/slices/VS-05.md","docs/plans/**","delivery/**",".engineering/STATE.json","scripts/**",".github/workflows/ci.yml",".github/workflows/intake.yml",".github/workflows/security.yml"],"protectedPaths":[".github/workflows/release.yml","infrastructure/**"],"impact":{"areas":["frontend","api","database","customer-flow"],"notes":["Introduces Brand-scoped Campaign lineage, channel executions, Content Assets and immutable Content Versions plus the calm Content Studio workflow for FR-10/FR-11.","AI generation remains provider-neutral, budgeted and non-authoritative until schema/policy/provenance validation. External executable Skills remain disabled unless their sandbox/provenance gate is separately satisfied.","Critic/Judge acceptance, approval workflow, publishing, scheduling and performance learning remain outside VS-05."]},"approvals":[{"type":"scope","status":"approved","version":"VS-05@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T00:45:00+02:00","rationale":"AUTH-001 grants scope approval for the already-defined/frozen VS-05 FR-10/FR-11 scope; no V1 scope expansion is authorized."},{"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Approved PRD/TRD already define Campaign/Content lineage, immutable versioning, model provenance, Brand isolation and constrained runtime policy. External executable Skills remain disabled unless their separate sandbox/provenance gate passes; any newly discovered material decision still requires human approval."},{"type":"implementation","status":"approved","version":"VS-05@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T00:45:00+02:00","rationale":"AUTH-001 authorizes VS-05 runtime implementation, UI/UX work, Superpowers execution, deterministic tests/review, CI/security fixes and bounded refactoring within approved FR-10/FR-11 scope."},{"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},{"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},{"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}],"decisionIds":[],"progress":{"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},"certification":{"status":"not-started","commitSha":null,"evidence":[]},"release":{"status":"not-authorized","releaseId":null},"rollback":{"status":"not-applicable","rollbackId":null},"postRelease":{"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},"links":{"specification":"docs/slices/VS-05.md","implementationPr":null,"evidence":["docs/plans/VS-05-activation.md","delivery/context/VS-05.md","docs/plans/VS-05-implementation.md"]},"maxAttempts":3}
+{
+  "schemaVersion": 2,
+  "sliceId": "VS-05",
+  "title": "Campaign and Content Studio",
+  "status": "active",
+  "lifecycle": "testing",
+  "riskLevel": "medium",
+  "implementationMode": "runtime-enabled",
+  "requirements": [
+    "FR-10",
+    "FR-11"
+  ],
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": null,
+    "security": null
+  },
+  "dependencies": [
+    "VS-04"
+  ],
+  "blockers": [],
+  "allowedPaths": [
+    "apps/web/**",
+    "apps/api/**",
+    "apps/worker/**",
+    "services/hermes-runtime/**",
+    "packages/contracts/**",
+    "packages/domain/**",
+    "packages/agent-contracts/**",
+    "packages/skill-sdk/**",
+    "packages/design-tokens/**",
+    "packages/observability/**",
+    "tests/**",
+    "docs/slices/VS-05.md",
+    "docs/plans/**",
+    "delivery/**",
+    ".engineering/STATE.json",
+    "scripts/**",
+    ".github/workflows/ci.yml",
+    ".github/workflows/intake.yml",
+    ".github/workflows/security.yml"
+  ],
+  "protectedPaths": [
+    ".github/workflows/release.yml",
+    "infrastructure/**"
+  ],
+  "impact": {
+    "areas": [
+      "frontend",
+      "api",
+      "database",
+      "customer-flow"
+    ],
+    "notes": [
+      "Introduces Brand-scoped Campaign lineage, channel executions, Content Assets and immutable Content Versions plus the calm Content Studio workflow for FR-10/FR-11.",
+      "AI generation remains provider-neutral, budgeted and non-authoritative until schema/policy/provenance validation. External executable Skills remain disabled unless their sandbox/provenance gate is separately satisfied.",
+      "Critic/Judge acceptance, approval workflow, publishing, scheduling and performance learning remain outside VS-05."
+    ]
+  },
+  "approvals": [
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-05@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-13T00:45:00+02:00",
+      "rationale": "AUTH-001 grants scope approval for the already-defined/frozen VS-05 FR-10/FR-11 scope; no V1 scope expansion is authorized."
+    },
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Approved PRD/TRD already define Campaign/Content lineage, immutable versioning, model provenance, Brand isolation and constrained runtime policy. External executable Skills remain disabled unless their separate sandbox/provenance gate passes; any newly discovered material decision still requires human approval."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-05@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-13T00:45:00+02:00",
+      "rationale": "AUTH-001 authorizes VS-05 runtime implementation, UI/UX work, Superpowers execution, deterministic tests/review, CI/security fixes and bounded refactoring within approved FR-10/FR-11 scope."
+    },
+    {
+      "type": "certification",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    },
+    {
+      "type": "release",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    },
+    {
+      "type": "production-enable",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    }
+  ],
+  "decisionIds": [],
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 90,
+    "certification": 0,
+    "release": 0,
+    "validation": 0
+  },
+  "certification": {
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
+  },
+  "release": {
+    "status": "not-authorized",
+    "releaseId": null
+  },
+  "rollback": {
+    "status": "not-applicable",
+    "rollbackId": null
+  },
+  "postRelease": {
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": null,
+    "metrics": []
+  },
+  "links": {
+    "specification": "docs/slices/VS-05.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/13",
+    "evidence": [
+      "docs/plans/VS-05-activation.md",
+      "delivery/context/VS-05.md",
+      "docs/plans/VS-05-implementation.md"
+    ]
+  },
+  "maxAttempts": 3
+}
