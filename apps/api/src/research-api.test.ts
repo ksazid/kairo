@@ -57,6 +57,12 @@ describe("VS-04 Research and Angle API", () => {
     expect(detail.json().research.claims[0]).toMatchObject({ verificationState: "supported" });
     expect(detail.json().angles).toHaveLength(2);
 
+    const edited = await context.app.inject({ method: "PATCH", url: `/api/v1/brands/${context.brandId}/ideas/${ideaId}/angles/angle-1`, headers: context.auth, payload: { framing: "Explain the verified finding first", expectedVersion: 1 } });
+    expect(edited.statusCode).toBe(200);
+    expect(edited.json()).toMatchObject({ id: "angle-1", framing: "Explain the verified finding first", version: 2 });
+    const staleEdit = await context.app.inject({ method: "PATCH", url: `/api/v1/brands/${context.brandId}/ideas/${ideaId}/angles/angle-1`, headers: context.auth, payload: { framing: "Stale overwrite", expectedVersion: 1 } });
+    expect(staleEdit.statusCode).toBe(409);
+
     const selected = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas/${ideaId}/angles/angle-2/select`, headers: context.auth, payload: { expectedVersion: 1 } });
     expect(selected.statusCode).toBe(200);
     expect(selected.json().filter((angle: { status: string }) => angle.status === "selected")).toEqual([expect.objectContaining({ id: "angle-2" })]);
