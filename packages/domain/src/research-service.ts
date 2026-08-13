@@ -14,6 +14,7 @@ export interface ResearchRepository {
   listIdeas(accountId: string, brandId: string): Promise<Idea[]>;
   getIdeaBundle(accountId: string, brandId: string, ideaId: string): Promise<IdeaBundle | null>;
   selectAngle(accountId: string, brandId: string, ideaId: string, angleId: string, expectedVersion: number): Promise<Angle[]>;
+  editAngleFraming(accountId: string, brandId: string, ideaId: string, angleId: string, framing: string, expectedVersion: number): Promise<Angle>;
 }
 
 export interface CreateUserIdeaInput { title: string; premise: string }
@@ -33,5 +34,13 @@ export class ResearchService {
   selectAngle(accountId: string, brandId: string, ideaId: string, angleId: string, expectedVersion: number): Promise<Angle[]> {
     if (!Number.isInteger(expectedVersion) || expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
     return this.repository.selectAngle(accountId, brandId, ideaId, angleId, expectedVersion);
+  }
+
+  editAngleFraming(accountId: string, brandId: string, ideaId: string, angleId: string, framing: string, expectedVersion: number): Promise<Angle> {
+    if (!Number.isInteger(expectedVersion) || expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
+    const normalized = typeof framing === "string" ? framing.trim() : "";
+    if (!normalized) throw new DomainValidationError("framing is required");
+    if (normalized.length > 2_000) throw new DomainValidationError("framing is too long");
+    return this.repository.editAngleFraming(accountId, brandId, ideaId, angleId, normalized, expectedVersion);
   }
 }
