@@ -16,12 +16,15 @@ import {
 } from "@kairo/domain";
 import { DiscoveryService, type DiscoveryRepository } from "@kairo/domain/discovery-service";
 import { ResearchService, type ResearchRepository } from "@kairo/domain/research-service";
+import { CampaignService, type CampaignRepository } from "@kairo/domain/campaign-service";
+import type { ContentChannel } from "@kairo/domain/campaign";
 import type { IdentityVerifier } from "./auth";
 
 export interface BuildAppOptions {
   store: KairoRepository;
   discoveryStore?: DiscoveryRepository;
   researchStore?: ResearchRepository;
+  campaignStore?: CampaignRepository;
   identityVerifier: IdentityVerifier;
   logger?: boolean;
 }
@@ -31,6 +34,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   const service = new KairoService(options.store);
   const discovery = options.discoveryStore ? new DiscoveryService(options.discoveryStore) : null;
   const research = options.researchStore ? new ResearchService(options.researchStore) : null;
+  const campaigns = options.campaignStore && options.researchStore ? new CampaignService(options.campaignStore, options.researchStore) : null;
 
   app.addHook("onRequest", async (request, reply) => { reply.header("x-correlation-id", request.id); });
 
@@ -182,6 +186,14 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
         return research.editAngleFraming(account.id, request.params.brandId, request.params.ideaId, request.params.angleId, request.body?.framing, request.body?.expectedVersion);
       },
     );
+  }
+
+  if (campaigns) {
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/campaigns", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return campaigns.list(account.id, request.params.brandId); });
+    app.post<{ Params: { brandId: string }; Body: { ideaId: string; name: string; objective: string } }>("/api/v1/brands/:brandId/campaigns", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; const campaign = await campaigns.createFromSelectedAngle(account.id, request.params.brandId, request.body?.ideaId, { name: request.body?.name, objective: request.body?.objective }); return reply.status(201).send(campaign); });
+    app.get<{ Params: { brandId: string; campaignId: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; const detail = await campaigns.get(account.id, request.params.brandId, request.params.campaignId); if (!detail) throw new ResourceNotFoundError("Campaign not found"); return detail; });
+    app.post<{ Params: { brandId: string; campaignId: string }; Body: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; content: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await campaigns.createAsset(account.id, request.params.brandId, request.params.campaignId, request.body)); });
+    app.post<{ Params: { brandId: string; campaignId: string; assetId: string }; Body: { expectedVersion: number; content: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/versions", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await campaigns.appendManualEdit(account.id, request.params.brandId, request.params.campaignId, request.params.assetId, request.body)); });
   }
 
   return app;
