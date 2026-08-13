@@ -22,7 +22,7 @@ export default async function SignInPage({ searchParams }: { searchParams: Searc
       ? await signUpKairo(name, email, password)
       : await signInKairo(email, password);
     if (error) redirect(`/sign-in?mode=${mode === "signup" ? "signup" : "signin"}&error=${encodeURIComponent(error)}`);
-    redirect("/");
+    redirect("/session/bootstrap");
   }
 
   return (
