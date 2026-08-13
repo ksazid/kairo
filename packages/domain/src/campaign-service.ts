@@ -9,11 +9,13 @@ export interface CampaignRepository {
   listCampaigns(accountId: string, brandId: string): Promise<Campaign[]>;
   getCampaign(accountId: string, brandId: string, campaignId: string): Promise<CampaignDetail | null>;
   saveAssetWithVersion(accountId: string, asset: ContentAsset, version: ContentVersion): Promise<CampaignDetail>;
-  appendVersion(accountId: string, brandId: string, campaignId: string, assetId: string, expectedVersion: number, build: (asset: ContentAsset, parent: ContentVersion) => ContentVersion): Promise<CampaignDetail>;
+  appendVersion(accountId: string, brandId: string, campaignId: string, assetId: string, expectedVersion: number, build: (asset: ContentAsset, parent: ContentVersion) => ContentVersion | Promise<ContentVersion>): Promise<CampaignDetail>;
 }
+export type GenerateContentAction = "initial-draft"|"alternative"|"simplify"|"expand"|"adjust-depth"|"strengthen-opening"|"regenerate-section";
+export interface ContentGenerationPort { generate(input:{workspaceId:string;brandId:string;brandContextVersion:string;campaign:Campaign;asset:ContentAsset;parent:ContentVersion;action:GenerateContentAction;section?:string;claims:Array<{id:string;text:string;classification:string;verificationState:string}>}):Promise<ContentVersion> }
 
 export class CampaignService {
-  constructor(private readonly campaigns: CampaignRepository, private readonly research: ResearchRepository, private readonly now: () => Date = () => new Date()) {}
+  constructor(private readonly campaigns: CampaignRepository, private readonly research: ResearchRepository, private readonly generator?:ContentGenerationPort, private readonly now: () => Date = () => new Date()) {}
   async createFromSelectedAngle(accountId: string, brandId: string, ideaId: string, input: { name: string; objective: string }): Promise<Campaign> {
     const bundle = await this.research.getIdeaBundle(accountId, brandId, ideaId);
     if (!bundle?.research) throw new ResourceNotFoundError("Research-ready Idea not found");
@@ -33,5 +35,12 @@ export class CampaignService {
   appendManualEdit(accountId: string, brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; content: string }): Promise<CampaignDetail> {
     if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
     return this.campaigns.appendVersion(accountId, brandId, campaignId, assetId, input.expectedVersion, (asset, parent) => appendContentVersion({ id: randomUUID(), asset, parent, expectedVersion: input.expectedVersion, content: input.content, supportingClaimIds: parent.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString() }));
+  }
+  async generateVersion(accountId:string,brandId:string,campaignId:string,assetId:string,input:{expectedVersion:number;action:GenerateContentAction;section?:string;brandContextVersion:string}):Promise<CampaignDetail>{
+    if(!this.generator)throw new DomainValidationError("Content generation is not configured");
+    if(!Number.isInteger(input.expectedVersion)||input.expectedVersion<1)throw new DomainValidationError("expectedVersion must be a positive integer");
+    const detail=await this.campaigns.getCampaign(accountId,brandId,campaignId);if(!detail)throw new ResourceNotFoundError("Campaign not found");
+    const bundle=await this.research.getIdeaBundle(accountId,brandId,detail.campaign.ideaId);if(!bundle?.research)throw new ResourceNotFoundError("Campaign Research not found");const research=bundle.research;
+    return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,(asset,parent)=>this.generator!.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))}));
   }
 }
