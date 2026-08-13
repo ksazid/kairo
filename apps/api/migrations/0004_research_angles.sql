@@ -93,6 +93,7 @@ create table if not exists angles (
   recommended_format text not null,
   recommended_channel text not null,
   supporting_claim_ids jsonb not null check (jsonb_typeof(supporting_claim_ids)='array'),
+  runtime_provenance jsonb null check (runtime_provenance is null or jsonb_typeof(runtime_provenance)='object'),
   status text not null check (status in ('candidate','selected')),
   version integer not null default 1 check (version > 0),
   created_at timestamptz not null default now(),
