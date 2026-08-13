@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"activation-and-superpowers-planning","branch":"kairo/vs-04","lastSuccessfulStep":"vs-03-certified-and-merged","attempts":0,"blockers":[],"nextPermittedAction":"write-vs-04-superpowers-implementation-plan"}
+{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"await-merge-authorization","branch":"kairo/vs-04","lastSuccessfulStep":"vs-04-certified-at-3955dcdb82e9eca007805c78984047bacd5792f0","attempts":0,"blockers":[],"nextPermittedAction":"merge-pr-11-only-after-explicit-human-authorization"}

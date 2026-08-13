@@ -4,6 +4,7 @@ import "@kairo/design-tokens/tokens.css";
 import "./globals.css";
 import "./interaction-review.css";
 import "./discovery.css";
+import "./ideas.css";
 
 export const metadata: Metadata = {
   title: "Kairo — Content Intelligence",
