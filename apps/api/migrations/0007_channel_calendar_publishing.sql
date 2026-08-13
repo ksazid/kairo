@@ -37,13 +37,16 @@ create table publish_commands (
   attempt_count integer not null default 0 check (attempt_count between 0 and 3),
   created_at timestamptz not null,
   last_attempt_at timestamptz,
+  next_attempt_at timestamptz,
+  lease_owner text,
+  lease_expires_at timestamptz,
   foreign key (workspace_id,brand_id,campaign_id,asset_id,version_id,version,approval_id)
     references content_approvals(workspace_id,brand_id,campaign_id,asset_id,version_id,version,id),
   foreign key (workspace_id,brand_id,channel_account_id,channel,account_ref)
     references channel_accounts(workspace_id,brand_id,id,channel,account_ref)
 );
 create index publish_commands_calendar on publish_commands(brand_id,scheduled_for,id);
-create index publish_commands_due on publish_commands(status,scheduled_for) where status='scheduled';
+create index publish_commands_due on publish_commands(status,coalesce(next_attempt_at,scheduled_for)) where status='scheduled';
 
 create table publish_attempts (
   id text primary key,

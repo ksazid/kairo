@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {"./drafter":"./src/drafter.ts","./reviewer":"./src/reviewer.ts","./agent-runtime":"./src/agent-runtime.ts","./model-gateway":"./src/model-gateway.ts"},
+  "exports": {"./drafter":"./src/drafter.ts","./reviewer":"./src/reviewer.ts","./agent-runtime":"./src/agent-runtime.ts","./model-gateway":"./src/model-gateway.ts","./publishing":"./src/publishing.ts","./publishing-adapters":"./src/publishing-adapters.ts"},
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
