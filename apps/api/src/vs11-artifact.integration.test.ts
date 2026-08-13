@@ -10,7 +10,8 @@ const sha="0123456789abcdef0123456789abcdef01234567";
 suite("VS-11 bundled API",()=>{
   it("builds and starts with live, ready and version endpoints",async()=>{
     const root=new URL("../../../",import.meta.url).pathname;
-    await execFileAsync(process.execPath,[new URL("../../../scripts/build-api.mjs",import.meta.url).pathname],{cwd:root});
+    const npm=process.platform==="win32"?"npm.cmd":"npm";
+    await execFileAsync(npm,["run","build","--workspace","@kairo/api"],{cwd:root});
     const port=43000+(process.pid%1000);
     let stderr="";
     const child=spawn(process.execPath,[new URL("../dist/server.js",import.meta.url).pathname],{
