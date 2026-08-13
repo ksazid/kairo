@@ -18,12 +18,12 @@ function auth() {
 
 export async function signInKairo(email: string, password: string): Promise<string | null> {
   const result = await auth().signIn.email({ email, password });
-  return result.error ? result.error.message : null;
+  return result.error?.message ?? null;
 }
 
 export async function signUpKairo(name: string, email: string, password: string): Promise<string | null> {
   const result = await auth().signUp.email({ name, email, password });
-  return result.error ? result.error.message : null;
+  return result.error?.message ?? null;
 }
 
 export async function signOutKairo(): Promise<void> {
