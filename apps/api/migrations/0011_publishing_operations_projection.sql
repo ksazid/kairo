@@ -26,11 +26,11 @@ begin
 
   if new.status = 'scheduled' then
     disposition := 'safe';
-    code := coalesce(nullif(regexp_replace(lower(coalesce(attempt_row.failure_code,'publishing-failed')), '[^a-z0-9._-]+', '-', 'g'), ''), 'publishing-failed');
+    code := 'publishing-retryable-failure';
     message := 'Publishing failed; an automatic retry was scheduled.';
   elsif new.status = 'failed' then
     disposition := 'blocked';
-    code := coalesce(nullif(regexp_replace(lower(coalesce(attempt_row.failure_code,'publishing-failed')), '[^a-z0-9._-]+', '-', 'g'), ''), 'publishing-failed');
+    code := 'publishing-terminal-failure';
     message := 'Publishing failed and requires operator attention.';
   elsif new.status = 'unknown' then
     disposition := 'manual-review';
@@ -51,13 +51,13 @@ begin
     new.brand_id,
     'publishing:' || new.id,
     'publishing',
-    left(code,160),
+    code,
     message,
     disposition,
     attempt_row.attempt_number,
     3,
     'failed',
-    attempt_row.provider_correlation_id,
+    null,
     coalesce(attempt_row.completed_at,new.last_attempt_at,now())
   ) on conflict(id) do nothing;
 
