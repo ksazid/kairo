@@ -117,3 +117,7 @@ export async function getIdea(brandId: string, ideaId: string): Promise<IdeaBund
 export async function selectIdeaAngle(brandId: string, ideaId: string, angleId: string, expectedVersion: number): Promise<AngleView[]> {
   return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}/angles/${encodeURIComponent(angleId)}/select`, { method: "POST", body: JSON.stringify({ expectedVersion }) }), "Unable to select Angle");
 }
+
+export async function editIdeaAngleFraming(brandId: string, ideaId: string, angleId: string, framing: string, expectedVersion: number): Promise<AngleView> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}/angles/${encodeURIComponent(angleId)}`, { method: "PATCH", body: JSON.stringify({ framing, expectedVersion }) }), "Unable to edit Angle");
+}
