@@ -4,6 +4,7 @@ import { OidcJwtVerifier } from "./auth";
 import { PgDiscoveryRepository } from "./discovery-postgres-store";
 import { PgKairoRepository } from "./postgres-store";
 import { PgResearchRepository } from "./research-postgres-store";
+import { PgCampaignRepository } from "./campaign-postgres-store";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -16,6 +17,7 @@ const app = buildApp({
   store: new PgKairoRepository(pool),
   discoveryStore: new PgDiscoveryRepository(pool),
   researchStore: new PgResearchRepository(pool),
+  campaignStore: new PgCampaignRepository(pool),
   identityVerifier: new OidcJwtVerifier({
     issuer: requiredEnv("OIDC_ISSUER"),
     audience: requiredEnv("OIDC_AUDIENCE"),
