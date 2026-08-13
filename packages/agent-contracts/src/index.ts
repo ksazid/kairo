@@ -2,7 +2,7 @@ export class AgentContractError extends Error {
   readonly code = "agent_contract_error";
 }
 
-export type AgentRole = "hunter" | "researcher" | "strategist" | "drafter";
+export type AgentRole = "hunter" | "researcher" | "strategist" | "drafter" | "critic" | "judge";
 export type PrivacyClass = "global-public" | "brand-private";
 export type QualityTier = "economy" | "balanced" | "high";
 export type JsonPrimitive = string | number | boolean | null;
@@ -165,7 +165,7 @@ const ALLOWED_CAPABILITIES = new Set([
 const FORBIDDEN_CONTEXT_KEY = /(api[-_]?key|access[-_]?token|refresh[-_]?token|authorization|password|secret|cookie|session[-_]?token|private[-_]?key)/i;
 
 export function prepareAgentInvocation(input: AgentInvocationInput): AgentInvocationRequest {
-  if (!["hunter", "researcher", "strategist", "drafter"].includes(input.role)) throw new AgentContractError("agent role is not enabled");
+  if (!["hunter", "researcher", "strategist", "drafter", "critic", "judge"].includes(input.role)) throw new AgentContractError("agent role is not enabled");
   const scope = prepareScope(input.scope);
   const approvedContextVersion = requiredText(input.approvedContextVersion, "approvedContextVersion", 160);
   const capabilities = uniqueCapabilities(input.capabilities);
