@@ -4,11 +4,15 @@ const LEGACY_LOGIN = "/auth/login";
 const LEGACY_LOGOUT = "/auth/logout";
 
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname === LEGACY_LOGIN) {
+  const path = request.nextUrl.pathname;
+  if (path === LEGACY_LOGIN) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
-  if (request.nextUrl.pathname === LEGACY_LOGOUT) {
+  if (path === LEGACY_LOGOUT) {
     return NextResponse.redirect(new URL("/sign-out", request.url));
+  }
+  if (path.startsWith("/sign-in") || path === "/sign-out") {
+    return NextResponse.next();
   }
 
   const authBase = process.env.NEON_AUTH_BASE_URL?.trim().replace(/\/$/, "");
