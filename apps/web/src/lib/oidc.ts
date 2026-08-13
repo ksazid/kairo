@@ -1,4 +1,5 @@
-import * as client from "openid-client";
+import "server-only";
+import { createNeonAuth } from "@neondatabase/auth/next/server";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -6,10 +7,14 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-export async function oidcConfiguration() {
-  return client.discovery(new URL(requiredEnv("OIDC_ISSUER")), requiredEnv("OIDC_CLIENT_ID"));
-}
+export const auth = createNeonAuth({
+  baseUrl: requiredEnv("NEON_AUTH_BASE_URL"),
+  cookies: { secret: requiredEnv("NEON_AUTH_COOKIE_SECRET") },
+});
 
-export function oidcClient() {
-  return client;
+export async function getKairoAccessToken(): Promise<string | null> {
+  const result = await auth.token();
+  if (result.error || !result.data) return null;
+  const token = (result.data as { token?: unknown }).token;
+  return typeof token === "string" && token.split(".").length === 3 ? token : null;
 }
