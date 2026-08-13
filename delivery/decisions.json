@@ -94,7 +94,7 @@
     },
     {
       "id": "DEC-008",
-      "sliceId": "VS-10",
+      "sliceId": "VS-11",
       "question": "Which pilot deployment topology and providers should host the certified Kairo V1 release?",
       "status": "pending",
       "options": [
