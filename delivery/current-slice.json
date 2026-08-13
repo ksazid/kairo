@@ -1,15 +1,13 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-07",
-  "title": "Channels, Calendar and Publishing",
+  "sliceId": "VS-08",
+  "title": "Performance Tracking",
   "status": "active",
   "lifecycle": "ready-for-implementation",
-  "riskLevel": "high",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
-    "FR-05",
-    "FR-14",
-    "FR-15"
+    "FR-16"
   ],
   "owners": {
     "product": "Product Owner",
@@ -18,22 +16,19 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-06"
+    "VS-07"
   ],
   "blockers": [],
   "allowedPaths": [
     "apps/web/**",
     "apps/api/**",
     "apps/worker/**",
-    "services/hermes-runtime/**",
     "packages/contracts/**",
     "packages/domain/**",
-    "packages/agent-contracts/**",
-    "packages/skill-sdk/**",
     "packages/design-tokens/**",
     "packages/observability/**",
     "tests/**",
-    "docs/slices/VS-07.md",
+    "docs/slices/VS-08.md",
     "docs/plans/**",
     "delivery/**",
     ".engineering/STATE.json",
@@ -48,48 +43,45 @@
   ],
   "impact": {
     "areas": [
-      "frontend",
       "api",
       "database",
-      "authorization",
-      "notifications",
+      "analytics",
       "customer-flow",
-      "legal-privacy",
       "operations-support"
     ],
     "notes": [
-      "Adds least-privilege Instagram Professional and LinkedIn organization channel connections, calendar scheduling and deterministic publishing for approved Content Versions.",
-      "Official adapters require platform-granted capabilities; unavailable or unsupported paths fail closed to an explicit manual publishing workflow.",
-      "OAuth tokens remain encrypted and adapter-only. Agents cannot read credentials, approve, schedule or publish. High-risk security review is mandatory."
+      "Adds provenance-preserving raw and normalized channel performance metrics bound to Published Posts and complete content lineage.",
+      "Unavailable, stale, partial and unsupported metrics remain explicit; Brand baselines expose evidence windows and sample sizes.",
+      "Collection credentials remain adapter-only and asynchronous collection is idempotent, bounded and auditable."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-07@1.0",
+      "version": "VS-08@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-13T13:50:00+02:00",
-      "rationale": "AUTH-001 and the Product Owner's explicit all-slices approval authorize the frozen FR-05/FR-14/FR-15 VS-07 scope."
+      "at": "2026-08-13T14:56:32+02:00",
+      "rationale": "AUTH-001 and the Product Owner's explicit all-slices approval authorize the frozen FR-16 VS-08 scope."
     },
     {
       "type": "policy",
-      "status": "approved",
-      "version": "DEC-004@1.0",
+      "status": "pending",
+      "version": null,
       "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-13T13:50:00+02:00",
-      "rationale": "DEC-004 approves official automated adapters for both pilot channels, with fail-closed manual fallback when capability, permission or platform approval is unavailable."
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-07@1.0",
+      "version": "VS-08@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-13T13:50:00+02:00",
-      "rationale": "The Product Owner's explicit approval authorizes runtime implementation, fixes, tests and bounded refactoring within frozen VS-07 scope."
+      "at": "2026-08-13T14:56:32+02:00",
+      "rationale": "The Product Owner's explicit approval authorizes runtime implementation, fixes, tests and bounded refactoring within frozen VS-08 scope."
     },
     {
       "type": "certification",
@@ -119,9 +111,7 @@
       "rationale": null
     }
   ],
-  "decisionIds": [
-    "DEC-004"
-  ],
+  "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
@@ -151,12 +141,11 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-07.md",
+    "specification": "docs/slices/VS-08.md",
     "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-07-feasibility.md",
-      "docs/plans/VS-07-activation.md",
-      "delivery/context/VS-07.md"
+      "docs/plans/VS-08-activation.md",
+      "delivery/context/VS-08.md"
     ]
   },
   "maxAttempts": 3
