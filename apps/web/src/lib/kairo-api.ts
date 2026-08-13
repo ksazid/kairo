@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { getKairoAccessToken } from "./oidc";
 import type {
   BrandBrainFieldDto,
   BrandDto,
@@ -36,7 +36,7 @@ export interface LearningView{id:string;workspaceId:string;brandId:string;statem
 export interface ExperimentView{id:string;workspaceId:string;brandId:string;hypothesis:string;variants:Array<{id:string;description:string}>;primaryMetric:string;status:"draft"|"completed";createdAt:string;winnerVariantId?:string;resultSummary?:string}
 
 function apiBase(): string { return (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, ""); }
-async function accessToken(): Promise<string | null> { return (await cookies()).get("kairo_access_token")?.value ?? null; }
+async function accessToken(): Promise<string | null> { return getKairoAccessToken(); }
 
 async function authorizedFetch(path: string, init?: RequestInit): Promise<Response | null> {
   const token = await accessToken();
@@ -44,7 +44,7 @@ async function authorizedFetch(path: string, init?: RequestInit): Promise<Respon
   return fetch(`${apiBase()}${path}`, {
     ...init,
     cache: "no-store",
-    headers: { authorization: `Bearer ${token}`, "content-type": "application/json", ...(init?.headers ?? {}) },
+    headers: { ...(init?.headers ?? {}), "content-type": "application/json", authorization: `Bearer ${token}` },
   });
 }
 
