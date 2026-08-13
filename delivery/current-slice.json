@@ -3,7 +3,7 @@
   "sliceId": "VS-09",
   "title": "Performance Intelligence, Learning and Experiments",
   "status": "active",
-  "lifecycle": "ready-for-implementation",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -120,14 +120,14 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 0,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
     "evidence": []
   },
@@ -147,10 +147,13 @@
   },
   "links": {
     "specification": "docs/slices/VS-09.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/21",
     "evidence": [
       "docs/plans/VS-09-activation.md",
-      "delivery/context/VS-09.md"
+      "delivery/context/VS-09.md",
+      "docs/plans/VS-09-implementation.md",
+      "docs/plans/VS-09-review.md",
+      "docs/plans/VS-09-certification.md"
     ]
   },
   "maxAttempts": 3
