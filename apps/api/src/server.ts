@@ -53,7 +53,7 @@ registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier})
 registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:async()=>{await pool.query("select 1")}});
 
 const port = Number(process.env.PORT ?? "4000");
-const host = process.env.HOST ?? "127.0.0.1";
+const host = process.env.HOST ?? "0.0.0.0";
 
 try {
   await app.listen({ port, host });
