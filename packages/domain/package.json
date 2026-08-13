@@ -18,7 +18,8 @@
     "./analytics": "./src/analytics.ts",
     "./analytics-service": "./src/analytics-service.ts",
     "./learning": "./src/learning.ts",
-    "./learning-service": "./src/learning-service.ts"
+    "./learning-service": "./src/learning-service.ts",
+    "./operations": "./src/operations.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
