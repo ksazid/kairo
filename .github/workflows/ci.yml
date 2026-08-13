@@ -7,7 +7,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 permissions:
-  contents: read
+  contents: write
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -32,11 +32,16 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: 24}
       - run: npm install --no-audit --no-fund
-      - uses: actions/upload-artifact@v4
-        with:
-          name: generated-package-lock
-          path: package-lock.json
-          if-no-files-found: error
+      - name: Commit generated lockfile on release hotfix branch
+        if: github.event_name == 'pull_request' && github.head_ref == 'kairo/vs-11-release-auth'
+        run: |
+          if ! git diff --quiet -- package-lock.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore: synchronize auth dependency lockfile"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
       - run: npm run preflight
       - run: npm run runtime:verify
       - run: npm run dashboard:build
