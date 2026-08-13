@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createIdea, selectIdeaAngle } from "../../../../src/lib/kairo-api";
+import { createIdea, editIdeaAngleFraming, selectIdeaAngle } from "../../../../src/lib/kairo-api";
 
 export async function createIdeaAction(brandId: string, formData: FormData): Promise<void> {
   try {
@@ -10,6 +10,16 @@ export async function createIdeaAction(brandId: string, formData: FormData): Pro
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create Idea";
     redirect(`/brands/${encodeURIComponent(brandId)}/ideas?error=${encodeURIComponent(message.slice(0, 180))}`);
+  }
+}
+
+export async function editAngleAction(brandId: string, ideaId: string, angleId: string, expectedVersion: number, formData: FormData): Promise<void> {
+  try {
+    await editIdeaAngleFraming(brandId, ideaId, angleId, String(formData.get("framing") ?? ""), expectedVersion);
+    redirect(`/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}?notice=${encodeURIComponent("Angle framing updated")}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to edit Angle";
+    redirect(`/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}?error=${encodeURIComponent(message.slice(0, 180))}`);
   }
 }
 
