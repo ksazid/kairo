@@ -91,12 +91,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-06@1.0",
+      "commitSha": "900feb15ee1a3c5ad44754f6bf0a4f23a4d0597c",
+      "by": "Sazid Khan",
+      "at": "2026-08-13T13:45:40+02:00",
+      "rationale": "Product Owner explicitly certified the exact VS-06 candidate after CI run 176, Security baseline, Product Intake and mandatory high-risk review passed."
     },
     {
       "type": "release",
@@ -123,14 +123,20 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "900feb15ee1a3c5ad44754f6bf0a4f23a4d0597c",
+    "evidence": [
+      "docs/plans/VS-06-review.md",
+      "docs/plans/VS-06-certification.md",
+      "https://github.com/ksazid/kairo/actions/runs/31695584406",
+      "https://github.com/ksazid/kairo/actions/runs/31695584419",
+      "https://github.com/ksazid/kairo/actions/runs/31695584506"
+    ]
   },
   "release": {
     "status": "not-authorized",

@@ -1,6 +1,10 @@
 # VS-06 Certification
 
-Status: Ready for human certification after exact-head CI
+Status: Passed — human certification approved
+
+Certified SHA: `900feb15ee1a3c5ad44754f6bf0a4f23a4d0597c`
+
+Sazid Khan explicitly certified this exact candidate at `2026-08-13T13:45:40+02:00`, after CI run 176, Product Intake run 151, Security baseline run 158 and the mandatory high-risk review passed.
 
 The certification candidate is the final head of PR #15 after all required workflow checks pass. Certification must explicitly name that exact 40-character SHA; earlier scope, implementation or merge authorization does not substitute for this gate.
 

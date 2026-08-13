@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-06","activeTask":"certification-preparation","branch":"kairo/vs-06","lastSuccessfulStep":"vs-06-runtime-verification-and-high-risk-review-passed","attempts":0,"blockers":[],"nextPermittedAction":"obtain-exact-sha-human-certification"}
+{"schemaVersion":1,"activeSlice":"VS-06","activeTask":"merge-certified-candidate","branch":"kairo/vs-06","lastSuccessfulStep":"vs-06-exact-sha-certified","attempts":0,"blockers":[],"nextPermittedAction":"merge-pr-15-then-activate-vs-07"}
