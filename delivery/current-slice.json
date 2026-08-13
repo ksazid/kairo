@@ -3,7 +3,7 @@
   "sliceId": "VS-04",
   "title": "Ideas, Research and Angles",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -89,12 +89,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-04@1.0",
+      "commitSha": "3955dcdb82e9eca007805c78984047bacd5792f0",
+      "by": "Sazid Khan",
+      "at": "2026-08-13T11:24:31+02:00",
+      "rationale": "Explicit human certification: 'Certify and go next', bound to the presented exact SHA after CI, Security baseline and Product intake passed."
     },
     {
       "type": "release",
@@ -121,19 +121,22 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 90,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "3955dcdb82e9eca007805c78984047bacd5792f0",
     "evidence": [
       "docs/plans/VS-04-review.md",
       "docs/plans/VS-04-certification.md",
       "https://github.com/ksazid/kairo/actions/runs/31685857915",
       "https://github.com/ksazid/kairo/actions/runs/31685857929",
-      "https://github.com/ksazid/kairo/actions/runs/31685857939"
+      "https://github.com/ksazid/kairo/actions/runs/31685857939",
+      "https://github.com/ksazid/kairo/actions/runs/31686239120",
+      "https://github.com/ksazid/kairo/actions/runs/31686239127",
+      "https://github.com/ksazid/kairo/actions/runs/31686239135"
     ]
   },
   "release": {
