@@ -11,6 +11,8 @@ import{PgAnalyticsRepository}from"./analytics-postgres-store";
 import{PgLearningRepository}from"./learning-postgres-store";
 import{PgOperationsRepository}from"./operations-postgres-store";
 import{registerOperationsRoutes}from"./operations-routes";
+import{ObservedAgentRuntime}from"./operations-runtime";
+import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{DrafterGenerationAdapter}from"./drafter-adapter";
 
 function requiredEnv(name: string): string {
@@ -20,8 +22,13 @@ function requiredEnv(name: string): string {
 }
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
-const gateway=openAICompatibleGatewayFromEnv();const runtime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:{"content-draft@1":value=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),"critic-review@1":value=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings)}}):undefined;const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;
 const coreStore=new PgKairoRepository(pool);
+const operationsStore=new PgOperationsRepository(pool);
+const telemetrySink=new PgOperationsTelemetrySink(pool,operationsStore);
+const gateway=openAICompatibleGatewayFromEnv();
+const baseRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:{"content-draft@1":value=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),"critic-review@1":value=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings)}}):undefined;
+const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
+const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;
 const identityVerifier=new OidcJwtVerifier({
   issuer:requiredEnv("OIDC_ISSUER"),
   audience:requiredEnv("OIDC_AUDIENCE"),
@@ -41,7 +48,7 @@ const app = buildApp({
   identityVerifier,
   logger: true,
 });
-registerOperationsRoutes(app,{store:new PgOperationsRepository(pool),coreStore,identityVerifier});
+registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 
 const port = Number(process.env.PORT ?? "4000");
 const host = process.env.HOST ?? "127.0.0.1";
