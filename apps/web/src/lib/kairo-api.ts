@@ -16,6 +16,13 @@ export class KairoApiError extends Error {
   constructor(message: string, readonly status: number) { super(message); }
 }
 
+export interface IdeaSummary { id: string; workspaceId: string; brandId: string; title: string; premise: string; source: { type: "user" } | { type: "opportunity"; opportunityId: string }; status: "new" | "researching" | "research-ready" | "angles-ready"; createdAt: string }
+export interface ResearchEvidence { id: string; sourceUrl: string; sourceTitle: string; publishedAt?: string; retrievedAt: string }
+export interface ResearchClaim { id: string; text: string; classification: "fact" | "brand-opinion" | "uncertain-inference"; confidence: number; evidenceStrength: "weak" | "moderate" | "strong"; verificationState: "supported" | "contradicted" | "unresolved"; freshness: "fresh" | "aging" | "stale" | "unknown"; evidenceIds: string[] }
+export interface ResearchDossierView { id: string; summary: string; evidence: ResearchEvidence[]; claims: ResearchClaim[]; unresolvedUncertainties: string[]; createdAt: string }
+export interface AngleView { id: string; title: string; framing: string; audience: string; objective: string; hookDirection: string; expectedValue: string; effort: "low" | "medium" | "high"; recommendedFormat: string; recommendedChannel: string; supportingClaimIds: string[]; status: "candidate" | "selected"; version: number }
+export interface IdeaBundleView { idea: IdeaSummary; research: ResearchDossierView | null; angles: AngleView[] }
+
 function apiBase(): string { return (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, ""); }
 async function accessToken(): Promise<string | null> { return (await cookies()).get("kairo_access_token")?.value ?? null; }
 
@@ -93,4 +100,20 @@ export async function actOnOpportunity(brandId: string, opportunityId: string, a
     await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(opportunityId)}/${action}`, { method: "POST" }),
     `Unable to ${action} Opportunity`,
   );
+}
+
+export async function getIdeas(brandId: string): Promise<IdeaSummary[]> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas`), "Unable to load Ideas");
+}
+
+export async function createIdea(brandId: string, input: { title: string; premise: string }): Promise<IdeaSummary> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas`, { method: "POST", body: JSON.stringify(input) }), "Unable to create Idea");
+}
+
+export async function getIdea(brandId: string, ideaId: string): Promise<IdeaBundleView> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}`), "Unable to load Idea");
+}
+
+export async function selectIdeaAngle(brandId: string, ideaId: string, angleId: string, expectedVersion: number): Promise<AngleView[]> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}/angles/${encodeURIComponent(angleId)}/select`, { method: "POST", body: JSON.stringify({ expectedVersion }) }), "Unable to select Angle");
 }
