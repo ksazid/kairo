@@ -268,7 +268,24 @@ function publicHttpUrl(value: unknown, field: string): string {
   try { url = new URL(text); } catch { throw new DomainValidationError(`${field} must be a valid HTTP(S) URL`); }
   if (url.protocol !== "http:" && url.protocol !== "https:") throw new DomainValidationError(`${field} must be a valid HTTP(S) URL`);
   if (url.username || url.password) throw new DomainValidationError(`${field} must not contain credentials`);
-  const host = url.hostname.toLowerCase();
-  if (!host || host === "localhost" || host.endsWith(".local")) throw new DomainValidationError(`${field} must use a public host`);
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || isUnsafeIpLiteral(host)) {
+    throw new DomainValidationError(`${field} must use a public host`);
+  }
   return url.toString();
+}
+
+function isUnsafeIpLiteral(host: string): boolean {
+  if (host.includes(":")) return true;
+  const parts = host.split(".");
+  if (parts.length !== 4 || parts.some((part) => !/^\d{1,3}$/.test(part))) return false;
+  const octets = parts.map(Number);
+  if (octets.some((octet) => octet < 0 || octet > 255)) return false;
+  const [a = 0, b = 0] = octets;
+  return (
+    a === 0 || a === 10 || a === 127 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) || a >= 224
+  );
 }
