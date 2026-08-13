@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./discovery": "./src/discovery.ts",
     "./discovery-service": "./src/discovery-service.ts",
-    "./research": "./src/research.ts"
+    "./research": "./src/research.ts",
+    "./research-service": "./src/research-service.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
