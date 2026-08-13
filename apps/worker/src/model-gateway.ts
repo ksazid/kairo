@@ -72,7 +72,6 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
         model: payload.model ?? this.model,
         inputTokens: safeInt(payload.usage?.prompt_tokens),
         outputTokens: safeInt(payload.usage?.completion_tokens),
-        costUsd: 0,
         latencyMs: Math.max(0, Math.round(performance.now() - started)),
       },
     };
