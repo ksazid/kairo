@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Conditionally approved for certification preparation. The implementation satisfies FR-08/FR-09 in local deterministic review; exact-SHA certification remains blocked until the final pull-request CI run, including PostgreSQL integration tests, is green.
+Approved for exact-SHA certification preparation. The implementation satisfies FR-08/FR-09 in deterministic review; human certification remains pending.
 
 ## Traceability
 
@@ -46,8 +46,9 @@ UI verdict: supported against the approved code/design baseline. No separate des
 - `npm run governance:validate`: passed.
 - `npm run preflight`: passed.
 - `git diff --check origin/main...HEAD`: passed.
-- Security baseline and Product intake checks: passed on the reviewed PR head.
-- Required final CI/PostgreSQL result: pending; record in certification handoff.
+- CI run 137 passed on implementation/review head `8e7cfaff`, including PostgreSQL-backed runtime verification.
+- Security baseline run 123 and Product intake run 123 passed on that head.
+- The final governance-only candidate must also be green before its SHA is presented for certification.
 
 ## Scope review
 
