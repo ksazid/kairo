@@ -54,6 +54,7 @@ export interface ResearchDossier {
   unresolvedUncertainties: string[];
   status: "ready";
   createdAt: string;
+  runtimeProvenance?: { runtime: string; provider?: string; model?: string; costUsd?: number; latencyMs: number };
 }
 
 export interface Angle {
@@ -95,6 +96,7 @@ export interface CreateResearchDossierInput {
   claims: Claim[];
   unresolvedUncertainties: string[];
   createdAt: string;
+  runtimeProvenance?: ResearchDossier["runtimeProvenance"];
 }
 
 export function createIdea(input: CreateIdeaInput): Idea {
@@ -108,6 +110,16 @@ export function createIdea(input: CreateIdeaInput): Idea {
     source,
     status: "new",
     createdAt: timestamp(input.createdAt, "createdAt"),
+  };
+}
+
+function normalizeRuntimeProvenance(input: NonNullable<ResearchDossier["runtimeProvenance"]>): NonNullable<ResearchDossier["runtimeProvenance"]> {
+  return {
+    runtime: requiredText(input.runtime, "runtimeProvenance.runtime", 120),
+    ...(input.provider ? { provider: requiredText(input.provider, "runtimeProvenance.provider", 120) } : {}),
+    ...(input.model ? { model: requiredText(input.model, "runtimeProvenance.model", 160) } : {}),
+    ...(input.costUsd !== undefined ? { costUsd: boundedScore(input.costUsd, "runtimeProvenance.costUsd") } : {}),
+    latencyMs: Number.isFinite(input.latencyMs) && input.latencyMs >= 0 ? input.latencyMs : 0,
   };
 }
 
@@ -131,6 +143,7 @@ export function createResearchDossier(input: CreateResearchDossierInput): Resear
     unresolvedUncertainties: uniqueTexts(input.unresolvedUncertainties, "unresolvedUncertainties", 2_000),
     status: "ready",
     createdAt: timestamp(input.createdAt, "createdAt"),
+    ...(input.runtimeProvenance ? { runtimeProvenance: normalizeRuntimeProvenance(input.runtimeProvenance) } : {}),
   };
 }
 
