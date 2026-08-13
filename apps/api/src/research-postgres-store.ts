@@ -1,8 +1,9 @@
 import type { Pool, PoolClient } from "pg";
 import { ConcurrencyConflictError, ResourceNotFoundError } from "@kairo/domain";
 import type { Angle, Idea, ResearchDossier } from "@kairo/domain/research";
+import type { IdeaBundle, ResearchRepository } from "@kairo/domain/research-service";
 
-export class PgResearchRepository {
+export class PgResearchRepository implements ResearchRepository {
   constructor(private readonly pool: Pool) {}
 
   async createIdea(accountId: string, idea: Idea): Promise<Idea> {
@@ -30,6 +31,56 @@ export class PgResearchRepository {
            from ideas where workspace_id=$1 and brand_id=$2 and id=$3`, [workspaceId, brandId, ideaId],
       );
       return result.rows[0] ? toIdea(result.rows[0]) : null;
+    } finally { client.release(); }
+  }
+
+  async listIdeas(accountId: string, brandId: string): Promise<Idea[]> {
+    const client = await this.pool.connect();
+    try {
+      const workspaceId = await requireBrandWorkspace(client, accountId, brandId);
+      const result = await client.query<IdeaRow>(
+        `select id,workspace_id,brand_id,title,premise,source_type,opportunity_id,status,created_at
+           from ideas where workspace_id=$1 and brand_id=$2 order by created_at desc,id`, [workspaceId, brandId],
+      );
+      return result.rows.map(toIdea);
+    } finally { client.release(); }
+  }
+
+  async getIdeaBundle(accountId: string, brandId: string, ideaId: string): Promise<IdeaBundle | null> {
+    const client = await this.pool.connect();
+    try {
+      const workspaceId = await requireBrandWorkspace(client, accountId, brandId);
+      const ideaResult = await client.query<IdeaRow>(
+        `select id,workspace_id,brand_id,title,premise,source_type,opportunity_id,status,created_at
+           from ideas where workspace_id=$1 and brand_id=$2 and id=$3`, [workspaceId, brandId, ideaId],
+      );
+      const row = ideaResult.rows[0];
+      if (!row) return null;
+      const dossierResult = await client.query<DossierRow>(
+        `select id,workspace_id,brand_id,idea_id,summary,unresolved_uncertainties,status,created_at
+           from research_dossiers where workspace_id=$1 and brand_id=$2 and idea_id=$3`, [workspaceId, brandId, ideaId],
+      );
+      const dossierRow = dossierResult.rows[0];
+      let research: ResearchDossier | null = null;
+      if (dossierRow) {
+        const [evidenceResult, claimResult] = await Promise.all([
+          client.query<EvidenceRow>(`select id,source_url,source_title,published_at,retrieved_at from evidence_references where research_id=$1 order by id`, [dossierRow.id]),
+          client.query<ClaimRow>(
+            `select c.id,c.text,c.classification,c.confidence,c.evidence_strength,c.verification_state,c.freshness,c.first_person_authorization,
+                    coalesce(array_agg(ce.evidence_id order by ce.evidence_id) filter (where ce.evidence_id is not null),'{}'::text[]) evidence_ids
+               from claims c left join claim_evidence ce on ce.research_id=c.research_id and ce.claim_id=c.id
+              where c.research_id=$1 group by c.id order by c.id`, [dossierRow.id],
+          ),
+        ]);
+        research = {
+          id: dossierRow.id, workspaceId, brandId, ideaId, summary: dossierRow.summary,
+          unresolvedUncertainties: dossierRow.unresolved_uncertainties, status: "ready", createdAt: iso(dossierRow.created_at),
+          evidence: evidenceResult.rows.map((item) => ({ id: item.id, sourceUrl: item.source_url, sourceTitle: item.source_title, ...(item.published_at ? { publishedAt: iso(item.published_at) } : {}), retrievedAt: iso(item.retrieved_at) })),
+          claims: claimResult.rows.map((item) => ({ id: item.id, text: item.text, classification: item.classification, confidence: Number(item.confidence), evidenceStrength: item.evidence_strength, verificationState: item.verification_state, freshness: item.freshness, evidenceIds: item.evidence_ids, firstPersonAuthorization: item.first_person_authorization })),
+        };
+      }
+      const angles = await client.query<AngleRow>(angleSelect, [workspaceId, brandId, ideaId]);
+      return { idea: toIdea(row), research, angles: angles.rows.map(toAngle) };
     } finally { client.release(); }
   }
 
@@ -123,6 +174,9 @@ export class PgResearchRepository {
 
 type IdeaRow = { id: string; workspace_id: string; brand_id: string; title: string; premise: string; source_type: "opportunity" | "user"; opportunity_id: string | null; status: Idea["status"]; created_at: Date | string };
 type AngleRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; title: string; framing: string; audience: string; objective: string; hook_direction: string; expected_value: string; effort: Angle["effort"]; recommended_format: string; recommended_channel: string; supporting_claim_ids: string[]; status: Angle["status"]; version: number };
+type DossierRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; summary: string; unresolved_uncertainties: string[]; status: "ready"; created_at: Date | string };
+type EvidenceRow = { id: string; source_url: string; source_title: string; published_at: Date | string | null; retrieved_at: Date | string };
+type ClaimRow = { id: string; text: string; classification: ResearchDossier["claims"][number]["classification"]; confidence: number; evidence_strength: ResearchDossier["claims"][number]["evidenceStrength"]; verification_state: ResearchDossier["claims"][number]["verificationState"]; freshness: ResearchDossier["claims"][number]["freshness"]; first_person_authorization: ResearchDossier["claims"][number]["firstPersonAuthorization"]; evidence_ids: string[] };
 
 const angleSelect = `select id,workspace_id,brand_id,idea_id,title,framing,audience,objective,hook_direction,expected_value,effort,recommended_format,recommended_channel,supporting_claim_ids,status,version from angles where workspace_id=$1 and brand_id=$2 and idea_id=$3 order by id`;
 
