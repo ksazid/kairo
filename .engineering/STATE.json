@@ -1,10 +1,1 @@
-{
-  "schemaVersion": 1,
-  "activeSlice": "VS-10",
-  "activeTask": "await-next-slice-definition",
-  "branch": "kairo/vs-10-governance-closeout",
-  "lastSuccessfulStep": "vs-10-certified-and-merged",
-  "attempts": 0,
-  "blockers": [],
-  "nextPermittedAction": "define-next-governed-slice"
-}
+{"schemaVersion":1,"activeSlice":"VS-10","activeTask":"v1-pilot-release-readiness","branch":"kairo/v1-pilot-release-readiness","lastSuccessfulStep":"rel-001-drafted-against-certified-v1-sha","attempts":0,"blockers":["DEC-008 pilot deployment topology/provider approval is required before release or production enablement","completed-slices registry still needs VS-09 and VS-10 archival reconciliation before release approval"],"nextPermittedAction":"validate-release-readiness-and-prepare-dec-008-evidence"}
