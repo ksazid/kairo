@@ -74,6 +74,7 @@ export interface Angle {
   supportingClaimIds: string[];
   status: AngleStatus;
   version: number;
+  runtimeProvenance?: { runtime: string; provider?: string; model?: string; costUsd?: number; latencyMs: number };
 }
 
 export interface CreateIdeaInput {
