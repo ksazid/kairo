@@ -171,6 +171,23 @@ export class PgResearchRepository implements ResearchRepository {
       return result.rows.map(toAngle);
     } catch (error) { await safeRollback(client); throw error; } finally { client.release(); }
   }
+
+  async editAngleFraming(accountId: string, brandId: string, ideaId: string, angleId: string, framing: string, expectedVersion: number): Promise<Angle> {
+    const client = await this.pool.connect();
+    try {
+      const workspaceId = await requireBrandWorkspace(client, accountId, brandId);
+      const result = await client.query<AngleRow>(
+        `update angles set framing=$5,version=version+1,updated_at=now()
+          where workspace_id=$1 and brand_id=$2 and idea_id=$3 and id=$4 and version=$6
+          returning id,workspace_id,brand_id,idea_id,title,framing,audience,objective,hook_direction,expected_value,effort,recommended_format,recommended_channel,supporting_claim_ids,runtime_provenance,status,version`,
+        [workspaceId, brandId, ideaId, angleId, framing, expectedVersion],
+      );
+      if (result.rows[0]) return toAngle(result.rows[0]);
+      const target = await client.query(`select 1 from angles where workspace_id=$1 and brand_id=$2 and idea_id=$3 and id=$4`, [workspaceId, brandId, ideaId, angleId]);
+      if (!target.rows[0]) throw new ResourceNotFoundError("Angle not found");
+      throw new ConcurrencyConflictError("Angle version is stale");
+    } finally { client.release(); }
+  }
 }
 
 type IdeaRow = { id: string; workspace_id: string; brand_id: string; title: string; premise: string; source_type: "opportunity" | "user"; opportunity_id: string | null; status: Idea["status"]; created_at: Date | string };
