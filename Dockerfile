@@ -1,7 +1,7 @@
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
 COPY . .
-RUN npm install --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 RUN npm run build --workspace @kairo/api
 RUN npm prune --omit=dev
 
