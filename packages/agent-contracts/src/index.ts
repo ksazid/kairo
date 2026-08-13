@@ -169,7 +169,7 @@ export function prepareAgentInvocation(input: AgentInvocationInput): AgentInvoca
   const scope = prepareScope(input.scope);
   const approvedContextVersion = requiredText(input.approvedContextVersion, "approvedContextVersion", 160);
   const capabilities = uniqueCapabilities(input.capabilities);
-  if (!capabilities.length) throw new AgentContractError("at least one capability is required");
+  if (input.role === "hunter" && !capabilities.length) throw new AgentContractError("Hunter requires at least one capability");
   const task = prepareTask(input.task);
   const outputSchema = prepareOutputSchema(input.outputSchema);
   const budget = prepareBudget(input.budget);
