@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-06","activeTask":"activation-and-superpowers-plan","branch":"kairo/vs-06","lastSuccessfulStep":"vs-05-certified-and-merged","attempts":0,"blockers":[],"nextPermittedAction":"merge-vs-06-activation-then-create-bounded-implementation-plan"}
+{"schemaVersion":1,"activeSlice":"VS-06","activeTask":"merge-certified-candidate","branch":"kairo/vs-06","lastSuccessfulStep":"vs-06-exact-sha-certified","attempts":0,"blockers":[],"nextPermittedAction":"merge-pr-15-then-activate-vs-07"}
