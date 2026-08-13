@@ -7,6 +7,7 @@ import "./discovery.css";
 import "./ideas.css";
 import "./studio.css";
 import "./calendar.css";
+import { SessionKeepalive } from "./session-keepalive";
 
 export const metadata: Metadata = {
   title: "Kairo — Content Intelligence",
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SessionKeepalive />
+        {children}
+      </body>
     </html>
   );
 }
