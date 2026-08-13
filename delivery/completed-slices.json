@@ -1171,6 +1171,165 @@
         ]
       },
       "maxAttempts": 3
+    },
+    {
+      "schemaVersion": 2,
+      "sliceId": "VS-08",
+      "title": "Performance Tracking",
+      "status": "completed",
+      "lifecycle": "certified",
+      "riskLevel": "medium",
+      "implementationMode": "runtime-enabled",
+      "requirements": [
+        "FR-16"
+      ],
+      "owners": {
+        "product": "Product Owner",
+        "engineering": "Engineering Owner",
+        "operations": "Operations Owner",
+        "security": "Security Owner"
+      },
+      "dependencies": [
+        "VS-07"
+      ],
+      "blockers": [],
+      "allowedPaths": [
+        "apps/web/**",
+        "apps/api/**",
+        "apps/worker/**",
+        "packages/contracts/**",
+        "packages/domain/**",
+        "packages/design-tokens/**",
+        "packages/observability/**",
+        "tests/**",
+        "docs/slices/VS-08.md",
+        "docs/plans/**",
+        "delivery/**",
+        ".engineering/STATE.json",
+        "scripts/**",
+        ".github/workflows/ci.yml",
+        ".github/workflows/intake.yml",
+        ".github/workflows/security.yml"
+      ],
+      "protectedPaths": [
+        ".github/workflows/release.yml",
+        "infrastructure/**"
+      ],
+      "impact": {
+        "areas": [
+          "api",
+          "database",
+          "analytics",
+          "customer-flow",
+          "operations-support"
+        ],
+        "notes": [
+          "Adds provenance-preserving raw and normalized channel performance metrics bound to Published Posts and complete content lineage.",
+          "Unavailable, stale, partial and unsupported metrics remain explicit; Brand baselines expose evidence windows and sample sizes.",
+          "Collection credentials remain adapter-only and asynchronous collection is idempotent, bounded and auditable."
+        ]
+      },
+      "approvals": [
+        {
+          "type": "scope",
+          "status": "approved",
+          "version": "VS-08@1.0",
+          "commitSha": null,
+          "by": "Sazid Khan",
+          "at": "2026-08-13T14:56:32+02:00",
+          "rationale": "AUTH-001 and the Product Owner's explicit all-slices approval authorize the frozen FR-16 VS-08 scope."
+        },
+        {
+          "type": "policy",
+          "status": "pending",
+          "version": null,
+          "commitSha": null,
+          "by": null,
+          "at": null,
+          "rationale": null
+        },
+        {
+          "type": "implementation",
+          "status": "approved",
+          "version": "VS-08@1.0",
+          "commitSha": null,
+          "by": "Sazid Khan",
+          "at": "2026-08-13T14:56:32+02:00",
+          "rationale": "The Product Owner's explicit approval authorizes runtime implementation, fixes, tests and bounded refactoring within frozen VS-08 scope."
+        },
+        {
+          "type": "certification",
+          "status": "approved",
+          "version": "VS-08@1.0",
+          "commitSha": "d18f576d70ea4327fad52babf3dd933bae4bc888",
+          "by": "Sazid Khan",
+          "at": "2026-08-13T15:55:23+02:00",
+          "rationale": "Product Owner explicitly certified the exact VS-08 candidate after CI 199, Security baseline 177, Product Intake 155 and PostgreSQL integration passed."
+        },
+        {
+          "type": "release",
+          "status": "pending",
+          "version": null,
+          "commitSha": null,
+          "by": null,
+          "at": null,
+          "rationale": null
+        },
+        {
+          "type": "production-enable",
+          "status": "pending",
+          "version": null,
+          "commitSha": null,
+          "by": null,
+          "at": null,
+          "rationale": null
+        }
+      ],
+      "decisionIds": [],
+      "progress": {
+        "discovery": 100,
+        "decisions": 100,
+        "implementation": 100,
+        "testing": 100,
+        "certification": 100,
+        "release": 0,
+        "validation": 0
+      },
+      "certification": {
+        "status": "passed",
+        "commitSha": "d18f576d70ea4327fad52babf3dd933bae4bc888",
+        "evidence": [
+          "docs/plans/VS-08-review.md",
+          "docs/plans/VS-08-certification.md",
+          "https://github.com/ksazid/kairo/pull/19"
+        ]
+      },
+      "release": {
+        "status": "not-authorized",
+        "releaseId": null
+      },
+      "rollback": {
+        "status": "not-applicable",
+        "rollbackId": null
+      },
+      "postRelease": {
+        "status": "not-started",
+        "reviewAt": null,
+        "expectedOutcome": null,
+        "metrics": []
+      },
+      "links": {
+        "specification": "docs/slices/VS-08.md",
+        "implementationPr": "https://github.com/ksazid/kairo/pull/19",
+        "evidence": [
+          "docs/plans/VS-08-activation.md",
+          "delivery/context/VS-08.md",
+          "docs/plans/VS-08-implementation.md",
+          "docs/plans/VS-08-review.md",
+          "docs/plans/VS-08-certification.md"
+        ]
+      },
+      "maxAttempts": 3
     }
   ]
 }

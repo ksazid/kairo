@@ -1,1 +1,10 @@
-{"schemaVersion":1,"activeSlice":"VS-08","activeTask":"exact-sha-certification-preparation","branch":"kairo/vs-08","lastSuccessfulStep":"vs-08-full-verification-and-review-passed","attempts":0,"blockers":[],"nextPermittedAction":"run-exact-head-ci-and-request-human-certification"}
+{
+  "schemaVersion": 1,
+  "activeSlice": "VS-09",
+  "activeTask": "learning-experiment-domain-contracts",
+  "branch": "kairo/vs-09",
+  "lastSuccessfulStep": "vs-08-certified-merged-and-vs-09-activated",
+  "attempts": 0,
+  "blockers": [],
+  "nextPermittedAction": "implement-learning-experiment-domain-tests"
+}
