@@ -38,7 +38,7 @@ export interface ExperimentView{id:string;workspaceId:string;brandId:string;hypo
 function apiBase(): string { return (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, ""); }
 async function accessToken(): Promise<string | null> { return getKairoAccessToken(); }
 
-async function authorizedFetch(path: string, init?: RequestInit): Promise<Response | null> {
+export async function authorizedFetch(path: string, init?: RequestInit): Promise<Response | null> {
   const token = await accessToken();
   if (!token) return null;
   return fetch(`${apiBase()}${path}`, {
