@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { DomainValidationError, ResourceNotFoundError } from "./index";
+import { ConcurrencyConflictError, DomainValidationError, ResourceNotFoundError } from "./index";
 import type { ResearchRepository } from "./research-service";
 import { appendContentVersion, createCampaign, createContentAsset, createInitialContentVersion, type Campaign, type ContentAsset, type ContentChannel, type ContentVersion } from "./campaign";
 
@@ -9,7 +9,7 @@ export interface CampaignRepository {
   listCampaigns(accountId: string, brandId: string): Promise<Campaign[]>;
   getCampaign(accountId: string, brandId: string, campaignId: string): Promise<CampaignDetail | null>;
   saveAssetWithVersion(accountId: string, asset: ContentAsset, version: ContentVersion): Promise<CampaignDetail>;
-  appendVersion(accountId: string, brandId: string, campaignId: string, assetId: string, expectedVersion: number, build: (asset: ContentAsset, parent: ContentVersion) => ContentVersion | Promise<ContentVersion>): Promise<CampaignDetail>;
+  appendVersion(accountId: string, brandId: string, campaignId: string, assetId: string, expectedVersion: number, build: (asset: ContentAsset, parent: ContentVersion) => ContentVersion): Promise<CampaignDetail>;
 }
 export type GenerateContentAction = "initial-draft"|"alternative"|"simplify"|"expand"|"adjust-depth"|"strengthen-opening"|"regenerate-section";
 export interface ContentGenerationPort { generate(input:{workspaceId:string;brandId:string;brandContextVersion:string;campaign:Campaign;asset:ContentAsset;parent:ContentVersion;action:GenerateContentAction;section?:string;claims:Array<{id:string;text:string;classification:string;verificationState:string}>}):Promise<ContentVersion> }
@@ -41,6 +41,8 @@ export class CampaignService {
     if(!Number.isInteger(input.expectedVersion)||input.expectedVersion<1)throw new DomainValidationError("expectedVersion must be a positive integer");
     const detail=await this.campaigns.getCampaign(accountId,brandId,campaignId);if(!detail)throw new ResourceNotFoundError("Campaign not found");
     const bundle=await this.research.getIdeaBundle(accountId,brandId,detail.campaign.ideaId);if(!bundle?.research)throw new ResourceNotFoundError("Campaign Research not found");const research=bundle.research;
-    return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,(asset,parent)=>this.generator!.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))}));
+    const entry=detail.assets.find(item=>item.asset.id===assetId);if(!entry)throw new ResourceNotFoundError("Content Asset not found");if(entry.asset.currentVersion!==input.expectedVersion)throw new ConcurrencyConflictError("Content Version is stale");const parent=entry.versions.at(-1);if(!parent)throw new ResourceNotFoundError("Content Version not found");
+    const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset:entry.asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))});
+    return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,()=>generated);
   }
 }
