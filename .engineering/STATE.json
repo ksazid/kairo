@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-05","activeTask":"activation-and-superpowers-planning","branch":"kairo/vs-05","lastSuccessfulStep":"vs-04-certified-and-merged","attempts":0,"blockers":[],"nextPermittedAction":"merge-vs-05-activation-then-write-superpowers-implementation-plan"}
+{"schemaVersion":1,"activeSlice":"VS-05","activeTask":"domain-contracts-and-lineage","branch":"kairo/vs-05","lastSuccessfulStep":"vs-05-superpowers-implementation-plan-written","attempts":0,"blockers":[],"nextPermittedAction":"implement-vs-05-domain-contracts-with-tdd"}
