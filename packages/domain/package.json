@@ -11,7 +11,8 @@
     "./research-service": "./src/research-service.ts",
     "./campaign": "./src/campaign.ts",
     "./campaign-service": "./src/campaign-service.ts",
-    "./review": "./src/review.ts"
+    "./review": "./src/review.ts",
+    "./review-service": "./src/review-service.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
