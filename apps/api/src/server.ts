@@ -7,6 +7,7 @@ import { PgResearchRepository } from "./research-postgres-store";
 import { PgCampaignRepository } from "./campaign-postgres-store";
 import {PgReviewRepository}from"./review-postgres-store";import{CriticEvaluationAdapter}from"./critic-adapter";
 import{PgPublishingRepository}from"./publishing-postgres-store";
+import{PgAnalyticsRepository}from"./analytics-postgres-store";
 import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{DrafterGenerationAdapter}from"./drafter-adapter";
 
 function requiredEnv(name: string): string {
@@ -24,6 +25,7 @@ const app = buildApp({
   campaignStore: new PgCampaignRepository(pool),
   reviewStore:new PgReviewRepository(pool),
   publishingStore:new PgPublishingRepository(pool),
+  analyticsStore:new PgAnalyticsRepository(pool),
   ...(contentGenerator?{contentGenerator}:{}),
   ...(criticEvaluator?{criticEvaluator}:{}),
   identityVerifier: new OidcJwtVerifier({

@@ -14,7 +14,9 @@
     "./review": "./src/review.ts",
     "./review-service": "./src/review-service.ts",
     "./publishing": "./src/publishing.ts",
-    "./publishing-service": "./src/publishing-service.ts"
+    "./publishing-service": "./src/publishing-service.ts",
+    "./analytics": "./src/analytics.ts",
+    "./analytics-service": "./src/analytics-service.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
