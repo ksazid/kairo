@@ -9,6 +9,8 @@ import {PgReviewRepository}from"./review-postgres-store";import{CriticEvaluation
 import{PgPublishingRepository}from"./publishing-postgres-store";
 import{PgAnalyticsRepository}from"./analytics-postgres-store";
 import{PgLearningRepository}from"./learning-postgres-store";
+import{PgOperationsRepository}from"./operations-postgres-store";
+import{registerOperationsRoutes}from"./operations-routes";
 import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{DrafterGenerationAdapter}from"./drafter-adapter";
 
 function requiredEnv(name: string): string {
@@ -19,8 +21,14 @@ function requiredEnv(name: string): string {
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const gateway=openAICompatibleGatewayFromEnv();const runtime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:{"content-draft@1":value=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),"critic-review@1":value=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings)}}):undefined;const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;
+const coreStore=new PgKairoRepository(pool);
+const identityVerifier=new OidcJwtVerifier({
+  issuer:requiredEnv("OIDC_ISSUER"),
+  audience:requiredEnv("OIDC_AUDIENCE"),
+  jwksUri:requiredEnv("OIDC_JWKS_URI"),
+});
 const app = buildApp({
-  store: new PgKairoRepository(pool),
+  store:coreStore,
   discoveryStore: new PgDiscoveryRepository(pool),
   researchStore: new PgResearchRepository(pool),
   campaignStore: new PgCampaignRepository(pool),
@@ -30,13 +38,10 @@ const app = buildApp({
   learningStore:new PgLearningRepository(pool),
   ...(contentGenerator?{contentGenerator}:{}),
   ...(criticEvaluator?{criticEvaluator}:{}),
-  identityVerifier: new OidcJwtVerifier({
-    issuer: requiredEnv("OIDC_ISSUER"),
-    audience: requiredEnv("OIDC_AUDIENCE"),
-    jwksUri: requiredEnv("OIDC_JWKS_URI"),
-  }),
+  identityVerifier,
   logger: true,
 });
+registerOperationsRoutes(app,{store:new PgOperationsRepository(pool),coreStore,identityVerifier});
 
 const port = Number(process.env.PORT ?? "4000");
 const host = process.env.HOST ?? "127.0.0.1";
