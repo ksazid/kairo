@@ -6,11 +6,7 @@
       "sliceId": "VS-01",
       "question": "Which provider-neutral authentication and session approach will Kairo V1 use?",
       "status": "approved",
-      "options": [
-        "Managed standards-based OIDC/OAuth provider",
-        "Self-hosted standards-based identity",
-        "Another standards-based approach approved by ADR"
-      ],
+      "options": ["Managed standards-based OIDC/OAuth provider","Self-hosted standards-based identity","Another standards-based approach approved by ADR"],
       "decision": "Use a managed standards-based OIDC/OAuth provider behind a Kairo-owned provider-neutral identity/session adapter. Provider-specific SDKs and configuration remain outside the domain boundary; Kairo remains authoritative for Workspace/Brand membership, authorization and audit.",
       "ownerRole": "architecture-owner",
       "rationale": "This minimizes the V1 identity security surface while preserving standards and provider replaceability. It also keeps tenant authorization in Kairo-owned records rather than coupling product policy to one identity vendor.",
@@ -23,10 +19,7 @@
       "sliceId": "VS-01",
       "question": "Which lightweight TypeScript API framework will implement the approved modular API boundary?",
       "status": "approved",
-      "options": [
-        "Fastify",
-        "Equivalent lightweight TypeScript framework approved by ADR"
-      ],
+      "options": ["Fastify","Equivalent lightweight TypeScript framework approved by ADR"],
       "decision": "Use Fastify for the Kairo V1 TypeScript modular API transport layer, with domain/application modules independent of Fastify-specific types.",
       "ownerRole": "architecture-owner",
       "rationale": "Fastify matches the approved lightweight TypeScript API direction, supports schema-driven validation and OpenAPI, and can remain confined to the transport adapter boundary.",
@@ -39,10 +32,7 @@
       "sliceId": "VS-03",
       "question": "Which semantic retrieval provider is promoted after the representative Brand-memory benchmark?",
       "status": "approved",
-      "options": [
-        "Qdrant with TurboQuant",
-        "PgVector fallback"
-      ],
+      "options": ["Qdrant with TurboQuant","PgVector fallback"],
       "decision": "Promote PgVector as Kairo V1 semantic retrieval for Hunter coverage/novelty memory and other V1 semantic lookups, behind the provider-neutral semantic retrieval boundary. PostgreSQL remains authoritative domain truth. Keep Qdrant with TurboQuant as the scale-up candidate to re-benchmark when corpus size, latency, concurrency or memory pressure justifies promotion.",
       "ownerRole": "architecture-owner",
       "rationale": "The corrected fail-closed VS-03 benchmark gave both providers recall@10 of 1.0 and zero tenant leaks on the representative 7,200-vector multi-Brand surrogate. Tuned PgVector delivered lower V1 query latency and avoids a second operational datastore for the current daily Hunter/coverage-memory workload. The provider-neutral boundary preserves a later Qdrant/TurboQuant migration without moving authoritative business truth.",
@@ -55,11 +45,7 @@
       "sliceId": "VS-07",
       "question": "What publishing mode is approved for Instagram and LinkedIn after exact V1 API feasibility is verified?",
       "status": "approved",
-      "options": [
-        "Automated adapters for both channels",
-        "Automated adapter for one channel with manual fallback for the other",
-        "Manual publishing for unsupported pilot channel paths"
-      ],
+      "options": ["Automated adapters for both channels","Automated adapter for one channel with manual fallback for the other","Manual publishing for unsupported pilot channel paths"],
       "decision": "Implement official deterministic automated publishing adapters for Instagram Professional accounts and LinkedIn organization Pages. Enable each connection only after capability and permission verification; use an explicit manual publishing workflow whenever platform review, account type, role, content type or API capability is unavailable. Scheduling remains Kairo-owned and only approved immutable Content Versions may be dispatched.",
       "ownerRole": "product-and-architecture",
       "rationale": "Meta officially supports content publishing for Instagram Professional accounts and LinkedIn's versioned Posts API supports organization posting with w_organization_social. Both require OAuth consent, appropriate account/Page roles and platform-granted access; therefore capability-gated automation plus a first-class manual fallback is the reliable V1 mode.",
@@ -72,11 +58,7 @@
       "sliceId": "VS-03",
       "question": "How should Kairo use Agent Reach for public discovery and research?",
       "status": "approved",
-      "options": [
-        "Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo ToolGateway",
-        "Call Agent Reach directly from Hermes with unrestricted shell access",
-        "Do not use Agent Reach"
-      ],
+      "options": ["Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo ToolGateway","Call Agent Reach directly from Hermes with unrestricted shell access","Do not use Agent Reach"],
       "decision": "Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo-owned ToolGateway. Pin and evaluate an approved upstream revision; Hermes may invoke only Kairo-scoped capabilities, never unrestricted Agent Reach shell access. Kairo remains authoritative for Brand isolation, permissions, provenance, normalization, secrets, budgets, policy and stored domain state.",
       "ownerRole": "product-and-architecture",
       "rationale": "Agent Reach provides useful multi-source public discovery across web, RSS, YouTube, GitHub and configurable social sources while preserving Kairo's architecture if it is wrapped behind a provider boundary. Direct unrestricted agent execution would weaken tenant isolation, auditability, provenance and secret controls. The provider remains replaceable and source-specific official APIs may supersede it where required.",
@@ -89,11 +71,7 @@
       "sliceId": "VS-02",
       "question": "What deletion propagation policy applies when a private Brand knowledge source is removed or replaced?",
       "status": "approved",
-      "options": [
-        "Delete raw source and source-only derived retrieval data; retain content-free audit tombstone; preserve user-confirmed facts; mark unsupported AI-inferred facts stale until reconfirmed or re-supported",
-        "Delete all derived Brand Brain facts including user-confirmed facts",
-        "Retain derived private memory after the source is removed"
-      ],
+      "options": ["Delete raw source and source-only derived retrieval data; retain content-free audit tombstone; preserve user-confirmed facts; mark unsupported AI-inferred facts stale until reconfirmed or re-supported","Delete all derived Brand Brain facts including user-confirmed facts","Retain derived private memory after the source is removed"],
       "decision": "Delete raw private source content and source-only derived retrieval data; retain only a content-free audit tombstone; preserve user-confirmed facts as independent authoritative Brand Brain input; mark AI-inferred facts stale when they lose all active supporting sources until reconfirmed or re-supported; replacement creates new provenance/version links rather than silently mutating historical evidence.",
       "ownerRole": "product-security-and-architecture",
       "rationale": "This makes source removal meaningful for privacy and retrieval while preserving user-confirmed Brand facts whose authority no longer depends on the deleted source. It also prevents stale unsupported inferences from continuing to influence Kairo as authoritative context.",
@@ -106,17 +84,30 @@
       "sliceId": "VS-07",
       "question": "How should Kairo treat OpenReply for Instagram engagement and conversion automation?",
       "status": "approved",
-      "options": [
-        "Keep OpenReply as a deferred reference/evaluation candidate for a future deterministic Instagram EngagementAutomationAdapter",
-        "Adopt OpenReply as a V1 core dependency",
-        "Run OpenReply as an unrestricted Dynamic Skill"
-      ],
+      "options": ["Keep OpenReply as a deferred reference/evaluation candidate for a future deterministic Instagram EngagementAutomationAdapter","Adopt OpenReply as a V1 core dependency","Run OpenReply as an unrestricted Dynamic Skill"],
       "decision": "Keep OpenReply as a deferred, non-V1 reference and evaluation candidate for future Instagram engagement/conversion automation. If later promoted, reuse or adapt only the useful deterministic patterns behind Kairo-owned channel/engagement ports, including comment-to-DM, tracked-link attribution, rate limiting, webhook handling and engagement outcome capture. Do not adopt OpenReply's separate Workspace/auth model, Redis/BullMQ requirement, inbox/community-management surface or direct credentials as Kairo Core dependencies. Dynamic Skills may recommend an engagement strategy, but deterministic Kairo adapters must execute social actions and retain credentials, idempotency, audit and outcome state.",
       "ownerRole": "product-and-architecture",
       "rationale": "OpenReply demonstrates useful official-Meta-API patterns that could later strengthen Kairo's conversion and Performance Memory loop, but its current product/runtime model overlaps Kairo-owned tenancy and operational concerns and includes capabilities explicitly outside V1. Deferring it preserves current scope while keeping a valuable implementation reference available for a later engagement/conversion phase.",
       "decidedBy": "Sazid Khan",
       "decidedAt": "2026-08-13T00:21:00+02:00",
       "blocks": []
+    },
+    {
+      "id": "DEC-008",
+      "sliceId": "VS-11",
+      "question": "Which pilot deployment topology and providers should host the certified Kairo V1 release?",
+      "status": "pending",
+      "options": [
+        "Split topology: managed Next.js frontend + container API + managed PostgreSQL",
+        "Single-provider topology with compatible Next.js, container/API and PostgreSQL capabilities",
+        "Another provider-neutral topology supported by current official capability, pricing and operational evidence"
+      ],
+      "decision": null,
+      "ownerRole": "product-architecture-and-operations",
+      "rationale": null,
+      "decidedBy": null,
+      "decidedAt": null,
+      "blocks": ["release","production-enable"]
     }
   ]
 }

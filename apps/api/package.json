@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --no-file-parallelism",
-    "build": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../../node_modules/rolldown/bin/cli.mjs src/server.ts --file dist/server.js --platform node --format esm --sourcemap --external fastify,jose,pg",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@kairo/contracts": "0.1.0",

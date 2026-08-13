@@ -1,10 +1,1 @@
-{
-  "schemaVersion": 1,
-  "activeSlice": "VS-10",
-  "activeTask": "await-next-slice-definition",
-  "branch": "kairo/vs-10-governance-closeout",
-  "lastSuccessfulStep": "vs-10-certified-and-merged",
-  "attempts": 0,
-  "blockers": [],
-  "nextPermittedAction": "define-next-governed-slice"
-}
+{"schemaVersion":1,"activeSlice":"VS-11","activeTask":"certification","branch":"kairo/vs-11","lastSuccessfulStep":"packaging-readiness-and-high-risk-review-green","attempts":0,"blockers":[],"nextPermittedAction":"verify-exact-head-and-request-certification"}

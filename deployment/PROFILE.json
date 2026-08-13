@@ -10,7 +10,7 @@
     "database": null
   },
   "frontend": "nextjs",
-  "backend": "aspnet-container",
+  "backend": "container",
   "database": "postgresql",
   "databaseRequirements": {
     "connectionPooling": true,
@@ -34,5 +34,5 @@
     "requireEndToEndSmokeTest": true,
     "requireRollbackPlan": true
   },
-  "notes": "Choose single-provider, split, or advisor-recommended for frontend, API and database. Human approval is required before provider configuration or deployment."
+  "notes": "Kairo V1 uses a Node.js 24 TypeScript/Fastify API that can be packaged as a container. Provider selection remains unapproved. Human approval is required before provider configuration, provisioning, deployment, release or production enablement."
 }

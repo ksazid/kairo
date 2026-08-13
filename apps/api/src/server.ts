@@ -5,12 +5,13 @@ import { PgDiscoveryRepository } from "./discovery-postgres-store";
 import { PgKairoRepository } from "./postgres-store";
 import { PgResearchRepository } from "./research-postgres-store";
 import { PgCampaignRepository } from "./campaign-postgres-store";
-import {PgReviewRepository}from"./review-postgres-store";import{CriticEvaluationAdapter}from"./critic-adapter";
+import{PgReviewRepository}from"./review-postgres-store";import{CriticEvaluationAdapter}from"./critic-adapter";
 import{PgPublishingRepository}from"./publishing-postgres-store";
 import{PgAnalyticsRepository}from"./analytics-postgres-store";
 import{PgLearningRepository}from"./learning-postgres-store";
 import{PgOperationsRepository}from"./operations-postgres-store";
 import{registerOperationsRoutes}from"./operations-routes";
+import{registerReadinessRoutes}from"./readiness-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{DrafterGenerationAdapter}from"./drafter-adapter";
@@ -49,9 +50,10 @@ const app = buildApp({
   logger: true,
 });
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
+registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:async()=>{await pool.query("select 1")}});
 
 const port = Number(process.env.PORT ?? "4000");
-const host = process.env.HOST ?? "127.0.0.1";
+const host = process.env.HOST ?? "0.0.0.0";
 
 try {
   await app.listen({ port, host });

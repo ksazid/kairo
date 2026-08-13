@@ -1,1 +1,55 @@
-{"schemaVersion":1,"releases":[]}
+{
+  "schemaVersion": 1,
+  "releases": [
+    {
+      "id": "REL-001",
+      "sliceIds": ["VS-01","VS-02","VS-03","VS-04","VS-05","VS-06","VS-07","VS-08","VS-09","VS-10"],
+      "status": "pending",
+      "commitSha": "27c15b0dda1914c24fae71f87c7eb94c99886525",
+      "migrations": [
+        "apps/api/migrations/0001_identity_workspace_brand.sql",
+        "apps/api/migrations/0002_brand_brain_knowledge.sql",
+        "apps/api/migrations/0003_hunter_discover.sql",
+        "apps/api/migrations/0004_research_angles.sql",
+        "apps/api/migrations/0005_campaign_content.sql",
+        "apps/api/migrations/0006_content_review_approval.sql",
+        "apps/api/migrations/0007_channel_calendar_publishing.sql",
+        "apps/api/migrations/0008_performance_tracking.sql",
+        "apps/api/migrations/0009_performance_learning.sql",
+        "apps/api/migrations/0010_pilot_operations.sql",
+        "apps/api/migrations/0011_publishing_operations_projection.sql",
+        "apps/api/migrations/0012_operations_authoritative_time.sql",
+        "apps/api/migrations/0013_operations_safe_retry_dispatch.sql"
+      ],
+      "configurationChanges": [
+        "Pilot PostgreSQL DATABASE_URL and backup policy",
+        "Pilot OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URI",
+        "Web KAIRO_API_URL",
+        "Secret-managed provider-neutral model gateway configuration",
+        "Capability-gated Instagram Professional and LinkedIn organization credentials for explicitly approved pilot accounts"
+      ],
+      "featureFlags": [
+        "External publishing remains capability-gated and human-approval-bound",
+        "Production enablement remains unauthorized until a separate exact-SHA approval"
+      ],
+      "smokeTests": [
+        "Apply all 13 migrations to a clean pilot database and verify schema readiness",
+        "API live/ready health checks succeed after database initialization",
+        "Authenticated owner can open a Brand and traverse the primary web workflow",
+        "Brand-private reads remain tenant-isolated across two test Workspaces",
+        "Approved publishing succeeds when channel capability exists or degrades explicitly to manual fallback",
+        "Performance ingestion and Pilot Operations failure/retry paths remain observable",
+        "End-to-end smoke test runs against the exact certified SHA"
+      ],
+      "rollbackStrategy": {
+        "summary": "Before release approval, verify a provider-specific rollback/forward-recovery runbook. Default safety response is to stop pilot traffic, disable external publishing automation, preserve audit state, restore the approved PostgreSQL backup or forward-recover migrations as appropriate, and redeploy the last approved certified SHA. No provider command is authorized until deployment topology is approved."
+      },
+      "approvedBy": null,
+      "approvedAt": null,
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": []
+      }
+    }
+  ]
+}
