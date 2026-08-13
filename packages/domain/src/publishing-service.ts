@@ -3,7 +3,7 @@ import type { KairoRepository } from "./index";
 import { ResourceNotFoundError } from "./index";
 import type { CampaignRepository } from "./campaign-service";
 import type { ReviewRepository } from "./review-service";
-import { applyPublishAttempt, beginPublishAttempt, connectChannelAccount, createPublishCommand, createPublishedPost, reconcilePublishAttempt, retryPublishCommand, type ChannelAccount, type PublishAttempt, type PublishCapability, type PublishChannel, type PublishCommand, type PublishContentType, type PublishedPost } from "./publishing";
+import { applyPublishAttempt, beginPublishAttempt, cancelPublishCommand, connectChannelAccount, createPublishCommand, createPublishedPost, reconcilePublishAttempt, retryPublishCommand, type ChannelAccount, type PublishAttempt, type PublishCapability, type PublishChannel, type PublishCommand, type PublishContentType, type PublishedPost } from "./publishing";
 
 export interface PublishingRepository {
   saveChannelAccount(accountId:string, channel:ChannelAccount):Promise<ChannelAccount>;
@@ -12,6 +12,7 @@ export interface PublishingRepository {
   saveCommand(accountId:string, command:PublishCommand):Promise<PublishCommand>;
   getCommand(accountId:string, brandId:string, id:string):Promise<PublishCommand|null>;
   listCommands(accountId:string, brandId:string, from?:string, to?:string):Promise<PublishCommand[]>;
+  cancelCommand(accountId:string,brandId:string,id:string):Promise<PublishCommand>;
   recordDispatch(accountId:string, command:PublishCommand, attempt:PublishAttempt):Promise<PublishAttempt>;
   getLatestAttempt(accountId:string, brandId:string, commandId:string):Promise<PublishAttempt|null>;
   recordOutcome(accountId:string, command:PublishCommand, attempt:PublishAttempt, post?:PublishedPost):Promise<PublishCommand>;
@@ -26,5 +27,6 @@ export class PublishingService {
   async begin(accountId:string,brandId:string,commandId:string){const command=await this.requireCommand(accountId,brandId,commandId);const attempt=beginPublishAttempt({id:randomUUID(),command,startedAt:this.now().toISOString()});return this.publishing.recordDispatch(accountId,applyPublishAttempt(command,attempt),attempt)}
   async reconcile(accountId:string,brandId:string,commandId:string,input:{outcome:"published"|"failed"|"unknown";externalPostId?:string;providerCorrelationId?:string;failureCode?:string}){const command=await this.requireCommand(accountId,brandId,commandId);const current=await this.publishing.getLatestAttempt(accountId,brandId,commandId);if(!current)throw new ResourceNotFoundError("Publish Attempt not found");const attempt=reconcilePublishAttempt({attempt:current,checkedAt:this.now().toISOString(),...input});const completed=applyPublishAttempt(command,attempt);const post=completed.status==="published"?createPublishedPost({id:randomUUID(),command:completed,attempt}):undefined;return this.publishing.recordOutcome(accountId,completed,attempt,post)}
   async retry(accountId:string,brandId:string,commandId:string){const command=await this.requireCommand(accountId,brandId,commandId);return this.publishing.saveCommand(accountId,retryPublishCommand(command,this.now().toISOString()))}
+  async cancel(accountId:string,brandId:string,commandId:string){const command=await this.requireCommand(accountId,brandId,commandId);cancelPublishCommand(command);return this.publishing.cancelCommand(accountId,brandId,commandId)}
   private async requireCommand(accountId:string,brandId:string,id:string){const command=await this.publishing.getCommand(accountId,brandId,id);if(!command)throw new ResourceNotFoundError("Publish Command not found");return command}
 }
