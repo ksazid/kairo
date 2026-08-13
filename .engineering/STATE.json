@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"deterministic-verification-and-review","branch":"kairo/vs-04","lastSuccessfulStep":"vs-04-product-ui-typecheck-and-review-passed","attempts":0,"blockers":[],"nextPermittedAction":"verify-vs-04-full-slice"}
+{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"await-final-ci","branch":"kairo/vs-04","lastSuccessfulStep":"vs-04-security-spec-ui-review-passed","attempts":0,"blockers":[],"nextPermittedAction":"record-final-ci-and-prepare-exact-sha-certification"}
