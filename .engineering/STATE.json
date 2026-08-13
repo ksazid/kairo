@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-05","activeTask":"domain-contracts-and-lineage","branch":"kairo/vs-05","lastSuccessfulStep":"vs-05-superpowers-implementation-plan-written","attempts":0,"blockers":[],"nextPermittedAction":"implement-vs-05-domain-contracts-with-tdd"}
+{"schemaVersion":1,"activeSlice":"VS-05","activeTask":"generation-api-and-full-verification","branch":"kairo/vs-05","lastSuccessfulStep":"vs-05-studio-ui-and-drafter-tests-passed","attempts":0,"blockers":[],"nextPermittedAction":"wire-contextual-generation-then-review-vs-05"}
