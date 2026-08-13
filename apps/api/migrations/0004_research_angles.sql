@@ -31,6 +31,7 @@ create table if not exists research_dossiers (
   idea_id text not null references ideas(id) on delete cascade,
   summary text not null check (length(trim(summary)) > 0),
   unresolved_uncertainties jsonb not null default '[]'::jsonb check (jsonb_typeof(unresolved_uncertainties)='array'),
+  runtime_provenance jsonb null check (runtime_provenance is null or jsonb_typeof(runtime_provenance)='object'),
   status text not null check (status in ('ready')),
   created_at timestamptz not null,
   unique (workspace_id,brand_id,idea_id),
