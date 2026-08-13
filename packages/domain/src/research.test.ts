@@ -78,6 +78,27 @@ describe("VS-04 research domain", () => {
     })).toThrow(/unknown evidence/i);
   });
 
+  it("rejects local and private evidence URLs", () => {
+    for (const sourceUrl of [
+      "http://localhost/admin",
+      "http://127.0.0.1/private",
+      "http://169.254.169.254/latest/meta-data",
+      "http://192.168.1.10/internal",
+      "http://[::1]/private",
+    ]) {
+      expect(() => createResearchDossier({
+        ...scope,
+        id: "research-1",
+        ideaId: "idea-1",
+        summary: "Evidence-backed summary",
+        evidence: [{ ...evidence("evidence-1"), sourceUrl }],
+        claims: [claim()],
+        unresolvedUncertainties: [],
+        createdAt: "2026-08-13T08:05:00.000Z",
+      })).toThrow(/public host/i);
+    }
+  });
+
   it("rejects first-person Claims unless Brand authorization is explicit", () => {
     expect(() => createResearchDossier({
       ...scope,
