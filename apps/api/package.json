@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --no-file-parallelism",
-    "build": "node ../../scripts/build-api.mjs",
+    "build": "npx --yes esbuild@0.28.1 src/server.ts --bundle --platform=node --format=esm --target=node24 --sourcemap --outfile=dist/server.js --external:fastify --external:jose --external:pg",
     "start": "node dist/server.js"
   },
   "dependencies": {
