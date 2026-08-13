@@ -1,0 +1,26 @@
+import Link from "next/link";
+import { getBrand, getIdea } from "../../../../../src/lib/kairo-api";
+import { selectAngleAction } from "../actions";
+import { KairoSidebar, MobileIdeasNav } from "../page";
+
+type Params = Promise<{ brandId: string; ideaId: string }>;
+type SearchParams = Promise<{ notice?: string; error?: string }>;
+
+export default async function IdeaPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+  const { brandId, ideaId } = await params;
+  const [brand, bundle, messages] = await Promise.all([getBrand(brandId), getIdea(brandId, ideaId), searchParams]);
+  if (!brand) return <main className="auth-page"><section className="auth-card"><h1>Brand not found.</h1><Link className="primary-button" href="/">Return to Today</Link></section></main>;
+  const { idea, research, angles } = bundle;
+  return <div className="app-shell"><KairoSidebar brandId={brand.id} active="Ideas" /><main className="workspace-main research-main">
+    <Link className="back-link" href={`/brands/${encodeURIComponent(brand.id)}/ideas`}>← All Ideas</Link>
+    <header className="idea-header"><div><span className="idea-source">{idea.source.type === "opportunity" ? "From Discover" : "Your Idea"}</span><h1>{idea.title}</h1><p className="lede">{idea.premise}</p></div><span className={`idea-status ${idea.status}`}>{idea.status === "angles-ready" ? "Angles ready" : idea.status === "research-ready" ? "Research ready" : "Ready to research"}</span></header>
+    {messages.notice ? <p className="notice success" role="status">{messages.notice}</p> : null}{messages.error ? <p className="notice error" role="alert">{messages.error}</p> : null}
+    {!research ? <section className="research-pending"><p className="eyebrow">Research</p><h2>Evidence gathering has not started.</h2><p>Kairo will keep this Idea here until evidence-backed Research is available. Final content generation remains outside this step.</p></section> : <>
+      <section className="research-dossier" aria-labelledby="research-title"><div className="section-heading"><div><p className="eyebrow">Research dossier</p><h2 id="research-title">What the evidence supports</h2></div><span className="freshness-chip">Updated {new Date(research.createdAt).toLocaleDateString()}</span></div><p className="research-summary">{research.summary}</p>
+        <div className="research-columns"><div><h3>Claims</h3><div className="claim-list">{research.claims.map((claim) => <article className="claim-row" key={claim.id}><div className="claim-meta"><span>{claim.classification.replace("-", " ")}</span><span className={claim.verificationState}>{claim.verificationState}</span><span>{Math.round(claim.confidence * 100)}% confidence</span></div><p>{claim.text}</p><small>{claim.evidenceIds.length} supporting {claim.evidenceIds.length === 1 ? "source" : "sources"} · {claim.freshness}</small></article>)}</div></div>
+          <aside><h3>Evidence</h3><div className="evidence-list">{research.evidence.map((item) => <a className="evidence-row" key={item.id} href={item.sourceUrl} target="_blank" rel="noreferrer"><strong>{item.sourceTitle}</strong><span>{new URL(item.sourceUrl).hostname}</span><small>Retrieved {new Date(item.retrievedAt).toLocaleDateString()}</small></a>)}</div>{research.unresolvedUncertainties.length ? <div className="uncertainty-panel"><strong>Still uncertain</strong><ul>{research.unresolvedUncertainties.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}</aside></div>
+      </section>
+      <section className="angles-section" aria-labelledby="angles-title"><div className="section-heading"><div><p className="eyebrow">Candidate Angles</p><h2 id="angles-title">Choose the strongest framing</h2><p>These are strategic directions, not final drafts.</p></div></div>{angles.length ? <div className="angle-grid">{angles.map((angle) => { const select = selectAngleAction.bind(null, brand.id, idea.id, angle.id, angle.version); return <article className={`angle-card ${angle.status}`} key={angle.id}><div className="angle-card-top"><span className="angle-channel">{angle.recommendedChannel} · {angle.recommendedFormat}</span>{angle.status === "selected" ? <span className="selected-chip">Selected</span> : null}</div><h3>{angle.title}</h3><p className="angle-framing">{angle.framing}</p><dl><div><dt>Audience</dt><dd>{angle.audience}</dd></div><div><dt>Objective</dt><dd>{angle.objective}</dd></div><div><dt>Hook direction</dt><dd>{angle.hookDirection}</dd></div><div><dt>Expected value</dt><dd>{angle.expectedValue}</dd></div></dl><div className="angle-footer"><span>Effort: {angle.effort}</span>{angle.status !== "selected" ? <form action={select}><button className="secondary-button" type="submit">Select this Angle</button></form> : <span className="selected-note">Current direction</span>}</div></article>; })}</div> : <div className="ideas-empty"><h3>No candidate Angles yet.</h3><p>Kairo waits for validated Research before proposing multiple useful framings.</p></div>}</section>
+    </>}
+  </main><MobileIdeasNav brandId={brand.id} /></div>;
+}
