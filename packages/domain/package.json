@@ -16,7 +16,8 @@
     "./publishing": "./src/publishing.ts",
     "./publishing-service": "./src/publishing-service.ts",
     "./analytics": "./src/analytics.ts",
-    "./analytics-service": "./src/analytics-service.ts"
+    "./analytics-service": "./src/analytics-service.ts",
+    "./learning": "./src/learning.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
