@@ -60,6 +60,9 @@ describePostgres("PostgreSQL VS-04 Research and Angles repository", () => {
       { ...base, id: "angle-2", title: "Uncertainty first", framing: "Explain what remains unknown" },
     ];
     await repository.saveCandidateAngles(alice.account.id, angles);
+    const edited = await repository.editAngleFraming(alice.account.id, alice.brand.id, idea.id, "angle-1", "Explain the verified finding first", 1);
+    expect(edited).toMatchObject({ framing: "Explain the verified finding first", version: 2 });
+    await expect(repository.editAngleFraming(alice.account.id, alice.brand.id, idea.id, "angle-1", "Stale overwrite", 1)).rejects.toThrow(/version/i);
     const selected = await repository.selectAngle(alice.account.id, alice.brand.id, idea.id, "angle-2", 1);
     expect(selected.filter((angle) => angle.status === "selected").map((angle) => angle.id)).toEqual(["angle-2"]);
     await expect(repository.selectAngle(alice.account.id, alice.brand.id, idea.id, "angle-1", 1)).rejects.toThrow(/version/i);
