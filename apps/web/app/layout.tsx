@@ -6,6 +6,7 @@ import "./interaction-review.css";
 import "./discovery.css";
 import "./ideas.css";
 import "./studio.css";
+import "./calendar.css";
 
 export const metadata: Metadata = {
   title: "Kairo — Content Intelligence",

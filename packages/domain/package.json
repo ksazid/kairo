@@ -12,7 +12,9 @@
     "./campaign": "./src/campaign.ts",
     "./campaign-service": "./src/campaign-service.ts",
     "./review": "./src/review.ts",
-    "./review-service": "./src/review-service.ts"
+    "./review-service": "./src/review-service.ts",
+    "./publishing": "./src/publishing.ts",
+    "./publishing-service": "./src/publishing-service.ts"
   },
   "types": "./src/index.ts",
   "scripts": {

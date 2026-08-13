@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-07","activeTask":"activation-and-bounded-implementation-plan","branch":"kairo/vs-07-activation","lastSuccessfulStep":"vs-06-certified-and-merged","attempts":0,"blockers":[],"nextPermittedAction":"merge-vs-07-activation-then-begin-runtime-implementation"}
+{"schemaVersion":1,"activeSlice":"VS-07","activeTask":"domain-contracts-and-invariants","branch":"kairo/vs-07","lastSuccessfulStep":"vs-07-activation-merged-and-plan-created","attempts":0,"blockers":[],"nextPermittedAction":"implement-channel-calendar-publishing-domain-tests"}
