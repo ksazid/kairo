@@ -94,7 +94,7 @@ export interface ModelInvocationMetadata {
   modelVersion?: string;
   inputTokens: number;
   outputTokens: number;
-  costUsd: number;
+  costUsd?: number;
   latencyMs: number;
 }
 
