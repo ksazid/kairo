@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --no-file-parallelism",
-    "build": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../../scripts/build-api.mjs",
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "@kairo/contracts": "0.1.0",
