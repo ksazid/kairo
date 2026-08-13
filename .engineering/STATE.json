@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-06","activeTask":"merge-certified-candidate","branch":"kairo/vs-06","lastSuccessfulStep":"vs-06-exact-sha-certified","attempts":0,"blockers":[],"nextPermittedAction":"merge-pr-15-then-activate-vs-07"}
+{"schemaVersion":1,"activeSlice":"VS-07","activeTask":"activation-and-bounded-implementation-plan","branch":"kairo/vs-07-activation","lastSuccessfulStep":"vs-06-certified-and-merged","attempts":0,"blockers":[],"nextPermittedAction":"merge-vs-07-activation-then-begin-runtime-implementation"}

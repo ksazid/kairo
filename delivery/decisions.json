@@ -6,7 +6,11 @@
       "sliceId": "VS-01",
       "question": "Which provider-neutral authentication and session approach will Kairo V1 use?",
       "status": "approved",
-      "options": ["Managed standards-based OIDC/OAuth provider", "Self-hosted standards-based identity", "Another standards-based approach approved by ADR"],
+      "options": [
+        "Managed standards-based OIDC/OAuth provider",
+        "Self-hosted standards-based identity",
+        "Another standards-based approach approved by ADR"
+      ],
       "decision": "Use a managed standards-based OIDC/OAuth provider behind a Kairo-owned provider-neutral identity/session adapter. Provider-specific SDKs and configuration remain outside the domain boundary; Kairo remains authoritative for Workspace/Brand membership, authorization and audit.",
       "ownerRole": "architecture-owner",
       "rationale": "This minimizes the V1 identity security surface while preserving standards and provider replaceability. It also keeps tenant authorization in Kairo-owned records rather than coupling product policy to one identity vendor.",
@@ -19,7 +23,10 @@
       "sliceId": "VS-01",
       "question": "Which lightweight TypeScript API framework will implement the approved modular API boundary?",
       "status": "approved",
-      "options": ["Fastify", "Equivalent lightweight TypeScript framework approved by ADR"],
+      "options": [
+        "Fastify",
+        "Equivalent lightweight TypeScript framework approved by ADR"
+      ],
       "decision": "Use Fastify for the Kairo V1 TypeScript modular API transport layer, with domain/application modules independent of Fastify-specific types.",
       "ownerRole": "architecture-owner",
       "rationale": "Fastify matches the approved lightweight TypeScript API direction, supports schema-driven validation and OpenAPI, and can remain confined to the transport adapter boundary.",
@@ -32,7 +39,10 @@
       "sliceId": "VS-03",
       "question": "Which semantic retrieval provider is promoted after the representative Brand-memory benchmark?",
       "status": "approved",
-      "options": ["Qdrant with TurboQuant", "PgVector fallback"],
+      "options": [
+        "Qdrant with TurboQuant",
+        "PgVector fallback"
+      ],
       "decision": "Promote PgVector as Kairo V1 semantic retrieval for Hunter coverage/novelty memory and other V1 semantic lookups, behind the provider-neutral semantic retrieval boundary. PostgreSQL remains authoritative domain truth. Keep Qdrant with TurboQuant as the scale-up candidate to re-benchmark when corpus size, latency, concurrency or memory pressure justifies promotion.",
       "ownerRole": "architecture-owner",
       "rationale": "The corrected fail-closed VS-03 benchmark gave both providers recall@10 of 1.0 and zero tenant leaks on the representative 7,200-vector multi-Brand surrogate. Tuned PgVector delivered lower V1 query latency and avoids a second operational datastore for the current daily Hunter/coverage-memory workload. The provider-neutral boundary preserves a later Qdrant/TurboQuant migration without moving authoritative business truth.",
@@ -44,21 +54,29 @@
       "id": "DEC-004",
       "sliceId": "VS-07",
       "question": "What publishing mode is approved for Instagram and LinkedIn after exact V1 API feasibility is verified?",
-      "status": "pending",
-      "options": ["Automated adapters for both channels", "Automated adapter for one channel with manual fallback for the other", "Manual publishing for unsupported pilot channel paths"],
-      "decision": null,
+      "status": "approved",
+      "options": [
+        "Automated adapters for both channels",
+        "Automated adapter for one channel with manual fallback for the other",
+        "Manual publishing for unsupported pilot channel paths"
+      ],
+      "decision": "Implement official deterministic automated publishing adapters for Instagram Professional accounts and LinkedIn organization Pages. Enable each connection only after capability and permission verification; use an explicit manual publishing workflow whenever platform review, account type, role, content type or API capability is unavailable. Scheduling remains Kairo-owned and only approved immutable Content Versions may be dispatched.",
       "ownerRole": "product-and-architecture",
-      "rationale": null,
-      "decidedBy": null,
-      "decidedAt": null,
-      "blocks": ["implementation", "certification"]
+      "rationale": "Meta officially supports content publishing for Instagram Professional accounts and LinkedIn's versioned Posts API supports organization posting with w_organization_social. Both require OAuth consent, appropriate account/Page roles and platform-granted access; therefore capability-gated automation plus a first-class manual fallback is the reliable V1 mode.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-13T13:50:00+02:00",
+      "blocks": []
     },
     {
       "id": "DEC-005",
       "sliceId": "VS-03",
       "question": "How should Kairo use Agent Reach for public discovery and research?",
       "status": "approved",
-      "options": ["Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo ToolGateway", "Call Agent Reach directly from Hermes with unrestricted shell access", "Do not use Agent Reach"],
+      "options": [
+        "Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo ToolGateway",
+        "Call Agent Reach directly from Hermes with unrestricted shell access",
+        "Do not use Agent Reach"
+      ],
       "decision": "Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo-owned ToolGateway. Pin and evaluate an approved upstream revision; Hermes may invoke only Kairo-scoped capabilities, never unrestricted Agent Reach shell access. Kairo remains authoritative for Brand isolation, permissions, provenance, normalization, secrets, budgets, policy and stored domain state.",
       "ownerRole": "product-and-architecture",
       "rationale": "Agent Reach provides useful multi-source public discovery across web, RSS, YouTube, GitHub and configurable social sources while preserving Kairo's architecture if it is wrapped behind a provider boundary. Direct unrestricted agent execution would weaken tenant isolation, auditability, provenance and secret controls. The provider remains replaceable and source-specific official APIs may supersede it where required.",
