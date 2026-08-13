@@ -31,14 +31,14 @@
       "id": "DEC-003",
       "sliceId": "VS-03",
       "question": "Which semantic retrieval provider is promoted after the representative Brand-memory benchmark?",
-      "status": "pending",
+      "status": "approved",
       "options": ["Qdrant with TurboQuant", "PgVector fallback"],
-      "decision": null,
+      "decision": "Promote PgVector as Kairo V1 semantic retrieval for Hunter coverage/novelty memory and other V1 semantic lookups, behind the provider-neutral semantic retrieval boundary. PostgreSQL remains authoritative domain truth. Keep Qdrant with TurboQuant as the scale-up candidate to re-benchmark when corpus size, latency, concurrency or memory pressure justifies promotion.",
       "ownerRole": "architecture-owner",
-      "rationale": null,
-      "decidedBy": null,
-      "decidedAt": null,
-      "blocks": ["certification"]
+      "rationale": "The corrected fail-closed VS-03 benchmark gave both providers recall@10 of 1.0 and zero tenant leaks on the representative 7,200-vector multi-Brand surrogate. Tuned PgVector delivered lower V1 query latency and avoids a second operational datastore for the current daily Hunter/coverage-memory workload. The provider-neutral boundary preserves a later Qdrant/TurboQuant migration without moving authoritative business truth.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-13T05:32:00+02:00",
+      "blocks": []
     },
     {
       "id": "DEC-004",
