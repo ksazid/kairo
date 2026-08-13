@@ -1,13 +1,15 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-08",
-  "title": "Performance Tracking",
+  "sliceId": "VS-09",
+  "title": "Performance Intelligence, Learning and Experiments",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "ready-for-implementation",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
-    "FR-16"
+    "FR-17",
+    "FR-18",
+    "FR-19"
   ],
   "owners": {
     "product": "Product Owner",
@@ -16,19 +18,21 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-07"
+    "VS-08"
   ],
   "blockers": [],
   "allowedPaths": [
     "apps/web/**",
     "apps/api/**",
     "apps/worker/**",
+    "services/hermes-runtime/**",
     "packages/contracts/**",
     "packages/domain/**",
+    "packages/agent-contracts/**",
     "packages/design-tokens/**",
     "packages/observability/**",
     "tests/**",
-    "docs/slices/VS-08.md",
+    "docs/slices/VS-09.md",
     "docs/plans/**",
     "delivery/**",
     ".engineering/STATE.json",
@@ -43,27 +47,28 @@
   ],
   "impact": {
     "areas": [
+      "architecture",
+      "frontend",
       "api",
       "database",
       "analytics",
-      "customer-flow",
-      "operations-support"
+      "customer-flow"
     ],
     "notes": [
-      "Adds provenance-preserving raw and normalized channel performance metrics bound to Published Posts and complete content lineage.",
-      "Unavailable, stale, partial and unsupported metrics remain explicit; Brand baselines expose evidence windows and sample sizes.",
-      "Collection credentials remain adapter-only and asynchronous collection is idempotent, bounded and auditable."
+      "Adds evidence-bound narrative Performance Intelligence, human-controlled Candidate Learnings and explicit Experiments.",
+      "Correlation remains qualified; causal claims require evidence and accepted Learnings never become permanent truth.",
+      "Agents propose bounded structured candidates only and cannot directly mutate authoritative Brand state."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-08@1.0",
+      "version": "VS-09@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-13T14:56:32+02:00",
-      "rationale": "AUTH-001 and the Product Owner's explicit all-slices approval authorize the frozen FR-16 VS-08 scope."
+      "at": "2026-08-13T15:55:23+02:00",
+      "rationale": "AUTH-001 and the Product Owner's explicit all-slices approval authorize frozen FR-17/FR-18/FR-19 scope."
     },
     {
       "type": "policy",
@@ -77,11 +82,11 @@
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-08@1.0",
+      "version": "VS-09@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-13T14:56:32+02:00",
-      "rationale": "The Product Owner's explicit approval authorizes runtime implementation, fixes, tests and bounded refactoring within frozen VS-08 scope."
+      "at": "2026-08-13T15:55:23+02:00",
+      "rationale": "The Product Owner's explicit approval authorizes runtime implementation, fixes, tests and bounded refactoring within frozen VS-09 scope."
     },
     {
       "type": "certification",
@@ -115,14 +120,14 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
+    "implementation": 0,
+    "testing": 0,
     "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
+    "status": "not-started",
     "commitSha": null,
     "evidence": []
   },
@@ -141,14 +146,11 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-08.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/19",
+    "specification": "docs/slices/VS-09.md",
+    "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-08-activation.md",
-      "delivery/context/VS-08.md",
-      "docs/plans/VS-08-implementation.md",
-      "docs/plans/VS-08-review.md",
-      "docs/plans/VS-08-certification.md"
+      "docs/plans/VS-09-activation.md",
+      "delivery/context/VS-09.md"
     ]
   },
   "maxAttempts": 3
