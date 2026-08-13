@@ -141,9 +141,9 @@ export class PgResearchRepository implements ResearchRepository {
       if (claims.rows.length !== claimIds.length) throw new ResourceNotFoundError("Supporting Claim not found");
       for (const angle of angles) {
         await client.query(
-          `insert into angles (id,workspace_id,brand_id,idea_id,title,framing,audience,objective,hook_direction,expected_value,effort,recommended_format,recommended_channel,supporting_claim_ids,status,version)
-           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb,$15,$16)`,
-          [angle.id, workspaceId, angle.brandId, angle.ideaId, angle.title, angle.framing, angle.audience, angle.objective, angle.hookDirection, angle.expectedValue, angle.effort, angle.recommendedFormat, angle.recommendedChannel, JSON.stringify(angle.supportingClaimIds), angle.status, angle.version],
+          `insert into angles (id,workspace_id,brand_id,idea_id,title,framing,audience,objective,hook_direction,expected_value,effort,recommended_format,recommended_channel,supporting_claim_ids,runtime_provenance,status,version)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14::jsonb,$15::jsonb,$16,$17)`,
+          [angle.id, workspaceId, angle.brandId, angle.ideaId, angle.title, angle.framing, angle.audience, angle.objective, angle.hookDirection, angle.expectedValue, angle.effort, angle.recommendedFormat, angle.recommendedChannel, JSON.stringify(angle.supportingClaimIds), angle.runtimeProvenance ? JSON.stringify(angle.runtimeProvenance) : null, angle.status, angle.version],
         );
       }
       await client.query(`update ideas set status='angles-ready',updated_at=now() where id=$1`, [first.ideaId]);
@@ -174,15 +174,15 @@ export class PgResearchRepository implements ResearchRepository {
 }
 
 type IdeaRow = { id: string; workspace_id: string; brand_id: string; title: string; premise: string; source_type: "opportunity" | "user"; opportunity_id: string | null; status: Idea["status"]; created_at: Date | string };
-type AngleRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; title: string; framing: string; audience: string; objective: string; hook_direction: string; expected_value: string; effort: Angle["effort"]; recommended_format: string; recommended_channel: string; supporting_claim_ids: string[]; status: Angle["status"]; version: number };
+type AngleRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; title: string; framing: string; audience: string; objective: string; hook_direction: string; expected_value: string; effort: Angle["effort"]; recommended_format: string; recommended_channel: string; supporting_claim_ids: string[]; runtime_provenance: Angle["runtimeProvenance"] | null; status: Angle["status"]; version: number };
 type DossierRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; summary: string; unresolved_uncertainties: string[]; runtime_provenance: ResearchDossier["runtimeProvenance"] | null; status: "ready"; created_at: Date | string };
 type EvidenceRow = { id: string; source_url: string; source_title: string; published_at: Date | string | null; retrieved_at: Date | string };
 type ClaimRow = { id: string; text: string; classification: ResearchDossier["claims"][number]["classification"]; confidence: number; evidence_strength: ResearchDossier["claims"][number]["evidenceStrength"]; verification_state: ResearchDossier["claims"][number]["verificationState"]; freshness: ResearchDossier["claims"][number]["freshness"]; first_person_authorization: ResearchDossier["claims"][number]["firstPersonAuthorization"]; evidence_ids: string[] };
 
-const angleSelect = `select id,workspace_id,brand_id,idea_id,title,framing,audience,objective,hook_direction,expected_value,effort,recommended_format,recommended_channel,supporting_claim_ids,status,version from angles where workspace_id=$1 and brand_id=$2 and idea_id=$3 order by id`;
+const angleSelect = `select id,workspace_id,brand_id,idea_id,title,framing,audience,objective,hook_direction,expected_value,effort,recommended_format,recommended_channel,supporting_claim_ids,runtime_provenance,status,version from angles where workspace_id=$1 and brand_id=$2 and idea_id=$3 order by id`;
 
 function toIdea(row: IdeaRow): Idea { return { id: row.id, workspaceId: row.workspace_id, brandId: row.brand_id, title: row.title, premise: row.premise, source: row.source_type === "opportunity" ? { type: "opportunity", opportunityId: row.opportunity_id! } : { type: "user" }, status: row.status, createdAt: iso(row.created_at) }; }
-function toAngle(row: AngleRow): Angle { return { id: row.id, workspaceId: row.workspace_id, brandId: row.brand_id, ideaId: row.idea_id, title: row.title, framing: row.framing, audience: row.audience, objective: row.objective, hookDirection: row.hook_direction, expectedValue: row.expected_value, effort: row.effort, recommendedFormat: row.recommended_format, recommendedChannel: row.recommended_channel, supportingClaimIds: row.supporting_claim_ids, status: row.status, version: row.version }; }
+function toAngle(row: AngleRow): Angle { return { id: row.id, workspaceId: row.workspace_id, brandId: row.brand_id, ideaId: row.idea_id, title: row.title, framing: row.framing, audience: row.audience, objective: row.objective, hookDirection: row.hook_direction, expectedValue: row.expected_value, effort: row.effort, recommendedFormat: row.recommended_format, recommendedChannel: row.recommended_channel, supportingClaimIds: row.supporting_claim_ids, status: row.status, version: row.version, ...(row.runtime_provenance ? { runtimeProvenance: row.runtime_provenance } : {}) }; }
 function iso(value: Date | string): string { return value instanceof Date ? value.toISOString() : new Date(value).toISOString(); }
 
 async function requireBrandWorkspace(client: PoolClient, accountId: string, brandId: string): Promise<string> {
