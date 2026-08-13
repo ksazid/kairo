@@ -15,11 +15,13 @@ import {
   type KairoRepository,
 } from "@kairo/domain";
 import { DiscoveryService, type DiscoveryRepository } from "@kairo/domain/discovery-service";
+import { ResearchService, type ResearchRepository } from "@kairo/domain/research-service";
 import type { IdentityVerifier } from "./auth";
 
 export interface BuildAppOptions {
   store: KairoRepository;
   discoveryStore?: DiscoveryRepository;
+  researchStore?: ResearchRepository;
   identityVerifier: IdentityVerifier;
   logger?: boolean;
 }
@@ -28,6 +30,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   const app = Fastify({ logger: options.logger ?? false });
   const service = new KairoService(options.store);
   const discovery = options.discoveryStore ? new DiscoveryService(options.discoveryStore) : null;
+  const research = options.researchStore ? new ResearchService(options.researchStore) : null;
 
   app.addHook("onRequest", async (request, reply) => { reply.header("x-correlation-id", request.id); });
 
@@ -135,6 +138,41 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
         },
       );
     }
+  }
+
+  if (research) {
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/ideas", async (request, reply) => {
+      const account = await authenticate(request, reply, service, options.identityVerifier);
+      if (!account) return;
+      return research.listIdeas(account.id, request.params.brandId);
+    });
+
+    app.post<{ Params: { brandId: string }; Body: { title: string; premise: string } }>("/api/v1/brands/:brandId/ideas", async (request, reply) => {
+      const account = await authenticate(request, reply, service, options.identityVerifier);
+      if (!account) return;
+      const brand = await service.getBrand(account.id, request.params.brandId);
+      const idea = await research.createUserIdea(account.id, brand.workspaceId, brand.id, request.body ?? ({} as { title: string; premise: string }));
+      return reply.status(201).send(idea);
+    });
+
+    app.get<{ Params: { brandId: string; ideaId: string } }>("/api/v1/brands/:brandId/ideas/:ideaId", async (request, reply) => {
+      const account = await authenticate(request, reply, service, options.identityVerifier);
+      if (!account) return;
+      const bundle = await research.getIdea(account.id, request.params.brandId, request.params.ideaId);
+      if (!bundle) throw new ResourceNotFoundError("Idea not found");
+      return bundle;
+    });
+
+    app.post<{ Params: { brandId: string; ideaId: string; angleId: string }; Body: { expectedVersion: number } }>(
+      "/api/v1/brands/:brandId/ideas/:ideaId/angles/:angleId/select",
+      async (request, reply) => {
+        const account = await authenticate(request, reply, service, options.identityVerifier);
+        if (!account) return;
+        const expectedVersion = request.body?.expectedVersion;
+        if (!Number.isInteger(expectedVersion) || expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
+        return research.selectAngle(account.id, request.params.brandId, request.params.ideaId, request.params.angleId, expectedVersion);
+      },
+    );
   }
 
   return app;
