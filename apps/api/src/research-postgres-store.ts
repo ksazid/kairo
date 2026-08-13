@@ -57,7 +57,7 @@ export class PgResearchRepository implements ResearchRepository {
       const row = ideaResult.rows[0];
       if (!row) return null;
       const dossierResult = await client.query<DossierRow>(
-        `select id,workspace_id,brand_id,idea_id,summary,unresolved_uncertainties,status,created_at
+        `select id,workspace_id,brand_id,idea_id,summary,unresolved_uncertainties,runtime_provenance,status,created_at
            from research_dossiers where workspace_id=$1 and brand_id=$2 and idea_id=$3`, [workspaceId, brandId, ideaId],
       );
       const dossierRow = dossierResult.rows[0];
@@ -75,6 +75,7 @@ export class PgResearchRepository implements ResearchRepository {
         research = {
           id: dossierRow.id, workspaceId, brandId, ideaId, summary: dossierRow.summary,
           unresolvedUncertainties: dossierRow.unresolved_uncertainties, status: "ready", createdAt: iso(dossierRow.created_at),
+          ...(dossierRow.runtime_provenance ? { runtimeProvenance: dossierRow.runtime_provenance } : {}),
           evidence: evidenceResult.rows.map((item) => ({ id: item.id, sourceUrl: item.source_url, sourceTitle: item.source_title, ...(item.published_at ? { publishedAt: iso(item.published_at) } : {}), retrievedAt: iso(item.retrieved_at) })),
           claims: claimResult.rows.map((item) => ({ id: item.id, text: item.text, classification: item.classification, confidence: Number(item.confidence), evidenceStrength: item.evidence_strength, verificationState: item.verification_state, freshness: item.freshness, evidenceIds: item.evidence_ids, firstPersonAuthorization: item.first_person_authorization })),
         };
@@ -93,9 +94,9 @@ export class PgResearchRepository implements ResearchRepository {
       const idea = await client.query(`select id from ideas where workspace_id=$1 and brand_id=$2 and id=$3 for update`, [workspaceId, dossier.brandId, dossier.ideaId]);
       if (!idea.rows[0]) throw new ResourceNotFoundError("Idea not found");
       await client.query(
-        `insert into research_dossiers (id,workspace_id,brand_id,idea_id,summary,unresolved_uncertainties,status,created_at)
-         values ($1,$2,$3,$4,$5,$6::jsonb,$7,$8)`,
-        [dossier.id, workspaceId, dossier.brandId, dossier.ideaId, dossier.summary, JSON.stringify(dossier.unresolvedUncertainties), dossier.status, dossier.createdAt],
+        `insert into research_dossiers (id,workspace_id,brand_id,idea_id,summary,unresolved_uncertainties,runtime_provenance,status,created_at)
+         values ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8,$9)`,
+        [dossier.id, workspaceId, dossier.brandId, dossier.ideaId, dossier.summary, JSON.stringify(dossier.unresolvedUncertainties), dossier.runtimeProvenance ? JSON.stringify(dossier.runtimeProvenance) : null, dossier.status, dossier.createdAt],
       );
       for (const evidence of dossier.evidence) {
         await client.query(
@@ -174,7 +175,7 @@ export class PgResearchRepository implements ResearchRepository {
 
 type IdeaRow = { id: string; workspace_id: string; brand_id: string; title: string; premise: string; source_type: "opportunity" | "user"; opportunity_id: string | null; status: Idea["status"]; created_at: Date | string };
 type AngleRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; title: string; framing: string; audience: string; objective: string; hook_direction: string; expected_value: string; effort: Angle["effort"]; recommended_format: string; recommended_channel: string; supporting_claim_ids: string[]; status: Angle["status"]; version: number };
-type DossierRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; summary: string; unresolved_uncertainties: string[]; status: "ready"; created_at: Date | string };
+type DossierRow = { id: string; workspace_id: string; brand_id: string; idea_id: string; summary: string; unresolved_uncertainties: string[]; runtime_provenance: ResearchDossier["runtimeProvenance"] | null; status: "ready"; created_at: Date | string };
 type EvidenceRow = { id: string; source_url: string; source_title: string; published_at: Date | string | null; retrieved_at: Date | string };
 type ClaimRow = { id: string; text: string; classification: ResearchDossier["claims"][number]["classification"]; confidence: number; evidence_strength: ResearchDossier["claims"][number]["evidenceStrength"]; verification_state: ResearchDossier["claims"][number]["verificationState"]; freshness: ResearchDossier["claims"][number]["freshness"]; first_person_authorization: ResearchDossier["claims"][number]["firstPersonAuthorization"]; evidence_ids: string[] };
 
