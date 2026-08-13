@@ -1,13 +1,10 @@
 {
   "schemaVersion": 1,
   "activeSlice": "VS-10",
-  "activeTask": "high-risk-review-closeout",
-  "branch": "kairo/vs-10",
-  "lastSuccessfulStep": "operations-core-telemetry-budget-and-audit-controls-green",
+  "activeTask": "await-next-slice-definition",
+  "branch": "kairo/vs-10-governance-closeout",
+  "lastSuccessfulStep": "vs-10-certified-and-merged",
   "attempts": 0,
-  "blockers": [
-    "operator-triggered safe retry must execute or expedite the underlying job, not only record intent",
-    "rendered pilot Operations view is not yet wired to the authenticated internal operations API"
-  ],
-  "nextPermittedAction": "close-vs-10-retry-and-operations-view-gaps"
+  "blockers": [],
+  "nextPermittedAction": "define-next-governed-slice"
 }
