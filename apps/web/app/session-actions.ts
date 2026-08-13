@@ -16,40 +16,14 @@ function auth() {
   });
 }
 
-async function writeKairoBearer(): Promise<boolean> {
-  const result = await auth().token();
-  const token = result.data && typeof (result.data as { token?: unknown }).token === "string"
-    ? (result.data as { token: string }).token
-    : null;
-  const store = await cookies();
-  if (!token || token.split(".").length !== 3) {
-    store.delete("kairo_access_token");
-    return false;
-  }
-  store.set("kairo_access_token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 600,
-  });
-  return true;
-}
-
-export async function refreshKairoSession(): Promise<boolean> {
-  return writeKairoBearer();
-}
-
 export async function signInKairo(email: string, password: string): Promise<string | null> {
   const result = await auth().signIn.email({ email, password });
-  if (result.error) return result.error.message;
-  return (await writeKairoBearer()) ? null : "Unable to establish Kairo session";
+  return result.error ? result.error.message : null;
 }
 
 export async function signUpKairo(name: string, email: string, password: string): Promise<string | null> {
   const result = await auth().signUp.email({ name, email, password });
-  if (result.error) return result.error.message;
-  return (await writeKairoBearer()) ? null : "Unable to establish Kairo session";
+  return result.error ? result.error.message : null;
 }
 
 export async function signOutKairo(): Promise<void> {
