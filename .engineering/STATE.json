@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"domain-contracts-and-lineage","branch":"kairo/vs-04","lastSuccessfulStep":"superpowers-implementation-plan-written","attempts":0,"blockers":[],"nextPermittedAction":"tdd-vs-04-domain-contracts"}
+{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"research-and-angle-api-tdd","branch":"kairo/vs-04","lastSuccessfulStep":"vs-04-persistence-and-isolation-implemented","attempts":0,"blockers":[],"nextPermittedAction":"tdd-vs-04-api-surface"}
