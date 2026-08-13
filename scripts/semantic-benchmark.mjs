@@ -7,6 +7,7 @@ const BRAND_COUNT = 6;
 const PER_BRAND = 1200;
 const TOP_K = 10;
 const QUERY_COUNT_PER_BRAND = 4;
+const RECALL_FLOOR = 0.80;
 const QDRANT = process.env.QDRANT_URL ?? "http://127.0.0.1:6333";
 const DATABASE_URL = process.env.SEMANTIC_DATABASE_URL ?? "postgres://postgres:postgres@127.0.0.1:55432/kairo_semantic";
 const COLLECTION = "kairo_vs03_benchmark";
@@ -56,16 +57,39 @@ try {
   const qdrantInfo = await qdrantJson(`/collections/${COLLECTION}`);
 
   const result = {
-    schemaVersion: 1,
-    corpus: { dimensions: DIM, brands: BRAND_COUNT, vectorsPerBrand: PER_BRAND, vectors: docs.length, queries: queries.length, topK: TOP_K, seed: "0x4b414952" },
+    schemaVersion: 2,
+    corpus: {
+      dimensions: DIM,
+      brands: BRAND_COUNT,
+      vectorsPerBrand: PER_BRAND,
+      vectors: docs.length,
+      queries: queries.length,
+      topK: TOP_K,
+      seed: "0x4b414952",
+      note: "Deterministic multi-Brand retrieval surrogate with mandatory Workspace/Brand filtering",
+    },
     providers: {
       pgvector: {
         version: await pgvectorVersion(client),
-        insertMs: round(pgInsertMs), indexBuildMs: round(pgIndexMs), relationBytes: Number(pgSize.rows[0].bytes),
+        configuration: {
+          index: "HNSW m=16 ef_construction=100",
+          efSearch: 200,
+          iterativeScan: "strict_order",
+          maxScanTuples: 20000,
+        },
+        insertMs: round(pgInsertMs),
+        indexBuildMs: round(pgIndexMs),
+        relationBytes: Number(pgSize.rows[0].bytes),
         ...pgMetrics,
       },
       qdrantTurboQuant: {
         version: qdrantInfo?.result?.config?.service_config?.version ?? "1.18.x-container",
+        configuration: {
+          hnswEf: 80,
+          oversampling: 2,
+          rescore: true,
+          tenantPayloadIndex: true,
+        },
         insertMs: round(qdrantInsertMs),
         turboQuant: { encoding: "bits4-default", documentedCompression: "8x", memory: "pinned" },
         pointsCount: qdrantInfo?.result?.points_count ?? docs.length,
@@ -79,7 +103,9 @@ try {
   console.log(`KAIRO_BENCHMARK_RESULT=${JSON.stringify(result)}`);
 
   if (pgMetrics.tenantLeakCount !== 0 || qdrantMetrics.tenantLeakCount !== 0) throw new Error("Tenant-filter correctness benchmark failed");
-  if (pgMetrics.recallAt10 < 0.80 || qdrantMetrics.recallAt10 < 0.80) throw new Error("A semantic provider fell below the minimum recall@10 benchmark floor");
+  if (pgMetrics.recallAt10 < RECALL_FLOOR || qdrantMetrics.recallAt10 < RECALL_FLOOR) {
+    throw new Error(`A semantic provider fell below the minimum recall@10 benchmark floor of ${RECALL_FLOOR}`);
+  }
 } finally {
   await client.end();
 }
@@ -151,16 +177,17 @@ async function benchmarkPg(client) {
   const latencies = [];
   let recallSum = 0;
   let tenantLeakCount = 0;
+  await client.query("set hnsw.ef_search = 200");
+  await client.query("set hnsw.iterative_scan = strict_order");
+  await client.query("set hnsw.max_scan_tuples = 20000");
   for (const query of queries) {
     const start = performance.now();
     const result = await client.query(
-      `with nearest as materialized (
-         select id,brand_id,embedding <=> $1::vector as distance
-         from kairo_vector_bench
-         where workspace_id='workspace-benchmark' and brand_id=$2
-         order by embedding <=> $1::vector
-         limit ${TOP_K}
-       ) select id,brand_id from nearest order by distance + 0`,
+      `select id,brand_id
+       from kairo_vector_bench
+       where workspace_id='workspace-benchmark' and brand_id=$2
+       order by embedding <=> $1::vector
+       limit ${TOP_K}`,
       [vectorLiteral(query.vector), query.brand],
     );
     latencies.push(performance.now() - start);
@@ -168,7 +195,12 @@ async function benchmarkPg(client) {
     recallSum += recall(ids, query.truth);
     tenantLeakCount += result.rows.filter((row) => row.brand_id !== query.brand).length;
   }
-  return { recallAt10: round(recallSum / queries.length, 4), p50LatencyMs: round(percentile(latencies, 0.5)), p95LatencyMs: round(percentile(latencies, 0.95)), tenantLeakCount };
+  return {
+    recallAt10: round(recallSum / queries.length, 4),
+    p50LatencyMs: round(percentile(latencies, 0.5)),
+    p95LatencyMs: round(percentile(latencies, 0.95)),
+    tenantLeakCount,
+  };
 }
 
 async function benchmarkQdrant() {
@@ -193,7 +225,12 @@ async function benchmarkQdrant() {
     recallSum += recall(ids, query.truth);
     tenantLeakCount += points.filter((point) => point?.payload?.brand_id !== query.brand || point?.payload?.workspace_id !== "workspace-benchmark").length;
   }
-  return { recallAt10: round(recallSum / queries.length, 4), p50LatencyMs: round(percentile(latencies, 0.5)), p95LatencyMs: round(percentile(latencies, 0.95)), tenantLeakCount };
+  return {
+    recallAt10: round(recallSum / queries.length, 4),
+    p50LatencyMs: round(percentile(latencies, 0.5)),
+    p95LatencyMs: round(percentile(latencies, 0.95)),
+    tenantLeakCount,
+  };
 }
 
 async function pgvectorVersion(client) {
