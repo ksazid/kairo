@@ -173,6 +173,15 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
         return research.selectAngle(account.id, request.params.brandId, request.params.ideaId, request.params.angleId, expectedVersion);
       },
     );
+
+    app.patch<{ Params: { brandId: string; ideaId: string; angleId: string }; Body: { framing: string; expectedVersion: number } }>(
+      "/api/v1/brands/:brandId/ideas/:ideaId/angles/:angleId",
+      async (request, reply) => {
+        const account = await authenticate(request, reply, service, options.identityVerifier);
+        if (!account) return;
+        return research.editAngleFraming(account.id, request.params.brandId, request.params.ideaId, request.params.angleId, request.body?.framing, request.body?.expectedVersion);
+      },
+    );
   }
 
   return app;
