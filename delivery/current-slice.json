@@ -1,25 +1,19 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-09",
-  "title": "Performance Intelligence, Learning and Experiments",
+  "sliceId": "VS-10",
+  "title": "Pilot Operations, Safety and Cost Controls",
   "status": "active",
-  "lifecycle": "certification",
-  "riskLevel": "medium",
+  "lifecycle": "ready-for-implementation",
+  "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": [
-    "FR-17",
-    "FR-18",
-    "FR-19"
-  ],
+  "requirements": ["FR-20"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": [
-    "VS-08"
-  ],
+  "dependencies": ["VS-09"],
   "blockers": [],
   "allowedPaths": [
     "apps/web/**",
@@ -32,7 +26,7 @@
     "packages/design-tokens/**",
     "packages/observability/**",
     "tests/**",
-    "docs/slices/VS-09.md",
+    "docs/slices/VS-10.md",
     "docs/plans/**",
     "delivery/**",
     ".engineering/STATE.json",
@@ -41,120 +35,33 @@
     ".github/workflows/intake.yml",
     ".github/workflows/security.yml"
   ],
-  "protectedPaths": [
-    ".github/workflows/release.yml",
-    "infrastructure/**"
-  ],
+  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**"],
   "impact": {
-    "areas": [
-      "architecture",
-      "frontend",
-      "api",
-      "database",
-      "analytics",
-      "customer-flow"
-    ],
+    "areas": ["architecture", "frontend", "api", "database", "authorization", "sensitive-data", "analytics", "operations-support"],
     "notes": [
-      "Adds evidence-bound narrative Performance Intelligence, human-controlled Candidate Learnings and explicit Experiments.",
-      "Correlation remains qualified; causal claims require evidence and accepted Learnings never become permanent truth.",
-      "Agents propose bounded structured candidates only and cannot directly mutate authoritative Brand state."
+      "Adds internal pilot workflow diagnostics, authorised retry/disable controls, execution-cost accounting, budgets and operational telemetry for FR-20.",
+      "Operator access remains least-privilege and Brand-scoped; diagnostic records do not include sensitive content by default.",
+      "High-risk security review is mandatory before certification; production release remains separately governed."
     ]
   },
   "approvals": [
-    {
-      "type": "scope",
-      "status": "approved",
-      "version": "VS-09@1.0",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-13T15:55:23+02:00",
-      "rationale": "AUTH-001 and the Product Owner's explicit all-slices approval authorize frozen FR-17/FR-18/FR-19 scope."
-    },
-    {
-      "type": "policy",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
-    },
-    {
-      "type": "implementation",
-      "status": "approved",
-      "version": "VS-09@1.0",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-13T15:55:23+02:00",
-      "rationale": "The Product Owner's explicit approval authorizes runtime implementation, fixes, tests and bounded refactoring within frozen VS-09 scope."
-    },
-    {
-      "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
-    },
-    {
-      "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
-    },
-    {
-      "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
-    }
+    {"type":"scope","status":"approved","version":"VS-10@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T17:57:00+02:00","rationale":"AUTH-001 authorizes the already-defined frozen FR-20 VS-10 scope; no V1 scope expansion is authorized."},
+    {"type":"policy","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
+    {"type":"implementation","status":"approved","version":"VS-10@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T17:57:00+02:00","rationale":"AUTH-001 authorizes runtime implementation, UI/UX work, tests, review, CI/security fixes and bounded refactoring within frozen FR-20 scope."},
+    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
   ],
   "decisionIds": [],
-  "progress": {
-    "discovery": 100,
-    "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 0,
-    "release": 0,
-    "validation": 0
-  },
-  "certification": {
-    "status": "running",
-    "commitSha": null,
-    "evidence": []
-  },
-  "release": {
-    "status": "not-authorized",
-    "releaseId": null
-  },
-  "rollback": {
-    "status": "not-applicable",
-    "rollbackId": null
-  },
-  "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
-  },
+  "progress": {"discovery":100,"decisions":100,"implementation":0,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "release": {"status":"not-authorized","releaseId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
+  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
-    "specification": "docs/slices/VS-09.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/21",
-    "evidence": [
-      "docs/plans/VS-09-activation.md",
-      "delivery/context/VS-09.md",
-      "docs/plans/VS-09-implementation.md",
-      "docs/plans/VS-09-review.md",
-      "docs/plans/VS-09-certification.md"
-    ]
+    "specification":"docs/slices/VS-10.md",
+    "implementationPr":null,
+    "evidence":["docs/plans/VS-10-activation.md","delivery/context/VS-10.md"]
   },
   "maxAttempts": 3
 }
