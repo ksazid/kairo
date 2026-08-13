@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-03","activeTask":"discovery-domain-contracts","branch":"kairo/vs-03","lastSuccessfulStep":"superpowers-implementation-plan-written","attempts":0,"blockers":["DEC-003 blocks certification until semantic retrieval benchmark is approved"],"nextPermittedAction":"tdd-discovery-contracts"}
+{"schemaVersion":1,"activeSlice":"VS-03","activeTask":"certified-awaiting-merge","branch":"kairo/vs-03","lastSuccessfulStep":"exact-sha-certification-approved","attempts":0,"blockers":[],"nextPermittedAction":"merge-approved-pr-9"}
