@@ -40,6 +40,18 @@ export class MemoryResearchRepository implements ResearchRepository {
     return structuredClone(selected);
   }
 
+  async editAngleFraming(accountId: string, brandId: string, ideaId: string, angleId: string, framing: string, expectedVersion: number): Promise<Angle> {
+    await this.requireBrand(accountId, brandId);
+    const angles = this.angles.get(ideaId);
+    const index = angles?.findIndex((angle) => angle.id === angleId && angle.brandId === brandId) ?? -1;
+    if (!angles || index < 0) throw new ResourceNotFoundError("Angle not found");
+    const target = angles[index]!;
+    if (target.version !== expectedVersion) throw new ConcurrencyConflictError("Angle version is stale");
+    const edited = { ...target, framing, version: target.version + 1 };
+    angles[index] = edited;
+    return structuredClone(edited);
+  }
+
   async seedReadyBundle(ideaId: string): Promise<void> {
     const idea = this.ideas.get(ideaId);
     if (!idea) throw new ResourceNotFoundError("Idea not found");
