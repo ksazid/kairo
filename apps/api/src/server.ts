@@ -5,6 +5,7 @@ import { PgDiscoveryRepository } from "./discovery-postgres-store";
 import { PgKairoRepository } from "./postgres-store";
 import { PgResearchRepository } from "./research-postgres-store";
 import { PgCampaignRepository } from "./campaign-postgres-store";
+import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{DrafterGenerationAdapter}from"./drafter-adapter";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -13,11 +14,13 @@ function requiredEnv(name: string): string {
 }
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
+const gateway=openAICompatibleGatewayFromEnv();const contentGenerator=gateway?new DrafterGenerationAdapter(new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:{"content-draft@1":value=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds)}})):undefined;
 const app = buildApp({
   store: new PgKairoRepository(pool),
   discoveryStore: new PgDiscoveryRepository(pool),
   researchStore: new PgResearchRepository(pool),
   campaignStore: new PgCampaignRepository(pool),
+  ...(contentGenerator?{contentGenerator}:{}),
   identityVerifier: new OidcJwtVerifier({
     issuer: requiredEnv("OIDC_ISSUER"),
     audience: requiredEnv("OIDC_AUDIENCE"),
