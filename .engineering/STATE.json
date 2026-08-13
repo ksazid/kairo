@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"research-and-angle-api-tdd","branch":"kairo/vs-04","lastSuccessfulStep":"vs-04-persistence-and-isolation-implemented","attempts":0,"blockers":[],"nextPermittedAction":"tdd-vs-04-api-surface"}
+{"schemaVersion":1,"activeSlice":"VS-04","activeTask":"bounded-researcher-orchestration-tdd","branch":"kairo/vs-04","lastSuccessfulStep":"vs-04-research-and-angle-api-green","attempts":0,"blockers":[],"nextPermittedAction":"tdd-vs-04-researcher-runtime"}
