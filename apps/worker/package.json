@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./hunter": "./src/hunter.ts",
+    "./public-discovery-adapters": "./src/public-discovery-adapters.ts",
     "./drafter": "./src/drafter.ts",
     "./reviewer": "./src/reviewer.ts",
     "./agent-runtime": "./src/agent-runtime.ts",
