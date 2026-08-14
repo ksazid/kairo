@@ -2,6 +2,10 @@ import { createNeonAuth } from "@neondatabase/auth/next/server";
 
 export const dynamic = "force-dynamic";
 
+type AuthRouteContext = {
+  params: Promise<{ path: string[] }>;
+};
+
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`${name} is required`);
@@ -15,10 +19,10 @@ function handlers() {
   }).handler();
 }
 
-export async function GET(request: Request) {
-  return handlers().GET(request);
+export async function GET(request: Request, context: AuthRouteContext) {
+  return handlers().GET(request, context);
 }
 
-export async function POST(request: Request) {
-  return handlers().POST(request);
+export async function POST(request: Request, context: AuthRouteContext) {
+  return handlers().POST(request, context);
 }
