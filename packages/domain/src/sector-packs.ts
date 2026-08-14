@@ -1,4 +1,4 @@
-import type { SectorIntelligencePack } from "./source-policy";
+import type { BrandIntelligenceProfile, SectorIntelligencePack } from "./source-policy";
 
 export const SECTOR_INTELLIGENCE_PACKS = {
   "ai-technology": {
@@ -86,3 +86,49 @@ export const SECTOR_INTELLIGENCE_PACKS = {
     ],
   },
 } as const satisfies Record<string, SectorIntelligencePack>;
+
+export function selectSectorIntelligencePack(
+  profile: BrandIntelligenceProfile,
+  packs: readonly SectorIntelligencePack[] = Object.values(SECTOR_INTELLIGENCE_PACKS),
+): SectorIntelligencePack | undefined {
+  const classifications = [profile.sector, profile.subsector]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .map(normalize);
+  if (!classifications.length) return undefined;
+
+  const ranked = packs
+    .map((pack) => ({ pack, score: packMatchScore(classifications, pack) }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.pack.id.localeCompare(b.pack.id));
+  return ranked[0]?.pack;
+}
+
+function packMatchScore(classifications: readonly string[], pack: SectorIntelligencePack): number {
+  const labels = [pack.sector, ...pack.subsectors].map(normalize).filter(Boolean);
+  let best = 0;
+  for (const classification of classifications) {
+    for (const label of labels) {
+      if (classification === label) best = Math.max(best, 100);
+      else if (label.includes(classification) || classification.includes(label)) best = Math.max(best, 70);
+      else best = Math.max(best, tokenOverlap(classification, label));
+    }
+  }
+  return best;
+}
+
+function tokenOverlap(left: string, right: string): number {
+  const leftTokens = tokenSet(left);
+  const rightTokens = tokenSet(right);
+  if (!leftTokens.size || !rightTokens.size) return 0;
+  let common = 0;
+  for (const token of leftTokens) if (rightTokens.has(token)) common += 1;
+  return Math.round((common / Math.max(leftTokens.size, rightTokens.size)) * 50);
+}
+
+function tokenSet(value: string): Set<string> {
+  return new Set(value.split(/[^a-z0-9]+/g).filter((token) => token.length > 1));
+}
+
+function normalize(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+}
