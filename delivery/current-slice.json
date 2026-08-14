@@ -3,7 +3,7 @@
   "sliceId": "VS-11",
   "title": "V1 Release Packaging and Pilot Readiness",
   "status": "active",
-  "lifecycle": "release-pending",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01","FR-02","FR-03","FR-04","FR-05","FR-06","FR-07","FR-08","FR-09","FR-10","FR-11","FR-12","FR-13","FR-14","FR-15","FR-16","FR-17","FR-18","FR-19","FR-20"],
@@ -18,22 +18,23 @@
       "Packages and verifies the already-approved V1 functionality without adding product features.",
       "API build/start, readiness, exact-SHA provenance, migration tooling, container packaging and pilot smoke are implemented and reviewed.",
       "DEC-008 is approved for a split non-production pilot topology.",
-      "REL-001 is reconciled to the certified merged SHA and RB-001 is ready; the lifecycle is release-pending. Production enablement and deployment verification remain separate."
+      "PR #35 fixes Vercel build-time Neon Auth initialization by deferring auth construction to request time while preserving mandatory runtime secrets.",
+      "The previous REL-001 release approval and RB-001 target were bound to 84b778660f9d0152a7a0aa248317b476f15215d4 and must be reconciled before releasing the newly certified runtime candidate."
     ]
   },
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-11@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T21:09:00+02:00","rationale":"Approved the next V1 packaging and pilot-readiness phase; no product scope expansion."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No new product policy is introduced; pilot hosting is governed separately by approved DEC-008."},
     {"type":"implementation","status":"approved","version":"VS-11@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T21:09:00+02:00","rationale":"Approved bounded packaging, verification, tests and fixes outside production."},
-    {"type":"certification","status":"approved","version":null,"commitSha":"84b778660f9d0152a7a0aa248317b476f15215d4","by":"Sazid Khan","at":"2026-08-14T03:09:15+02:00","rationale":"Approved exact-SHA certification of merged main candidate 84b778660f9d0152a7a0aa248317b476f15215d4 after CI #330 passed on that exact SHA. The merge contains the already-certified PR #31 runtime candidate 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e plus governance-only certification metadata; comparison from the certified PR head to the merge commit changes only delivery/current-slice.json. Certification only; release, production enablement and deployment remain separate approvals."},
-    {"type":"release","status":"approved","version":null,"commitSha":"84b778660f9d0152a7a0aa248317b476f15215d4","by":"Sazid Khan","at":"2026-08-14T03:10:00+02:00","rationale":"Approved release of the exact certified candidate 84b778660f9d0152a7a0aa248317b476f15215d4. REL-001 is reconciled and RB-001 rollback readiness is established. This advances the lifecycle to release-pending only; production enablement and deployment verification remain separate."},
+    {"type":"certification","status":"approved","version":null,"commitSha":"5331e5fbe07269e395e4ac86bfbe2d3609672d3a","by":"Sazid Khan","at":"2026-08-14T06:48:00+02:00","rationale":"Approved exact-SHA certification of PR #35 candidate 5331e5fbe07269e395e4ac86bfbe2d3609672d3a after CI #339, Security baseline #301 and the Vercel Git preview all passed on that exact SHA. Certification only; merge, release, production enablement and deployment remain separate approvals."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"The prior release approval was bound to 84b778660f9d0152a7a0aa248317b476f15215d4 and does not transfer to the newly certified runtime candidate 5331e5fbe07269e395e4ac86bfbe2d3609672d3a. A new exact-SHA release approval is required after merge and REL-001/RB-001 reconciliation."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
   ],
   "decisionIds": ["DEC-008"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":50,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
   "certification": {
     "status": "passed",
-    "commitSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
+    "commitSha": "5331e5fbe07269e395e4ac86bfbe2d3609672d3a",
     "evidence": [
       "https://github.com/ksazid/kairo/pull/24",
       "VS-11 high-risk packaging review",
@@ -51,12 +52,17 @@
       "PR #31 supersedes diagnostic PRs #29 and #30; both were closed unmerged.",
       "Merge commit 84b778660f9d0152a7a0aa248317b476f15215d4 has certified PR head 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e as a parent together with governance certification commit 607fdb6927c8eebc47c2f2da217b10c8338c0bd8.",
       "Compare 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e..84b778660f9d0152a7a0aa248317b476f15215d4: only delivery/current-slice.json changed; no runtime files changed.",
-      "CI #330: PASS on 84b778660f9d0152a7a0aa248317b476f15215d4, including clean PostgreSQL 18 migrations, production dependency audit, preflight/governance, runtime verification and dashboard build."
+      "CI #330: PASS on 84b778660f9d0152a7a0aa248317b476f15215d4, including clean PostgreSQL 18 migrations, production dependency audit, preflight/governance, runtime verification and dashboard build.",
+      "https://github.com/ksazid/kairo/pull/35",
+      "CI #339: PASS on 5331e5fbe07269e395e4ac86bfbe2d3609672d3a, including migrations, production dependency audit, preflight/governance, runtime verification and dashboard build.",
+      "Security baseline #301: PASS on 5331e5fbe07269e395e4ac86bfbe2d3609672d3a.",
+      "Vercel Git preview: READY on 5331e5fbe07269e395e4ac86bfbe2d3609672d3a with root directory apps/web.",
+      "PR #35 defers Neon Auth construction to request time in /session/bootstrap and /session/refresh; NEON_AUTH_BASE_URL and NEON_AUTH_COOKIE_SECRET remain mandatory when those routes execute."
     ]
   },
-  "release": {"status":"approved","releaseId":"REL-001"},
-  "rollback": {"status":"ready","rollbackId":"RB-001"},
+  "release": {"status":"not-authorized","releaseId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-11.md","implementationPr":"https://github.com/ksazid/kairo/pull/31","evidence":["docs/plans/REL-001-pilot-readiness.md","docs/plans/VS-11-topology-matrix.md","delivery/releases.json","delivery/rollbacks.json"]},
+  "links": {"specification":"docs/slices/VS-11.md","implementationPr":"https://github.com/ksazid/kairo/pull/35","evidence":["docs/plans/REL-001-pilot-readiness.md","docs/plans/VS-11-topology-matrix.md","delivery/releases.json","delivery/rollbacks.json"]},
   "maxAttempts": 3
 }
