@@ -1,1 +1,39 @@
-{"schemaVersion":1,"rollbacks":[]}
+{
+  "schemaVersion": 1,
+  "rollbacks": [
+    {
+      "id": "RB-001",
+      "releaseId": "REL-001",
+      "status": "ready",
+      "reason": "Pre-release rollback readiness for high-risk Kairo V1 pilot release REL-001. Use if deployment, health/version checks, authentication, tenant isolation, publishing safeguards, or post-deploy smoke verification fail.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
+      "lastKnownGoodSha": "cb273c59e83c3043313127f15afc717b33577958",
+      "triggers": [
+        "API live/readiness or /version exact-SHA check fails",
+        "Authentication/session bootstrap fails for pilot users",
+        "Workspace or Brand tenant-isolation check fails",
+        "High/critical security regression is detected",
+        "Publishing bypasses capability or human-approval safeguards",
+        "Database migration or application startup failure threatens data integrity"
+      ],
+      "procedure": [
+        "Stop or route away pilot traffic for the affected component.",
+        "Disable external publishing automation and retain manual fallback.",
+        "Preserve logs, audit records and failure evidence; do not delete pilot data during triage.",
+        "If schema state is implicated, prefer forward recovery; restore the approved Neon backup only when forward recovery is unsafe.",
+        "Redeploy the last known-good certified pilot runtime cb273c59e83c3043313127f15afc717b33577958 for affected runtime components, or keep the component disabled when no prior deployed version exists.",
+        "Verify /health/live, /health/ready and /version provenance, then verify authentication and tenant isolation before reopening traffic."
+      ],
+      "verification": [
+        "API health is green",
+        "Version endpoint reports the intended rollback SHA",
+        "Authentication/session bootstrap succeeds",
+        "Cross-tenant access remains denied",
+        "External publishing remains disabled or capability-gated as intended"
+      ],
+      "initiatedBy": null,
+      "initiatedAt": null
+    }
+  ]
+}
