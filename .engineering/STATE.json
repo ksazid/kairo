@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-11","activeTask":"certification","branch":"kairo/vs-11","lastSuccessfulStep":"packaging-readiness-and-high-risk-review-green","attempts":0,"blockers":[],"nextPermittedAction":"verify-exact-head-and-request-certification"}
+{"schemaVersion":1,"activeSlice":"VS-12","activeTask":"ci-and-certification","branch":"impl/vs12a-sector-aware-hunter","lastSuccessfulStep":"vs12a-testing-ci373-and-review-passed","attempts":1,"blockers":[],"nextPermittedAction":"confirm-certification-head-ci-then-present-exact-sha-for-human-certification"}
