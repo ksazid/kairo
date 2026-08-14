@@ -7,7 +7,7 @@ import {
   resolveBrandSourcePolicy,
   validateSectorIntelligencePack,
 } from "./source-policy";
-import { SECTOR_INTELLIGENCE_PACKS } from "./sector-packs";
+import { SECTOR_INTELLIGENCE_PACKS, selectSectorIntelligencePack } from "./sector-packs";
 import { DEFAULT_SOURCE_REGISTRY } from "./source-registry";
 
 function pack(id: keyof typeof SECTOR_INTELLIGENCE_PACKS) {
@@ -63,6 +63,14 @@ describe("VS-12A sector-aware source policy", () => {
       excludedTopics: [],
       goals: [],
     });
+  });
+
+  it("selects proof-sector packs from metadata instead of sector-specific resolver branches", () => {
+    expect(selectSectorIntelligencePack(profile({ sector: "Developer Technology" }))?.id).toBe("ai-technology");
+    expect(selectSectorIntelligencePack(profile({ sector: "Religious Travel" }))?.id).toBe("umrah-religious-travel");
+    expect(selectSectorIntelligencePack(profile({ sector: "Motorcycles" }))?.id).toBe("motorcycles");
+    expect(selectSectorIntelligencePack(profile({ sector: "IAS" }))?.id).toBe("ias-upsc-education");
+    expect(selectSectorIntelligencePack(profile({ sector: undefined, subsector: undefined }))).toBeUndefined();
   });
 
   it("uses the same resolver to produce a technology policy with Hacker News, YouTube and RSS weighted high", () => {
@@ -128,7 +136,7 @@ describe("VS-12A sector-aware source policy", () => {
     expect(queries.some((item) => item.source === "openalex")).toBe(false);
     expect(queries.some((item) => item.source === "crossref")).toBe(false);
 
-    for (const source of DEFAULT_SOURCE_REGISTRY.filter((item) => item.capabilities.includes("discovery"))) {
+    for (const source of DEFAULT_SOURCE_REGISTRY.filter((item) => item.capabilities.some((capability) => capability === "discovery"))) {
       expect(queries.filter((item) => item.source === source.key).length).toBeLessThanOrEqual(source.maxQueriesPerRun);
     }
 
