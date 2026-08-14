@@ -242,7 +242,8 @@ function validateSourceRegistry(sourceRegistry: readonly DiscoverySourceDefiniti
     requireText(source.key, "Source Registry key");
     if (seen.has(source.key)) throw new DomainValidationError(`Duplicate Source Registry key ${source.key}`);
     seen.add(source.key);
-    if (!Array.isArray(source.capabilities) || !source.capabilities.length || source.capabilities.some((capability) => !["discovery", "research", "verification"].includes(capability))) {
+    const capabilities = source.capabilities;
+    if (!Array.isArray(capabilities) || !capabilities.length || capabilities.some((capability: DiscoverySourceCapability) => !["discovery", "research", "verification"].includes(capability))) {
       throw new DomainValidationError(`Source Registry capabilities are invalid for ${source.key}`);
     }
     if (!Number.isInteger(source.maxQueriesPerRun) || source.maxQueriesPerRun < 0 || source.maxQueriesPerRun > 100) {
