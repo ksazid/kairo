@@ -1,38 +1,22 @@
 {
   "stage": "pilot",
   "commercialUse": false,
-  "deploymentMode": "advisor-recommended",
-  "approvedSelection": false,
+  "deploymentMode": "split",
+  "approvedSelection": true,
   "singleProvider": null,
-  "splitProviders": {
-    "frontend": null,
-    "api": null,
-    "database": null
-  },
+  "splitProviders": {"frontend": "vercel", "api": "render", "database": "neon"},
   "frontend": "nextjs",
   "backend": "container",
   "database": "postgresql",
-  "databaseRequirements": {
-    "connectionPooling": true,
-    "sameProviderPreferred": false,
-    "dataResidencyRequired": false,
-    "backupsRequired": true,
-    "pointInTimeRecoveryRequired": false
-  },
+  "databaseRequirements": {"connectionPooling": true, "sameProviderPreferred": false, "dataResidencyRequired": false, "backupsRequired": true, "pointInTimeRecoveryRequired": false},
   "traffic": "low",
   "bandwidth": "low",
   "coldStartsAccepted": true,
   "previewDeploymentsRequired": true,
   "edgeExecutionRequired": false,
   "backgroundJobsRequired": false,
-  "regionRequirements": [],
+  "regionRequirements": ["Frankfurt, Germany"],
   "monthlyBudgetUsd": 0,
-  "releasePolicy": {
-    "sameCertifiedSha": true,
-    "apiFirst": true,
-    "requireApiHealthCheck": true,
-    "requireEndToEndSmokeTest": true,
-    "requireRollbackPlan": true
-  },
-  "notes": "Kairo V1 uses a Node.js 24 TypeScript/Fastify API that can be packaged as a container. Provider selection remains unapproved. Human approval is required before provider configuration, provisioning, deployment, release or production enablement."
+  "releasePolicy": {"sameCertifiedSha": true, "apiFirst": true, "requireApiHealthCheck": true, "requireEndToEndSmokeTest": true, "requireRollbackPlan": true},
+  "notes": "DEC-008 pilot selection: Vercel web, Render API in Frankfurt, Neon Postgres in Frankfurt. Non-commercial zero-budget pilot tiers only; reassess paid plans before commercial or production enablement."
 }
