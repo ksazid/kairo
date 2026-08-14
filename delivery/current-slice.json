@@ -1,1 +1,197 @@
-{"schemaVersion":2,"sliceId":"VS-11","title":"V1 Release Packaging and Pilot Readiness","status":"active","lifecycle":"certified","riskLevel":"high","implementationMode":"runtime-enabled","requirements":["FR-01","FR-02","FR-03","FR-04","FR-05","FR-06","FR-07","FR-08","FR-09","FR-10","FR-11","FR-12","FR-13","FR-14","FR-15","FR-16","FR-17","FR-18","FR-19","FR-20"],"owners":{"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},"dependencies":["VS-10"],"blockers":[],"allowedPaths":["apps/api/**","apps/web/**","apps/worker/**","packages/**","tests/**","deployment/**","scripts/**","docs/slices/VS-11.md","docs/plans/**","delivery/**",".engineering/STATE.json","package.json","package-lock.json","Dockerfile",".dockerignore",".github/workflows/ci.yml",".github/workflows/intake.yml",".github/workflows/security.yml"],"protectedPaths":[".github/workflows/release.yml","infrastructure/**"],"impact":{"areas":["architecture","frontend","api","database","authentication","authorization","sensitive-data","deployment","operations-support"],"notes":["Packages and verifies the already-approved V1 functionality without adding product features.","API build/start, readiness, exact-SHA provenance, migration tooling, container packaging and pilot smoke are implemented and reviewed.","DEC-008 is approved for a split non-production pilot topology. Release transition still requires REL-001 readiness and rollback readiness; production enablement remains a separate exact-SHA human gate."]},"approvals":[{"type":"scope","status":"approved","version":"VS-11@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T21:09:00+02:00","rationale":"Approved the next V1 packaging and pilot-readiness phase; no product scope expansion."},{"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No new product policy is introduced; pilot hosting is governed separately by approved DEC-008."},{"type":"implementation","status":"approved","version":"VS-11@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T21:09:00+02:00","rationale":"Approved bounded packaging, verification, tests and fixes outside production."},{"type":"certification","status":"approved","version":null,"commitSha":"3858a49f7f3529fc8c8feb3801f83c6875c2ac4e","by":"Sazid Khan","at":"2026-08-14T03:04:00+02:00","rationale":"Approved exact-SHA certification of PR #31 security-readiness candidate after CI #328 and Security baseline #295 passed on 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e. Candidate adds clean PostgreSQL 18 migration and production dependency audit gates, upgrades Neon Auth and Next to patched versions, pins the verified dependency graph digest, and verifies that graph before Docker installation. Certification only; merge, release, production enablement and deployment remain separate approvals."},{"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Previous release approval was bound to cb273c59e83c3043313127f15afc717b33577958 and does not apply to the newly certified runtime candidate 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e. A new exact-SHA release approval is required after merge/release-readiness reconciliation."},{"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}],"decisionIds":["DEC-008"],"progress":{"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},"certification":{"status":"passed","commitSha":"3858a49f7f3529fc8c8feb3801f83c6875c2ac4e","evidence":["https://github.com/ksazid/kairo/pull/24","VS-11 high-risk packaging review","https://github.com/ksazid/kairo/pull/27","CI #313: PASS on 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e","Security baseline #285: PASS on 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e","Logout compatibility blocker resolved via narrow /auth/logout -> /sign-out proxy.","Merge provenance: cb273c59e83c3043313127f15afc717b33577958 contains certified candidate 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e plus governance-only certification metadata.","Compare 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e..cb273c59e83c3043313127f15afc717b33577958: only delivery/current-slice.json changed; no runtime files changed.","CI #315: PASS on cb273c59e83c3043313127f15afc717b33577958","https://github.com/ksazid/kairo/pull/31","CI #328: PASS on 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e","Security baseline #295: PASS on 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e","CI #328 verified certified migrations 0001-0013 on clean PostgreSQL 18, production dependency audit, preflight/governance, runtime typecheck/tests/build, and dashboard build.","PR #31 supersedes diagnostic PRs #29 and #30; both were closed unmerged."]},"release":{"status":"not-authorized","releaseId":null},"rollback":{"status":"not-applicable","rollbackId":null},"postRelease":{"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},"links":{"specification":"docs/slices/VS-11.md","implementationPr":"https://github.com/ksazid/kairo/pull/24","evidence":["docs/plans/REL-001-pilot-readiness.md","docs/plans/VS-11-topology-matrix.md"]},"maxAttempts":3}
+{
+  "schemaVersion": 2,
+  "sliceId": "VS-11",
+  "title": "V1 Release Packaging and Pilot Readiness",
+  "status": "active",
+  "lifecycle": "certified",
+  "riskLevel": "high",
+  "implementationMode": "runtime-enabled",
+  "requirements": [
+    "FR-01",
+    "FR-02",
+    "FR-03",
+    "FR-04",
+    "FR-05",
+    "FR-06",
+    "FR-07",
+    "FR-08",
+    "FR-09",
+    "FR-10",
+    "FR-11",
+    "FR-12",
+    "FR-13",
+    "FR-14",
+    "FR-15",
+    "FR-16",
+    "FR-17",
+    "FR-18",
+    "FR-19",
+    "FR-20"
+  ],
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": "Operations Owner",
+    "security": "Security Owner"
+  },
+  "dependencies": [
+    "VS-10"
+  ],
+  "blockers": [],
+  "allowedPaths": [
+    "apps/api/**",
+    "apps/web/**",
+    "apps/worker/**",
+    "packages/**",
+    "tests/**",
+    "deployment/**",
+    "scripts/**",
+    "docs/slices/VS-11.md",
+    "docs/plans/**",
+    "delivery/**",
+    ".engineering/STATE.json",
+    "package.json",
+    "package-lock.json",
+    "Dockerfile",
+    ".dockerignore",
+    ".github/workflows/ci.yml",
+    ".github/workflows/intake.yml",
+    ".github/workflows/security.yml"
+  ],
+  "protectedPaths": [
+    ".github/workflows/release.yml",
+    "infrastructure/**"
+  ],
+  "impact": {
+    "areas": [
+      "architecture",
+      "frontend",
+      "api",
+      "database",
+      "authentication",
+      "authorization",
+      "sensitive-data",
+      "deployment",
+      "operations-support"
+    ],
+    "notes": [
+      "Packages and verifies the already-approved V1 functionality without adding product features.",
+      "API build/start, readiness, exact-SHA provenance, migration tooling, container packaging and pilot smoke are implemented and reviewed.",
+      "DEC-008 is approved for a split non-production pilot topology. Release transition still requires REL-001 readiness and rollback readiness; production enablement remains a separate exact-SHA human gate."
+    ]
+  },
+  "approvals": [
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-11@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-13T21:09:00+02:00",
+      "rationale": "Approved the next V1 packaging and pilot-readiness phase; no product scope expansion."
+    },
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "No new product policy is introduced; pilot hosting is governed separately by approved DEC-008."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-11@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-13T21:09:00+02:00",
+      "rationale": "Approved bounded packaging, verification, tests and fixes outside production."
+    },
+    {
+      "type": "certification",
+      "status": "approved",
+      "version": null,
+      "commitSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
+      "by": "Sazid Khan",
+      "at": "2026-08-14T03:09:15+02:00",
+      "rationale": "Approved exact-SHA certification of merged main candidate 84b778660f9d0152a7a0aa248317b476f15215d4 after CI #330 passed on that exact SHA. The merge contains the already-certified PR #31 runtime candidate 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e plus governance-only certification metadata; comparison from the certified PR head to the merge commit changes only delivery/current-slice.json. Certification only; release, production enablement and deployment remain separate approvals."
+    },
+    {
+      "type": "release",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Previous release approval was bound to cb273c59e83c3043313127f15afc717b33577958 and does not apply to the newly certified merged runtime candidate 84b778660f9d0152a7a0aa248317b476f15215d4. A new exact-SHA release approval is required after release-readiness and rollback reconciliation."
+    },
+    {
+      "type": "production-enable",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    }
+  ],
+  "decisionIds": [
+    "DEC-008"
+  ],
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
+    "release": 0,
+    "validation": 0
+  },
+  "certification": {
+    "status": "passed",
+    "commitSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
+    "evidence": [
+      "https://github.com/ksazid/kairo/pull/24",
+      "VS-11 high-risk packaging review",
+      "https://github.com/ksazid/kairo/pull/27",
+      "CI #313: PASS on 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e",
+      "Security baseline #285: PASS on 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e",
+      "Logout compatibility blocker resolved via narrow /auth/logout -> /sign-out proxy.",
+      "Merge provenance: cb273c59e83c3043313127f15afc717b33577958 contains certified candidate 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e plus governance-only certification metadata.",
+      "Compare 81f974fb3048dbbb2e477ef4e54f53c9a6499b7e..cb273c59e83c3043313127f15afc717b33577958: only delivery/current-slice.json changed; no runtime files changed.",
+      "CI #315: PASS on cb273c59e83c3043313127f15afc717b33577958",
+      "https://github.com/ksazid/kairo/pull/31",
+      "CI #328: PASS on 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e",
+      "Security baseline #295: PASS on 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e",
+      "CI #328 verified certified migrations 0001-0013 on clean PostgreSQL 18, production dependency audit, preflight/governance, runtime typecheck/tests/build, and dashboard build.",
+      "PR #31 supersedes diagnostic PRs #29 and #30; both were closed unmerged.",
+      "Merge commit 84b778660f9d0152a7a0aa248317b476f15215d4 has certified PR head 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e as a parent together with governance certification commit 607fdb6927c8eebc47c2f2da217b10c8338c0bd8.",
+      "Compare 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e..84b778660f9d0152a7a0aa248317b476f15215d4: only delivery/current-slice.json changed; no runtime files changed.",
+      "CI #330: PASS on 84b778660f9d0152a7a0aa248317b476f15215d4, including clean PostgreSQL 18 migrations, production dependency audit, preflight/governance, runtime verification and dashboard build."
+    ]
+  },
+  "release": {
+    "status": "not-authorized",
+    "releaseId": null
+  },
+  "rollback": {
+    "status": "not-applicable",
+    "rollbackId": null
+  },
+  "postRelease": {
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": null,
+    "metrics": []
+  },
+  "links": {
+    "specification": "docs/slices/VS-11.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/24",
+    "evidence": [
+      "docs/plans/REL-001-pilot-readiness.md",
+      "docs/plans/VS-11-topology-matrix.md"
+    ]
+  },
+  "maxAttempts": 3
+}
