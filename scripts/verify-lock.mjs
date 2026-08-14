@@ -1,20 +1,18 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { spawnSync } from "node:child_process";
 
-const committed=spawnSync("git",["show","HEAD:package-lock.json"],{encoding:"utf8"});
-if(committed.error)throw committed.error;
-if(committed.status!==0)process.exit(committed.status??1);
+const lock = readFileSync("package-lock.json");
+const expected = readFileSync("deployment/dependency-lock.sha256", "utf8").trim().toLowerCase();
+const actual = createHash("sha256").update(lock).digest("hex");
 
-function canonical(value){
-  if(Array.isArray(value))return value.map(canonical);
-  if(value&&typeof value==="object")return Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])]));
-  return value;
-}
-
-const before=canonical(JSON.parse(committed.stdout));
-const after=canonical(JSON.parse(readFileSync("package-lock.json","utf8")));
-if(JSON.stringify(before)!==JSON.stringify(after)){
-  console.error("package-lock.json is not synchronized with package manifests");
+if (!/^[0-9a-f]{64}$/.test(expected)) {
+  console.error("deployment/dependency-lock.sha256 must contain exactly one SHA-256 digest");
   process.exit(1);
 }
-console.log("package-lock.json is semantically synchronized");
+
+if (actual !== expected) {
+  console.error(`package-lock.json digest mismatch: expected ${expected}, got ${actual}`);
+  process.exit(1);
+}
+
+console.log(`package-lock.json digest verified: ${actual}`);
