@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-11","activeTask":"certification","branch":"kairo/vs-11","lastSuccessfulStep":"packaging-readiness-and-high-risk-review-green","attempts":0,"blockers":[],"nextPermittedAction":"verify-exact-head-and-request-certification"}
+{"schemaVersion":1,"activeSlice":"VS-12","activeTask":"implementation","branch":"impl/vs12a-sector-aware-hunter","lastSuccessfulStep":"vs11-certified-unreleased-closed-and-vs12a-approved","attempts":0,"blockers":[],"nextPermittedAction":"tdd-source-policy-foundation"}
