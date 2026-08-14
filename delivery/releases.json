@@ -3,9 +3,9 @@
   "releases": [
     {
       "id": "REL-001",
-      "sliceIds": ["VS-01","VS-02","VS-03","VS-04","VS-05","VS-06","VS-07","VS-08","VS-09","VS-10"],
-      "status": "pending",
-      "commitSha": "27c15b0dda1914c24fae71f87c7eb94c99886525",
+      "sliceIds": ["VS-01","VS-02","VS-03","VS-04","VS-05","VS-06","VS-07","VS-08","VS-09","VS-10","VS-11"],
+      "status": "approved",
+      "commitSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
       "migrations": [
         "apps/api/migrations/0001_identity_workspace_brand.sql",
         "apps/api/migrations/0002_brand_brain_knowledge.sql",
@@ -22,30 +22,32 @@
         "apps/api/migrations/0013_operations_safe_retry_dispatch.sql"
       ],
       "configurationChanges": [
-        "Pilot PostgreSQL DATABASE_URL and backup policy",
-        "Pilot OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URI",
-        "Web KAIRO_API_URL",
+        "Neon Frankfurt pilot PostgreSQL DATABASE_URL with backups enabled",
+        "API OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URI",
+        "Web KAIRO_API_URL plus NEON_AUTH_BASE_URL and secret-managed NEON_AUTH_COOKIE_SECRET",
+        "KAIRO_RELEASE_SHA must identify 84b778660f9d0152a7a0aa248317b476f15215d4 on every released component",
         "Secret-managed provider-neutral model gateway configuration",
-        "Capability-gated Instagram Professional and LinkedIn organization credentials for explicitly approved pilot accounts"
+        "Capability-gated Instagram Professional and LinkedIn organization credentials only for explicitly approved pilot accounts"
       ],
       "featureFlags": [
         "External publishing remains capability-gated and human-approval-bound",
-        "Production enablement remains unauthorized until a separate exact-SHA approval"
+        "Production enablement remains unauthorized until a separate exact-SHA approval",
+        "Commercial use remains disabled for the zero-budget pilot topology"
       ],
       "smokeTests": [
-        "Apply all 13 migrations to a clean pilot database and verify schema readiness",
-        "API live/ready health checks succeed after database initialization",
-        "Authenticated owner can open a Brand and traverse the primary web workflow",
-        "Brand-private reads remain tenant-isolated across two test Workspaces",
-        "Approved publishing succeeds when channel capability exists or degrades explicitly to manual fallback",
-        "Performance ingestion and Pilot Operations failure/retry paths remain observable",
-        "End-to-end smoke test runs against the exact certified SHA"
+        "CI #330 applied migrations 0001-0013 successfully to clean PostgreSQL 18 on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
+        "CI #330 production dependency audit passed at high severity threshold on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
+        "CI #330 preflight/governance, runtime verification and dashboard build passed on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
+        "During release execution, API /health/live, /health/ready and /version must pass with releaseSha 84b778660f9d0152a7a0aa248317b476f15215d4 before web rollout",
+        "During release execution, authenticated Workspace/Brand flow and cross-tenant denial must pass before release may be marked released",
+        "During release execution, publishing must succeed only through an approved capability or degrade explicitly to manual fallback",
+        "During release execution, Pilot Operations failure/retry paths must remain observable with redacted telemetry"
       ],
       "rollbackStrategy": {
-        "summary": "Before release approval, verify a provider-specific rollback/forward-recovery runbook. Default safety response is to stop pilot traffic, disable external publishing automation, preserve audit state, restore the approved PostgreSQL backup or forward-recover migrations as appropriate, and redeploy the last approved certified SHA. No provider command is authorized until deployment topology is approved."
+        "summary": "RB-001 is ready. If deployment or smoke verification fails, stop pilot traffic and external publishing, preserve audit state, restore/repoint the database only when required, and redeploy the last known-good certified pilot runtime (cb273c59e83c3043313127f15afc717b33577958) or disable the affected component. Verify health, version provenance, authentication and tenant isolation before reopening pilot traffic."
       },
-      "approvedBy": null,
-      "approvedAt": null,
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-14T03:10:00+02:00",
       "productionVerification": {
         "status": "not-started",
         "evidence": []

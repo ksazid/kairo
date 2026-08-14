@@ -1,73 +1,64 @@
 # REL-001 — Kairo V1 Pilot Release Readiness
 
-**Status:** In progress — preparation only  
-**Release candidate:** `27c15b0dda1914c24fae71f87c7eb94c99886525`  
+**Status:** Release pending — readiness reconciled; deployment not started  
+**Release candidate:** `84b778660f9d0152a7a0aa248317b476f15215d4`  
 **Release:** `REL-001`  
-**Included slices:** VS-01 through VS-10  
-**Release / deployment / production-enable approval:** **Not granted**
+**Included slices:** VS-01 through VS-11  
+**Release approval:** Granted for the exact SHA above  
+**Production-enable approval:** **Not granted**
 
 ## Purpose
 
-Prepare the already-certified Kairo V1 codebase for a controlled pilot without expanding V1 product scope or changing the certified runtime candidate. The certified VS-10 head contains the complete VS-01…VS-10 codebase and is therefore the release-candidate snapshot.
+Prepare and govern the certified Kairo V1 pilot release without expanding product scope. REL-001 now binds the merged, security-hardened VS-11 candidate. Release approval authorizes the controlled release path only; it does not authorize production-enabled behaviour or imply that deployment/production verification has completed.
 
-If readiness work discovers a runtime defect that requires product-code changes, the release candidate must move to a new exact SHA and pass certification again before release can proceed.
+## Reconciled readiness evidence
 
-## Required readiness work
-
-1. **Governance traceability**
-   - Reconcile `delivery/completed-slices.json` so VS-09 and VS-10 are archived with their exact certification and merge evidence.
-   - Keep release and production-enable approvals pending until separately granted for an exact SHA.
+1. **Exact-SHA governance**
+   - Certified merged candidate: `84b778660f9d0152a7a0aa248317b476f15215d4`.
+   - Human release approval is bound to the same SHA.
+   - PR #31 is merged; the merge delta from its certified PR head was governance-only.
+   - DEC-008 is approved.
 
 2. **Deployment topology — DEC-008**
-   - Compare supported pilot topologies using current official provider capability, pricing, quotas, commercial-use terms, regions, egress, backups, observability and runtime compatibility.
-   - Confirm Next.js web hosting, a Node.js 24 Fastify/container API, PostgreSQL + PgVector, secrets, OAuth callbacks and any required scheduling/worker execution.
-   - Do not set `deployment/PROFILE.json.approvedSelection=true` until the human provider/topology decision is recorded.
+   - Web: Vercel Hobby for the bounded non-commercial pilot.
+   - API: Render Free Web Service, Frankfurt.
+   - Database: Neon Free Postgres, AWS Europe (Frankfurt).
+   - Paid-plan/capacity reassessment is mandatory before commercial use or production enablement.
 
-3. **Database readiness**
-   - Apply migrations `0001` through `0013` from the certified SHA to a clean PostgreSQL pilot database or disposable equivalent.
-   - Verify PgVector requirements, connection pooling, backup availability and migration ordering.
-   - Record rollback/forward-recovery procedure before release approval.
+3. **Database and dependency readiness**
+   - CI #330 applied migrations `0001` through `0013` successfully on clean PostgreSQL 18 for the exact certified SHA.
+   - CI #330 production dependency audit passed at the high-severity threshold.
+   - CI #330 preflight/governance, runtime verification and dashboard build passed.
 
-4. **Configuration and secrets matrix**
-   - Verify `DATABASE_URL`, OIDC issuer/audience/JWKS settings, `KAIRO_API_URL`, model-gateway configuration and approved channel credentials.
-   - Keep credentials out of Git and agent-visible content.
-   - Capability-gate Instagram and LinkedIn; unsupported paths must remain explicit manual fallbacks.
+4. **Configuration and secrets**
+   - Required runtime contract: `DATABASE_URL`, OIDC issuer/audience/JWKS settings, `KAIRO_API_URL`, `NEON_AUTH_BASE_URL`, secret-managed `NEON_AUTH_COOKIE_SECRET`, model-gateway configuration and approved channel credentials.
+   - Secrets remain outside Git.
+   - Instagram and LinkedIn remain capability-gated with explicit manual fallback when unsupported.
 
-5. **Exact-SHA system smoke**
-   - API live/readiness checks.
-   - Authenticated Workspace/Brand access and cross-tenant denial.
-   - Brand Brain/Knowledge → Discover → Idea/Research/Angle → Campaign/Content → Critic/Approval → Calendar/Publishing → Performance → Learning/Experiment.
-   - Publishing must either succeed through an approved capability or fail closed to manual fallback.
-   - Pilot Operations must show redacted failure telemetry and safe-retry behaviour.
-
-6. **Operational readiness**
-   - Confirm logging/health evidence does not expose Brand-private content or credentials.
-   - Verify cost/budget controls, provider-failure visibility and safe disable/retry controls.
-   - Define pilot rollback trigger, owner and recovery verification.
+5. **Rollback readiness**
+   - `RB-001` is ready for REL-001.
+   - Default response to a failed release is to stop pilot traffic, disable external publishing automation, preserve audit evidence, prefer forward database recovery, and use the approved backup only when required.
+   - Last known-good certified pilot runtime for runtime rollback: `cb273c59e83c3043313127f15afc717b33577958`.
+   - Reopening traffic requires health, version provenance, authentication and tenant-isolation verification.
 
 ## Release-order contract
 
-`database/migrations → API → API health check → web → end-to-end smoke`
+`database/migrations → API → API health/version check → web → authenticated end-to-end smoke → production verification`
 
-All deployed components must identify the same certified release SHA.
+All released components must identify `84b778660f9d0152a7a0aa248317b476f15215d4`.
 
-## Human gates
+## Execution gates still pending
 
-- `DEC-008`: provider/topology decision — blocks release and production enablement.
-- `release`: exact-SHA approval after readiness evidence and rollback readiness.
-- `production-enable`: separate exact-SHA approval for any guarded production behaviour.
+The following are release-execution checks and must pass before REL-001 may be marked `released`:
 
-## Exit criteria
+- API `/health/live`, `/health/ready` and `/version` against the deployed exact SHA.
+- Authenticated Workspace/Brand flow.
+- Cross-tenant denial.
+- Publishing success through an approved capability or explicit manual fallback.
+- Pilot Operations failure/retry observability with redacted telemetry.
+- End-to-end smoke against the deployed exact SHA.
+- Production verification recorded as passed.
 
-REL-001 may be proposed for release approval only when:
+## Current governance position
 
-- governance validation and preflight pass;
-- VS-09/VS-10 history is reconciled;
-- DEC-008 is approved from current official evidence;
-- deployment profile matches the approved topology;
-- all migrations pass on the pilot target or equivalent clean environment;
-- API health and end-to-end smoke pass against the exact certified SHA;
-- medium/high-risk rollback readiness is documented and verified;
-- no unresolved high-risk security finding remains.
-
-This plan does **not** itself authorize provisioning, deployment, release, external publishing enablement or production traffic.
+REL-001 is **approved and release-pending** with rollback readiness established. No production-enable approval has been granted. No deployment success or production verification is claimed by this document.

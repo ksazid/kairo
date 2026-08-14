@@ -3,7 +3,7 @@
   "sliceId": "VS-11",
   "title": "V1 Release Packaging and Pilot Readiness",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "release-pending",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01","FR-02","FR-03","FR-04","FR-05","FR-06","FR-07","FR-08","FR-09","FR-10","FR-11","FR-12","FR-13","FR-14","FR-15","FR-16","FR-17","FR-18","FR-19","FR-20"],
@@ -17,7 +17,8 @@
     "notes": [
       "Packages and verifies the already-approved V1 functionality without adding product features.",
       "API build/start, readiness, exact-SHA provenance, migration tooling, container packaging and pilot smoke are implemented and reviewed.",
-      "DEC-008 is approved for a split non-production pilot topology. Release transition still requires REL-001 readiness and rollback readiness; production enablement remains a separate exact-SHA human gate."
+      "DEC-008 is approved for a split non-production pilot topology.",
+      "REL-001 is reconciled to the certified merged SHA and RB-001 is ready; the lifecycle is release-pending. Production enablement and deployment verification remain separate."
     ]
   },
   "approvals": [
@@ -25,11 +26,11 @@
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No new product policy is introduced; pilot hosting is governed separately by approved DEC-008."},
     {"type":"implementation","status":"approved","version":"VS-11@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-13T21:09:00+02:00","rationale":"Approved bounded packaging, verification, tests and fixes outside production."},
     {"type":"certification","status":"approved","version":null,"commitSha":"84b778660f9d0152a7a0aa248317b476f15215d4","by":"Sazid Khan","at":"2026-08-14T03:09:15+02:00","rationale":"Approved exact-SHA certification of merged main candidate 84b778660f9d0152a7a0aa248317b476f15215d4 after CI #330 passed on that exact SHA. The merge contains the already-certified PR #31 runtime candidate 3858a49f7f3529fc8c8feb3801f83c6875c2ac4e plus governance-only certification metadata; comparison from the certified PR head to the merge commit changes only delivery/current-slice.json. Certification only; release, production enablement and deployment remain separate approvals."},
-    {"type":"release","status":"approved","version":null,"commitSha":"84b778660f9d0152a7a0aa248317b476f15215d4","by":"Sazid Khan","at":"2026-08-14T03:10:00+02:00","rationale":"Approved release of the exact certified candidate 84b778660f9d0152a7a0aa248317b476f15215d4. This records the human release approval only; REL-001 readiness and medium/high-risk rollback readiness must still be reconciled before the release lifecycle may advance or deployment may occur. Production enablement remains a separate exact-SHA approval."},
+    {"type":"release","status":"approved","version":null,"commitSha":"84b778660f9d0152a7a0aa248317b476f15215d4","by":"Sazid Khan","at":"2026-08-14T03:10:00+02:00","rationale":"Approved release of the exact certified candidate 84b778660f9d0152a7a0aa248317b476f15215d4. REL-001 is reconciled and RB-001 rollback readiness is established. This advances the lifecycle to release-pending only; production enablement and deployment verification remain separate."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
   ],
   "decisionIds": ["DEC-008"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":50,"validation":0},
   "certification": {
     "status": "passed",
     "commitSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
@@ -53,9 +54,9 @@
       "CI #330: PASS on 84b778660f9d0152a7a0aa248317b476f15215d4, including clean PostgreSQL 18 migrations, production dependency audit, preflight/governance, runtime verification and dashboard build."
     ]
   },
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
+  "release": {"status":"approved","releaseId":"REL-001"},
+  "rollback": {"status":"ready","rollbackId":"RB-001"},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-11.md","implementationPr":"https://github.com/ksazid/kairo/pull/24","evidence":["docs/plans/REL-001-pilot-readiness.md","docs/plans/VS-11-topology-matrix.md"]},
+  "links": {"specification":"docs/slices/VS-11.md","implementationPr":"https://github.com/ksazid/kairo/pull/31","evidence":["docs/plans/REL-001-pilot-readiness.md","docs/plans/VS-11-topology-matrix.md","delivery/releases.json","delivery/rollbacks.json"]},
   "maxAttempts": 3
 }
