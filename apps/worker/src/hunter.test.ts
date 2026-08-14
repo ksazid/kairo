@@ -22,17 +22,23 @@ const evidence = [{
 
 class FakeTools implements ToolGatewayPort {
   requests: ToolRequest[] = [];
-  constructor(private readonly output: DiscoveryEvidence[] = evidence) {}
+  constructor(
+    private readonly output: DiscoveryEvidence[] = evidence,
+    private readonly handler?: (request: ToolRequest) => DiscoveryEvidence[] | Promise<DiscoveryEvidence[]>,
+  ) {}
   async invoke<TOutput>(request: ToolRequest): Promise<ToolResult<TOutput>> {
     this.requests.push(request);
-    return { output: this.output as TOutput, provenance: [] };
+    const output = this.handler ? await this.handler(request) : this.output;
+    return { output: output as TOutput, provenance: [] };
   }
 }
 
 class FakeRuntime implements AgentRuntimePort {
   lastRequest: AgentInvocationRequest | null = null;
+  calls = 0;
   constructor(private readonly output: HunterJudgmentOutput) {}
   async invoke<TOutput>(request: AgentInvocationRequest): Promise<AgentRuntimeResult<TOutput>> {
+    this.calls += 1;
     this.lastRequest = request;
     return { output: this.output as TOutput, metadata: { runtime: "fixture", latencyMs: 1 } };
   }
@@ -56,9 +62,27 @@ const brand = {
 };
 
 const scores = { relevance: 0.9, evidence: 0.8, novelty: 0.8, timeliness: 0.9, brandAuthority: 0.7, audienceFit: 0.9 };
+const aiProfile = {
+  sector: "Developer Technology",
+  geographies: ["global"],
+  languages: ["English"],
+  audiences: ["technical founders"],
+  topics: ["AI agents", "software architecture"],
+  excludedTopics: [],
+  goals: ["educate"],
+};
+const umrahProfile = {
+  sector: "Religious Travel",
+  geographies: ["India"],
+  languages: ["English"],
+  audiences: ["first-time pilgrims"],
+  topics: ["Umrah visa", "pilgrimage guidance"],
+  excludedTopics: [],
+  goals: ["guide"],
+};
 
 describe("Hunter orchestration", () => {
-  it("preserves the existing explicit-query path as one provider-neutral ToolGateway request", async () => {
+  it("preserves the existing explicit-query path as one Agent Reach ToolGateway request", async () => {
     const runtime = new FakeRuntime({ candidates: [{
       sourceUrl: evidence[0]!.sourceUrl,
       title: "Persistent agents change SaaS architecture",
@@ -75,53 +99,93 @@ describe("Hunter orchestration", () => {
     expect(result).toEqual({ evidenceCount: 1, candidateCount: 1, opportunityCount: 1 });
     expect(tools.requests).toHaveLength(1);
     expect(tools.requests[0]?.input.query).toBe("AI agents");
+    expect(tools.requests[0]?.input.source).toBeUndefined();
     expect(sink.records).toHaveLength(1);
     expect(runtime.lastRequest?.scope).toEqual({ visibility: "brand-private", workspaceId: "workspace-1", brandId: "brand-1" });
     expect(runtime.lastRequest?.budget.maxToolCalls).toBe(0);
   });
 
-  it("uses the same Hunter to generate materially different AI and Umrah fallback queries from Brand intelligence", async () => {
-    const aiTools = new FakeTools();
-    const umrahTools = new FakeTools();
-    const noCandidates = new FakeRuntime({ candidates: [] });
+  it("executes materially different multi-source plans for AI and Umrah through the same Hunter", async () => {
+    const aiTools = new FakeTools([], () => []);
+    const umrahTools = new FakeTools([], () => []);
 
-    await new HunterOrchestrator(aiTools, noCandidates, new FakeSink() as never).runForAuthorizedBrand({
+    await new HunterOrchestrator(aiTools, new FakeRuntime({ candidates: [] }), new FakeSink() as never).runForAuthorizedBrand({
       accountId: "account-1",
       brand,
-      intelligenceProfile: {
-        sector: "Developer Technology",
-        geographies: ["global"],
-        languages: ["English"],
-        audiences: ["technical founders"],
-        topics: ["AI agents", "software architecture"],
-        excludedTopics: [],
-        goals: ["educate"],
-      },
+      intelligenceProfile: aiProfile,
     });
-
     await new HunterOrchestrator(umrahTools, new FakeRuntime({ candidates: [] }), new FakeSink() as never).runForAuthorizedBrand({
       accountId: "account-1",
       brand,
-      intelligenceProfile: {
-        sector: "Religious Travel",
-        geographies: ["India"],
-        languages: ["English"],
-        audiences: ["first-time pilgrims"],
-        topics: ["Umrah visa", "pilgrimage guidance"],
-        excludedTopics: [],
-        goals: ["guide"],
-      },
+      intelligenceProfile: umrahProfile,
     });
 
-    expect(aiTools.requests.length).toBeGreaterThan(0);
-    expect(umrahTools.requests.length).toBeGreaterThan(0);
+    const aiSources = new Set(aiTools.requests.map((request) => request.input.source));
+    const umrahSources = new Set(umrahTools.requests.map((request) => request.input.source));
+    expect(aiSources).toEqual(new Set(["hacker-news", "rss", "youtube", "bluesky", "agent-reach"]));
+    expect(umrahSources).toEqual(new Set(["rss", "youtube", "agent-reach", "bluesky"]));
+    expect(umrahSources.has("hacker-news")).toBe(false);
     expect(aiTools.requests.every((request) => request.capability === "public-content-search")).toBe(true);
-    expect(umrahTools.requests.every((request) => request.capability === "public-content-search")).toBe(true);
-    expect(aiTools.requests[0]?.input.query).toContain("AI agents");
-    expect(umrahTools.requests[0]?.input.query).toContain("Umrah visa");
-    expect(aiTools.requests[0]?.input.query).not.toBe(umrahTools.requests[0]?.input.query);
-    expect(aiTools.requests.length).toBeLessThanOrEqual(2);
-    expect(umrahTools.requests.length).toBeLessThanOrEqual(2);
+    expect(aiTools.requests.length).toBeLessThanOrEqual(11);
+    expect(umrahTools.requests.length).toBeLessThanOrEqual(9);
+  });
+
+  it("isolates a degraded provider and continues with evidence from healthy providers", async () => {
+    const rssEvidence = [{
+      title: "Healthy RSS evidence",
+      sourceUrl: "https://example.com/healthy",
+      platform: "rss",
+      retrievedAt: "2026-08-14T20:00:00.000Z",
+      provider: "rss",
+    } satisfies DiscoveryEvidence];
+    const tools = new FakeTools([], (request) => {
+      if (request.input.source === "hacker-news") throw new Error("HN unavailable");
+      if (request.input.source === "rss") return rssEvidence;
+      return [];
+    });
+    const runtime = new FakeRuntime({ candidates: [] });
+    const result = await new HunterOrchestrator(tools, runtime, new FakeSink() as never).runForAuthorizedBrand({
+      accountId: "account-1",
+      brand,
+      intelligenceProfile: aiProfile,
+      maxEvidence: 8,
+    });
+
+    expect(result).toEqual({ evidenceCount: 1, candidateCount: 0, opportunityCount: 0, degradedSources: ["hacker-news"] });
+    expect(tools.requests.filter((request) => request.input.source === "hacker-news")).toHaveLength(1);
+    expect(tools.requests.some((request) => request.input.source === "rss")).toBe(true);
+    expect(runtime.calls).toBe(1);
+  });
+
+  it("deduplicates the same canonical URL across providers before model judgment", async () => {
+    const tools = new FakeTools([], (request) => {
+      if (request.input.source === "rss") return [{
+        title: "Same story from RSS",
+        sourceUrl: "https://example.com/story?utm_source=rss&id=7",
+        platform: "rss",
+        retrievedAt: "2026-08-14T20:00:00.000Z",
+        provider: "rss",
+      }];
+      if (request.input.source === "youtube") return [{
+        title: "Same canonical evidence",
+        sourceUrl: "https://example.com/story?id=7&utm_campaign=video",
+        platform: "youtube",
+        retrievedAt: "2026-08-14T20:00:00.000Z",
+        provider: "youtube",
+      }];
+      return [];
+    });
+    const runtime = new FakeRuntime({ candidates: [] });
+    const result = await new HunterOrchestrator(tools, runtime, new FakeSink() as never).runForAuthorizedBrand({
+      accountId: "account-1",
+      brand,
+      intelligenceProfile: aiProfile,
+      maxEvidence: 8,
+    });
+
+    expect(result.evidenceCount).toBe(1);
+    const context = runtime.lastRequest?.task.context as { evidence?: unknown[] } | undefined;
+    expect(context?.evidence).toHaveLength(1);
   });
 
   it("returns zero opportunities without invoking the model when discovery returns no evidence", async () => {
