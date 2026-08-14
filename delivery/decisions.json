@@ -96,18 +96,18 @@
       "id": "DEC-008",
       "sliceId": "VS-11",
       "question": "Which pilot deployment topology and providers should host the certified Kairo V1 release?",
-      "status": "pending",
+      "status": "approved",
       "options": [
         "Split topology: managed Next.js frontend + container API + managed PostgreSQL",
         "Single-provider topology with compatible Next.js, container/API and PostgreSQL capabilities",
         "Another provider-neutral topology supported by current official capability, pricing and operational evidence"
       ],
-      "decision": null,
+      "decision": "Use a split non-production pilot topology: Vercel Hobby for the Next.js web application, Render Free Web Service in Frankfurt for the containerized Node.js/Fastify API, and Neon Free Postgres in AWS Europe (Frankfurt) with pgvector. Keep provider boundaries and exact-SHA release provenance. Before commercial use or production enablement, reassess and approve paid plans appropriate to the workload; Vercel Hobby is non-commercial and Render Free is not approved by Render for production applications.",
       "ownerRole": "product-architecture-and-operations",
-      "rationale": null,
-      "decidedBy": null,
-      "decidedAt": null,
-      "blocks": ["release","production-enable"]
+      "rationale": "This matches Kairo's current pilot profile: non-commercial use, zero-dollar monthly target, low traffic, accepted cold starts, Next.js previews, container API, PostgreSQL with pooling, and no PITR requirement. Vercel is the strongest fit for the existing Next.js frontend; Render supports Docker web services and Frankfurt deployment; Neon provides persistent serverless Postgres in Frankfurt and supports Postgres 18 with pgvector. The free tiers satisfy the bounded non-production pilot constraints without coupling Kairo domain boundaries to any provider. Production enablement remains a separate exact-SHA human gate and must include a plan/capacity reassessment.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-14T01:57:00+02:00",
+      "blocks": []
     }
   ]
 }
