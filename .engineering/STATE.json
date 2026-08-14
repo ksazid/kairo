@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-12","activeTask":"implementation","branch":"impl/vs12a-sector-aware-hunter","lastSuccessfulStep":"vs12a-routing-foundation-implemented","attempts":1,"blockers":[],"nextPermittedAction":"verify-and-enter-testing"}
+{"schemaVersion":1,"activeSlice":"VS-12","activeTask":"testing","branch":"impl/vs12a-sector-aware-hunter","lastSuccessfulStep":"vs12a-ci372-runtime-verification-passed","attempts":1,"blockers":[],"nextPermittedAction":"complete-spec-code-review-and-enter-certification"}
