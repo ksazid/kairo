@@ -7,13 +7,15 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-const auth = createNeonAuth({
-  baseUrl: requiredEnv("NEON_AUTH_BASE_URL"),
-  cookies: { secret: requiredEnv("NEON_AUTH_COOKIE_SECRET") },
-});
+function auth() {
+  return createNeonAuth({
+    baseUrl: requiredEnv("NEON_AUTH_BASE_URL"),
+    cookies: { secret: requiredEnv("NEON_AUTH_COOKIE_SECRET") },
+  });
+}
 
 export async function GET(request: NextRequest) {
-  const result = await auth.token();
+  const result = await auth().token();
   const value = result as { data?: { token?: unknown }; token?: unknown; error?: unknown };
   const token = typeof value.data?.token === "string"
     ? value.data.token.trim()
