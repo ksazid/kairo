@@ -3,17 +3,26 @@
   "sliceId": "VS-12",
   "title": "Sector-Aware Hunter Source Routing",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-03", "FR-04", "FR-06", "FR-07", "FR-08", "FR-20"],
+  "requirements": [
+    "FR-03",
+    "FR-04",
+    "FR-06",
+    "FR-07",
+    "FR-08",
+    "FR-20"
+  ],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-11"],
+  "dependencies": [
+    "VS-11"
+  ],
   "blockers": [],
   "allowedPaths": [
     "apps/worker/**",
@@ -32,7 +41,11 @@
     "apps/api/**"
   ],
   "impact": {
-    "areas": ["architecture", "analytics", "operations-support"],
+    "areas": [
+      "architecture",
+      "analytics",
+      "operations-support"
+    ],
     "notes": [
       "Extends the existing generic Hunter with deterministic sector-aware source policy and bounded query planning; it does not create sector-specific Hunter implementations.",
       "VS-12A adds no new external provider runtime, credential boundary, database migration, publishing behavior or product UI.",
@@ -69,12 +82,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-12@1.0",
+      "commitSha": "50a3017ac6705c4b58ec27776f68a90fdd4f9000",
+      "by": "Sazid Khan",
+      "at": "2026-08-14T21:52:00+02:00",
+      "rationale": "Approved exact-SHA certification and merge of PR #39 candidate 50a3017ac6705c4b58ec27776f68a90fdd4f9000 after CI #374, Security baseline #333 and Product Intake #260 passed on that exact SHA. Certification/merge only; release, production enablement, deployment and VS-12B/VS-12C provider expansion remain unauthorized."
     },
     {
       "type": "release",
@@ -83,7 +96,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": null
+      "rationale": "VS-12A certification and merge do not authorize a release."
     },
     {
       "type": "production-enable",
@@ -95,19 +108,22 @@
       "rationale": null
     }
   ],
-  "decisionIds": ["DEC-003", "DEC-005"],
+  "decisionIds": [
+    "DEC-003",
+    "DEC-005"
+  ],
   "progress": {
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 50,
+    "certification": 100,
     "release": 0,
     "validation": 100
   },
   "certification": {
-    "status": "running",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "50a3017ac6705c4b58ec27776f68a90fdd4f9000",
     "evidence": [
       "CI #372 passed on implementation verification head 47fa049b484769b410767c49305499ab324c40d5",
       "Security baseline #331 passed on implementation verification head 47fa049b484769b410767c49305499ab324c40d5",
@@ -115,7 +131,14 @@
       "CI #373 passed on testing head a5ad97f98ebc71388f588e61f922717571f6584a",
       "Security baseline #332 passed on testing head a5ad97f98ebc71388f588e61f922717571f6584a",
       "Product intake #259 passed on testing head a5ad97f98ebc71388f588e61f922717571f6584a",
-      "Specification and code-quality review found no protected-path or scope-boundary violation and no unresolved PR review threads."
+      "Specification and code-quality review found no protected-path or scope-boundary violation and no unresolved PR review threads.",
+      "CI #374 passed on exact certification candidate 50a3017ac6705c4b58ec27776f68a90fdd4f9000.",
+      "Security baseline #333 passed on exact certification candidate 50a3017ac6705c4b58ec27776f68a90fdd4f9000.",
+      "Product Intake #260 passed on exact certification candidate 50a3017ac6705c4b58ec27776f68a90fdd4f9000.",
+      "Human certification and merge approval recorded on PR #39 for exact SHA 50a3017ac6705c4b58ec27776f68a90fdd4f9000.",
+      "PR #39 merged at 4b5c9f16e9f81bc04a25a642d4ff875d4e524089 with certified candidate 50a3017ac6705c4b58ec27776f68a90fdd4f9000 as a parent.",
+      "Compare 50a3017ac6705c4b58ec27776f68a90fdd4f9000..4b5c9f16e9f81bc04a25a642d4ff875d4e524089 shows zero file changes; merge provenance is runtime-identical to the certified candidate.",
+      "Post-merge CI #375 passed on 4b5c9f16e9f81bc04a25a642d4ff875d4e524089, including immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build."
     ]
   },
   "release": {
@@ -138,6 +161,7 @@
     "evidence": [
       "delivery/context/VS-11.md",
       "delivery/context/VS-12.md",
+      "delivery/context/VS-12A-closeout.md",
       "docs/plans/VS-12-sector-aware-hunter.md",
       "docs/plans/VS-12A-implementation-map.md"
     ]
