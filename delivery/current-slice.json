@@ -3,7 +3,7 @@
   "sliceId": "VS-12",
   "title": "Sector-Aware Hunter Source Routing",
   "status": "active",
-  "lifecycle": "ready-for-implementation",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-03", "FR-04", "FR-06", "FR-07", "FR-08", "FR-20"],
@@ -99,11 +99,11 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 0,
-    "testing": 0,
+    "implementation": 80,
+    "testing": 25,
     "certification": 0,
     "release": 0,
-    "validation": 0
+    "validation": 25
   },
   "certification": {
     "status": "not-started",
@@ -126,7 +126,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-12.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/39",
     "evidence": [
       "delivery/context/VS-11.md",
       "delivery/context/VS-12.md",
