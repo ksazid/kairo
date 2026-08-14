@@ -3,36 +3,17 @@
   "sliceId": "VS-13",
   "title": "Free Discovery Adapters",
   "status": "active",
-  "lifecycle": "ready-for-implementation",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-06", "FR-07", "FR-20"],
-  "owners": {
-    "product": "Product Owner",
-    "engineering": "Engineering Owner",
-    "operations": "Operations Owner",
-    "security": "Security Owner"
-  },
+  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
   "dependencies": ["VS-12"],
   "blockers": [],
-  "allowedPaths": [
-    "apps/worker/**",
-    "packages/domain/**",
-    "packages/agent-contracts/**",
-    "tests/**",
-    "docs/slices/VS-13.md",
-    "docs/plans/**",
-    "delivery/**",
-    ".engineering/STATE.json"
-  ],
-  "protectedPaths": [
-    ".github/workflows/release.yml",
-    "infrastructure/**",
-    "apps/web/**",
-    "apps/api/**"
-  ],
+  "allowedPaths": ["apps/worker/**","packages/domain/**","packages/agent-contracts/**","tests/**","docs/slices/VS-13.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/web/**","apps/api/**"],
   "impact": {
-    "areas": ["architecture", "sensitive-data", "analytics", "operations-support"],
+    "areas": ["architecture","sensitive-data","analytics","operations-support"],
     "notes": [
       "Implements the planned VS-12B free/public source provider layer without creating sector-specific Hunter implementations.",
       "Adds outbound public network calls for approved RSS/Atom feeds, Hacker News v0, Bluesky public AppView and YouTube Data API.",
@@ -41,93 +22,19 @@
     ]
   },
   "approvals": [
-    {
-      "type": "scope",
-      "status": "approved",
-      "version": "VS-13@1.0",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-14T22:17:00+02:00",
-      "rationale": "Approved proceeding to the next planned phase after VS-12A certification: implement RSS/Atom, Hacker News, Bluesky and YouTube free/public discovery adapters behind the existing sector-aware generic Hunter."
-    },
-    {
-      "type": "policy",
-      "status": "approved",
-      "version": "DEC-009",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-14T22:17:00+02:00",
-      "rationale": "Approved DEC-009 provider/credential boundary: official/public APIs and approved feeds only, optional secret-scoped YouTube API key, provider isolation, deterministic budgets and no unrestricted scraping or user-session harvesting."
-    },
-    {
-      "type": "implementation",
-      "status": "approved",
-      "version": "VS-13@1.0",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-14T22:17:00+02:00",
-      "rationale": "Authorized runtime-enabled VS-13 implementation using PES/Loop + Superpowers/TDD within the approved provider, path, quota and credential boundaries."
-    },
-    {
-      "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
-    },
-    {
-      "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "VS-13 implementation does not authorize release or deployment."
-    },
-    {
-      "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
-    }
+    {"type":"scope","status":"approved","version":"VS-13@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Approved proceeding to the next planned phase after VS-12A certification: implement RSS/Atom, Hacker News, Bluesky and YouTube free/public discovery adapters behind the existing sector-aware generic Hunter."},
+    {"type":"policy","status":"approved","version":"DEC-009","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Approved DEC-009 provider/credential boundary: official/public APIs and approved feeds only, optional secret-scoped YouTube API key, provider isolation, deterministic budgets and no unrestricted scraping or user-session harvesting."},
+    {"type":"implementation","status":"approved","version":"VS-13@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Authorized runtime-enabled VS-13 implementation using PES/Loop + Superpowers/TDD within the approved provider, path, quota and credential boundaries."},
+    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-13 implementation does not authorize release or deployment."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
   ],
-  "decisionIds": ["DEC-009", "DEC-005"],
-  "progress": {
-    "discovery": 100,
-    "decisions": 100,
-    "implementation": 0,
-    "testing": 0,
-    "certification": 0,
-    "release": 0,
-    "validation": 0
-  },
-  "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
-  },
-  "release": {"status": "not-authorized", "releaseId": null},
-  "rollback": {"status": "not-applicable", "rollbackId": null},
-  "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
-  },
-  "links": {
-    "specification": "docs/slices/VS-13.md",
-    "implementationPr": null,
-    "evidence": [
-      "delivery/context/VS-12A-closeout.md",
-      "delivery/context/VS-13.md",
-      "docs/plans/VS-12-sector-aware-hunter.md",
-      "docs/plans/VS-13-implementation.md"
-    ]
-  },
+  "decisionIds": ["DEC-009","DEC-005"],
+  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "release": {"status":"not-authorized","releaseId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
+  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
+  "links": {"specification":"docs/slices/VS-13.md","implementationPr":"https://github.com/ksazid/kairo/pull/41","evidence":["delivery/context/VS-12A-closeout.md","delivery/context/VS-13.md","docs/plans/VS-12-sector-aware-hunter.md","docs/plans/VS-13-implementation.md"]},
   "maxAttempts": 3
 }
