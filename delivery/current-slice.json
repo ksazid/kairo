@@ -3,7 +3,7 @@
   "sliceId": "VS-12",
   "title": "Sector-Aware Hunter Source Routing",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-03", "FR-04", "FR-06", "FR-07", "FR-08", "FR-20"],
@@ -100,15 +100,23 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 80,
-    "certification": 0,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
-    "validation": 80
+    "validation": 100
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "CI #372 passed on implementation verification head 47fa049b484769b410767c49305499ab324c40d5",
+      "Security baseline #331 passed on implementation verification head 47fa049b484769b410767c49305499ab324c40d5",
+      "Product intake #258 passed on implementation verification head 47fa049b484769b410767c49305499ab324c40d5",
+      "CI #373 passed on testing head a5ad97f98ebc71388f588e61f922717571f6584a",
+      "Security baseline #332 passed on testing head a5ad97f98ebc71388f588e61f922717571f6584a",
+      "Product intake #259 passed on testing head a5ad97f98ebc71388f588e61f922717571f6584a",
+      "Specification and code-quality review found no protected-path or scope-boundary violation and no unresolved PR review threads."
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -131,10 +139,7 @@
       "delivery/context/VS-11.md",
       "delivery/context/VS-12.md",
       "docs/plans/VS-12-sector-aware-hunter.md",
-      "docs/plans/VS-12A-implementation-map.md",
-      "CI #372 passed on 47fa049b484769b410767c49305499ab324c40d5",
-      "Security baseline #331 passed on 47fa049b484769b410767c49305499ab324c40d5",
-      "Product intake #258 passed on 47fa049b484769b410767c49305499ab324c40d5"
+      "docs/plans/VS-12A-implementation-map.md"
     ]
   },
   "maxAttempts": 3
