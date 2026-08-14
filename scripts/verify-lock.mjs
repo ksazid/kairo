@@ -17,7 +17,11 @@ const before=canonical(JSON.parse(committed.stdout));
 const after=canonical(JSON.parse(currentLock));
 if(JSON.stringify(before)!==JSON.stringify(after)){
   console.error("package-lock.json is not synchronized with package manifests");
-  console.error(`KAIRO_REGENERATED_LOCK_GZIP_BASE64=${gzipSync(currentLock).toString("base64")}`);
+  const encoded=gzipSync(currentLock).toString("base64");
+  const chunkSize=700;
+  const chunks=[];
+  for(let offset=0;offset<encoded.length;offset+=chunkSize)chunks.push(encoded.slice(offset,offset+chunkSize));
+  chunks.forEach((chunk,index)=>console.error(`::warning title=KAIRO_LOCK_${String(index).padStart(3,"0")}_OF_${String(chunks.length).padStart(3,"0")}::${chunk}`));
   process.exit(1);
 }
 console.log("package-lock.json is semantically synchronized");
