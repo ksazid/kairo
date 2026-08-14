@@ -33,6 +33,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: {node-version: 24}
+      - name: Temporary REL-001 deployed API smoke
+        env:
+          KAIRO_API_URL: https://kairo-api-kebs.onrender.com
+          KAIRO_RELEASE_SHA: 84b778660f9d0152a7a0aa248317b476f15215d4
+        run: node scripts/pilot-smoke.mjs
       - run: npm install --no-audit --no-fund
       - name: Verify certified migrations on clean PostgreSQL 18
         env:
