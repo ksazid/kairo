@@ -60,11 +60,13 @@ export interface HunterRunResult {
   evidenceCount: number;
   candidateCount: number;
   opportunityCount: number;
+  degradedSources?: string[];
 }
 
 interface ExecutableDiscoveryPlan {
-  source: "agent-reach";
+  source: string;
   query: string;
+  explicit: boolean;
 }
 
 export class HunterOrchestrator {
@@ -79,23 +81,36 @@ export class HunterOrchestrator {
     const plans = executablePlans(input);
     if (!plans.length) return { evidenceCount: 0, candidateCount: 0, opportunityCount: 0 };
 
-    const boundedPlans = plans.slice(0, Math.min(plans.length, maxEvidence));
-    const maxResultsPerQuery = Math.max(1, Math.ceil(maxEvidence / boundedPlans.length));
+    // Source Registry/query planning owns the provider request ceilings. maxEvidence bounds the
+    // evidence set sent to the model, not which relevant providers are allowed to participate.
+    const maxResultsPerQuery = Math.max(1, Math.min(20, Math.ceil(maxEvidence / plans.length)));
     const discovered: DiscoveryEvidence[] = [];
+    const degradedSources = new Set<string>();
 
-    for (const plan of boundedPlans) {
+    for (const plan of plans) {
+      if (degradedSources.has(plan.source)) continue;
       const toolRequest = prepareToolRequest({
         capability: "public-content-search",
         scope: { visibility: "global-public" },
-        input: { query: plan.query, maxResults: maxResultsPerQuery },
+        input: {
+          query: plan.query,
+          maxResults: maxResultsPerQuery,
+          ...(plan.explicit ? {} : { source: plan.source }),
+        },
         timeoutMs: 20_000,
       });
-      const discovery = await this.tools.invoke<DiscoveryEvidence[]>(toolRequest);
-      discovered.push(...discovery.output);
+      try {
+        const discovery = await this.tools.invoke<DiscoveryEvidence[]>(toolRequest);
+        discovered.push(...discovery.output);
+      } catch {
+        // A provider is degraded for the rest of this run. Other providers continue; failure is
+        // surfaced in the run result rather than fabricated as successful empty evidence.
+        degradedSources.add(plan.source);
+      }
     }
 
     const evidence = uniqueEvidence(discovered).slice(0, maxEvidence);
-    if (!evidence.length) return { evidenceCount: 0, candidateCount: 0, opportunityCount: 0 };
+    if (!evidence.length) return withDegraded({ evidenceCount: 0, candidateCount: 0, opportunityCount: 0 }, degradedSources);
 
     const invocation = prepareAgentInvocation({
       role: "hunter",
@@ -155,7 +170,11 @@ export class HunterOrchestrator {
       if (saved.opportunity) opportunityCount += 1;
     }
 
-    return { evidenceCount: evidence.length, candidateCount: judgment.output.candidates.length, opportunityCount };
+    return withDegraded({
+      evidenceCount: evidence.length,
+      candidateCount: judgment.output.candidates.length,
+      opportunityCount,
+    }, degradedSources);
   }
 }
 
@@ -170,20 +189,15 @@ export function isHunterJudgmentOutput(value: unknown): value is HunterJudgmentO
 
 function executablePlans(input: HunterRunInput): ExecutableDiscoveryPlan[] {
   const explicit = input.query?.trim();
-  if (explicit) return [{ source: "agent-reach", query: explicit }];
+  if (explicit) return [{ source: "agent-reach", query: explicit, explicit: true }];
   if (input.query !== undefined && !explicit) throw new Error("Hunter query is required");
   if (!input.intelligenceProfile) throw new Error("Hunter requires an explicit query or Brand Intelligence Profile");
 
   const pack = selectSectorIntelligencePack(input.intelligenceProfile, Object.values(SECTOR_INTELLIGENCE_PACKS));
   if (!pack) throw new Error("No Sector Intelligence Pack matches the Brand Intelligence Profile");
   const policy = resolveBrandSourcePolicy(input.intelligenceProfile, pack, DEFAULT_SOURCE_REGISTRY);
-  const plan = planSourceQueries(input.intelligenceProfile, pack, policy, DEFAULT_SOURCE_REGISTRY);
-
-  // VS-12A intentionally executes only the already-operational provider. VS-12B will replace
-  // this filter with a provider registry without changing sector packs or policy resolution.
-  return plan
-    .filter((item) => item.source === "agent-reach")
-    .map((item) => ({ source: "agent-reach", query: item.query }));
+  return planSourceQueries(input.intelligenceProfile, pack, policy, DEFAULT_SOURCE_REGISTRY)
+    .map((item) => ({ source: item.source, query: item.query, explicit: false }));
 }
 
 function normalizeMaxEvidence(value: number | undefined): number {
@@ -202,11 +216,36 @@ function validScores(scores: HunterJudgmentCandidate["scores"] | undefined): boo
 
 function uniqueEvidence(items: DiscoveryEvidence[]): DiscoveryEvidence[] {
   const seen = new Set<string>();
-  return items.filter((item) => {
-    if (seen.has(item.sourceUrl)) return false;
-    seen.add(item.sourceUrl);
-    return true;
-  });
+  const result: DiscoveryEvidence[] = [];
+  for (const item of items) {
+    const key = canonicalEvidenceKey(item.sourceUrl);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+
+function canonicalEvidenceKey(sourceUrl: string): string {
+  try {
+    const url = new URL(sourceUrl);
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      const normalized = key.toLowerCase();
+      if (normalized.startsWith("utm_") || ["fbclid", "gclid", "dclid", "msclkid"].includes(normalized)) {
+        url.searchParams.delete(key);
+      }
+    }
+    url.searchParams.sort();
+    return url.toString().replace(/\?$/, "");
+  } catch {
+    return sourceUrl.trim();
+  }
+}
+
+function withDegraded(result: Omit<HunterRunResult, "degradedSources">, degraded: ReadonlySet<string>): HunterRunResult {
+  const sources = [...degraded].sort();
+  return sources.length ? { ...result, degradedSources: sources } : result;
 }
 
 function compactBrand(brand: BrandContextProjection) {
