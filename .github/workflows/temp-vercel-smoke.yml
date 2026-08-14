@@ -1,0 +1,29 @@
+name: TEMP REL-001 Vercel smoke
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Kairo Vercel preview
+        shell: bash
+        env:
+          KAIRO_WEB_URL: https://kairo-dbe3199vn-sazid62-gmailcoms-projects.vercel.app
+        run: |
+          set -euo pipefail
+          code=""
+          for attempt in $(seq 1 36); do
+            code=$(curl --silent --show-error --location --output /tmp/kairo-home.html --write-out '%{http_code}' "$KAIRO_WEB_URL/" || true)
+            echo "attempt=$attempt status=$code"
+            if [ "$code" = "200" ]; then break; fi
+            sleep 5
+          done
+          test "$code" = "200"
+          grep -q "Kairo" /tmp/kairo-home.html
+          sign_code=$(curl --silent --show-error --location --output /tmp/kairo-sign-in.html --write-out '%{http_code}' "$KAIRO_WEB_URL/sign-in" || true)
+          test "$sign_code" = "200"
+          grep -q "Sign in to Kairo" /tmp/kairo-sign-in.html
+          echo "Vercel preview smoke passed"
