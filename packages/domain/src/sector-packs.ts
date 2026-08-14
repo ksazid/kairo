@@ -1,0 +1,88 @@
+import type { SectorIntelligencePack } from "./source-policy";
+
+export const SECTOR_INTELLIGENCE_PACKS = {
+  "ai-technology": {
+    id: "ai-technology",
+    version: "1",
+    sector: "AI / SaaS / Developer Technology",
+    subsectors: ["Artificial Intelligence", "SaaS", "Developer Technology"],
+    topics: ["AI agents", "software architecture", "developer tools", "AI product development"],
+    sourceWeights: {
+      "agent-reach": 0.6,
+      rss: 0.95,
+      youtube: 0.9,
+      "hacker-news": 0.95,
+      bluesky: 0.7,
+      openalex: 0.5,
+      crossref: 0.4,
+    },
+    queryTemplates: [
+      "latest {topic}",
+      "{topic} {geography}",
+      "{sector} {topic}",
+    ],
+  },
+  "umrah-religious-travel": {
+    id: "umrah-religious-travel",
+    version: "1",
+    sector: "Umrah / Religious Travel",
+    subsectors: ["Umrah", "Pilgrimage", "Religious Travel"],
+    topics: ["Umrah visa", "pilgrimage guidance", "Makkah travel", "Madinah travel"],
+    sourceWeights: {
+      "agent-reach": 0.55,
+      rss: 1,
+      youtube: 0.9,
+      "hacker-news": 0,
+      bluesky: 0.25,
+      openalex: 0.1,
+      crossref: 0.1,
+    },
+    queryTemplates: [
+      "official {topic} {geography}",
+      "Umrah {topic}",
+      "religious travel {topic}",
+    ],
+  },
+  motorcycles: {
+    id: "motorcycles",
+    version: "1",
+    sector: "Motorcycles / Bikes",
+    subsectors: ["Motorcycles", "Bikes", "Electric Motorcycles"],
+    topics: ["motorcycle launches", "EV motorcycles", "motorcycle safety", "transport regulation"],
+    sourceWeights: {
+      "agent-reach": 0.6,
+      rss: 0.95,
+      youtube: 0.95,
+      "hacker-news": 0.2,
+      bluesky: 0.45,
+      openalex: 0.1,
+      crossref: 0.1,
+    },
+    queryTemplates: [
+      "motorcycle {topic}",
+      "automotive {topic} {geography}",
+      "transport regulation {topic}",
+    ],
+  },
+  "ias-upsc-education": {
+    id: "ias-upsc-education",
+    version: "1",
+    sector: "IAS / UPSC Education",
+    subsectors: ["UPSC", "IAS", "Civil Services Education"],
+    topics: ["UPSC current affairs", "public policy", "Indian government", "civil services preparation"],
+    sourceWeights: {
+      "agent-reach": 0.55,
+      rss: 1,
+      youtube: 0.8,
+      "hacker-news": 0.05,
+      bluesky: 0.2,
+      openalex: 0.2,
+      crossref: 0.2,
+    },
+    queryTemplates: [
+      "official India {topic}",
+      "UPSC IAS {topic}",
+      "government {topic} {geography}",
+    ],
+  },
+} as const satisfies Record<string, SectorIntelligencePack>;
