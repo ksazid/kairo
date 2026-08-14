@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-13","activeTask":"implementation","branch":"impl/vs13-free-discovery-adapters","lastSuccessfulStep":"vs13-scope-policy-implementation-approved","attempts":0,"blockers":[],"nextPermittedAction":"execute-superpowers-tdd-for-free-discovery-adapters"}
+{"schemaVersion":1,"activeSlice":"VS-13","activeTask":"testing","branch":"impl/vs13-free-discovery-adapters","lastSuccessfulStep":"vs13-implementation-ci388-security345-intake272-green","attempts":0,"blockers":[],"nextPermittedAction":"run-testing-gates-and-specification-review"}

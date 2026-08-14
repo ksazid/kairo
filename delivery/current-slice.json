@@ -3,7 +3,7 @@
   "sliceId": "VS-13",
   "title": "Free Discovery Adapters",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-06", "FR-07", "FR-20"],
@@ -30,8 +30,19 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
   ],
   "decisionIds": ["DEC-009","DEC-005"],
-  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":50,"certification":0,"release":0,"validation":100},
+  "certification": {
+    "status":"not-started",
+    "commitSha":null,
+    "evidence":[
+      "Implementation head 1f25f89b49f9dfb53b2c3fc12e74c8949906f19c",
+      "CI #388: PASS on implementation head, including immutable install, PostgreSQL 18 migrations, production dependency audit, preflight, full runtime verification and dashboard build.",
+      "Security baseline #345: PASS on implementation head.",
+      "Product Intake #272: PASS on implementation head.",
+      "PR #41 path review: changes confined to approved worker, governance and documentation paths; no protected API/web/infrastructure/release paths changed.",
+      "PR #41 review threads: none."
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
