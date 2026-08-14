@@ -33,6 +33,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: {node-version: 24}
+      - name: Regenerate dependency lock for review
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Refresh dependency lock digest for review
+        shell: bash
+        run: sha256sum package-lock.json | awk '{print $1}' > deployment/dependency-lock.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: regenerated-dependency-lock
+          path: |
+            package-lock.json
+            deployment/dependency-lock.sha256
+          if-no-files-found: error
       - run: npm ci --no-audit --no-fund
       - name: Verify certified migrations on clean PostgreSQL 18
         env:
