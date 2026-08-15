@@ -3,7 +3,7 @@
   "sliceId": "VS-20",
   "title": "Publishable Creative Media Pipeline",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-11", "FR-13", "FR-15", "FR-20"],
@@ -12,7 +12,7 @@
   "blockers": [],
   "allowedPaths": ["packages/domain/**","apps/worker/**","tests/**","docs/slices/VS-20.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
   "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
-  "impact": {"areas":["architecture","sensitive-data","operations-support"],"notes":["Generated media remains private and Brand scoped; temporary publishing URLs are bounded egress capabilities only.","The encoder boundary permits one configured FFmpeg executable through direct process invocation only; no shell or user-controlled command grammar.","No autonomous publishing, release, deployment or production enablement is authorized."]},
+  "impact": {"areas":["architecture","sensitive-data","operations-support"],"notes":["Generated media remains private and Brand scoped; temporary publishing URLs are bounded egress capabilities only.","The encoder boundary permits one configured FFmpeg executable through direct process invocation only; no shell or user-controlled command grammar.","Prepared media retains Workspace, Brand, exact Content Version, Claim, source fingerprint, object/hash, encoder-version and expiry lineage.","No autonomous publishing, release, deployment or production enablement is authorized."]},
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-20@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T14:52:00+02:00","rationale":"Explicitly approved VS-20 Publishable Creative Media Pipeline scope as defined in the prior proposal."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Approved PRD/TRD private object storage, deterministic publishing, provider-neutral boundaries and Brand isolation already govern this slice."},
@@ -22,11 +22,11 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":["VS-19 certified candidate 9da8f9f22e5cd76c3d3f9440d54f5a3f4f88d9ed merged via PR #50.","VS-19 governance closeout PR #51 merged as 051f2e023c7d8daab66f2405643f64f453baeb1a; post-merge main CI #492 PASS."]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":80,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":["VS-19 governance closeout merged as 051f2e023c7d8daab66f2405643f64f453baeb1a; post-merge main CI #492 PASS.","VS-20 activation 02f4723f0546b732b61b944a8633057516fb53ce and red TDD contract 0b4a10309c8b2a1e45d1d8d29d0bfd60d736a2df.","Initial runtime 67723ae3a524e2ab511247de2298ee971f8e0395 passed Security #440 and Product Intake #365; CI #495 failed on strict test-fixture typing and the failure is preserved.","Hardening 4a1b1104ce0714c7a64297d2d0a5b0ae07c3a318 added continuous Reel timing and private IPv6 egress rejection.","Lineage repair 95ad5c79b90539681f96926d1ea87dc72c556b26 added exact Content Version and Claim lineage; CI #498 exposed a test-fixture assertion mismatch and the failure is preserved.","Runtime freeze 7294d847cbe77a1d92f1f5655ee5f0c3e6b1e8f9 passed CI #499, Security baseline #444 and Product Intake #369 with clean migrations, dependency audit, governance/preflight, full runtime verification and dashboard build."]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-20.md","implementationPr":null,"evidence":["delivery/context/VS-19-closeout.md","delivery/context/VS-20.md","docs/plans/VS-20-publishable-creative-media.md"]},
+  "links": {"specification":"docs/slices/VS-20.md","implementationPr":"https://github.com/ksazid/kairo/pull/52","evidence":["delivery/context/VS-19-closeout.md","delivery/context/VS-20.md","docs/plans/VS-20-publishable-creative-media.md"]},
   "maxAttempts": 3
 }
