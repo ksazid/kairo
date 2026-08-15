@@ -47,6 +47,7 @@ class Meta implements MetaInstagramOAuthPort {
     expect(code).toBe("meta-code");
     return {
       grantedScopes: ["instagram_basic", "instagram_content_publish", "instagram_manage_insights", "pages_read_engagement", "pages_show_list"],
+      userAccessToken: "secret-user-token",
       accounts: [
         { pageRef: "page-1", pageName: "Page One", accountRef: "111", displayName: "One", username: "one", pageAccessToken: "secret-page-token-1" },
         { pageRef: "page-2", pageName: "Page Two", accountRef: "222", displayName: "Two", username: "two", pageAccessToken: "secret-page-token-2" },
@@ -92,19 +93,23 @@ describe("VS-17 Instagram connection", () => {
     expect(saved).toHaveLength(0);
     await expect(instance.complete("alice", "meta-code", state)).rejects.toThrow(/expired|invalid|used/i);
     expect(JSON.stringify(repo.candidates)).not.toContain("secret-page-token");
+    expect(JSON.stringify(repo.candidates)).not.toContain("secret-user-token");
   });
 
-  it("selects one candidate, creates the existing ChannelAccount seam and revokes unselected credentials", async () => {
+  it("selects one candidate, preserves separate publish/Insights credentials and revokes both unselected secrets", async () => {
     const { instance, vault, saved } = service();
     const started = await instance.begin("alice", "brand-1");
     const state = new URL(started.authorizationUrl).searchParams.get("state")!;
     const completed = await instance.complete("alice", "meta-code", state);
     if (completed.status !== "selection-required") throw new Error("expected selection");
+    expect(vault.values.size).toBe(4);
     const selected = await instance.select("alice", "brand-1", completed.intentId, completed.candidates[0]!.id);
     expect(selected).toMatchObject({ channel: "instagram", accountRef: "111", status: "connected" });
     expect(selected.capabilities).toEqual(expect.arrayContaining(["publish-image", "publish-carousel", "publish-reel"]));
     expect(saved).toHaveLength(1);
-    expect(vault.revoked).toHaveLength(1);
+    expect(vault.revoked).toHaveLength(2);
+    expect(vault.values.size).toBe(2);
+    expect(selected.credentialRef).toContain(":publish:");
     expect(selected.credentialRef).not.toContain("secret-page-token");
   });
 });
