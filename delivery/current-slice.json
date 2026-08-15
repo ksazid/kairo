@@ -3,7 +3,7 @@
   "sliceId": "VS-15",
   "title": "Instagram Reel and Image Carousel Publishing",
   "status": "active",
-  "lifecycle": "ready-for-implementation",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
@@ -30,11 +30,11 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize production enablement or autonomous publishing."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":0,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":5,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":["Red TDD head 37063a25092836da1b0017e63812cfc375a25b11 defines domain media-shape/capability rules, Postgres media hydration and deterministic Meta Reel/carousel provider behavior before runtime implementation."]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-15.md","implementationPr":null,"evidence":["delivery/context/VS-14-closeout.md","docs/plans/VS-15-instagram-rich-publishing.md"]},
+  "links": {"specification":"docs/slices/VS-15.md","implementationPr":"https://github.com/ksazid/kairo/pull/45","evidence":["delivery/context/VS-14-closeout.md","delivery/context/VS-15.md","docs/plans/VS-15-instagram-rich-publishing.md","docs/plans/VS-15-test-matrix.md"]},
   "maxAttempts": 3
 }
