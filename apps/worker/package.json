@@ -17,7 +17,8 @@
     "./instagram-insights": "./src/instagram-insights.ts",
     "./learner": "./src/learner.ts",
     "./creative-renderer": "./src/creative-renderer.ts",
-    "./marketing-shadow": "./src/marketing-shadow.ts"
+    "./marketing-shadow": "./src/marketing-shadow.ts",
+    "./marketing-shadow-comparison": "./src/marketing-shadow-comparison.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
