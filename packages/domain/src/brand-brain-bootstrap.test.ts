@@ -117,9 +117,9 @@ class FakeGenerator implements BrandBrainProposalGenerator {
   async propose() {
     this.calls += 1;
     return [
-      { section: "positioning" as const, fieldKey: "positioning.market-position", value: "Rider-first Duke 390 media focused on useful ownership and riding insight." },
-      { section: "audience" as const, fieldKey: "audience.primary", value: "Duke 390 owners, prospective owners and performance-bike enthusiasts." },
-      { section: "boundaries" as const, fieldKey: "boundaries.sensitive-subjects", value: "Safety-critical modifications and risky public-road riding require extra care." },
+      { section: "positioning" as const, fieldKey: "positioning.market-position", value: "Rider-first Duke 390 media focused on useful ownership and riding insight.", sourceIds: ["source-1"] },
+      { section: "audience" as const, fieldKey: "audience.primary", value: "Duke 390 owners, prospective owners and performance-bike enthusiasts.", sourceIds: ["source-1"] },
+      { section: "boundaries" as const, fieldKey: "boundaries.sensitive-subjects", value: "Safety-critical modifications and risky public-road riding require extra care.", sourceIds: ["source-1"] },
     ];
   }
 }
@@ -171,6 +171,16 @@ describe("BrandBrainBootstrapService", () => {
 
     expect(repository.fields.find((field) => field.fieldKey === "audience.primary")?.value).toBe("Confirmed owner audience");
     expect(result.skippedConfirmedCount).toBe(1);
+  });
+
+  it("rejects proposal provenance that does not belong to the inspected Brand references", async () => {
+    const repository = new FakeRepository();
+    const generator: BrandBrainProposalGenerator = {
+      propose: async () => [{ section: "audience", fieldKey: "audience.primary", value: "Unsupported audience", sourceIds: ["foreign-source"] }],
+    };
+    const service = new BrandBrainBootstrapService(repository, generator, new FakeReferenceReader());
+
+    await expect(service.build("account-1", "brand-1", { primaryObjective: "grow-audience" })).rejects.toThrow(/provenance/i);
   });
 
   it("can save owner intent without inventing inferred fields when no generator is configured", async () => {
