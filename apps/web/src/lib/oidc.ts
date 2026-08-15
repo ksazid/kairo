@@ -17,7 +17,13 @@ export function createRetryableAsyncCache<T>(loader: () => Promise<T>): Retryabl
     get() {
       if (current) return current;
 
-      const pending = Promise.resolve().then(loader);
+      let pending: Promise<T>;
+      try {
+        pending = loader();
+      } catch (error) {
+        return Promise.reject(error);
+      }
+
       current = pending;
       void pending.catch(() => {
         if (current === pending) current = undefined;
