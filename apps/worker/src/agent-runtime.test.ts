@@ -99,7 +99,15 @@ describe("VS-03 Hermes reasoning-only adapter", () => {
       async generate<TOutput>(_request: ModelGatewayRequest): Promise<ModelGatewayResult<TOutput>> {
         return {
           output: validOutput as TOutput,
-          metadata: { provider: "fixture", model: "direct", inputTokens: 8, outputTokens: 4, costUsd: 0, latencyMs: 3 },
+          metadata: {
+            provider: "fixture",
+            model: "direct",
+            inputTokens: 8,
+            outputTokens: 4,
+            costUsd: 0.0012,
+            pricingVersion: "fixture-pricing-v1",
+            latencyMs: 3,
+          },
         };
       }
     }
@@ -117,6 +125,10 @@ describe("VS-03 Hermes reasoning-only adapter", () => {
 
     const result = await new AgentRuntimeRouter(brokenHermes, direct).invoke<typeof validOutput>(request());
     expect(result.output).toEqual(validOutput);
-    expect(result.metadata.runtime).toBe("direct-model");
+    expect(result.metadata).toMatchObject({
+      runtime: "direct-model",
+      costUsd: 0.0012,
+      pricingVersion: "fixture-pricing-v1",
+    });
   });
 });
