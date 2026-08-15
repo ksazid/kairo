@@ -9,6 +9,7 @@
     "./discovery-provider": "./src/discovery-provider.ts",
     "./public-discovery-adapters": "./src/public-discovery-adapters.ts",
     "./research-evidence-adapters": "./src/research-evidence-adapters.ts",
+    "./brand-brain-builder": "./src/brand-brain-builder.ts",
     "./drafter": "./src/drafter.ts",
     "./reviewer": "./src/reviewer.ts",
     "./agent-runtime": "./src/agent-runtime.ts",
