@@ -1,21 +1,19 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { BuildBrandBrainRequest } from "@kairo/contracts";
-import type { AgentRuntimePort } from "@kairo/agent-contracts";
 import { KairoService, type KairoRepository } from "@kairo/domain";
-import { BrandBrainBootstrapService } from "@kairo/domain/brand-brain-bootstrap";
-import { BrandBrainBuilder } from "@kairo/worker/brand-brain-builder";
+import { BrandBrainBootstrapService, type BrandBrainProposalGenerator } from "@kairo/domain/brand-brain-bootstrap";
 import type { IdentityVerifier } from "./auth";
 import { PublicBrandReferenceHttpReader } from "./public-brand-reference";
 
 export function registerGuidedBrandBrainRoutes(app: FastifyInstance, options: {
   store: KairoRepository;
   identityVerifier: IdentityVerifier;
-  runtime?: AgentRuntimePort;
+  generator?: BrandBrainProposalGenerator;
 }) {
   const core = new KairoService(options.store);
   const service = new BrandBrainBootstrapService(
     options.store,
-    options.runtime ? new BrandBrainBuilder(options.runtime) : undefined,
+    options.generator,
     new PublicBrandReferenceHttpReader(),
   );
 
