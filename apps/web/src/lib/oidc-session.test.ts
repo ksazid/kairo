@@ -43,15 +43,18 @@ describe("OIDC session helpers", () => {
       createdAt: now,
     }, TEST_SECRET);
     const [payload, signature] = encoded.split(".");
+    if (!payload || !signature) throw new Error("Expected signed transaction");
+
     const tamperedPayload = Buffer.from(JSON.stringify({
       state: "attacker-state",
       codeVerifier: "attacker-verifier",
       returnTo: "/",
       createdAt: now,
     }), "utf8").toString("base64url");
+    const tamperedSignature = `${signature.startsWith("A") ? "B" : "A"}${signature.slice(1)}`;
 
     expect(decodeOidcTransaction(`${tamperedPayload}.${signature}`, TEST_SECRET, now)).toBeNull();
-    expect(decodeOidcTransaction(`${payload}.${signature?.slice(0, -1)}A`, TEST_SECRET, now)).toBeNull();
+    expect(decodeOidcTransaction(`${payload}.${tamperedSignature}`, TEST_SECRET, now)).toBeNull();
     expect(decodeOidcTransaction(encoded, "wrong-secret", now)).toBeNull();
   });
 
