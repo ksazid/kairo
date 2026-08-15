@@ -1,7 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { BuildBrandBrainRequest } from "@kairo/contracts";
 import type { AgentRuntimePort } from "@kairo/agent-contracts";
-import { BrandBrainBootstrapService, KairoService, type KairoRepository } from "@kairo/domain";
+import { KairoService, type KairoRepository } from "@kairo/domain";
+import { BrandBrainBootstrapService } from "@kairo/domain/brand-brain-bootstrap";
 import { BrandBrainBuilder } from "@kairo/worker/brand-brain-builder";
 import type { IdentityVerifier } from "./auth";
 import { PublicBrandReferenceHttpReader } from "./public-brand-reference";
