@@ -1,52 +1,40 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-14",
-  "title": "Marketing Lab Benchmark Foundation",
+  "sliceId": "VS-15",
+  "title": "Instagram Reel and Image Carousel Publishing",
   "status": "active",
-  "lifecycle": "certification",
-  "riskLevel": "medium",
+  "lifecycle": "ready-for-implementation",
+  "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-09", "FR-11", "FR-12", "FR-16", "FR-17", "FR-18", "FR-19", "FR-20"],
+  "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-05", "VS-06", "VS-08", "VS-09", "VS-13"],
+  "dependencies": ["VS-07", "VS-10", "VS-14"],
   "blockers": [],
-  "allowedPaths": ["packages/domain/**","apps/worker/**","evaluation/**","docs/slices/VS-14.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/web/**","apps/api/**"],
+  "allowedPaths": ["packages/domain/**","apps/worker/**","apps/api/**","apps/api/migrations/**","tests/**","docs/slices/VS-15.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/web/**"],
   "impact": {
-    "areas": ["architecture", "analytics", "operations-support", "sensitive-data"],
+    "areas": ["architecture", "api", "database", "sensitive-data", "customer-flow", "operations-support"],
     "notes": [
-      "Establishes a Kairo-owned Marketing Lab, Skill Registry foundation and deterministic benchmark policy for comparing native and external marketing capabilities.",
-      "Corey Haines marketingskills is pinned as an evaluation/reference challenger only; no arbitrary external skill execution, network access, secrets or production Brand selection is enabled in VS-14.",
-      "Carousel and Reel strategy become first-class benchmark artifact shapes, but Instagram carousel/Reel publishing, OAuth, Insights and media rendering remain separate future slices.",
-      "Truth/Claims, Brand isolation, human approval, publishing authority and metric provenance remain non-replaceable Kairo controls."
+      "Repairs the existing publishing execution gap where PostgreSQL worker jobs currently hydrate mediaUrls as an empty list, preventing real Instagram media dispatch.",
+      "Adds explicit Reel publishing and image-carousel publishing to the existing deterministic Instagram Professional adapter; no unrestricted agent behavior is introduced.",
+      "Persists typed public media descriptors and bounded Instagram publishing options with approved content lineage, existing credential references and existing human approval requirements.",
+      "Instagram OAuth, Insights, mixed video carousels, media generation/rendering, autonomous publishing, release and production enablement remain outside VS-15."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-14@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T03:35:00+02:00","rationale":"Approved planning and implementation of the Kairo Marketing Lab: Kairo Native vs Corey Skills vs future skills through a benchmark harness, Skill Registry and Brand-specific evidence-based winner selection, with Reels and carousels treated as benchmark formats."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"The approved TRD and Skills Architecture already require external skills to be pinned, provenance/permission reviewed, benchmarked and explicitly promoted. VS-14 implements that existing policy and narrows Corey to reference-only evaluation."},
-    {"type":"implementation","status":"approved","version":"VS-14@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T03:35:00+02:00","rationale":"Authorized runtime-enabled implementation of the benchmark/registry foundation under PES/Loop + Superpowers/TDD. External arbitrary skill execution, live skill promotion, social publishing changes and production enablement are excluded."},
-    {"type":"certification","status":"pending","version":"VS-14@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after final certification gates pass."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-14 does not authorize release or deployment."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-14 does not authorize production enablement or automatic Brand skill switching."}
+    {"type":"scope","status":"approved","version":"VS-15@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:05:00+02:00","rationale":"After approving VS-14 certification and merge, Sazid Khan explicitly instructed 'go next'. The previously stated next bounded capability was Reels + Carousel publishing. VS-15 narrows that continuation to Instagram Reels, image carousels and the required end-to-end media binding path."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing FR-13/FR-15, credential isolation, deterministic publishing, human approval, retry/unknown-outcome rules and provider-adapter boundaries already govern this extension. No autonomy or credential policy change is introduced."},
+    {"type":"implementation","status":"approved","version":"VS-15@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:05:00+02:00","rationale":"Authorized continuation into the next planned implementation slice. Runtime work is restricted to the approved Reel/image-carousel publishing and media-binding scope under PES/Loop + Superpowers/TDD."},
+    {"type":"certification","status":"pending","version":"VS-15@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after implementation, tests and security/CI gates pass."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize release or deployment."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize production enablement or autonomous publishing."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":25,"release":0,"validation":75},
-  "certification": {
-    "status":"running",
-    "commitSha":null,
-    "evidence":[
-      "Implementation verification head 27261d36de4929c7c3cca92089f25d9effe7f39a: CI #406 PASS, Security baseline #361 PASS, Product Intake #287 PASS.",
-      "Testing lifecycle head 3fb899a8658a36e23ec6ab57d439a19e9e43caf5: CI #408 PASS, Security baseline #363 PASS, Product Intake #289 PASS.",
-      "CI #408 passed immutable install, PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build on the frozen Marketing Lab runtime tree.",
-      "PR #44 scope review contains only governance/docs, evaluation/marketing-lab and packages/domain paths; no API, web, database migration, infrastructure, publishing adapter, release workflow or dependency-lock changes.",
-      "Corey challenger metadata is pinned to coreyhaines31/marketingskills@7868cb9251fad80a73d26e488a5ad5f6c4a9f335 with exact per-skill content hashes and reference-only zero-permission policy.",
-      "Benchmark tests enforce exact input fingerprints and skill versions, Truth as a hard gate, tie/insufficient-evidence fallback to Kairo Native, cost/latency guardrails, staged offline-shadow-live advancement, Brand-scoped qualification, and separate sandbox benchmark versus production execution permissions.",
-      "Creative-format tests validate Claim-linked CarouselPlan and ReelPlan structures; Meta Reel/carousel publishing remains explicitly outside VS-14."
-    ]
-  },
+  "progress": {"discovery":100,"decisions":100,"implementation":0,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-14.md","implementationPr":"https://github.com/ksazid/kairo/pull/44","evidence":["evaluation/SKILLS-ARCHITECTURE.md","evaluation/marketing-lab/corey-marketingskills.json","evaluation/marketing-lab/benchmark-cases.json","delivery/context/VS-13-closeout.md","delivery/context/VS-14.md","docs/plans/VS-14-marketing-lab.md"]},
+  "links": {"specification":"docs/slices/VS-15.md","implementationPr":null,"evidence":["delivery/context/VS-14-closeout.md","docs/plans/VS-15-instagram-rich-publishing.md"]},
   "maxAttempts": 3
 }
