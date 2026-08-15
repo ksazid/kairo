@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { oidcClient, oidcConfiguration } from "../../../src/lib/oidc";
+import { oidcClient, oidcClientSecret, oidcConfiguration } from "../../../src/lib/oidc";
 import { decodeOidcTransaction, jwtSecondsRemaining, KAIRO_ACCESS_TOKEN_COOKIE, OIDC_TRANSACTION_COOKIE } from "../../../src/lib/oidc-session";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,10 @@ function signInFailure(request: NextRequest, message: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const transaction = decodeOidcTransaction(request.cookies.get(OIDC_TRANSACTION_COOKIE)?.value);
+  const transaction = decodeOidcTransaction(
+    request.cookies.get(OIDC_TRANSACTION_COOKIE)?.value,
+    oidcClientSecret(),
+  );
   if (!transaction) return signInFailure(request, "Authentication session expired. Please sign in again.");
 
   try {
