@@ -52,6 +52,7 @@ export interface AgentInvocationMetadata {
   inputTokens?: number;
   outputTokens?: number;
   costUsd?: number;
+  pricingVersion?: string;
   latencyMs: number;
 }
 
@@ -95,6 +96,7 @@ export interface ModelInvocationMetadata {
   inputTokens: number;
   outputTokens: number;
   costUsd?: number;
+  pricingVersion?: string;
   latencyMs: number;
 }
 

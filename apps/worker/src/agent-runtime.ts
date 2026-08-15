@@ -27,7 +27,7 @@ interface HermesBridgeResponse {
   output?: unknown;
   metadata?: {
     provider?: string; model?: string; modelVersion?: string;
-    inputTokens?: number; outputTokens?: number; costUsd?: number; latencyMs?: number;
+    inputTokens?: number; outputTokens?: number; costUsd?: number; pricingVersion?: string; latencyMs?: number;
   };
 }
 
@@ -92,6 +92,7 @@ export class HermesBridgeRuntime implements AgentRuntimePort {
           ...(numberOrUndefined(payload.metadata?.inputTokens) !== undefined ? { inputTokens: payload.metadata!.inputTokens } : {}),
           ...(numberOrUndefined(payload.metadata?.outputTokens) !== undefined ? { outputTokens: payload.metadata!.outputTokens } : {}),
           ...(numberOrUndefined(payload.metadata?.costUsd) !== undefined ? { costUsd: payload.metadata!.costUsd } : {}),
+          ...(payload.metadata?.pricingVersion ? { pricingVersion: payload.metadata.pricingVersion } : {}),
           latencyMs: Math.max(0, payload.metadata?.latencyMs ?? Math.round(performance.now() - started)),
         },
       };
@@ -139,6 +140,7 @@ export class DirectModelRuntime implements AgentRuntimePort {
         inputTokens: result.metadata.inputTokens,
         outputTokens: result.metadata.outputTokens,
         costUsd: result.metadata.costUsd,
+        ...(result.metadata.pricingVersion ? { pricingVersion: result.metadata.pricingVersion } : {}),
         latencyMs: result.metadata.latencyMs,
       },
     };
