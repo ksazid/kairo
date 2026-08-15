@@ -30,11 +30,12 @@ describe("VS-21 pilot navigation contract", () => {
     expect(more).toContain("/operations");
   });
 
-  it("Campaigns, Content Studio and Performance keep the mobile pilot navigation mounted", () => {
+  it("Campaigns, Content Studio, Performance and Operations keep the mobile pilot navigation mounted", () => {
     const pages = [
       source("../app/brands/[brandId]/campaigns/page.tsx"),
       source("../app/brands/[brandId]/campaigns/[campaignId]/page.tsx"),
       source("../app/brands/[brandId]/performance/page.tsx"),
+      source("../app/brands/[brandId]/operations/page.tsx"),
     ];
     for (const page of pages) expect(page).toContain("PilotMobileNav");
   });
