@@ -15,6 +15,10 @@ import{registerReadinessRoutes}from"./readiness-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{DrafterGenerationAdapter}from"./drafter-adapter";
+import{InstagramConnectionService}from"./instagram-connection";
+import{PgEncryptedChannelCredentialVault,PgInstagramConnectionRepository}from"./instagram-connection-postgres";
+import{MetaInstagramOAuthClient}from"./meta-instagram-oauth";
+import{registerInstagramConnectionRoutes}from"./instagram-connection-routes";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -24,6 +28,7 @@ function requiredEnv(name: string): string {
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const coreStore=new PgKairoRepository(pool);
+const publishingStore=new PgPublishingRepository(pool);
 const operationsStore=new PgOperationsRepository(pool);
 const telemetrySink=new PgOperationsTelemetrySink(pool,operationsStore);
 const gateway=openAICompatibleGatewayFromEnv();
@@ -41,7 +46,7 @@ const app = buildApp({
   researchStore: new PgResearchRepository(pool),
   campaignStore: new PgCampaignRepository(pool),
   reviewStore:new PgReviewRepository(pool),
-  publishingStore:new PgPublishingRepository(pool),
+  publishingStore,
   analyticsStore:new PgAnalyticsRepository(pool),
   learningStore:new PgLearningRepository(pool),
   ...(contentGenerator?{contentGenerator}:{}),
@@ -51,6 +56,20 @@ const app = buildApp({
 });
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:async()=>{await pool.query("select 1")}});
+
+const meta=metaInstagramConfig();
+if(meta){
+  const vault=new PgEncryptedChannelCredentialVault(pool,meta.encryptionKey);
+  const connectionRepo=new PgInstagramConnectionRepository(pool);
+  const connectionService=new InstagramConnectionService({
+    brands:coreStore,
+    publishing:publishingStore,
+    repo:connectionRepo,
+    vault,
+    meta:new MetaInstagramOAuthClient(meta.appId,meta.appSecret,meta.graphVersion,meta.redirectUri),
+  });
+  registerInstagramConnectionRoutes(app,{coreStore,identityVerifier,service:connectionService});
+}
 
 const port = Number(process.env.PORT ?? "4000");
 const host = process.env.HOST ?? "0.0.0.0";
@@ -70,3 +89,12 @@ async function shutdown(): Promise<void> {
 
 process.once("SIGTERM", () => void shutdown());
 process.once("SIGINT", () => void shutdown());
+
+function metaInstagramConfig(){
+  const names=["META_APP_ID","META_APP_SECRET","META_GRAPH_VERSION","META_OAUTH_REDIRECT_URI","CHANNEL_CREDENTIAL_ENCRYPTION_KEY"] as const;
+  const values=Object.fromEntries(names.map(name=>[name,process.env[name]?.trim()??""])) as Record<(typeof names)[number],string>;
+  if(names.every(name=>!values[name]))return null;
+  const missing=names.filter(name=>!values[name]);
+  if(missing.length)throw new Error(`Meta Instagram configuration is incomplete: ${missing.join(", ")}`);
+  return{appId:values.META_APP_ID,appSecret:values.META_APP_SECRET,graphVersion:values.META_GRAPH_VERSION,redirectUri:values.META_OAUTH_REDIRECT_URI,encryptionKey:values.CHANNEL_CREDENTIAL_ENCRYPTION_KEY};
+}
