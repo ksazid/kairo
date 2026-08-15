@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-13","activeTask":"certified-await-next-slice","branch":"main","lastSuccessfulStep":"vs13-certified-merged-postmerge-ci391-passed","attempts":0,"blockers":[],"nextPermittedAction":"request-scope-and-implementation-approval-for-next-governed-slice"}
+{"schemaVersion":1,"activeSlice":"VS-14","activeTask":"marketing-lab-benchmark-foundation","branch":"impl/vs14-marketing-lab","lastSuccessfulStep":"vs14-scope-and-implementation-approved","attempts":0,"blockers":[],"nextPermittedAction":"superpowers-plan-then-tdd-implementation"}
