@@ -3,7 +3,7 @@
   "sliceId": "VS-21",
   "title": "Pilot End-to-End Validation and Hardening",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01","FR-02","FR-03","FR-04","FR-05","FR-06","FR-07","FR-08","FR-09","FR-10","FR-11","FR-12","FR-13","FR-14","FR-15","FR-16","FR-17","FR-18","FR-19","FR-20"],
@@ -30,9 +30,9 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":75,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":80,"release":0,"validation":0},
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
     "evidence": [
       "VS-20 certified and merged; governance closeout merged as 432a65e02cfd678d13b76bf14c4dce7bc4db2654 and post-closeout main CI #504 passed.",
@@ -42,10 +42,10 @@
       "Technical matrix repair 70f8fd1c4cf29fdfe079f03ac2109844bd5efbcc passed CI #508, Security #451 and Product Intake #376 across four proof sectors and carousel/Reel paths.",
       "UX review found stale navigation that labelled implemented Campaigns, Calendar and Performance as Later and left mobile pilot paths incomplete; bounded navigation/resilience fixes were added with regression coverage.",
       "CI #518 preserved a compatibility defect after mobile navigation refactoring: Idea detail still imported MobileIdeasNav; the compatibility wrapper was restored.",
-      "Combined hardening head 3c90f5c2e0d8197795e5f4a314f9b75db1265b3a passed CI #520, Security #463 and Product Intake #388.",
-      "Post-pilot roadmap was recorded as proposed/specification-only VS-22/VS-23/VS-24 backlog entries with no runtime authorization.",
-      "Runtime freeze head dfb664f9b81a82259660c6b6346a051f5a90714d passed CI #523, Security baseline #466 and Product Intake #391 with immutable install, clean PostgreSQL 18 migrations, zero-high production dependency audit, governance/preflight, full runtime verification, pilot matrix, route resilience tests and dashboard build.",
-      "PR #54 scope review found no protected-path changes and zero unresolved review threads."
+      "Runtime freeze dfb664f9b81a82259660c6b6346a051f5a90714d passed CI #523, Security baseline #466 and Product Intake #391 with immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification, four-sector pilot matrix, navigation/resilience coverage and dashboard build.",
+      "Formal testing head 6e0e9940a926dcb75d4d913a0fa220ff3063a194 passed CI #524, Security baseline #467 and Product Intake #392 on the frozen runtime.",
+      "PR #54 scope review found no protected-path changes and zero unresolved review threads.",
+      "Real Auth0 deployed callback and production Meta publish/Insights/App Review remain external operational evidence and were not falsely certified by deterministic CI."
     ]
   },
   "release": {"status":"not-authorized","releaseId":null},
