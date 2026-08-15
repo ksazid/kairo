@@ -93,8 +93,21 @@ export class AgentReachDiscoveryProvider implements DiscoverySourceProvider {
   }
 }
 
-export class KairoToolGateway implements ToolGatewayPort {
-  constructor(private readonly discovery: DiscoverySourceProvider) {}
+/**
+ * Kairo-owned provider router. Provider credentials stay inside concrete adapters; the ToolRequest
+ * carries only the public source key, query and bounded result count.
+ */
+export class SourceRoutingToolGateway implements ToolGatewayPort {
+  private readonly providers: ReadonlyMap<string, DiscoverySourceProvider>;
+
+  constructor(
+    private readonly fallback: DiscoverySourceProvider,
+    providers: Readonly<Record<string, DiscoverySourceProvider>> = {},
+  ) {
+    this.providers = new Map(
+      Object.entries(providers).map(([key, provider]) => [normalizeSourceKey(key), provider]),
+    );
+  }
 
   async invoke<TOutput>(request: ToolRequest): Promise<ToolResult<TOutput>> {
     if (request.capability !== "public-content-search") throw new DiscoveryProviderError("Tool capability is not implemented by this gateway");
@@ -102,7 +115,12 @@ export class KairoToolGateway implements ToolGatewayPort {
     if (!query) throw new DiscoveryProviderError("public-content-search requires query");
     const requestedMax = request.input.maxResults;
     const maxResults = typeof requestedMax === "number" ? requestedMax : 8;
-    const evidence = await this.discovery.discover({ query, scope: request.scope, maxResults, timeoutMs: request.timeoutMs });
+    const requestedSource = typeof request.input.source === "string" ? request.input.source.trim() : "";
+    const source = requestedSource ? normalizeSourceKey(requestedSource) : "agent-reach";
+    const provider = source === "agent-reach" ? this.fallback : this.providers.get(source);
+    if (!provider) throw new DiscoveryProviderError(`Discovery source ${source} is not registered`);
+
+    const evidence = await provider.discover({ query, scope: request.scope, maxResults, timeoutMs: request.timeoutMs });
     return {
       output: evidence as TOutput,
       provenance: evidence.map((item) => ({
@@ -113,4 +131,17 @@ export class KairoToolGateway implements ToolGatewayPort {
       })),
     };
   }
+}
+
+/** Backward-compatible Agent-Reach-only gateway retained for existing callers. */
+export class KairoToolGateway extends SourceRoutingToolGateway {
+  constructor(discovery: DiscoverySourceProvider) {
+    super(discovery);
+  }
+}
+
+function normalizeSourceKey(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (!/^[a-z0-9][a-z0-9._-]{0,79}$/.test(normalized)) throw new DiscoveryProviderError("Discovery source key is invalid");
+  return normalized;
 }
