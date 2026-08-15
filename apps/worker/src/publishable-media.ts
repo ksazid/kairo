@@ -21,10 +21,15 @@ export interface ReelEncoderPort {
   readonly version:string;
   encode(input:{sourceFingerprint:string;frames:ReelEncoderFrame[]}):Promise<{contentType:"video/mp4";bytes:Uint8Array}>;
 }
-export interface PreparedPublishableObject extends PrivateCreativeObjectDescriptor { expiresAt:string }
+export interface CreativePublicationLineage { contentVersionId:string }
+export interface PreparedPublishableObject extends PrivateCreativeObjectDescriptor { expiresAt:string; supportingClaimIds:string[] }
 export interface PreparedPublishableCreativeMedia {
   format:"carousel"|"reel";
+  workspaceId:string;
+  brandId:string;
+  contentVersionId:string;
   sourceFingerprint:string;
+  supportingClaimIds:string[];
   mediaItems:PublishMediaItem[];
   objects:PreparedPublishableObject[];
   expiresAt:string;
@@ -45,11 +50,11 @@ export class PublishableCreativeMediaService {
     this.clock=options.clock??(()=>new Date());
     if(!encoder||typeof encoder.version!=="string"||!encoder.version.trim()||encoder.version.length>200)throw new Error("Reel encoder version is required");
   }
-  async prepare(scopeInput:CreativeScope,pkg:StoredCreativePackage):Promise<PreparedPublishableCreativeMedia>{
-    const scope=validScope(scopeInput);validPackage(pkg);
-    return pkg.format==="carousel"?this.prepareCarousel(scope,pkg):this.prepareReel(scope,pkg);
+  async prepare(scopeInput:CreativeScope,pkg:StoredCreativePackage,lineageInput:CreativePublicationLineage):Promise<PreparedPublishableCreativeMedia>{
+    const scope=validScope(scopeInput);validPackage(pkg);const contentVersionId=required(lineageInput?.contentVersionId,"contentVersionId",200);
+    return pkg.format==="carousel"?this.prepareCarousel(scope,pkg,contentVersionId):this.prepareReel(scope,pkg,contentVersionId);
   }
-  private async prepareCarousel(scope:CreativeScope,pkg:StoredCreativePackage):Promise<PreparedPublishableCreativeMedia>{
+  private async prepareCarousel(scope:CreativeScope,pkg:StoredCreativePackage,contentVersionId:string):Promise<PreparedPublishableCreativeMedia>{
     const assets=pkg.assets.filter(a=>a.role==="carousel-slide").sort((a,b)=>a.index-b.index);
     if(assets.length<2||assets.length>10||assets.length!==pkg.assets.length)throw new Error("Carousel package must contain 2 to 10 slide assets");
     contiguous(assets.map(a=>a.index),"carousel slide");
@@ -57,11 +62,11 @@ export class PublishableCreativeMediaService {
     for(const asset of assets){
       const verified=await this.verifyAsset(scope,asset,"image/png");
       const issued=await this.issue(scope,verified.objectId);
-      mediaItems.push({kind:"image",url:issued.url});objects.push({...descriptor(verified),expiresAt:issued.expiresAt});
+      mediaItems.push({kind:"image",url:issued.url});objects.push({...descriptor(verified),expiresAt:issued.expiresAt,supportingClaimIds:claims(asset.supportingClaimIds)});
     }
-    return{format:"carousel",sourceFingerprint:pkg.sourceFingerprint,mediaItems,objects,expiresAt:earliest(objects)};
+    return{format:"carousel",workspaceId:scope.workspaceId,brandId:scope.brandId,contentVersionId,sourceFingerprint:pkg.sourceFingerprint,supportingClaimIds:packageClaims(pkg),mediaItems,objects,expiresAt:earliest(objects)};
   }
-  private async prepareReel(scope:CreativeScope,pkg:StoredCreativePackage):Promise<PreparedPublishableCreativeMedia>{
+  private async prepareReel(scope:CreativeScope,pkg:StoredCreativePackage,contentVersionId:string):Promise<PreparedPublishableCreativeMedia>{
     const manifestAsset=pkg.assets.filter(a=>a.role==="reel-render-manifest");
     const frameAssets=pkg.assets.filter(a=>a.role==="reel-storyboard").sort((a,b)=>a.index-b.index);
     if(manifestAsset.length!==1||frameAssets.length<1||manifestAsset.length+frameAssets.length!==pkg.assets.length)throw new Error("Reel package must contain storyboard frames and one render manifest");
@@ -94,9 +99,9 @@ export class PublishableCreativeMediaService {
       encoded={objectId:stored.objectId,objectKey,contentType:"video/mp4",contentHash,sizeBytes:result.bytes.byteLength};
       verifiedEncoded=await this.verifyDescriptor(scope,encoded,"video/mp4",this.maxEncodedBytes,true);
     }
-    const issued=await this.issue(scope,verifiedEncoded.objectId);
-    const obj:PreparedPublishableObject={...descriptor(verifiedEncoded),expiresAt:issued.expiresAt};
-    return{format:"reel",sourceFingerprint:pkg.sourceFingerprint,mediaItems:[{kind:"video",url:issued.url}],objects:[obj],expiresAt:issued.expiresAt,encoderVersion:this.encoder.version};
+    const issued=await this.issue(scope,verifiedEncoded.objectId),supportingClaimIds=packageClaims(pkg);
+    const obj:PreparedPublishableObject={...descriptor(verifiedEncoded),expiresAt:issued.expiresAt,supportingClaimIds};
+    return{format:"reel",workspaceId:scope.workspaceId,brandId:scope.brandId,contentVersionId,sourceFingerprint:pkg.sourceFingerprint,supportingClaimIds,mediaItems:[{kind:"video",url:issued.url}],objects:[obj],expiresAt:issued.expiresAt,encoderVersion:this.encoder.version};
   }
   private async verifyAsset(scope:CreativeScope,asset:StoredCreativeAsset,expectedType:string):Promise<PrivateCreativeObject>{
     if(asset.contentType!==expectedType)throw new Error("Generated asset content type does not match expected media type");
@@ -153,5 +158,7 @@ function earliest(items:PreparedPublishableObject[]){return new Date(Math.min(..
 function sha256(value:Uint8Array|string){return createHash("sha256").update(value).digest("hex")}
 function encodedObjectKey(scope:CreativeScope,fingerprint:string,version:string){const scopeKey=sha256(`${scope.workspaceId}\u0000${scope.brandId}`).slice(0,24),encoderKey=sha256(version).slice(0,16);return`generated/${scopeKey}/reel/${fingerprint}/encoded/${encoderKey}/reel.mp4`}
 function validateMp4(bytes:Uint8Array,max:number){if(!(bytes instanceof Uint8Array)||bytes.byteLength<12)throw new Error("Encoded output is not a valid MP4");if(bytes.byteLength>max)throw new Error("Encoded MP4 exceeds configured size bound");if(bytes[4]!==0x66||bytes[5]!==0x74||bytes[6]!==0x79||bytes[7]!==0x70)throw new Error("Encoded output is missing MP4 ftyp signature")}
+function claims(value:string[]){if(!Array.isArray(value)||!value.length)throw new Error("Generated media requires supporting Claim lineage");const normalized=value.map((id,index)=>required(id,`supportingClaimIds[${index}]`,200));return[...new Set(normalized)]}
+function packageClaims(pkg:StoredCreativePackage){return claims(pkg.assets.flatMap(asset=>asset.supportingClaimIds))}
 function safeHttps(value:unknown){if(typeof value!=="string")throw new Error("Publishing URL must use HTTPS");let url:URL;try{url=new URL(value)}catch{throw new Error("Publishing URL must use HTTPS")};if(url.protocol!=="https:"||url.username||url.password)throw new Error("Publishing URL must use HTTPS without embedded credentials");const host=url.hostname.toLowerCase();if(privateHost(host))throw new Error("Publishing URL must not target a private host");return url.toString()}
 function privateHost(host:string){return host==="localhost"||host.endsWith(".localhost")||host==="[::1]"||/^\[(fc|fd|fe8|fe9|fea|feb)/.test(host)||/^127\./.test(host)||/^10\./.test(host)||/^192\.168\./.test(host)||/^169\.254\./.test(host)||/^172\.(1[6-9]|2\d|3[01])\./.test(host)}
