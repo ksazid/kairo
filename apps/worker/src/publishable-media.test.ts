@@ -140,7 +140,7 @@ describe("PublishableCreativeMediaService", () => {
   it("fails before encoding when a private storyboard no longer matches its recorded hash", async () => {
     const { pkg, manifest } = reelPackage();
     const records = reelRecords(manifest);
-    records[0] = { ...records[0]!, bytes:new Uint8Array([...pngA,99]) };
+    records[0] = { ...records[0]!, bytes:new Uint8Array([...pngA.slice(0,-1),99]) };
     const encoder = unusedEncoder();
     const service = new PublishableCreativeMediaService(storeWith(records), encoder, { clock:() => now });
     await expect(service.prepare(scope, pkg, lineage)).rejects.toThrow(/hash/i);
