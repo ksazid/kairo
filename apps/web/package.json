@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run src/**/*.test.ts",
     "build": "next build",
     "start": "next start"
   },

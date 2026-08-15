@@ -1,50 +1,51 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-15",
-  "title": "Instagram Reel and Image Carousel Publishing",
+  "sliceId": "VS-16",
+  "title": "Auth0 Identity Provider Migration",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
+  "requirements": ["FR-01"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-07", "VS-10", "VS-14"],
-  "blockers": [],
-  "allowedPaths": ["packages/domain/**","apps/worker/**","apps/api/**","apps/api/migrations/**","tests/**","docs/slices/VS-15.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/web/**"],
+  "dependencies": ["VS-01", "VS-15"],
+  "blockers": ["Functional Auth0 Preview smoke requires OIDC_CLIENT_SECRET to be configured directly in Vercel; the secret must not be sent through chat or committed."],
+  "allowedPaths": ["apps/web/**","apps/api/src/auth.ts","apps/api/src/auth.test.ts","docs/slices/VS-16.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**","packages/domain/**","apps/worker/**"],
   "impact": {
-    "areas": ["architecture", "api", "database", "sensitive-data", "customer-flow", "operations-support"],
+    "areas": ["architecture", "authentication", "authorization", "sensitive-data", "customer-flow", "operations-support"],
     "notes": [
-      "Repairs the existing publishing execution gap where PostgreSQL worker jobs currently hydrate mediaUrls as an empty list, preventing real Instagram media dispatch.",
-      "Adds explicit Reel publishing and image-carousel publishing to the existing deterministic Instagram Professional adapter; no unrestricted agent behavior is introduced.",
-      "Persists typed public media descriptors and bounded Instagram publishing options with approved content lineage, existing credential references and existing human approval requirements.",
-      "Instagram OAuth, Insights, mixed video carousels, media generation/rendering, autonomous publishing, release and production enablement remain outside VS-15."
+      "Replaces Neon-specific web authentication with Auth0 through the existing provider-neutral OIDC boundary required by DEC-001.",
+      "Kairo remains authoritative for Workspace/Brand membership, authorization and audit; identity-provider claims do not become tenant authorization truth.",
+      "Auth0 Universal Login owns email/password credentials and Google social authentication; Kairo does not collect passwords.",
+      "No database schema or user migration is introduced. Existing Neon Postgres remains the application datastore.",
+      "Release, production environment switching, deployment and production enablement remain separate exact-SHA gates."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-15@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:05:00+02:00","rationale":"After approving VS-14 certification and merge, Sazid Khan explicitly instructed 'go next'. The previously stated next bounded capability was Reels + Carousel publishing. VS-15 narrows that continuation to Instagram Reels, image carousels and the required end-to-end media binding path."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing FR-13/FR-15, credential isolation, deterministic publishing, human approval, retry/unknown-outcome rules and provider-adapter boundaries already govern this extension. No autonomy or credential policy change is introduced."},
-    {"type":"implementation","status":"approved","version":"VS-15@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:05:00+02:00","rationale":"Authorized continuation into the next planned implementation slice. Runtime work is restricted to the approved Reel/image-carousel publishing and media-binding scope under PES/Loop + Superpowers/TDD."},
-    {"type":"certification","status":"pending","version":"VS-15@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after final certification gates pass."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize release or deployment."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize production enablement or autonomous publishing."}
+    {"type":"scope","status":"approved","version":"VS-16@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:30:00+02:00","rationale":"After the explicitly proposed next slice 'VS-16 — Identity Provider Migration: Neon Auth → Auth0' was waiting only for VS-15 merge, Sazid Khan confirmed VS-15 was merged and instructed 'complete it'. This authorizes the bounded FR-01 Auth0 provider migration described immediately before that instruction."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"DEC-001 already approves a managed standards-based OIDC/OAuth provider behind a Kairo-owned provider-neutral identity/session adapter. Auth0 is a provider replacement within that approved boundary; Workspace/Brand authorization policy is unchanged."},
+    {"type":"implementation","status":"approved","version":"VS-16@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:30:00+02:00","rationale":"The instruction to complete the previously proposed VS-16 authorizes runtime implementation outside production. Work is restricted to the approved identity adapter/web auth flow and deterministic verification."},
+    {"type":"certification","status":"pending","version":"VS-16@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification is required after deterministic gates and functional Auth0 Preview evidence pass."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Implementation approval does not authorize release or environment switching."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Production enablement and production deployment remain separate explicit gates."}
   ],
-  "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":25,"release":0,"validation":75},
-  "certification": {"status":"running","commitSha":null,"evidence":[
-    "Red TDD head 37063a25092836da1b0017e63812cfc375a25b11 defined domain media-shape/capability rules, Postgres media hydration and deterministic Meta Reel/carousel provider behavior before runtime implementation.",
-    "Implementation head 543a31f98fc6f713b8eb394e6d1cc7b0cd043753: CI #424 PASS, Security baseline #378 PASS, Product Intake #304 PASS.",
-    "CI #424 passed immutable install, clean PostgreSQL 18 migrations including 0014_instagram_rich_publishing.sql, production dependency audit, governance/preflight, full runtime verification and dashboard build.",
-    "Testing lifecycle head 9124323dfe7bc7e1fcc4d0e11f64b5c8f9825c6e: CI #426 PASS, Security baseline #380 PASS, Product Intake #306 PASS.",
-    "CI #426 again passed immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build with the runtime tree frozen.",
-    "Postgres VS-15 integration test proves scheduled Reel media/options round-trip through publish_commands and are hydrated into the authoritative PublishingJob instead of being lost as an empty media list.",
-    "Provider tests cover Reel IN_PROGRESS→FINISHED→publish, processing ERROR, bounded pending status, image-carousel child→parent→publish, child failure isolation and private-media fail-closed behavior.",
-    "Superpowers review pass found no blocker in provider dispatch or authoritative Postgres hydration: credentials stay secret-referenced, unknown outcomes are not blindly retried, and child failures cannot proceed to carousel parent publication.",
-    "PR #45 scope review contains only approved domain/API/worker/migration/tests/governance paths; no web UI, infrastructure, release workflow, OAuth or Insights changes."
-  ]},
+  "decisionIds": ["DEC-001"],
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":60,"certification":0,"release":0,"validation":0},
+  "certification": {
+    "status":"not-started",
+    "commitSha":null,
+    "evidence":[
+      "Implementation runtime head 43c2bf6c269adf2db60094c6dfd9a92e9e31f165: CI #431 PASS after governance correction; runtime verification includes workspace typecheck, tests and builds.",
+      "Security baseline #384 PASS on 43c2bf6c269adf2db60094c6dfd9a92e9e31f165.",
+      "Product Intake #310 PASS on 43c2bf6c269adf2db60094c6dfd9a92e9e31f165.",
+      "Vercel check PASS on 43c2bf6c269adf2db60094c6dfd9a92e9e31f165.",
+      "Functional Auth0 Preview smoke remains pending environment-secret configuration."
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-15.md","implementationPr":"https://github.com/ksazid/kairo/pull/45","evidence":["delivery/context/VS-14-closeout.md","delivery/context/VS-15.md","docs/plans/VS-15-instagram-rich-publishing.md","docs/plans/VS-15-test-matrix.md"]},
+  "links": {"specification":"docs/slices/VS-16.md","implementationPr":"https://github.com/ksazid/kairo/pull/46","evidence":["delivery/context/VS-15-closeout.md","delivery/context/VS-16.md","docs/plans/VS-16-auth0-identity.md"]},
   "maxAttempts": 3
 }
