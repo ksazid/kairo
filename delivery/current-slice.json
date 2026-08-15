@@ -1,51 +1,41 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-16",
-  "title": "Auth0 Identity Provider Migration",
+  "sliceId": "VS-17",
+  "title": "Instagram Connection + Insights",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "implementation",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-01"],
+  "requirements": ["FR-05", "FR-15", "FR-16", "FR-17", "FR-18", "FR-20"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-01", "VS-15"],
-  "blockers": ["Functional Auth0 Preview smoke requires OIDC_CLIENT_SECRET to be configured directly in Vercel; the secret must not be sent through chat or committed."],
-  "allowedPaths": ["apps/web/**","apps/api/src/auth.ts","apps/api/src/auth.test.ts","docs/slices/VS-16.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**","packages/domain/**","apps/worker/**"],
+  "dependencies": ["VS-07", "VS-08", "VS-09", "VS-15", "VS-16"],
+  "blockers": [],
+  "allowedPaths": ["apps/web/**","apps/api/src/**","apps/api/migrations/**","apps/worker/src/**","packages/domain/src/**","packages/contracts/src/**","docs/slices/VS-17.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**"],
   "impact": {
-    "areas": ["architecture", "authentication", "authorization", "sensitive-data", "customer-flow", "operations-support"],
+    "areas": ["authentication", "external-provider", "credentials", "publishing", "analytics", "sensitive-data", "customer-flow", "operations-support"],
     "notes": [
-      "Replaces Neon-specific web authentication with Auth0 through the existing provider-neutral OIDC boundary required by DEC-001.",
-      "Kairo remains authoritative for Workspace/Brand membership, authorization and audit; identity-provider claims do not become tenant authorization truth.",
-      "Auth0 Universal Login owns email/password credentials and Google social authentication; Kairo does not collect passwords.",
-      "No database schema or user migration is introduced. Existing Neon Postgres remains the application datastore.",
-      "Release, production environment switching, deployment and production enablement remain separate exact-SHA gates."
+      "Uses official Meta OAuth/provider APIs behind Kairo-owned deterministic adapters under DEC-004.",
+      "The first connection model remains compatible with Kairo's existing graph.facebook.com Instagram Professional publishing adapter.",
+      "Provider tokens must remain encrypted, scoped, revocable and unavailable to agents/domain/web responses.",
+      "Insights reuse Kairo's existing Published Post lineage and metric snapshot/normalization model; missing metrics remain unavailable.",
+      "VS-16 exact SHA f2b3c7e43112512bbc7761d89220617a9e2b12db remains deployment-approved but actual Vercel deployment is pending provider rate-limit recovery."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-16@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:30:00+02:00","rationale":"After the explicitly proposed next slice 'VS-16 — Identity Provider Migration: Neon Auth → Auth0' was waiting only for VS-15 merge, Sazid Khan confirmed VS-15 was merged and instructed 'complete it'. This authorizes the bounded FR-01 Auth0 provider migration described immediately before that instruction."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"DEC-001 already approves a managed standards-based OIDC/OAuth provider behind a Kairo-owned provider-neutral identity/session adapter. Auth0 is a provider replacement within that approved boundary; Workspace/Brand authorization policy is unchanged."},
-    {"type":"implementation","status":"approved","version":"VS-16@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:30:00+02:00","rationale":"The instruction to complete the previously proposed VS-16 authorizes runtime implementation outside production. Work is restricted to the approved identity adapter/web auth flow and deterministic verification."},
-    {"type":"certification","status":"pending","version":"VS-16@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification is required after deterministic gates and functional Auth0 Preview evidence pass."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Implementation approval does not authorize release or environment switching."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Production enablement and production deployment remain separate explicit gates."}
+    {"type":"scope","status":"approved","version":"VS-17@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T06:56:00+02:00","rationale":"After the assistant explicitly presented the scope + implementation gate for VS-17 — Instagram Connection + Insights, Sazid Khan replied 'Go'."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"DEC-004 and the approved TRD already govern official Instagram Professional OAuth/capability verification, deterministic adapters, encrypted/scoped/revocable provider tokens, human publishing authority and manual fallback."},
+    {"type":"implementation","status":"approved","version":"VS-17@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T06:56:00+02:00","rationale":"The same explicit 'Go' authorizes bounded runtime implementation of the immediately presented VS-17 scope outside production."},
+    {"type":"certification","status":"pending","version":"VS-17@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification is required after deterministic gates and high-risk security review pass."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Implementation approval does not authorize release."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Production Meta credentials, deployment and production enablement require separate exact-SHA approval and functional smoke evidence."}
   ],
-  "decisionIds": ["DEC-001"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":60,"certification":0,"release":0,"validation":0},
-  "certification": {
-    "status":"not-started",
-    "commitSha":null,
-    "evidence":[
-      "Implementation runtime head 43c2bf6c269adf2db60094c6dfd9a92e9e31f165: CI #431 PASS after governance correction; runtime verification includes workspace typecheck, tests and builds.",
-      "Security baseline #384 PASS on 43c2bf6c269adf2db60094c6dfd9a92e9e31f165.",
-      "Product Intake #310 PASS on 43c2bf6c269adf2db60094c6dfd9a92e9e31f165.",
-      "Vercel check PASS on 43c2bf6c269adf2db60094c6dfd9a92e9e31f165.",
-      "Functional Auth0 Preview smoke remains pending environment-secret configuration."
-    ]
-  },
+  "decisionIds": ["DEC-004"],
+  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-16.md","implementationPr":"https://github.com/ksazid/kairo/pull/46","evidence":["delivery/context/VS-15-closeout.md","delivery/context/VS-16.md","docs/plans/VS-16-auth0-identity.md"]},
+  "links": {"specification":"docs/slices/VS-17.md","implementationPr":null,"evidence":["delivery/context/VS-16-closeout.md","delivery/context/VS-17.md","docs/plans/VS-17-instagram-connection-insights.md"]},
   "maxAttempts": 3
 }
