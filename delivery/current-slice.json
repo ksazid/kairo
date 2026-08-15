@@ -3,7 +3,7 @@
   "sliceId": "VS-22",
   "title": "Research Evidence Enrichment",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-07", "FR-20"],
@@ -25,17 +25,18 @@
     {"type":"scope","status":"approved","version":"VS-22@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T18:24:00+02:00","rationale":"The owner instructed Kairo to verify whether VS-22/23/24 were already implemented and, if not, proceed. Repository verification proved VS-22 is proposed only; this instruction authorizes its bounded scope."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing public-evidence, provenance, prompt-injection and Brand-isolation policies govern the adapter class. The implementation adds an explicit public-only query boundary rather than expanding data exposure."},
     {"type":"implementation","status":"approved","version":"VS-22@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T18:24:00+02:00","rationale":"The owner's instruction to proceed authorizes runtime implementation after verification showed the slice was not implemented."},
-    {"type":"certification","status":"pending","version":"VS-22@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires a future immutable candidate and human approval."},
+    {"type":"certification","status":"pending","version":"VS-22@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact candidate gates are running; human certification remains required."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
+  "certification": {"status":"running","commitSha":null,"evidence":[
     "VS-25 exact feature head 5b7fb36b33d384231cd84936c31b5b821f1dff32 merged as 6c8c263f8c3327459796a3c9adcbf2a890b6b594 after CI #545, Security #487 and Product Intake #412 passed.",
     "The previous Vercel build-rate blocker cleared on the merged VS-25 commit; interactive Auth0 email/Google/callback/API/logout smoke remains separate operational evidence and is not claimed here.",
     "VS-22 initial GREEN head d16076dc4eea446428ba193a351ef5a867223fb8 passed Security #494 and Product Intake #419; CI #553 stopped at preflight because the first activation metadata used an invalid lifecycle name and duplicated the active slice in backlog. Runtime verification did not run on that head.",
-    "Corrected VS-22 runtime/testing head 49b8236654b4d13379c5bce1b88a112f8752eea2 passed Product Intake #422, Security baseline #497 and CI #556 including preflight and runtime verification."
+    "Corrected VS-22 runtime/testing head 49b8236654b4d13379c5bce1b88a112f8752eea2 passed Product Intake #422, Security baseline #497 and CI #556 including preflight and runtime verification.",
+    "Formal testing-transition head dcf862a5523d8687b5809c5e852dd0f8bef89ea8 passed Product Intake #423, Security baseline #498 and CI #557 including full runtime verification; zero review threads were open before certification freeze."
   ]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
