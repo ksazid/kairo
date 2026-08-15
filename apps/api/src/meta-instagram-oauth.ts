@@ -9,6 +9,7 @@ const REQUIRED_SCOPES = [
   "pages_read_engagement",
   "instagram_manage_insights",
 ] as const;
+const MIN_INSIGHTS_TOKEN_LIFETIME_SECONDS = 8 * 24 * 60 * 60;
 
 export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
   constructor(
@@ -34,10 +35,11 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
     return url.toString();
   }
 
-  async exchangeAndDiscover(code: string): Promise<{ grantedScopes: string[]; userAccessToken: string; accounts: MetaInstagramDiscoveredAccount[] }> {
-    const userAccessToken = await this.exchangeCode(required(code, "authorization code"));
-    const grantedScopes = await this.permissions(userAccessToken);
-    const pages = await this.pages(userAccessToken);
+  async exchangeAndDiscover(code: string): Promise<{ grantedScopes: string[]; userAccessToken: string; userAccessTokenExpiresInSeconds: number; accounts: MetaInstagramDiscoveredAccount[] }> {
+    const shortLivedToken = await this.exchangeCode(required(code, "authorization code"));
+    const extended = await this.extendUserToken(shortLivedToken);
+    const grantedScopes = await this.permissions(extended.accessToken);
+    const pages = await this.pages(extended.accessToken);
     const accounts: MetaInstagramDiscoveredAccount[] = [];
     for (const page of pages) {
       const ig = page.instagram_business_account;
@@ -52,7 +54,7 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
         pageAccessToken: String(page.access_token),
       });
     }
-    return { grantedScopes, userAccessToken, accounts };
+    return { grantedScopes, userAccessToken: extended.accessToken, userAccessTokenExpiresInSeconds: extended.expiresInSeconds, accounts };
   }
 
   private async exchangeCode(code: string): Promise<string> {
@@ -72,6 +74,28 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
     const token = typeof payload?.access_token === "string" ? payload.access_token.trim() : "";
     if (!token) throw new Error("Meta OAuth exchange returned no access token");
     return token;
+  }
+
+  private async extendUserToken(shortLivedToken: string): Promise<{ accessToken: string; expiresInSeconds: number }> {
+    const body = new URLSearchParams({
+      grant_type: "fb_exchange_token",
+      client_id: this.appId,
+      client_secret: this.appSecret,
+      fb_exchange_token: shortLivedToken,
+    });
+    const response = await this.fetchImpl(`https://graph.facebook.com/${graph(this.graphVersion)}/oauth/access_token`, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+    if (!response.ok) throw providerError("long-lived-token-exchange", response.status);
+    const payload = await json(response) as { access_token?: unknown; expires_in?: unknown };
+    const accessToken = typeof payload.access_token === "string" ? payload.access_token.trim() : "";
+    const expiresInSeconds = typeof payload.expires_in === "number" ? Math.floor(payload.expires_in) : Number.NaN;
+    if (!accessToken || !Number.isFinite(expiresInSeconds) || expiresInSeconds < MIN_INSIGHTS_TOKEN_LIFETIME_SECONDS) {
+      throw new Error("Meta did not return a sufficiently durable Facebook User access token");
+    }
+    return { accessToken, expiresInSeconds };
   }
 
   private async permissions(userToken: string): Promise<string[]> {
