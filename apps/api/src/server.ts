@@ -103,7 +103,9 @@ async function collectMetricTick(){
   if(metricTickRunning||!instagramMetricRunner)return;
   metricTickRunning=true;
   try{
-    await instagramConnectionRepo?.purgeExpiredPendingCredentials(new Date().toISOString());
+    const at=new Date().toISOString();
+    await instagramConnectionRepo?.purgeExpiredPendingCredentials(at);
+    await instagramConnectionRepo?.markExpiredConnectionsReconnectRequired(at);
     for(let i=0;i<5;i++)if(!(await instagramMetricRunner.runOnce()))break;
   }catch(error){app.log.error({err:error},"Instagram maintenance tick failed")}finally{metricTickRunning=false}
 }
