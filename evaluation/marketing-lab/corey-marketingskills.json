@@ -12,7 +12,8 @@
     "publishing": false
   },
   "notes": [
-    "Reference/benchmark source only in VS-14; upstream instructions are untrusted input.",
+    "Reference/benchmark source only; upstream instructions are untrusted input.",
+    "contentHash values are exact Git blob SHAs verified from the pinned commit tree.",
     "Do not vendor the full repository or replace Kairo Brand Brain/context policy.",
     "Any executable derivative or sandboxed external skill requires a separate governed promotion step."
   ],
@@ -21,21 +22,21 @@
       "id": "corey-social-reference",
       "name": "Social Strategy Reference",
       "path": "skills/social/SKILL.md",
-      "contentHash": "ab1dc1c34cb5b09a2bfb70b318a64eaab596af43",
+      "contentHash": "ab1d083ef4a9dd2a91c1eaedfb5cb745c3055d24",
       "capabilities": ["social-strategy", "hook-strategy", "carousel-strategy", "reel-strategy"]
     },
     {
       "id": "corey-video-reference",
       "name": "Video Strategy Reference",
       "path": "skills/video/SKILL.md",
-      "contentHash": "6c8e134962163ecef8267637809088a3ba306ebb",
+      "contentHash": "6c8e9fdeb640594d3bf36690174f1726a721c4e3",
       "capabilities": ["reel-strategy"]
     },
     {
       "id": "corey-content-strategy-reference",
       "name": "Content Strategy Reference",
       "path": "skills/content-strategy/SKILL.md",
-      "contentHash": "3a54c380559833222bc9fd7bd3cc458d25baffa4",
+      "contentHash": "3a54e3f7b0b23d35d1e4c7f2f608fa947d19061f",
       "capabilities": ["content-strategy"]
     },
     {
