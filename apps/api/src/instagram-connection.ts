@@ -2,197 +2,40 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { DomainValidationError, ResourceNotFoundError } from "@kairo/domain";
 import { connectChannelAccount, type ChannelAccount, type PublishCapability } from "@kairo/domain/publishing";
 
-export interface InstagramOAuthIntent {
-  id: string;
-  workspaceId: string;
-  brandId: string;
-  accountId: string;
-  provider: "meta-instagram";
-  stateHash: string;
-  expiresAt: string;
-  createdAt: string;
-  consumedAt?: string;
-}
+const REQUIRED_CONNECTION_SCOPES=["pages_show_list","instagram_basic","instagram_content_publish","pages_read_engagement","instagram_manage_insights"] as const;
 
-export interface InstagramConnectionCandidate {
-  id: string;
-  intentId: string;
-  workspaceId: string;
-  brandId: string;
-  accountId: string;
-  pageRef: string;
-  pageName: string;
-  accountRef: string;
-  displayName: string;
-  username?: string;
-  credentialRef: string;
-  grantedScopes: string[];
-  createdAt: string;
-  selectedAt?: string;
-}
-
-export interface InstagramConnectionCandidateView {
-  id: string;
-  pageRef: string;
-  pageName: string;
-  accountRef: string;
-  displayName: string;
-  username?: string;
-}
-
+export interface InstagramOAuthIntent {id:string;workspaceId:string;brandId:string;accountId:string;provider:"meta-instagram";stateHash:string;expiresAt:string;createdAt:string;consumedAt?:string}
+export interface InstagramConnectionCandidate {id:string;intentId:string;workspaceId:string;brandId:string;accountId:string;pageRef:string;pageName:string;accountRef:string;displayName:string;username?:string;credentialRef:string;grantedScopes:string[];createdAt:string;selectedAt?:string}
+export interface InstagramConnectionCandidateView {id:string;pageRef:string;pageName:string;accountRef:string;displayName:string;username?:string}
 export interface InstagramConnectionRepository {
-  createIntent(intent: InstagramOAuthIntent): Promise<void>;
-  consumeIntent(accountId: string, stateHash: string, at: string): Promise<InstagramOAuthIntent | null>;
-  saveCandidates(candidates: InstagramConnectionCandidate[]): Promise<void>;
-  listCandidates(accountId: string, brandId: string, intentId: string): Promise<InstagramConnectionCandidate[]>;
-  markSelected(accountId: string, brandId: string, candidateId: string, at: string): Promise<InstagramConnectionCandidate | null>;
-  disableConnection(accountId: string, brandId: string, channelAccountId: string, at: string): Promise<{ credentialRef: string } | null | void>;
+  createIntent(intent:InstagramOAuthIntent):Promise<void>;
+  consumeIntent(accountId:string,stateHash:string,at:string):Promise<InstagramOAuthIntent|null>;
+  saveCandidates(candidates:InstagramConnectionCandidate[]):Promise<void>;
+  listCandidates(accountId:string,brandId:string,intentId:string):Promise<InstagramConnectionCandidate[]>;
+  markSelected(accountId:string,brandId:string,candidateId:string,at:string):Promise<InstagramConnectionCandidate|null>;
+  releaseSelection?(accountId:string,brandId:string,candidateId:string):Promise<void>;
+  connectionCredential?(accountId:string,brandId:string,channelAccountId:string):Promise<string|null>;
+  recordConnectionMetadata?(accountId:string,brandId:string,accountRef:string,input:{pageRef:string;username?:string;grantedScopes:string[];verifiedAt:string}):Promise<void>;
+  disableConnection(accountId:string,brandId:string,channelAccountId:string,at:string):Promise<{credentialRef:string}|null|void>;
 }
+export interface InstagramCredentialVault {store(workspaceId:string,brandId:string,credentialRef:string,plaintext:string):Promise<void>;resolve(credentialRef:string):Promise<string>;revoke(credentialRef:string):Promise<void>}
+export interface MetaInstagramDiscoveredAccount {pageRef:string;pageName:string;accountRef:string;displayName:string;username?:string;pageAccessToken:string}
+export interface MetaInstagramOAuthPort {authorizationUrl(state:string):string;exchangeAndDiscover(code:string):Promise<{grantedScopes:string[];accounts:MetaInstagramDiscoveredAccount[]}>}
+interface BrandAccessPort {getBrandForAccount(accountId:string,brandId:string):Promise<{id:string;workspaceId:string}|null>}
+interface ChannelAccountWritePort {saveChannelAccount(accountId:string,channel:ChannelAccount):Promise<ChannelAccount>}
 
-export interface InstagramCredentialVault {
-  store(workspaceId: string, brandId: string, credentialRef: string, plaintext: string): Promise<void>;
-  resolve(credentialRef: string): Promise<string>;
-  revoke(credentialRef: string): Promise<void>;
+export class InstagramConnectionService{
+ private readonly now:()=>Date;private readonly stateBytes:()=>Uint8Array;private readonly id:()=>string;
+ constructor(private readonly deps:{brands:BrandAccessPort;publishing:ChannelAccountWritePort;repo:InstagramConnectionRepository;vault:InstagramCredentialVault;meta:MetaInstagramOAuthPort;now?:()=>Date;stateBytes?:()=>Uint8Array;id?:()=>string}){this.now=deps.now??(()=>new Date());this.stateBytes=deps.stateBytes??(()=>randomBytes(32));this.id=deps.id??randomUUID}
+ async begin(accountId:string,brandId:string):Promise<{authorizationUrl:string}>{const brand=await this.deps.brands.getBrandForAccount(text(accountId,"accountId"),text(brandId,"brandId"));if(!brand)throw new ResourceNotFoundError("Brand not found");const createdAt=this.now(),state=Buffer.from(this.stateBytes()).toString("base64url");if(state.length<32)throw new Error("OAuth state entropy is insufficient");await this.deps.repo.createIntent({id:this.id(),workspaceId:brand.workspaceId,brandId:brand.id,accountId,provider:"meta-instagram",stateHash:hashState(state),createdAt:createdAt.toISOString(),expiresAt:new Date(createdAt.getTime()+10*60_000).toISOString()});return{authorizationUrl:this.deps.meta.authorizationUrl(state)}}
+ async complete(accountId:string,code:string,state:string):Promise<{status:"selection-required";intentId:string;brandId:string;candidates:InstagramConnectionCandidateView[]}|{status:"connected";intentId:string;brandId:string;connection:ChannelAccount}|{status:"no-eligible-account";intentId:string;brandId:string}>{const now=this.now().toISOString(),intent=await this.deps.repo.consumeIntent(text(accountId,"accountId"),hashState(text(state,"state",1_000)),now);if(!intent||Date.parse(intent.expiresAt)<Date.parse(now))throw new DomainValidationError("OAuth state is invalid, expired or already used");const result=await this.deps.meta.exchangeAndDiscover(text(code,"authorization code",4_096)),grantedScopes=uniqueScopes(result.grantedScopes);const missing=REQUIRED_CONNECTION_SCOPES.filter(scope=>!grantedScopes.includes(scope));if(missing.length)throw new DomainValidationError(`Required Instagram permissions were not granted: ${missing.join(", ")}`);const candidates:InstagramConnectionCandidate[]=[];try{for(const discovered of result.accounts){const credentialRef=`meta-instagram:${this.id()}`;await this.deps.vault.store(intent.workspaceId,intent.brandId,credentialRef,text(discovered.pageAccessToken,"Page access token",16_384));candidates.push({id:this.id(),intentId:intent.id,workspaceId:intent.workspaceId,brandId:intent.brandId,accountId:intent.accountId,pageRef:text(discovered.pageRef,"pageRef",300),pageName:text(discovered.pageName,"pageName",300),accountRef:numericId(discovered.accountRef,"Instagram accountRef"),displayName:text(discovered.displayName,"displayName",300),...(discovered.username?.trim()?{username:text(discovered.username,"username",300)}:{}),credentialRef,grantedScopes,createdAt:now})}await this.deps.repo.saveCandidates(candidates)}catch(error){for(const candidate of candidates)await this.deps.vault.revoke(candidate.credentialRef).catch(()=>undefined);throw error}if(!candidates.length)return{status:"no-eligible-account",intentId:intent.id,brandId:intent.brandId};if(candidates.length===1){const connection=await this.select(accountId,intent.brandId,intent.id,candidates[0]!.id);return{status:"connected",intentId:intent.id,brandId:intent.brandId,connection}}return{status:"selection-required",intentId:intent.id,brandId:intent.brandId,candidates:candidates.map(candidateView)}}
+ async candidates(accountId:string,brandId:string,intentId:string){return(await this.deps.repo.listCandidates(text(accountId,"accountId"),text(brandId,"brandId"),text(intentId,"intentId"))).map(candidateView)}
+ async select(accountId:string,brandId:string,intentId:string,candidateId:string):Promise<ChannelAccount>{const candidates=await this.deps.repo.listCandidates(text(accountId,"accountId"),text(brandId,"brandId"),text(intentId,"intentId")),candidate=candidates.find(item=>item.id===candidateId&&!item.selectedAt);if(!candidate)throw new ResourceNotFoundError("Instagram connection candidate not found");const selected=await this.deps.repo.markSelected(accountId,brandId,candidate.id,this.now().toISOString());if(!selected)throw new ResourceNotFoundError("Instagram connection candidate not found");const capabilities:PublishCapability[]=["publish-image","publish-carousel","publish-reel"];let connection:ChannelAccount;try{connection=await this.deps.publishing.saveChannelAccount(accountId,connectChannelAccount({id:this.id(),workspaceId:selected.workspaceId,brandId:selected.brandId,channel:"instagram",accountRef:selected.accountRef,displayName:selected.username?`@${selected.username}`:selected.displayName,credentialRef:selected.credentialRef,capabilities,connectedAt:this.now().toISOString()}));await this.deps.repo.recordConnectionMetadata?.(accountId,brandId,selected.accountRef,{pageRef:selected.pageRef,...(selected.username?{username:selected.username}:{}),grantedScopes:selected.grantedScopes,verifiedAt:this.now().toISOString()})}catch(error){await this.deps.repo.releaseSelection?.(accountId,brandId,candidate.id).catch(()=>undefined);throw error}for(const other of candidates)if(other.id!==selected.id)await this.deps.vault.revoke(other.credentialRef);return connection}
+ async disconnect(accountId:string,brandId:string,channelAccountId:string):Promise<void>{const scopedAccount=text(accountId,"accountId"),scopedBrand=text(brandId,"brandId"),scopedChannel=text(channelAccountId,"channelAccountId");const credentialRef=await this.deps.repo.connectionCredential?.(scopedAccount,scopedBrand,scopedChannel);if(credentialRef)await this.deps.vault.revoke(credentialRef);const disabled=await this.deps.repo.disableConnection(scopedAccount,scopedBrand,scopedChannel,this.now().toISOString());if(!credentialRef&&disabled&&typeof disabled==="object"&&disabled.credentialRef)await this.deps.vault.revoke(disabled.credentialRef)}
 }
-
-export interface MetaInstagramDiscoveredAccount {
-  pageRef: string;
-  pageName: string;
-  accountRef: string;
-  displayName: string;
-  username?: string;
-  pageAccessToken: string;
-}
-
-export interface MetaInstagramOAuthPort {
-  authorizationUrl(state: string): string;
-  exchangeAndDiscover(code: string): Promise<{ grantedScopes: string[]; accounts: MetaInstagramDiscoveredAccount[] }>;
-}
-
-interface BrandAccessPort {
-  getBrandForAccount(accountId: string, brandId: string): Promise<{ id: string; workspaceId: string } | null>;
-}
-
-interface ChannelAccountWritePort {
-  saveChannelAccount(accountId: string, channel: ChannelAccount): Promise<ChannelAccount>;
-}
-
-export class InstagramConnectionService {
-  private readonly now: () => Date;
-  private readonly stateBytes: () => Uint8Array;
-  private readonly id: () => string;
-
-  constructor(private readonly deps: {
-    brands: BrandAccessPort;
-    publishing: ChannelAccountWritePort;
-    repo: InstagramConnectionRepository;
-    vault: InstagramCredentialVault;
-    meta: MetaInstagramOAuthPort;
-    now?: () => Date;
-    stateBytes?: () => Uint8Array;
-    id?: () => string;
-  }) {
-    this.now = deps.now ?? (() => new Date());
-    this.stateBytes = deps.stateBytes ?? (() => randomBytes(32));
-    this.id = deps.id ?? randomUUID;
-  }
-
-  async begin(accountId: string, brandId: string): Promise<{ authorizationUrl: string }> {
-    const brand = await this.deps.brands.getBrandForAccount(text(accountId, "accountId"), text(brandId, "brandId"));
-    if (!brand) throw new ResourceNotFoundError("Brand not found");
-    const createdAt = this.now();
-    const state = Buffer.from(this.stateBytes()).toString("base64url");
-    if (state.length < 32) throw new Error("OAuth state entropy is insufficient");
-    await this.deps.repo.createIntent({
-      id: this.id(),
-      workspaceId: brand.workspaceId,
-      brandId: brand.id,
-      accountId,
-      provider: "meta-instagram",
-      stateHash: hashState(state),
-      createdAt: createdAt.toISOString(),
-      expiresAt: new Date(createdAt.getTime() + 10 * 60_000).toISOString(),
-    });
-    return { authorizationUrl: this.deps.meta.authorizationUrl(state) };
-  }
-
-  async complete(accountId: string, code: string, state: string): Promise<
-    | { status: "selection-required"; intentId: string; brandId: string; candidates: InstagramConnectionCandidateView[] }
-    | { status: "connected"; intentId: string; brandId: string; connection: ChannelAccount }
-    | { status: "no-eligible-account"; intentId: string; brandId: string }
-  > {
-    const now = this.now().toISOString();
-    const intent = await this.deps.repo.consumeIntent(text(accountId, "accountId"), hashState(text(state, "state", 1_000)), now);
-    if (!intent || Date.parse(intent.expiresAt) < Date.parse(now)) throw new DomainValidationError("OAuth state is invalid, expired or already used");
-    const result = await this.deps.meta.exchangeAndDiscover(text(code, "authorization code", 4_096));
-    const candidates: InstagramConnectionCandidate[] = [];
-    for (const discovered of result.accounts) {
-      const credentialRef = `meta-instagram:${this.id()}`;
-      await this.deps.vault.store(intent.workspaceId, intent.brandId, credentialRef, text(discovered.pageAccessToken, "Page access token", 16_384));
-      candidates.push({
-        id: this.id(),
-        intentId: intent.id,
-        workspaceId: intent.workspaceId,
-        brandId: intent.brandId,
-        accountId: intent.accountId,
-        pageRef: text(discovered.pageRef, "pageRef", 300),
-        pageName: text(discovered.pageName, "pageName", 300),
-        accountRef: numericId(discovered.accountRef, "Instagram accountRef"),
-        displayName: text(discovered.displayName, "displayName", 300),
-        ...(discovered.username?.trim() ? { username: text(discovered.username, "username", 300) } : {}),
-        credentialRef,
-        grantedScopes: uniqueScopes(result.grantedScopes),
-        createdAt: now,
-      });
-    }
-    await this.deps.repo.saveCandidates(candidates);
-    if (!candidates.length) return { status: "no-eligible-account", intentId: intent.id, brandId: intent.brandId };
-    if (candidates.length === 1) {
-      const connection = await this.select(accountId, intent.brandId, intent.id, candidates[0]!.id);
-      return { status: "connected", intentId: intent.id, brandId: intent.brandId, connection };
-    }
-    return { status: "selection-required", intentId: intent.id, brandId: intent.brandId, candidates: candidates.map(candidateView) };
-  }
-
-  async candidates(accountId: string, brandId: string, intentId: string): Promise<InstagramConnectionCandidateView[]> {
-    return (await this.deps.repo.listCandidates(text(accountId, "accountId"), text(brandId, "brandId"), text(intentId, "intentId"))).map(candidateView);
-  }
-
-  async select(accountId: string, brandId: string, intentId: string, candidateId: string): Promise<ChannelAccount> {
-    const candidates = await this.deps.repo.listCandidates(text(accountId, "accountId"), text(brandId, "brandId"), text(intentId, "intentId"));
-    const candidate = candidates.find((item) => item.id === candidateId && !item.selectedAt);
-    if (!candidate) throw new ResourceNotFoundError("Instagram connection candidate not found");
-    const selected = await this.deps.repo.markSelected(accountId, brandId, candidate.id, this.now().toISOString());
-    if (!selected) throw new ResourceNotFoundError("Instagram connection candidate not found");
-    const capabilities: PublishCapability[] = selected.grantedScopes.includes("instagram_content_publish")
-      ? ["publish-image", "publish-carousel", "publish-reel"]
-      : [];
-    const connection = await this.deps.publishing.saveChannelAccount(accountId, connectChannelAccount({
-      id: this.id(),
-      workspaceId: selected.workspaceId,
-      brandId: selected.brandId,
-      channel: "instagram",
-      accountRef: selected.accountRef,
-      displayName: selected.username ? `@${selected.username}` : selected.displayName,
-      credentialRef: selected.credentialRef,
-      capabilities,
-      connectedAt: this.now().toISOString(),
-    }));
-    for (const other of candidates) if (other.id !== selected.id) await this.deps.vault.revoke(other.credentialRef);
-    return connection;
-  }
-
-  async disconnect(accountId: string, brandId: string, channelAccountId: string): Promise<void> {
-    const disabled = await this.deps.repo.disableConnection(text(accountId, "accountId"), text(brandId, "brandId"), text(channelAccountId, "channelAccountId"), this.now().toISOString());
-    if (disabled && typeof disabled === "object" && disabled.credentialRef) await this.deps.vault.revoke(disabled.credentialRef);
-  }
-}
-
-export function hashState(state: string): string { return createHash("sha256").update(state).digest("hex"); }
-
-function candidateView(value: InstagramConnectionCandidate): InstagramConnectionCandidateView {
-  return { id: value.id, pageRef: value.pageRef, pageName: value.pageName, accountRef: value.accountRef, displayName: value.displayName, ...(value.username ? { username: value.username } : {}) };
-}
-function numericId(value: unknown, field: string) { const id = text(value, field, 300); if (!/^\d+$/.test(id)) throw new DomainValidationError(`${field} must be numeric`); return id; }
-function uniqueScopes(values: unknown): string[] { if (!Array.isArray(values)) return []; return [...new Set(values.map((value) => text(value, "scope", 200)))].sort(); }
-function text(value: unknown, field: string, max = 300): string { if (typeof value !== "string" || !value.trim()) throw new DomainValidationError(`${field} is required`); const normalized = value.trim(); if (normalized.length > max) throw new DomainValidationError(`${field} is too long`); return normalized; }
+export function hashState(state:string){return createHash("sha256").update(state).digest("hex")}
+export function requiredInstagramConnectionScopes():readonly string[]{return REQUIRED_CONNECTION_SCOPES}
+function candidateView(value:InstagramConnectionCandidate):InstagramConnectionCandidateView{return{id:value.id,pageRef:value.pageRef,pageName:value.pageName,accountRef:value.accountRef,displayName:value.displayName,...(value.username?{username:value.username}:{})}}
+function numericId(value:unknown,field:string){const id=text(value,field,300);if(!/^\d+$/.test(id))throw new DomainValidationError(`${field} must be numeric`);return id}
+function uniqueScopes(values:unknown):string[]{if(!Array.isArray(values))return[];return[...new Set(values.map(value=>text(value,"scope",200)))].sort()}
+function text(value:unknown,field:string,max=300){if(typeof value!=="string"||!value.trim())throw new DomainValidationError(`${field} is required`);const normalized=value.trim();if(normalized.length>max)throw new DomainValidationError(`${field} is too long`);return normalized}
