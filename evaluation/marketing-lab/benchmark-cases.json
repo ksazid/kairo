@@ -63,6 +63,42 @@
       ]
     },
     {
+      "id": "motorcycle-carousel-02",
+      "sector": "Motorcycles / Bikes",
+      "format": "carousel",
+      "audience": "enthusiast buyers",
+      "objective": "comparison and saves",
+      "opportunity": "Compare motorcycle modifications by rider goal without treating every modification as a universal performance upgrade.",
+      "claims": [
+        {"id":"mc2-c1","text":"Motorcycle modifications can serve different goals such as comfort, usability, appearance or rider preference."},
+        {"id":"mc2-c2","text":"Expected benefits from a modification should be separated from verified technical performance claims."}
+      ]
+    },
+    {
+      "id": "motorcycle-carousel-03",
+      "sector": "Motorcycles / Bikes",
+      "format": "carousel",
+      "audience": "enthusiast buyers",
+      "objective": "comparison and saves",
+      "opportunity": "Compare setup priorities for daily commuting and weekend riding without declaring one setup universally better.",
+      "claims": [
+        {"id":"mc3-c1","text":"Daily commuting can emphasize routine usability, comfort and carrying needs."},
+        {"id":"mc3-c2","text":"Recreational riding can emphasize different preferences and trade-offs from daily commuting."}
+      ]
+    },
+    {
+      "id": "motorcycle-carousel-04",
+      "sector": "Motorcycles / Bikes",
+      "format": "carousel",
+      "audience": "enthusiast buyers",
+      "objective": "comparison and saves",
+      "opportunity": "Create a pre-purchase ownership checklist covering intended use, budget, fit and maintenance considerations without inventing model-specific costs or specifications.",
+      "claims": [
+        {"id":"mc4-c1","text":"Purchase price is only one consideration in a motorcycle buying decision."},
+        {"id":"mc4-c2","text":"Riders can also consider intended use, fit or ergonomics, maintenance priorities and available local support."}
+      ]
+    },
+    {
       "id": "motorcycle-reel-01",
       "sector": "Motorcycles / Bikes",
       "format": "reel",
