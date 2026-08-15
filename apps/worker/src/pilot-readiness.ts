@@ -321,7 +321,7 @@ class StaticRuntime<T> implements AgentRuntimePort {
   constructor(private readonly output: T) {}
   async invoke<TOutput>(request: AgentInvocationRequest): Promise<AgentRuntimeResult<TOutput>> {
     this.lastRequest = request;
-    return { output: this.output as TOutput, metadata: { runtime: "fixture", costUsd: 0.01, latencyMs: 1 } };
+    return { output: this.output as unknown as TOutput, metadata: { runtime: "fixture", costUsd: 0.01, latencyMs: 1 } };
   }
 }
 
