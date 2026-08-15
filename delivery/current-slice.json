@@ -1,54 +1,52 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-13",
-  "title": "Free Discovery Adapters",
+  "sliceId": "VS-14",
+  "title": "Marketing Lab Benchmark Foundation",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-06", "FR-07", "FR-20"],
+  "requirements": ["FR-09", "FR-11", "FR-12", "FR-16", "FR-17", "FR-18", "FR-19", "FR-20"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-12"],
+  "dependencies": ["VS-05", "VS-06", "VS-08", "VS-09", "VS-13"],
   "blockers": [],
-  "allowedPaths": ["apps/worker/**","packages/domain/**","packages/agent-contracts/**","tests/**","docs/slices/VS-13.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
+  "allowedPaths": ["packages/domain/**","apps/worker/**","evaluation/**","docs/slices/VS-14.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
   "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/web/**","apps/api/**"],
   "impact": {
-    "areas": ["architecture","sensitive-data","analytics","operations-support"],
+    "areas": ["architecture", "analytics", "operations-support", "sensitive-data"],
     "notes": [
-      "Implements the planned VS-12B free/public source provider layer without creating sector-specific Hunter implementations.",
-      "Adds outbound public network calls for approved RSS/Atom feeds, Hacker News v0, Bluesky public AppView and YouTube Data API.",
-      "YouTube API-key material remains optional infrastructure secret input to the adapter and is prohibited from agent/domain context, logs and provenance.",
-      "No database migration, frontend/API route, publishing behavior, release or production enablement is included."
+      "Establishes a Kairo-owned Marketing Lab, Skill Registry foundation and deterministic benchmark policy for comparing native and external marketing capabilities.",
+      "Corey Haines marketingskills is pinned as an evaluation/reference challenger only; no arbitrary external skill execution, network access, secrets or production Brand selection is enabled in VS-14.",
+      "Carousel and Reel strategy become first-class benchmark artifact shapes, but Instagram carousel/Reel publishing, OAuth, Insights and media rendering remain separate future slices.",
+      "Truth/Claims, Brand isolation, human approval, publishing authority and metric provenance remain non-replaceable Kairo controls."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-13@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Approved proceeding to the next planned phase after VS-12A certification: implement RSS/Atom, Hacker News, Bluesky and YouTube free/public discovery adapters behind the existing sector-aware generic Hunter."},
-    {"type":"policy","status":"approved","version":"DEC-009","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Approved DEC-009 provider/credential boundary: official/public APIs and approved feeds only, optional secret-scoped YouTube API key, provider isolation, deterministic budgets and no unrestricted scraping or user-session harvesting."},
-    {"type":"implementation","status":"approved","version":"VS-13@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Authorized runtime-enabled VS-13 implementation using PES/Loop + Superpowers/TDD within the approved provider, path, quota and credential boundaries."},
-    {"type":"certification","status":"approved","version":"VS-13@1.0","commitSha":"fcae905b1595ed270c7bf5508fb6d4e5b0929d0e","by":"Sazid Khan","at":"2026-08-15T02:32:00+02:00","rationale":"Approved exact-SHA certification and merge of PR #41 after CI #390, Security baseline #347 and Product Intake #274 passed on candidate fcae905b1595ed270c7bf5508fb6d4e5b0929d0e. Release, deployment and production enablement remain unauthorized."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-13 certification and merge do not authorize release or deployment."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-13 certification and merge do not authorize production enablement."}
+    {"type":"scope","status":"approved","version":"VS-14@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T03:35:00+02:00","rationale":"Approved planning and implementation of the Kairo Marketing Lab: Kairo Native vs Corey Skills vs future skills through a benchmark harness, Skill Registry and Brand-specific evidence-based winner selection, with Reels and carousels treated as benchmark formats."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"The approved TRD and Skills Architecture already require external skills to be pinned, provenance/permission reviewed, benchmarked and explicitly promoted. VS-14 implements that existing policy and narrows Corey to reference-only evaluation."},
+    {"type":"implementation","status":"approved","version":"VS-14@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T03:35:00+02:00","rationale":"Authorized runtime-enabled implementation of the benchmark/registry foundation under PES/Loop + Superpowers/TDD. External arbitrary skill execution, live skill promotion, social publishing changes and production enablement are excluded."},
+    {"type":"certification","status":"pending","version":"VS-14@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after final certification gates pass."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-14 does not authorize release or deployment."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-14 does not authorize production enablement or automatic Brand skill switching."}
   ],
-  "decisionIds": ["DEC-009","DEC-005"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":100},
+  "decisionIds": [],
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":25,"release":0,"validation":75},
   "certification": {
-    "status":"passed",
-    "commitSha":"fcae905b1595ed270c7bf5508fb6d4e5b0929d0e",
+    "status":"running",
+    "commitSha":null,
     "evidence":[
-      "Implementation head 1f25f89b49f9dfb53b2c3fc12e74c8949906f19c: CI #388 PASS, Security baseline #345 PASS, Product Intake #272 PASS.",
-      "Testing head 93036bd1a46e2124db6b7bff07be2b89539159d8: CI #389 PASS, Security baseline #346 PASS, Product Intake #273 PASS.",
-      "Exact certification candidate fcae905b1595ed270c7bf5508fb6d4e5b0929d0e: CI #390 PASS, Security baseline #347 PASS, Product Intake #274 PASS.",
-      "Human certification and merge approval recorded on PR #41 on 2026-08-15 Europe/Malta for exact SHA fcae905b1595ed270c7bf5508fb6d4e5b0929d0e.",
-      "PR #41 merged as 21260b0a00a73a71ed20faf45c08c76211320458 using expected-head-SHA protection.",
-      "Compare fcae905b1595ed270c7bf5508fb6d4e5b0929d0e..21260b0a00a73a71ed20faf45c08c76211320458 shows zero file changes; merge provenance is runtime-identical to the certified candidate.",
-      "Post-merge CI #391 PASS on 21260b0a00a73a71ed20faf45c08c76211320458, including immutable install, PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build.",
-      "Tests cover RSS/Atom normalization and malformed-feed isolation, HN bounded fan-out/cache/relevance, Bluesky public AppView/no-auth/rate-limit handling, YouTube missing-key/quota/key-nonpropagation, source routing, provider isolation, canonical cross-provider dedupe and no-filler behavior.",
-      "PR #41 path review found no protected API/web/infrastructure/release path changes and no unresolved review threads."
+      "Implementation verification head 27261d36de4929c7c3cca92089f25d9effe7f39a: CI #406 PASS, Security baseline #361 PASS, Product Intake #287 PASS.",
+      "Testing lifecycle head 3fb899a8658a36e23ec6ab57d439a19e9e43caf5: CI #408 PASS, Security baseline #363 PASS, Product Intake #289 PASS.",
+      "CI #408 passed immutable install, PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build on the frozen Marketing Lab runtime tree.",
+      "PR #44 scope review contains only governance/docs, evaluation/marketing-lab and packages/domain paths; no API, web, database migration, infrastructure, publishing adapter, release workflow or dependency-lock changes.",
+      "Corey challenger metadata is pinned to coreyhaines31/marketingskills@7868cb9251fad80a73d26e488a5ad5f6c4a9f335 with exact per-skill content hashes and reference-only zero-permission policy.",
+      "Benchmark tests enforce exact input fingerprints and skill versions, Truth as a hard gate, tie/insufficient-evidence fallback to Kairo Native, cost/latency guardrails, staged offline-shadow-live advancement, Brand-scoped qualification, and separate sandbox benchmark versus production execution permissions.",
+      "Creative-format tests validate Claim-linked CarouselPlan and ReelPlan structures; Meta Reel/carousel publishing remains explicitly outside VS-14."
     ]
   },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-13.md","implementationPr":"https://github.com/ksazid/kairo/pull/41","evidence":["delivery/context/VS-12A-closeout.md","delivery/context/VS-13.md","delivery/context/VS-13-closeout.md","docs/plans/VS-12-sector-aware-hunter.md","docs/plans/VS-13-implementation.md"]},
+  "links": {"specification":"docs/slices/VS-14.md","implementationPr":"https://github.com/ksazid/kairo/pull/44","evidence":["evaluation/SKILLS-ARCHITECTURE.md","evaluation/marketing-lab/corey-marketingskills.json","evaluation/marketing-lab/benchmark-cases.json","delivery/context/VS-13-closeout.md","delivery/context/VS-14.md","docs/plans/VS-14-marketing-lab.md"]},
   "maxAttempts": 3
 }

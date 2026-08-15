@@ -22,7 +22,11 @@
     "./analytics-service": "./src/analytics-service.ts",
     "./learning": "./src/learning.ts",
     "./learning-service": "./src/learning-service.ts",
-    "./operations": "./src/operations.ts"
+    "./operations": "./src/operations.ts",
+    "./skill-registry": "./src/skill-registry.ts",
+    "./creative-formats": "./src/creative-formats.ts",
+    "./marketing-benchmark": "./src/marketing-benchmark.ts",
+    "./marketing-lab": "./src/marketing-lab.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
