@@ -18,7 +18,9 @@
     "./learner": "./src/learner.ts",
     "./creative-renderer": "./src/creative-renderer.ts",
     "./marketing-shadow": "./src/marketing-shadow.ts",
-    "./marketing-shadow-comparison": "./src/marketing-shadow-comparison.ts"
+    "./marketing-shadow-comparison": "./src/marketing-shadow-comparison.ts",
+    "./publishable-media": "./src/publishable-media.ts",
+    "./reel-encoder": "./src/reel-encoder.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
