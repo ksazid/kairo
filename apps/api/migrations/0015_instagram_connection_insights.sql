@@ -2,6 +2,7 @@ alter table channel_accounts
   add column if not exists provider_page_ref text,
   add column if not exists username text,
   add column if not exists granted_scopes jsonb not null default '[]'::jsonb,
+  add column if not exists insights_credential_ref text,
   add column if not exists last_verified_at timestamptz,
   add column if not exists token_expires_at timestamptz;
 
@@ -21,6 +22,11 @@ create table channel_credentials (
   check (length(ciphertext) > 0 and length(iv) > 0 and length(auth_tag) > 0)
 );
 create index channel_credentials_brand_active on channel_credentials(brand_id,provider) where revoked_at is null;
+
+alter table channel_accounts
+  add constraint channel_accounts_insights_credential_fk
+  foreign key (workspace_id,brand_id,insights_credential_ref)
+  references channel_credentials(workspace_id,brand_id,credential_ref);
 
 create table channel_oauth_intents (
   id text primary key,
@@ -51,11 +57,13 @@ create table channel_oauth_candidates (
   display_name text not null,
   username text,
   credential_ref text not null,
+  insights_credential_ref text not null,
   granted_scopes jsonb not null default '[]'::jsonb,
   created_at timestamptz not null,
   selected_at timestamptz,
   foreign key (workspace_id,brand_id) references brands(workspace_id,id),
   foreign key (workspace_id,brand_id,credential_ref) references channel_credentials(workspace_id,brand_id,credential_ref),
+  foreign key (workspace_id,brand_id,insights_credential_ref) references channel_credentials(workspace_id,brand_id,credential_ref),
   unique (intent_id,account_ref)
 );
 create index channel_oauth_candidates_scope on channel_oauth_candidates(account_id,brand_id,intent_id);
