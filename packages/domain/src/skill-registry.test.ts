@@ -49,8 +49,10 @@ describe("VS-14 marketing skill registry", () => {
   });
 
   it("requires exact immutable GitHub provenance for external challengers", () => {
-    expect(() => createMarketingSkillRegistry([{ ...coreyReference(), source: { ...coreyReference().source, commitSha: "main" } }])).toThrow(DomainValidationError);
-    expect(() => createMarketingSkillRegistry([{ ...coreyReference(), source: { ...coreyReference().source, contentHash: "missing" } }])).toThrow(DomainValidationError);
+    const reference = coreyReference();
+    if (reference.source.kind !== "github") throw new Error("fixture must be GitHub-backed");
+    expect(() => createMarketingSkillRegistry([{ ...reference, source: { ...reference.source, commitSha: "main" } }])).toThrow(DomainValidationError);
+    expect(() => createMarketingSkillRegistry([{ ...reference, source: { ...reference.source, contentHash: "missing" } }])).toThrow(DomainValidationError);
   });
 
   it("indexes candidates by capability without making evaluation status executable", () => {
@@ -77,12 +79,13 @@ describe("VS-14 marketing skill registry", () => {
         capability: "carousel-strategy",
         format: "carousel",
         challengerSkillId: "corey-social-reference",
+        challengerSkillVersion: "7868cb9",
       },
       selectedAt: "2026-08-15T03:40:00+02:00",
     })).toThrow(DomainValidationError);
   });
 
-  it("permits a pinned challenger selection only when qualification matches the Brand/capability/format", () => {
+  it("permits a pinned challenger selection only when qualification matches Brand, capability, format and version", () => {
     const qualified = { ...coreyReference(), executionMode: "sandboxed" as const, status: "approved" as const, benchmarkStatus: "qualified" as const };
     expect(createBrandSkillSelection({
       workspaceId: "ws-1",
@@ -97,8 +100,27 @@ describe("VS-14 marketing skill registry", () => {
         capability: "carousel-strategy",
         format: "carousel",
         challengerSkillId: "corey-social-reference",
+        challengerSkillVersion: "7868cb9",
       },
       selectedAt: "2026-08-15T03:40:00+02:00",
     })).toMatchObject({ brandId: "brand-1", skillId: "corey-social-reference", skillVersion: "7868cb9" });
+
+    expect(() => createBrandSkillSelection({
+      workspaceId: "ws-1",
+      brandId: "brand-1",
+      capability: "carousel-strategy",
+      format: "carousel",
+      skill: qualified,
+      qualification: {
+        verdict: "qualified-for-brand",
+        workspaceId: "ws-1",
+        brandId: "brand-1",
+        capability: "carousel-strategy",
+        format: "carousel",
+        challengerSkillId: "corey-social-reference",
+        challengerSkillVersion: "different-version",
+      },
+      selectedAt: "2026-08-15T03:40:00+02:00",
+    })).toThrow(DomainValidationError);
   });
 });
