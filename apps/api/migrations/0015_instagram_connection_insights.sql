@@ -58,13 +58,15 @@ create table channel_oauth_candidates (
   username text,
   credential_ref text not null,
   insights_credential_ref text not null,
+  token_expires_at timestamptz not null,
   granted_scopes jsonb not null default '[]'::jsonb,
   created_at timestamptz not null,
   selected_at timestamptz,
   foreign key (workspace_id,brand_id) references brands(workspace_id,id),
   foreign key (workspace_id,brand_id,credential_ref) references channel_credentials(workspace_id,brand_id,credential_ref),
   foreign key (workspace_id,brand_id,insights_credential_ref) references channel_credentials(workspace_id,brand_id,credential_ref),
-  unique (intent_id,account_ref)
+  unique (intent_id,account_ref),
+  check (token_expires_at > created_at)
 );
 create index channel_oauth_candidates_scope on channel_oauth_candidates(account_id,brand_id,intent_id);
 create unique index channel_oauth_candidates_one_selected on channel_oauth_candidates(intent_id) where selected_at is not null;
