@@ -1,6 +1,5 @@
 import type {
   BrandBrainBuildResponse,
-  BrandBrainFieldDto,
   BrandBrainSection,
   BuildBrandBrainRequest,
   GuidedBrandObjective,
@@ -24,6 +23,7 @@ export interface BrandBrainProposal {
   section: BrandBrainSection;
   fieldKey: string;
   value: string;
+  sourceIds: string[];
 }
 
 export interface BrandBrainProposalInput {
@@ -141,15 +141,20 @@ export class BrandBrainBootstrapService {
     }
 
     const liveFields = new Map((await this.repository.listBrandBrainFields(accountId, brandId)).map((field) => [field.fieldKey, field]));
+    const inspectedSourceIds = successfulReferences.map((item) => item.sourceId);
+    const inspectedSources = new Set(inspectedSourceIds);
     let proposedCount = 0;
     let skippedConfirmedCount = 0;
-    const sourceIds = successfulReferences.map((item) => item.sourceId);
 
     for (const proposal of proposals) {
       const section = PROPOSAL_FIELDS.get(proposal.fieldKey);
       if (!section || proposal.section !== section) throw new DomainValidationError("Brand Brain proposal is outside the guided allow-list");
       const value = proposal.value.trim();
       if (!value || value.length > 10_000) throw new DomainValidationError("Brand Brain proposal value is invalid");
+      const proposalSourceIds = [...new Set(proposal.sourceIds.map((sourceId) => sourceId.trim()).filter(Boolean))];
+      if (!proposalSourceIds.length || proposalSourceIds.some((sourceId) => !inspectedSources.has(sourceId))) {
+        throw new DomainValidationError("Brand Brain proposal provenance is invalid");
+      }
       const existing = liveFields.get(proposal.fieldKey);
       if (existing?.state === "confirmed") {
         skippedConfirmedCount += 1;
@@ -159,7 +164,7 @@ export class BrandBrainBootstrapService {
         section,
         fieldKey: proposal.fieldKey,
         value,
-        sourceIds,
+        sourceIds: proposalSourceIds,
         ...(existing ? { expectedVersion: existing.version } : {}),
       });
       liveFields.set(proposal.fieldKey, written);
@@ -171,7 +176,7 @@ export class BrandBrainBootstrapService {
       generatorStatus: "generated",
       proposedCount,
       skippedConfirmedCount,
-      sourceIds,
+      sourceIds: inspectedSourceIds,
     };
   }
 
