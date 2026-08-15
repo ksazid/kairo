@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getBrand } from "../../../../src/lib/kairo-api";
 import { getOperations, type OperationalFailureView, type OperationsBudgetView } from "../../../../src/lib/operations-api";
+import { PilotMobileNav } from "../../../pilot-mobile-nav";
 import { KairoSidebar } from "../ideas/page";
 import { disableAutomationAction, retryOperationalFailureAction } from "./actions";
 import "../../../performance.css";
@@ -52,6 +53,7 @@ export default async function OperationsPage({params,searchParams}:{params:Param
         {operations.interventions.length?<div className="intervention-list">{operations.interventions.map(item=><article className="intervention-row" key={item.id}><div><strong>{label(item.action)}</strong><p>{item.reason}</p><small>{label(item.targetType)} · {item.targetId}</small></div><time dateTime={item.at}>{formatTime(item.at)}</time></article>)}</div>:<Empty title="No interventions yet" text="Safe retries, automation disablement and other governed actions appear here."/>}
       </section>
     </main>
+    <PilotMobileNav brandId={brand.id} active="More"/>
   </div>;
 }
 
