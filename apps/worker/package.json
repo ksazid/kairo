@@ -15,7 +15,8 @@
     "./publishing-adapters": "./src/publishing-adapters.ts",
     "./performance": "./src/performance.ts",
     "./instagram-insights": "./src/instagram-insights.ts",
-    "./learner": "./src/learner.ts"
+    "./learner": "./src/learner.ts",
+    "./creative-renderer": "./src/creative-renderer.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
