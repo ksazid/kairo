@@ -49,7 +49,7 @@ Kairo uses the approved **PES Web/AI profile** direction:
 
 ## Current state
 
-Runtime delivery is certified and merged through **VS-19 Marketing Lab Shadow Execution**. There is no newly approved runtime slice after VS-19 yet; the next governed slice requires explicit scope and implementation approval before activation. Release, deployment and production enablement remain separate human approvals.
+Runtime delivery is certified and merged through **VS-20 Publishable Creative Media Pipeline**. There is no newly approved runtime slice after VS-20 yet; the next governed slice requires explicit scope and implementation approval before activation. Release, deployment and production enablement remain separate human approvals.
 
 ## Feature ledger
 
@@ -81,7 +81,7 @@ Status terms:
 | Performance learning | Implemented / governed | Evidence-scoped Candidate Learnings with cautious correlation and bounded next-experiment proposals. |
 | Pilot operations / safety / cost | Implemented / governed | Operational states, retries, intervention/safety controls and bounded runtime/cost behavior. |
 | Carousel asset production | Implemented / governed | Deterministic Claim-linked PNG slides with stable renderer/source fingerprints and private Brand-scoped object keys. |
-| Reel production package | Partial | Deterministic storyboard PNGs plus timed canonical render manifest; final MP4 encoder/provider is intentionally deferred. |
+| Reel production / publishable media | Implemented / governed | Deterministic storyboard + render manifest, provider-neutral bounded MP4 encoding, private encoded-object reuse, short-lived publishing-only HTTPS egress and exact Brand/Content-Version/Claim/hash lineage. |
 | Dynamic Skill Registry / benchmark foundation | Implemented / governed evaluation foundation | Versioned manifests, permissions, benchmark stages and Brand-qualification rules exist; external production activation remains disabled unless separately qualified and selected. |
 | Corey Haines `marketingskills` | Shadow / evaluation | Exact upstream pins are verified; the `social` capability is registered only as a sandboxed shadow challenger with no network, secrets or publishing authority. |
 | Marketing Lab shadow execution | Implemented / governed evaluation | VS-19 is certified and merged. It executes verified external reference content only through Kairo's zero-tool AgentRuntime boundary on synthetic/public-safe fixtures and produces paired benchmark evidence; it cannot create production Brand selection or publishing authority. |
@@ -159,7 +159,6 @@ Kairo-owned non-replaceable controls remain authoritative: Workspace/Brand isola
 The following are **not current production claims** and require separately governed work:
 
 - OpenAlex and Crossref research/evidence adapters.
-- Final provider-neutral MP4 Reel encoder/render worker and publishable generated-media delivery path.
 - Multilingual creative rendering/font support; the current deterministic bitmap renderer fails closed outside its supported glyph set.
 - Live Marketing Lab evaluation only after a shadow challenger earns `advance-to-live` and receives separate governed approval.
 - External Brand-skill selection/production activation only after sufficient live evidence and explicit qualification.
