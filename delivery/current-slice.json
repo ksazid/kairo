@@ -3,7 +3,7 @@
   "sliceId": "VS-14",
   "title": "Marketing Lab Benchmark Foundation",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-09", "FR-11", "FR-12", "FR-16", "FR-17", "FR-18", "FR-19", "FR-20"],
@@ -30,11 +30,19 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-14 does not authorize production enablement or automatic Brand skill switching."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":15,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":25,"certification":0,"release":0,"validation":50},
+  "certification": {
+    "status":"not-started",
+    "commitSha":null,
+    "evidence":[
+      "Implementation verification head 27261d36de4929c7c3cca92089f25d9effe7f39a: CI #406 PASS, Security baseline #361 PASS, Product Intake #287 PASS.",
+      "CI #406 passed immutable install, PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build.",
+      "PR #44 scope review contains only governance/docs, evaluation/marketing-lab and packages/domain paths; no API, web, database migration, infrastructure, publishing adapter, release workflow or dependency-lock changes."
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-14.md","implementationPr":"https://github.com/ksazid/kairo/pull/44","evidence":["evaluation/SKILLS-ARCHITECTURE.md","delivery/context/VS-13-closeout.md","delivery/context/VS-14.md","docs/plans/VS-14-marketing-lab.md"]},
+  "links": {"specification":"docs/slices/VS-14.md","implementationPr":"https://github.com/ksazid/kairo/pull/44","evidence":["evaluation/SKILLS-ARCHITECTURE.md","evaluation/marketing-lab/corey-marketingskills.json","evaluation/marketing-lab/benchmark-cases.json","delivery/context/VS-13-closeout.md","delivery/context/VS-14.md","docs/plans/VS-14-marketing-lab.md"]},
   "maxAttempts": 3
 }
