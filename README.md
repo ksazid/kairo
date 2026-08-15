@@ -49,7 +49,7 @@ Kairo uses the approved **PES Web/AI profile** direction:
 
 ## Current state
 
-Runtime delivery is certified and merged through **VS-18 Creative Asset Production**. **VS-19 Marketing Lab Shadow Execution** is the active governed slice while its exact certification candidate is prepared. Release, deployment and production enablement remain separate human approvals.
+Runtime delivery is certified and merged through **VS-19 Marketing Lab Shadow Execution**. There is no newly approved runtime slice after VS-19 yet; the next governed slice requires explicit scope and implementation approval before activation. Release, deployment and production enablement remain separate human approvals.
 
 ## Feature ledger
 
@@ -74,7 +74,7 @@ Status terms:
 | Critic / Judge / Truth Gate | Implemented / governed | Independent review, deterministic truth/policy enforcement, bounded revision and exact-version human approval. |
 | Calendar / Publishing | Implemented / governed | Deterministic jobs, idempotency/retries/reconciliation and official channel-adapter boundary. |
 | Instagram account connection | Implemented / governed | Server-side Meta OAuth flow, encrypted channel credentials, scoped account selection, reconnect/expiry handling. |
-| Instagram publishing | Partial | Official Instagram Professional single-image + caption publishing exists; Reel/carousel publishing remains future work. |
+| Instagram publishing | Implemented / governed | Official Instagram Professional single-image, Reel and 2–10 image-carousel publishing through deterministic provider containers; credentials remain behind `credentialRef`. |
 | Instagram Insights | Implemented / governed foundation | Scoped Insights collection, metric jobs, unavailable/retry states and provenance-backed ingestion. |
 | LinkedIn publishing | Implemented / governed foundation | Official organization publishing adapter boundary and governed scheduling/publishing flow. |
 | Performance tracking | Implemented / governed | Raw/normalised metric model, provenance, asynchronous collection boundary and Brand baselines. |
@@ -84,7 +84,7 @@ Status terms:
 | Reel production package | Partial | Deterministic storyboard PNGs plus timed canonical render manifest; final MP4 encoder/provider is intentionally deferred. |
 | Dynamic Skill Registry / benchmark foundation | Implemented / governed evaluation foundation | Versioned manifests, permissions, benchmark stages and Brand-qualification rules exist; external production activation remains disabled unless separately qualified and selected. |
 | Corey Haines `marketingskills` | Shadow / evaluation | Exact upstream pins are verified; the `social` capability is registered only as a sandboxed shadow challenger with no network, secrets or publishing authority. |
-| Marketing Lab shadow execution | Active governed slice | VS-19 executes verified external reference content through Kairo's zero-tool AgentRuntime boundary on synthetic/public-safe fixtures and produces paired benchmark evidence only. |
+| Marketing Lab shadow execution | Implemented / governed evaluation | VS-19 is certified and merged. It executes verified external reference content only through Kairo's zero-tool AgentRuntime boundary on synthetic/public-safe fixtures and produces paired benchmark evidence; it cannot create production Brand selection or publishing authority. |
 | Paperclip control plane | Architecture / evaluation | Candidate only; native PES/Loop/runtime control remains authoritative and Paperclip is not a runtime dependency. |
 
 ## Current content intelligence loop
@@ -159,8 +159,7 @@ Kairo-owned non-replaceable controls remain authoritative: Workspace/Brand isola
 The following are **not current production claims** and require separately governed work:
 
 - OpenAlex and Crossref research/evidence adapters.
-- Instagram Reel and carousel publishing.
-- Final provider-neutral MP4 Reel encoder/render worker.
+- Final provider-neutral MP4 Reel encoder/render worker and publishable generated-media delivery path.
 - Multilingual creative rendering/font support; the current deterministic bitmap renderer fails closed outside its supported glyph set.
 - Live Marketing Lab evaluation only after a shadow challenger earns `advance-to-live` and receives separate governed approval.
 - External Brand-skill selection/production activation only after sufficient live evidence and explicit qualification.
