@@ -62,13 +62,14 @@ registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:a
 
 const meta=metaInstagramConfig();
 let instagramMetricRunner:InstagramMetricCollectionRunner|undefined;
+let instagramConnectionRepo:PgInstagramConnectionRepository|undefined;
 if(meta){
   const vault=new PgEncryptedChannelCredentialVault(pool,meta.encryptionKey);
-  const connectionRepo=new PgInstagramConnectionRepository(pool);
+  instagramConnectionRepo=new PgInstagramConnectionRepository(pool);
   const connectionService=new InstagramConnectionService({
     brands:coreStore,
     publishing:publishingStore,
-    repo:connectionRepo,
+    repo:instagramConnectionRepo,
     vault,
     meta:new MetaInstagramOAuthClient(meta.appId,meta.appSecret,meta.graphVersion,meta.redirectUri),
   });
@@ -101,7 +102,10 @@ try {
 async function collectMetricTick(){
   if(metricTickRunning||!instagramMetricRunner)return;
   metricTickRunning=true;
-  try{for(let i=0;i<5;i++)if(!(await instagramMetricRunner.runOnce()))break}catch(error){app.log.error({err:error},"Instagram metric collection tick failed")}finally{metricTickRunning=false}
+  try{
+    await instagramConnectionRepo?.purgeExpiredPendingCredentials(new Date().toISOString());
+    for(let i=0;i<5;i++)if(!(await instagramMetricRunner.runOnce()))break;
+  }catch(error){app.log.error({err:error},"Instagram maintenance tick failed")}finally{metricTickRunning=false}
 }
 
 async function shutdown(): Promise<void> {
