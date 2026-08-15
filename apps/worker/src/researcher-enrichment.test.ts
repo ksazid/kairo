@@ -49,6 +49,12 @@ class FakeRuntime implements AgentRuntimePort {
   lastRequest: AgentInvocationRequest | null = null;
   async invoke<TOutput>(request: AgentInvocationRequest): Promise<AgentRuntimeResult<TOutput>> {
     this.lastRequest = request;
+    const supplied = Array.isArray(request.task.context.evidence) ? request.task.context.evidence : [];
+    const evidenceIds = supplied.flatMap((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+      const id = (item as Record<string, unknown>).id;
+      return typeof id === "string" ? [id] : [];
+    });
     const output: ResearcherOutput = {
       summary: "Evidence-backed summary",
       importantContext: ["Context"],
@@ -61,7 +67,7 @@ class FakeRuntime implements AgentRuntimePort {
         evidenceStrength: "strong",
         verificationState: "supported",
         freshness: "fresh",
-        evidenceIds: ["evidence-1", "evidence-2"],
+        evidenceIds,
         firstPersonAuthorization: "not-applicable",
       }],
     };
