@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { oidcClientId, oidcConfiguration } from "../../../src/lib/oidc";
+import { KAIRO_ACCESS_TOKEN_COOKIE, OIDC_TRANSACTION_COOKIE } from "../../../src/lib/oidc-session";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  const response = NextResponse.redirect(new URL("/", request.url));
-  response.cookies.delete("kairo_access_token");
-  response.cookies.delete("kairo_oidc_verifier");
-  response.cookies.delete("kairo_oidc_state");
+  const postLogout = new URL("/", request.url);
+  let destination = postLogout;
+
+  try {
+    const configuration = await oidcConfiguration();
+    const endpoint = configuration.serverMetadata().end_session_endpoint;
+    if (endpoint) {
+      destination = new URL(endpoint);
+      destination.searchParams.set("client_id", oidcClientId());
+      destination.searchParams.set("post_logout_redirect_uri", postLogout.href);
+    }
+  } catch {
+    destination = postLogout;
+  }
+
+  const response = NextResponse.redirect(destination);
+  response.cookies.delete(KAIRO_ACCESS_TOKEN_COOKIE);
+  response.cookies.set(OIDC_TRANSACTION_COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/auth", maxAge: 0 });
   return response;
 }
