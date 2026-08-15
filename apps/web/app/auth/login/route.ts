@@ -10,37 +10,55 @@ function loginHint(request: NextRequest): string | undefined {
   return value.slice(0, 320);
 }
 
-export async function GET(request: NextRequest) {
-  const oidc = oidcClient();
-  const configuration = await oidcConfiguration();
-  const codeVerifier = oidc.randomPKCECodeVerifier();
-  const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
-  const state = oidc.randomState();
-  const returnTo = safeReturnTo(request.nextUrl.searchParams.get("returnTo"));
-  const parameters: Record<string, string> = {
-    redirect_uri: new URL("/auth/callback", request.url).href,
-    scope: "openid profile email",
-    audience: oidcAudience(),
-    code_challenge: codeChallenge,
-    code_challenge_method: "S256",
-    state,
-  };
-  if (request.nextUrl.searchParams.get("screen_hint") === "signup") parameters.screen_hint = "signup";
-  if (request.nextUrl.searchParams.get("connection") === "google-oauth2") parameters.connection = "google-oauth2";
-  const hintedEmail = loginHint(request);
-  if (hintedEmail) parameters.login_hint = hintedEmail;
-
-  const response = NextResponse.redirect(oidc.buildAuthorizationUrl(configuration, parameters));
-  response.cookies.set(
-    OIDC_TRANSACTION_COOKIE,
-    encodeOidcTransaction({ state, codeVerifier, returnTo, createdAt: Date.now() }, oidcClientSecret()),
-    {
-      httpOnly: true,
-      secure: request.nextUrl.protocol === "https:",
-      sameSite: "lax",
-      path: "/auth",
-      maxAge: OIDC_TRANSACTION_MAX_AGE_SECONDS,
-    },
-  );
+function authenticationUnavailable(request: NextRequest): NextResponse {
+  const target = new URL("/sign-in", request.url);
+  target.searchParams.set("error", "Authentication service is temporarily unavailable. Please try again.");
+  const response = NextResponse.redirect(target);
+  response.cookies.set(OIDC_TRANSACTION_COOKIE, "", {
+    httpOnly: true,
+    secure: request.nextUrl.protocol === "https:",
+    sameSite: "lax",
+    path: "/auth",
+    maxAge: 0,
+  });
   return response;
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const oidc = oidcClient();
+    const configuration = await oidcConfiguration();
+    const codeVerifier = oidc.randomPKCECodeVerifier();
+    const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
+    const state = oidc.randomState();
+    const returnTo = safeReturnTo(request.nextUrl.searchParams.get("returnTo"));
+    const parameters: Record<string, string> = {
+      redirect_uri: new URL("/auth/callback", request.url).href,
+      scope: "openid profile email",
+      audience: oidcAudience(),
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
+      state,
+    };
+    if (request.nextUrl.searchParams.get("screen_hint") === "signup") parameters.screen_hint = "signup";
+    if (request.nextUrl.searchParams.get("connection") === "google-oauth2") parameters.connection = "google-oauth2";
+    const hintedEmail = loginHint(request);
+    if (hintedEmail) parameters.login_hint = hintedEmail;
+
+    const response = NextResponse.redirect(oidc.buildAuthorizationUrl(configuration, parameters));
+    response.cookies.set(
+      OIDC_TRANSACTION_COOKIE,
+      encodeOidcTransaction({ state, codeVerifier, returnTo, createdAt: Date.now() }, oidcClientSecret()),
+      {
+        httpOnly: true,
+        secure: request.nextUrl.protocol === "https:",
+        sameSite: "lax",
+        path: "/auth",
+        maxAge: OIDC_TRANSACTION_MAX_AGE_SECONDS,
+      },
+    );
+    return response;
+  } catch {
+    return authenticationUnavailable(request);
+  }
 }
