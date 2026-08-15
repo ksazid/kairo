@@ -3,7 +3,7 @@
   "sliceId": "VS-16",
   "title": "Auth0 Identity Provider Migration",
   "status": "active",
-  "lifecycle": "implementation",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01"],
@@ -13,7 +13,7 @@
   "allowedPaths": ["apps/web/**","apps/api/src/auth.ts","apps/api/src/auth.test.ts","docs/slices/VS-16.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
   "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**","packages/domain/**","apps/worker/**"],
   "impact": {
-    "areas": ["architecture", "authentication", "security", "customer-flow", "operations-support"],
+    "areas": ["architecture", "authentication", "authorization", "sensitive-data", "customer-flow", "operations-support"],
     "notes": [
       "Replaces Neon-specific web authentication with Auth0 through the existing provider-neutral OIDC boundary required by DEC-001.",
       "Kairo remains authoritative for Workspace/Brand membership, authorization and audit; identity-provider claims do not become tenant authorization truth.",
@@ -31,11 +31,11 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Production enablement and production deployment remain separate explicit gates."}
   ],
   "decisionIds": ["DEC-001"],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":70,"testing":10,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-16.md","implementationPr":null,"evidence":["delivery/context/VS-15-closeout.md","delivery/context/VS-16.md","docs/plans/VS-16-auth0-identity.md"]},
+  "links": {"specification":"docs/slices/VS-16.md","implementationPr":"https://github.com/ksazid/kairo/pull/46","evidence":["delivery/context/VS-15-closeout.md","delivery/context/VS-16.md","docs/plans/VS-16-auth0-identity.md"]},
   "maxAttempts": 3
 }
