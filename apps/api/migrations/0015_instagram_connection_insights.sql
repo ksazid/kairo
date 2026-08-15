@@ -69,15 +69,17 @@ create table metric_collection_jobs (
   account_ref text not null,
   external_post_id text not null,
   credential_ref text not null,
+  scheduled_for timestamptz not null,
   status text not null check (status in ('queued','running','complete','failed','unavailable')),
   attempt integer not null default 0 check (attempt between 0 and 3),
   next_attempt_at timestamptz,
   lease_owner text,
   lease_expires_at timestamptz,
   failure_code text,
+  unavailable_reason text,
   created_at timestamptz not null,
   completed_at timestamptz,
   foreign key (workspace_id,brand_id) references brands(workspace_id,id),
-  unique (published_post_id,provider)
+  unique (published_post_id,provider,scheduled_for)
 );
-create index metric_collection_jobs_due on metric_collection_jobs(status,coalesce(next_attempt_at,created_at)) where status='queued';
+create index metric_collection_jobs_due on metric_collection_jobs(status,coalesce(next_attempt_at,scheduled_for)) where status='queued';
