@@ -52,6 +52,7 @@ export interface BrandSkillQualificationEvidence {
   capability: MarketingCapability;
   format: MarketingFormat;
   challengerSkillId: string;
+  challengerSkillVersion: string;
 }
 
 export interface BrandSkillSelection {
@@ -142,7 +143,15 @@ export function createBrandSkillSelection(input: {
   if (!skill.capabilities.includes(capability)) throw new DomainValidationError("Selected skill does not provide the requested capability");
   if (!canExecuteMarketingSkill(skill)) throw new DomainValidationError("Selected skill is not approved for execution");
   const q = input.qualification;
-  if (q.verdict !== "qualified-for-brand" || q.workspaceId !== workspaceId || q.brandId !== brandId || q.capability !== capability || q.format !== format || q.challengerSkillId !== skill.id) {
+  if (
+    q.verdict !== "qualified-for-brand" ||
+    q.workspaceId !== workspaceId ||
+    q.brandId !== brandId ||
+    q.capability !== capability ||
+    q.format !== format ||
+    q.challengerSkillId !== skill.id ||
+    q.challengerSkillVersion !== skill.version
+  ) {
     throw new DomainValidationError("Brand skill selection requires matching Brand qualification evidence");
   }
   return { workspaceId, brandId, capability, format, skillId: skill.id, skillVersion: skill.version, selectedAt: timestamp(input.selectedAt, "selectedAt") };

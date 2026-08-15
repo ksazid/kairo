@@ -14,12 +14,14 @@ export interface MarketingQualityScores {
 
 export interface MarketingBenchmarkObservation {
   caseId: string;
+  inputFingerprint: string;
   workspaceId: string;
   brandId: string;
   capability: MarketingCapability;
   format: MarketingFormat;
   stage: MarketingBenchmarkStage;
   candidateSkillId: string;
+  candidateSkillVersion: string;
   truthPassed: boolean;
   scores: MarketingQualityScores;
   humanPreferenceScore?: number;
@@ -52,7 +54,9 @@ export interface MarketingBenchmarkResult {
   capability?: MarketingCapability;
   format?: MarketingFormat;
   baselineSkillId: string;
+  baselineSkillVersion: string;
   challengerSkillId: string;
+  challengerSkillVersion: string;
   pairedCaseCount: number;
   baselineQuality?: number;
   challengerQuality?: number;
@@ -77,19 +81,25 @@ export const DEFAULT_MARKETING_BENCHMARK_POLICY: MarketingBenchmarkPolicy = Obje
 
 export function compareMarketingBenchmark(input: {
   baselineSkillId: string;
+  baselineSkillVersion: string;
   challengerSkillId: string;
+  challengerSkillVersion: string;
   observations: readonly MarketingBenchmarkObservation[];
   policy?: MarketingBenchmarkPolicy;
 }): MarketingBenchmarkResult {
   const baselineSkillId = text(input.baselineSkillId, "baselineSkillId");
+  const baselineSkillVersion = text(input.baselineSkillVersion, "baselineSkillVersion");
   const challengerSkillId = text(input.challengerSkillId, "challengerSkillId");
-  if (baselineSkillId === challengerSkillId) throw new DomainValidationError("Benchmark requires different baseline and challenger skills");
+  const challengerSkillVersion = text(input.challengerSkillVersion, "challengerSkillVersion");
+  if (baselineSkillId === challengerSkillId && baselineSkillVersion === challengerSkillVersion) throw new DomainValidationError("Benchmark requires different baseline and challenger skill versions");
   const policy = validatePolicy(input.policy ?? DEFAULT_MARKETING_BENCHMARK_POLICY);
   const observations = input.observations.map(validateObservation);
-  const baseResult = { baselineSkillId, challengerSkillId, pairedCaseCount: 0, qualityDelta: 0 };
+  const baseResult = { baselineSkillId, baselineSkillVersion, challengerSkillId, challengerSkillVersion, pairedCaseCount: 0, qualityDelta: 0 };
   if (observations.length === 0) return result("insufficient-evidence", ["no-observations"], baseResult);
 
-  const relevant = observations.filter((item) => item.candidateSkillId === baselineSkillId || item.candidateSkillId === challengerSkillId);
+  const relevant = observations.filter((item) =>
+    (item.candidateSkillId === baselineSkillId && item.candidateSkillVersion === baselineSkillVersion) ||
+    (item.candidateSkillId === challengerSkillId && item.candidateSkillVersion === challengerSkillVersion));
   if (relevant.length === 0) return result("insufficient-evidence", ["no-candidate-observations"], baseResult);
 
   const scopes = new Set(relevant.map(scopeKey));
@@ -101,7 +111,7 @@ export function compareMarketingBenchmark(input: {
   const brandId = relevant[0]!.brandId;
   const capability = relevant[0]!.capability;
   const format = relevant[0]!.format;
-  const pairs = pairObservations(relevant, baselineSkillId, challengerSkillId);
+  const pairs = pairObservations(relevant, baselineSkillId, baselineSkillVersion, challengerSkillId, challengerSkillVersion);
   const pairedCaseCount = pairs.length;
   const scoped = { ...baseResult, stage, workspaceId, brandId, capability, format, pairedCaseCount };
 
@@ -128,7 +138,11 @@ export function compareMarketingBenchmark(input: {
 
   if (stage === "offline") return result("advance-to-shadow", ["offline-thresholds-passed"], measured);
 
-  const humanReady = pairs.every((pair) => hasNumber(pair.baseline.humanPreferenceScore) && hasNumber(pair.challenger.humanPreferenceScore) && hasNumber(pair.baseline.editDistancePercent) && hasNumber(pair.challenger.editDistancePercent));
+  const humanReady = pairs.every((pair) =>
+    hasNumber(pair.baseline.humanPreferenceScore) &&
+    hasNumber(pair.challenger.humanPreferenceScore) &&
+    hasNumber(pair.baseline.editDistancePercent) &&
+    hasNumber(pair.challenger.editDistancePercent));
   if (!humanReady) return result("insufficient-evidence", ["human-evidence-required"], measured);
   const baselineHuman = mean(pairs.map((pair) => pair.baseline.humanPreferenceScore!));
   const challengerHuman = mean(pairs.map((pair) => pair.challenger.humanPreferenceScore!));
@@ -144,7 +158,11 @@ export function compareMarketingBenchmark(input: {
 
   if (stage === "shadow") return result("advance-to-live", ["shadow-thresholds-passed"], humanMeasured);
 
-  const liveReady = pairs.every((pair) => pair.baseline.realWorldPerformance && pair.challenger.realWorldPerformance && pair.baseline.realWorldPerformance.sampleSize >= policy.minLiveSampleSize && pair.challenger.realWorldPerformance.sampleSize >= policy.minLiveSampleSize);
+  const liveReady = pairs.every((pair) =>
+    pair.baseline.realWorldPerformance &&
+    pair.challenger.realWorldPerformance &&
+    pair.baseline.realWorldPerformance.sampleSize >= policy.minLiveSampleSize &&
+    pair.challenger.realWorldPerformance.sampleSize >= policy.minLiveSampleSize);
   if (!liveReady) return result("insufficient-evidence", ["comparable-live-samples-required"], humanMeasured);
   const baselinePerformance = mean(pairs.map((pair) => pair.baseline.realWorldPerformance!.normalizedScore));
   const challengerPerformance = mean(pairs.map((pair) => pair.challenger.realWorldPerformance!.normalizedScore));
@@ -168,7 +186,15 @@ function validateObservation(value: MarketingBenchmarkObservation): MarketingBen
     boundedScore(value.realWorldPerformance.normalizedScore, "realWorldPerformance.normalizedScore");
     if (!Number.isInteger(value.realWorldPerformance.sampleSize) || value.realWorldPerformance.sampleSize < 1) throw new DomainValidationError("realWorldPerformance.sampleSize must be a positive integer");
   }
-  return { ...value, caseId: text(value.caseId, "caseId"), workspaceId: text(value.workspaceId, "workspaceId"), brandId: text(value.brandId, "brandId"), candidateSkillId: text(value.candidateSkillId, "candidateSkillId") };
+  return {
+    ...value,
+    caseId: text(value.caseId, "caseId"),
+    inputFingerprint: text(value.inputFingerprint, "inputFingerprint"),
+    workspaceId: text(value.workspaceId, "workspaceId"),
+    brandId: text(value.brandId, "brandId"),
+    candidateSkillId: text(value.candidateSkillId, "candidateSkillId"),
+    candidateSkillVersion: text(value.candidateSkillVersion, "candidateSkillVersion"),
+  };
 }
 
 function validatePolicy(value: MarketingBenchmarkPolicy): MarketingBenchmarkPolicy {
@@ -177,14 +203,22 @@ function validatePolicy(value: MarketingBenchmarkPolicy): MarketingBenchmarkPoli
   return { ...value };
 }
 
-function pairObservations(observations: readonly MarketingBenchmarkObservation[], baselineSkillId: string, challengerSkillId: string): Array<{ baseline: MarketingBenchmarkObservation; challenger: MarketingBenchmarkObservation }> {
+function pairObservations(
+  observations: readonly MarketingBenchmarkObservation[],
+  baselineSkillId: string,
+  baselineSkillVersion: string,
+  challengerSkillId: string,
+  challengerSkillVersion: string,
+): Array<{ baseline: MarketingBenchmarkObservation; challenger: MarketingBenchmarkObservation }> {
   const byCase = new Map<string, MarketingBenchmarkObservation[]>();
   for (const item of observations) byCase.set(item.caseId, [...(byCase.get(item.caseId) ?? []), item]);
   const pairs: Array<{ baseline: MarketingBenchmarkObservation; challenger: MarketingBenchmarkObservation }> = [];
   for (const items of byCase.values()) {
-    const baselines = items.filter((item) => item.candidateSkillId === baselineSkillId);
-    const challengers = items.filter((item) => item.candidateSkillId === challengerSkillId);
-    if (baselines.length === 1 && challengers.length === 1) pairs.push({ baseline: baselines[0]!, challenger: challengers[0]! });
+    const baselines = items.filter((item) => item.candidateSkillId === baselineSkillId && item.candidateSkillVersion === baselineSkillVersion);
+    const challengers = items.filter((item) => item.candidateSkillId === challengerSkillId && item.candidateSkillVersion === challengerSkillVersion);
+    if (baselines.length === 1 && challengers.length === 1 && baselines[0]!.inputFingerprint === challengers[0]!.inputFingerprint) {
+      pairs.push({ baseline: baselines[0]!, challenger: challengers[0]! });
+    }
   }
   return pairs;
 }
