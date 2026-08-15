@@ -61,7 +61,7 @@ describe("OpenAICompatibleModelGateway", () => {
   it("records a defensible zero cost when configured rates are zero", async () => {
     const gateway = new OpenAICompatibleModelGateway({
       provider: "ollama",
-      baseUrl: "http://localhost:11434/v1",
+      baseUrl: "https://local-model.example.test/v1",
       apiKey: "local-placeholder",
       model: "local-model",
       pricing: { inputUsdPerMillionTokens: 0, outputUsdPerMillionTokens: 0, version: "local-zero-cost-v1" },
