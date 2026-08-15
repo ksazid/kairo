@@ -38,6 +38,17 @@ describe("retry-safe OIDC discovery cache", () => {
     expect(loader).toHaveBeenCalledTimes(2);
   });
 
+  it("returns synchronous configuration failures as retryable rejected promises", async () => {
+    const loader = vi.fn()
+      .mockImplementationOnce(() => { throw new Error("missing OIDC configuration"); })
+      .mockResolvedValueOnce({ issuer: "https://issuer.example/" });
+    const cache = createRetryableAsyncCache(loader);
+
+    await expect(cache.get()).rejects.toThrow("missing OIDC configuration");
+    await expect(cache.get()).resolves.toEqual({ issuer: "https://issuer.example/" });
+    expect(loader).toHaveBeenCalledTimes(2);
+  });
+
   it("does not let an older rejection evict a newer successful request", async () => {
     let rejectFirst!: (error: Error) => void;
     const loader = vi.fn()
