@@ -3,72 +3,17 @@
   "sliceId": "VS-21",
   "title": "Pilot End-to-End Validation and Hardening",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": [
-    "FR-01",
-    "FR-02",
-    "FR-03",
-    "FR-04",
-    "FR-05",
-    "FR-06",
-    "FR-07",
-    "FR-08",
-    "FR-09",
-    "FR-10",
-    "FR-11",
-    "FR-12",
-    "FR-13",
-    "FR-14",
-    "FR-15",
-    "FR-16",
-    "FR-17",
-    "FR-18",
-    "FR-19",
-    "FR-20"
-  ],
-  "owners": {
-    "product": "Product Owner",
-    "engineering": "Engineering Owner",
-    "operations": "Operations Owner",
-    "security": "Security Owner"
-  },
-  "dependencies": [
-    "VS-20"
-  ],
+  "requirements": ["FR-01","FR-02","FR-03","FR-04","FR-05","FR-06","FR-07","FR-08","FR-09","FR-10","FR-11","FR-12","FR-13","FR-14","FR-15","FR-16","FR-17","FR-18","FR-19","FR-20"],
+  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
+  "dependencies": ["VS-20"],
   "blockers": [],
-  "allowedPaths": [
-    "packages/domain/**",
-    "apps/api/**",
-    "apps/web/**",
-    "apps/worker/**",
-    "scripts/**",
-    "tests/**",
-    "docs/slices/VS-21.md",
-    "docs/plans/**",
-    "delivery/**",
-    "README.md",
-    ".engineering/STATE.json"
-  ],
-  "protectedPaths": [
-    ".github/workflows/release.yml",
-    "infrastructure/**",
-    "apps/api/migrations/**"
-  ],
+  "allowedPaths": ["packages/domain/**","apps/api/**","apps/web/**","apps/worker/**","scripts/**","tests/**","docs/slices/VS-21.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
   "impact": {
-    "areas": [
-      "architecture",
-      "frontend",
-      "api",
-      "authentication",
-      "authorization",
-      "sensitive-data",
-      "customer-flow",
-      "operator-flow",
-      "analytics",
-      "operations-support"
-    ],
+    "areas": ["architecture","frontend","api","authentication","authorization","sensitive-data","customer-flow","operator-flow","analytics","operations-support"],
     "notes": [
       "This slice validates and hardens the existing V1 product loop; it does not add new product scope.",
       "Cross-Brand isolation, Truth/Claims policy, human approval and deterministic publishing remain mandatory.",
@@ -77,100 +22,35 @@
     ]
   },
   "approvals": [
-    {
-      "type": "scope",
-      "status": "approved",
-      "version": "VS-21@1.0",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-15T16:19:00+02:00",
-      "rationale": "Explicitly approved the proposed VS-21 Pilot End-to-End Validation & Hardening scope with the instruction to go."
-    },
-    {
-      "type": "policy",
-      "status": "not-required",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Approved PRD/TRD, security decisions and prior certified slices already govern the existing V1 product loop being validated."
-    },
-    {
-      "type": "implementation",
-      "status": "approved",
-      "version": "VS-21@1.0",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-15T16:19:00+02:00",
-      "rationale": "Runtime validation and bounded defect fixes inside the defined pilot-hardening scope were explicitly authorized."
-    },
-    {
-      "type": "certification",
-      "status": "pending",
-      "version": "VS-21@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Requires exact-SHA human approval after final gates."
-    },
-    {
-      "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Not authorized."
-    },
-    {
-      "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Not authorized."
-    }
+    {"type":"scope","status":"approved","version":"VS-21@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T16:19:00+02:00","rationale":"Explicitly approved the proposed VS-21 Pilot End-to-End Validation & Hardening scope with the instruction to go."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Approved PRD/TRD, security decisions and prior certified slices already govern the existing V1 product loop being validated."},
+    {"type":"implementation","status":"approved","version":"VS-21@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T16:19:00+02:00","rationale":"Runtime validation and bounded defect fixes inside the defined pilot-hardening scope were explicitly authorized."},
+    {"type":"certification","status":"pending","version":"VS-21@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA human approval after final gates."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {
-    "discovery": 100,
-    "decisions": 100,
-    "implementation": 5,
-    "testing": 0,
-    "certification": 0,
-    "release": 0,
-    "validation": 0
-  },
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":75,"certification":0,"release":0,"validation":0},
   "certification": {
     "status": "not-started",
     "commitSha": null,
     "evidence": [
-      "VS-20 certified and merged; governance closeout merged as 432a65e02cfd678d13b76bf14c4dce7bc4db2654 and post-closeout main CI #504 passed."
+      "VS-20 certified and merged; governance closeout merged as 432a65e02cfd678d13b76bf14c4dce7bc4db2654 and post-closeout main CI #504 passed.",
+      "VS-21 activation b250f2936d2b2292032dd1a1a3e83b1c21c6152b and red TDD contract 930f0bff120f209fdcaa16d1fa7e098aa51b89ad.",
+      "Red CI #506 failed only because the pilot-readiness harness was intentionally absent; Security baseline #449 and Product Intake #374 passed.",
+      "Initial implementation 4f4e7b16b95b92423393db583d6c096ef59df61f exposed a strict generic fixture typecheck failure in CI #507; Security #450 and Product Intake #375 passed.",
+      "Technical matrix repair 70f8fd1c4cf29fdfe079f03ac2109844bd5efbcc passed CI #508, Security #451 and Product Intake #376 across four proof sectors and carousel/Reel paths.",
+      "UX review found stale navigation that labelled implemented Campaigns, Calendar and Performance as Later and left mobile pilot paths incomplete; bounded navigation/resilience fixes were added with regression coverage.",
+      "CI #518 preserved a compatibility defect after mobile navigation refactoring: Idea detail still imported MobileIdeasNav; the compatibility wrapper was restored.",
+      "Combined hardening head 3c90f5c2e0d8197795e5f4a314f9b75db1265b3a passed CI #520, Security #463 and Product Intake #388.",
+      "Post-pilot roadmap was recorded as proposed/specification-only VS-22/VS-23/VS-24 backlog entries with no runtime authorization.",
+      "Runtime freeze head dfb664f9b81a82259660c6b6346a051f5a90714d passed CI #523, Security baseline #466 and Product Intake #391 with immutable install, clean PostgreSQL 18 migrations, zero-high production dependency audit, governance/preflight, full runtime verification, pilot matrix, route resilience tests and dashboard build.",
+      "PR #54 scope review found no protected-path changes and zero unresolved review threads."
     ]
   },
-  "release": {
-    "status": "not-authorized",
-    "releaseId": null
-  },
-  "rollback": {
-    "status": "ready",
-    "rollbackId": null
-  },
-  "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
-  },
-  "links": {
-    "specification": "docs/slices/VS-21.md",
-    "implementationPr": null,
-    "evidence": [
-      "delivery/context/VS-20-closeout.md",
-      "delivery/context/VS-21.md",
-      "docs/plans/VS-21-pilot-e2e-hardening.md"
-    ]
-  },
+  "release": {"status":"not-authorized","releaseId":null},
+  "rollback": {"status":"ready","rollbackId":null},
+  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
+  "links": {"specification":"docs/slices/VS-21.md","implementationPr":"https://github.com/ksazid/kairo/pull/54","evidence":["delivery/context/VS-20-closeout.md","delivery/context/VS-21.md","docs/plans/VS-21-pilot-e2e-hardening.md"]},
   "maxAttempts": 3
 }
