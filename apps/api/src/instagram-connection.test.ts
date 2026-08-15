@@ -48,6 +48,7 @@ class Meta implements MetaInstagramOAuthPort {
     return {
       grantedScopes: ["instagram_basic", "instagram_content_publish", "instagram_manage_insights", "pages_read_engagement", "pages_show_list"],
       userAccessToken: "secret-user-token",
+      userAccessTokenExpiresInSeconds: 60 * 24 * 60 * 60,
       accounts: [
         { pageRef: "page-1", pageName: "Page One", accountRef: "111", displayName: "One", username: "one", pageAccessToken: "secret-page-token-1" },
         { pageRef: "page-2", pageName: "Page Two", accountRef: "222", displayName: "Two", username: "two", pageAccessToken: "secret-page-token-2" },
@@ -91,6 +92,7 @@ describe("VS-17 Instagram connection", () => {
     if (completed.status !== "selection-required") throw new Error("expected selection");
     expect(completed.candidates).toHaveLength(2);
     expect(saved).toHaveLength(0);
+    expect(Date.parse(repo.candidates[0]!.tokenExpiresAt)).toBeGreaterThan(Date.parse("2026-08-22T05:00:00Z"));
     await expect(instance.complete("alice", "meta-code", state)).rejects.toThrow(/expired|invalid|used/i);
     expect(JSON.stringify(repo.candidates)).not.toContain("secret-page-token");
     expect(JSON.stringify(repo.candidates)).not.toContain("secret-user-token");
