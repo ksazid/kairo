@@ -31,16 +31,17 @@ const input = {
 };
 
 describe("BrandBrainBuilder", () => {
-  it("uses a zero-tool Brand-private strategist invocation and returns allow-listed proposals", async () => {
+  it("uses a zero-tool Brand-private strategist invocation and returns allow-listed source-linked proposals", async () => {
     const runtime = new FakeRuntime({ proposals: [
-      { section: "audience", fieldKey: "audience.primary", value: "Duke 390 owners and prospective owners." },
-      { section: "voice", fieldKey: "voice.tone", value: "Direct, energetic and rider-to-rider." },
+      { section: "audience", fieldKey: "audience.primary", value: "Duke 390 owners and prospective owners.", sourceIds: ["source-1"] },
+      { section: "voice", fieldKey: "voice.tone", value: "Direct, energetic and rider-to-rider.", sourceIds: ["source-1"] },
     ] });
     const builder = new BrandBrainBuilder(runtime);
 
     const result = await builder.propose(input);
 
     expect(result).toHaveLength(2);
+    expect(result[0]?.sourceIds).toEqual(["source-1"]);
     expect(runtime.request).toMatchObject({
       role: "strategist",
       scope: { visibility: "brand-private", workspaceId: "workspace-1", brandId: "brand-1" },
@@ -53,17 +54,27 @@ describe("BrandBrainBuilder", () => {
 
   it("rejects proposal keys outside the guided Brand Brain allow-list", async () => {
     const runtime = new FakeRuntime({ proposals: [
-      { section: "goals", fieldKey: "goals.objectives", value: "Replace the owner's goal" },
+      { section: "goals", fieldKey: "goals.objectives", value: "Replace the owner's goal", sourceIds: ["source-1"] },
     ] });
     const builder = new BrandBrainBuilder(runtime);
 
     await expect(builder.propose(input)).rejects.toThrow(/allow-list/i);
   });
 
+  it("rejects source IDs that were not supplied as inspected references", async () => {
+    const runtime = new FakeRuntime({ proposals: [
+      { section: "audience", fieldKey: "audience.primary", value: "An audience", sourceIds: ["foreign-source"] },
+    ] });
+    const builder = new BrandBrainBuilder(runtime);
+
+    await expect(builder.propose(input)).rejects.toThrow(/source/i);
+  });
+
   it("rejects empty, oversized or malformed proposal output", async () => {
     const malformed = [
-      { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "" }] },
-      { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "x".repeat(10001) }] },
+      { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "", sourceIds: ["source-1"] }] },
+      { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "x".repeat(10001), sourceIds: ["source-1"] }] },
+      { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "Audience", sourceIds: [] }] },
       { proposals: "not-an-array" },
     ];
     for (const output of malformed) {
