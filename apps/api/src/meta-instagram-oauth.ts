@@ -34,10 +34,10 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
     return url.toString();
   }
 
-  async exchangeAndDiscover(code: string): Promise<{ grantedScopes: string[]; accounts: MetaInstagramDiscoveredAccount[] }> {
-    const userToken = await this.exchangeCode(required(code, "authorization code"));
-    const grantedScopes = await this.permissions(userToken);
-    const pages = await this.pages(userToken);
+  async exchangeAndDiscover(code: string): Promise<{ grantedScopes: string[]; userAccessToken: string; accounts: MetaInstagramDiscoveredAccount[] }> {
+    const userAccessToken = await this.exchangeCode(required(code, "authorization code"));
+    const grantedScopes = await this.permissions(userAccessToken);
+    const pages = await this.pages(userAccessToken);
     const accounts: MetaInstagramDiscoveredAccount[] = [];
     for (const page of pages) {
       const ig = page.instagram_business_account;
@@ -52,7 +52,7 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
         pageAccessToken: String(page.access_token),
       });
     }
-    return { grantedScopes, accounts };
+    return { grantedScopes, userAccessToken, accounts };
   }
 
   private async exchangeCode(code: string): Promise<string> {
