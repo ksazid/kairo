@@ -3,7 +3,7 @@
   "sliceId": "VS-15",
   "title": "Instagram Reel and Image Carousel Publishing",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
@@ -25,18 +25,21 @@
     {"type":"scope","status":"approved","version":"VS-15@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:05:00+02:00","rationale":"After approving VS-14 certification and merge, Sazid Khan explicitly instructed 'go next'. The previously stated next bounded capability was Reels + Carousel publishing. VS-15 narrows that continuation to Instagram Reels, image carousels and the required end-to-end media binding path."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing FR-13/FR-15, credential isolation, deterministic publishing, human approval, retry/unknown-outcome rules and provider-adapter boundaries already govern this extension. No autonomy or credential policy change is introduced."},
     {"type":"implementation","status":"approved","version":"VS-15@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T04:05:00+02:00","rationale":"Authorized continuation into the next planned implementation slice. Runtime work is restricted to the approved Reel/image-carousel publishing and media-binding scope under PES/Loop + Superpowers/TDD."},
-    {"type":"certification","status":"pending","version":"VS-15@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after implementation, tests and security/CI gates pass."},
+    {"type":"certification","status":"pending","version":"VS-15@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after final certification gates pass."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize release or deployment."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize production enablement or autonomous publishing."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":60,"certification":0,"release":0,"validation":50},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":25,"release":0,"validation":75},
+  "certification": {"status":"running","commitSha":null,"evidence":[
     "Red TDD head 37063a25092836da1b0017e63812cfc375a25b11 defined domain media-shape/capability rules, Postgres media hydration and deterministic Meta Reel/carousel provider behavior before runtime implementation.",
     "Implementation head 543a31f98fc6f713b8eb394e6d1cc7b0cd043753: CI #424 PASS, Security baseline #378 PASS, Product Intake #304 PASS.",
     "CI #424 passed immutable install, clean PostgreSQL 18 migrations including 0014_instagram_rich_publishing.sql, production dependency audit, governance/preflight, full runtime verification and dashboard build.",
+    "Testing lifecycle head 9124323dfe7bc7e1fcc4d0e11f64b5c8f9825c6e: CI #426 PASS, Security baseline #380 PASS, Product Intake #306 PASS.",
+    "CI #426 again passed immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build with the runtime tree frozen.",
     "Postgres VS-15 integration test proves scheduled Reel media/options round-trip through publish_commands and are hydrated into the authoritative PublishingJob instead of being lost as an empty media list.",
     "Provider tests cover Reel IN_PROGRESS→FINISHED→publish, processing ERROR, bounded pending status, image-carousel child→parent→publish, child failure isolation and private-media fail-closed behavior.",
+    "Superpowers review pass found no blocker in provider dispatch or authoritative Postgres hydration: credentials stay secret-referenced, unknown outcomes are not blindly retried, and child failures cannot proceed to carousel parent publication.",
     "PR #45 scope review contains only approved domain/API/worker/migration/tests/governance paths; no web UI, infrastructure, release workflow, OAuth or Insights changes."
   ]},
   "release": {"status":"not-authorized","releaseId":null},
