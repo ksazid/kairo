@@ -15,10 +15,13 @@ import{registerReadinessRoutes}from"./readiness-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{DrafterGenerationAdapter}from"./drafter-adapter";
+import{PerformanceCollectionWorker}from"@kairo/worker/performance";
+import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
 import{InstagramConnectionService}from"./instagram-connection";
 import{PgEncryptedChannelCredentialVault,PgInstagramConnectionRepository}from"./instagram-connection-postgres";
 import{MetaInstagramOAuthClient}from"./meta-instagram-oauth";
 import{registerInstagramConnectionRoutes}from"./instagram-connection-routes";
+import{InstagramMetricCollectionRunner,PgMetricCollectionJobStore}from"./instagram-metric-runner";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -58,6 +61,7 @@ registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier})
 registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:async()=>{await pool.query("select 1")}});
 
 const meta=metaInstagramConfig();
+let instagramMetricRunner:InstagramMetricCollectionRunner|undefined;
 if(meta){
   const vault=new PgEncryptedChannelCredentialVault(pool,meta.encryptionKey);
   const connectionRepo=new PgInstagramConnectionRepository(pool);
@@ -69,20 +73,39 @@ if(meta){
     meta:new MetaInstagramOAuthClient(meta.appId,meta.appSecret,meta.graphVersion,meta.redirectUri),
   });
   registerInstagramConnectionRoutes(app,{coreStore,identityVerifier,service:connectionService});
+  instagramMetricRunner=new InstagramMetricCollectionRunner(
+    new PgMetricCollectionJobStore(pool),
+    new PerformanceCollectionWorker([new InstagramMetricCollector(vault,meta.graphVersion)]),
+    `api-${process.pid}`,
+  );
 }
 
 const port = Number(process.env.PORT ?? "4000");
 const host = process.env.HOST ?? "0.0.0.0";
+let metricTimer:NodeJS.Timeout|undefined;
+let metricTickRunning=false;
 
 try {
   await app.listen({ port, host });
+  if(instagramMetricRunner){
+    void collectMetricTick();
+    metricTimer=setInterval(()=>void collectMetricTick(),60_000);
+    metricTimer.unref();
+  }
 } catch (error) {
   app.log.error(error);
   await pool.end();
   process.exit(1);
 }
 
+async function collectMetricTick(){
+  if(metricTickRunning||!instagramMetricRunner)return;
+  metricTickRunning=true;
+  try{for(let i=0;i<5;i++)if(!(await instagramMetricRunner.runOnce()))break}catch(error){app.log.error({err:error},"Instagram metric collection tick failed")}finally{metricTickRunning=false}
+}
+
 async function shutdown(): Promise<void> {
+  if(metricTimer)clearInterval(metricTimer);
   await app.close();
   await pool.end();
 }
