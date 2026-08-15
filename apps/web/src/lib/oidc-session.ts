@@ -1,6 +1,10 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
+
 export const OIDC_TRANSACTION_COOKIE = "kairo_oidc_tx";
 export const KAIRO_ACCESS_TOKEN_COOKIE = "kairo_access_token";
 export const OIDC_TRANSACTION_MAX_AGE_SECONDS = 600;
+
+const TRANSACTION_SIGNATURE_CONTEXT = "kairo-oidc-tx-v1";
 
 type OidcTransaction = {
   state: string;
@@ -21,17 +25,34 @@ export function safeReturnTo(value: string | null | undefined): string {
   }
 }
 
-export function encodeOidcTransaction(transaction: OidcTransaction): string {
-  return Buffer.from(JSON.stringify(transaction), "utf8").toString("base64url");
+function transactionSignature(payload: string, secret: string): string {
+  return createHmac("sha256", secret)
+    .update(`${TRANSACTION_SIGNATURE_CONTEXT}.${payload}`, "utf8")
+    .digest("base64url");
+}
+
+export function encodeOidcTransaction(transaction: OidcTransaction, secret: string): string {
+  const payload = Buffer.from(JSON.stringify(transaction), "utf8").toString("base64url");
+  return `${payload}.${transactionSignature(payload, secret)}`;
 }
 
 export function decodeOidcTransaction(
   value: string | undefined,
+  secret: string,
   now = Date.now(),
 ): OidcTransaction | null {
-  if (!value) return null;
+  if (!value || !secret) return null;
+  const parts = value.split(".");
+  if (parts.length !== 2) return null;
+  const [payload, signature] = parts;
+  if (!payload || !signature) return null;
+
   try {
-    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<OidcTransaction>;
+    const expected = Buffer.from(transactionSignature(payload, secret), "base64url");
+    const actual = Buffer.from(signature, "base64url");
+    if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null;
+
+    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as Partial<OidcTransaction>;
     if (
       typeof parsed.state !== "string" || !parsed.state ||
       typeof parsed.codeVerifier !== "string" || !parsed.codeVerifier ||
