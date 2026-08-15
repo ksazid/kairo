@@ -39,6 +39,10 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             if (item === "Today") return <Link key={item} className="nav-item active" href={returnTo} aria-current="page">{item}</Link>;
             if (item === "Discover" && brand) return <Link key={item} className="nav-item" href={discoverHref}>{item}</Link>;
             if (item === "Ideas" && brand) return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/ideas`}>{item}</Link>;
+            if (item === "Campaigns" && brand) return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/campaigns`}>{item}</Link>;
+            if (item === "Content Studio" && brand) return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/campaigns`}>{item}</Link>;
+            if (item === "Calendar" && brand) return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/calendar`}>{item}</Link>;
+            if (item === "Performance" && brand) return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/performance`}>{item}</Link>;
             if (item === "Brand Brain" && brand) return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/brain`}>{item}</Link>;
             return <span key={item} className="nav-item disabled" aria-disabled="true">{item}<small>Later</small></span>;
           })}
@@ -82,7 +86,8 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           if (item === "Today") return <Link key={item} href={returnTo} className="mobile-nav-item active" aria-current="page">{item}</Link>;
           if (item === "Discover" && brand) return <Link key={item} href={discoverHref} className="mobile-nav-item">{item}</Link>;
           if (item === "Ideas" && brand) return <Link key={item} href={`/brands/${encodeURIComponent(brand.id)}/ideas`} className="mobile-nav-item">{item}</Link>;
-          if (item === "More" && brand) return <Link key={item} href={`/brands/${encodeURIComponent(brand.id)}/brain`} className="mobile-nav-item">{item}</Link>;
+          if (item === "Calendar" && brand) return <Link key={item} href={`/brands/${encodeURIComponent(brand.id)}/calendar`} className="mobile-nav-item">{item}</Link>;
+          if (item === "More" && brand) return <Link key={item} href={`/brands/${encodeURIComponent(brand.id)}/more`} className="mobile-nav-item">{item}</Link>;
           return <span key={item} className="mobile-nav-item disabled" aria-disabled="true">{item}</span>;
         })}
       </nav>

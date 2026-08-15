@@ -49,7 +49,7 @@ Kairo uses the approved **PES Web/AI profile** direction:
 
 ## Current state
 
-Runtime delivery is certified and merged through **VS-20 Publishable Creative Media Pipeline**. There is no newly approved runtime slice after VS-20 yet; the next governed slice requires explicit scope and implementation approval before activation. Release, deployment and production enablement remain separate human approvals.
+Runtime delivery is certified and merged through **VS-20 Publishable Creative Media Pipeline**. **VS-21 Pilot End-to-End Validation and Hardening is now in exact-SHA certification** on a frozen runtime. Its deterministic matrix composes the existing Kairo loop across all four proof sectors and both carousel/Reel paths, while the pilot UI now exposes the already-implemented workflow with recoverable high-risk read states. Real deployed Auth0 callback and production Meta publish/Insights smoke remain explicit external operational evidence rather than simulated PASS. Release, deployment and production enablement remain separate human approvals.
 
 ## Feature ledger
 
@@ -80,6 +80,7 @@ Status terms:
 | Performance tracking | Implemented / governed | Raw/normalised metric model, provenance, asynchronous collection boundary and Brand baselines. |
 | Performance learning | Implemented / governed | Evidence-scoped Candidate Learnings with cautious correlation and bounded next-experiment proposals. |
 | Pilot operations / safety / cost | Implemented / governed | Operational states, retries, intervention/safety controls and bounded runtime/cost behavior. |
+| Pilot end-to-end readiness | Certification candidate | VS-21 composes the real Hunter → Research/Claims → Strategy → Content → Truth/Review → human approval → generated carousel/Reel media → publishing → metrics → Candidate Learning contracts across four proof sectors, with cross-Brand rejection and explicit external provider-smoke boundaries. |
 | Carousel asset production | Implemented / governed | Deterministic Claim-linked PNG slides with stable renderer/source fingerprints and private Brand-scoped object keys. |
 | Reel production / publishable media | Implemented / governed | Deterministic storyboard + render manifest, provider-neutral bounded MP4 encoding, private encoded-object reuse, short-lived publishing-only HTTPS egress and exact Brand/Content-Version/Claim/hash lineage. |
 | Dynamic Skill Registry / benchmark foundation | Implemented / governed evaluation foundation | Versioned manifests, permissions, benchmark stages and Brand-qualification rules exist; external production activation remains disabled unless separately qualified and selected. |
@@ -156,12 +157,12 @@ Kairo-owned non-replaceable controls remain authoritative: Workspace/Brand isola
 
 ## Future / deferred improvements
 
-The following are **not current production claims** and require separately governed work:
+The governed backlog now records these future candidates as **proposed/specification-only**; none is runtime-authorized by being listed here:
 
-- OpenAlex and Crossref research/evidence adapters.
+- VS-22 research/evidence enrichment, including OpenAlex/Crossref-style public evidence adapters behind provider-neutral ports.
 - Multilingual creative rendering/font support; the current deterministic bitmap renderer fails closed outside its supported glyph set.
-- Live Marketing Lab evaluation only after a shadow challenger earns `advance-to-live` and receives separate governed approval.
-- External Brand-skill selection/production activation only after sufficient live evidence and explicit qualification.
+- VS-23 live Marketing Lab evaluation only after a shadow challenger earns `advance-to-live` and receives separate scope/policy/implementation approval.
+- VS-24 Brand-skill qualification/controlled rollout only after sufficient approved live evidence and explicit qualification.
 - Paperclip control-plane spike only if native orchestration becomes insufficient and evaluation justifies the operational overhead.
 
 ## PES workflow

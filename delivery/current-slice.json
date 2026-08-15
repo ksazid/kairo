@@ -1,32 +1,56 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-20",
-  "title": "Publishable Creative Media Pipeline",
+  "sliceId": "VS-21",
+  "title": "Pilot End-to-End Validation and Hardening",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-11", "FR-13", "FR-15", "FR-20"],
+  "requirements": ["FR-01","FR-02","FR-03","FR-04","FR-05","FR-06","FR-07","FR-08","FR-09","FR-10","FR-11","FR-12","FR-13","FR-14","FR-15","FR-16","FR-17","FR-18","FR-19","FR-20"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-15", "VS-17", "VS-18"],
+  "dependencies": ["VS-20"],
   "blockers": [],
-  "allowedPaths": ["packages/domain/**","apps/worker/**","tests/**","docs/slices/VS-20.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
+  "allowedPaths": ["packages/domain/**","apps/api/**","apps/web/**","apps/worker/**","scripts/**","tests/**","docs/slices/VS-21.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
   "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
-  "impact": {"areas":["architecture","sensitive-data","operations-support"],"notes":["Generated media remains private and Brand scoped; temporary publishing URLs are bounded egress capabilities only.","The encoder boundary permits one configured FFmpeg executable through direct process invocation only; no shell or user-controlled command grammar.","Prepared media retains Workspace, Brand, exact Content Version, Claim, source fingerprint, object/hash, encoder-version and expiry lineage.","No autonomous publishing, release, deployment or production enablement is authorized."]},
+  "impact": {
+    "areas": ["architecture","frontend","api","authentication","authorization","sensitive-data","customer-flow","operator-flow","analytics","operations-support"],
+    "notes": [
+      "This slice validates and hardens the existing V1 product loop; it does not add new product scope.",
+      "Cross-Brand isolation, Truth/Claims policy, human approval and deterministic publishing remain mandatory.",
+      "Real provider credentials, production Meta App Review, release, deployment and production enablement remain outside this slice.",
+      "Database migrations are protected; any defect requiring schema change must stop for an explicit scope decision."
+    ]
+  },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-20@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T14:52:00+02:00","rationale":"Explicitly approved VS-20 Publishable Creative Media Pipeline scope as defined in the prior proposal."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Approved PRD/TRD private object storage, deterministic publishing, provider-neutral boundaries and Brand isolation already govern this slice."},
-    {"type":"implementation","status":"approved","version":"VS-20@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T14:52:00+02:00","rationale":"Bounded runtime implementation explicitly authorized with the instruction to approve and go next."},
-    {"type":"certification","status":"approved","version":"VS-20@1.0","commitSha":"84077dd6c244d3c5b4e4d29694cc16a57ad2d1bb","by":"Sazid Khan","at":"2026-08-15T15:33:00+02:00","rationale":"Human certification and merge approval confirmed for the exact final candidate after CI #501, Security baseline #446 and Product Intake #371 passed."},
+    {"type":"scope","status":"approved","version":"VS-21@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T16:19:00+02:00","rationale":"Explicitly approved the proposed VS-21 Pilot End-to-End Validation & Hardening scope with the instruction to go."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Approved PRD/TRD, security decisions and prior certified slices already govern the existing V1 product loop being validated."},
+    {"type":"implementation","status":"approved","version":"VS-21@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T16:19:00+02:00","rationale":"Runtime validation and bounded defect fixes inside the defined pilot-hardening scope were explicitly authorized."},
+    {"type":"certification","status":"pending","version":"VS-21@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA human approval after final gates."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
-  "certification": {"status":"passed","commitSha":"84077dd6c244d3c5b4e4d29694cc16a57ad2d1bb","evidence":["VS-19 governance closeout merged as 051f2e023c7d8daab66f2405643f64f453baeb1a; post-merge main CI #492 PASS.","VS-20 activation 02f4723f0546b732b61b944a8633057516fb53ce and red TDD contract 0b4a10309c8b2a1e45d1d8d29d0bfd60d736a2df.","Initial runtime 67723ae3a524e2ab511247de2298ee971f8e0395 passed Security #440 and Product Intake #365; CI #495 failed on strict test-fixture typing and the failure is preserved.","Hardening 4a1b1104ce0714c7a64297d2d0a5b0ae07c3a318 added continuous Reel timing and private IPv6 egress rejection.","Lineage repair 95ad5c79b90539681f96926d1ea87dc72c556b26 added exact Content Version and Claim lineage; CI #498 exposed a test-fixture assertion mismatch and the failure is preserved.","Runtime freeze 7294d847cbe77a1d92f1f5655ee5f0c3e6b1e8f9 passed CI #499, Security baseline #444 and Product Intake #369 with clean migrations, dependency audit, governance/preflight, full runtime verification and dashboard build.","Formal testing head 2e4107e50c4f70373e5d799ee7ab7e26adb19b2c passed CI #500, Security baseline #445 and Product Intake #370 on the frozen runtime.","Final exact candidate 84077dd6c244d3c5b4e4d29694cc16a57ad2d1bb passed CI #501, Security baseline #446 and Product Intake #371.","Human certification + merge approval confirmed for exact candidate 84077dd6c244d3c5b4e4d29694cc16a57ad2d1bb at 2026-08-15T15:33:00+02:00.","PR #52 merged as 835a9c4f3f08f902adc03bbd04fa0070522ca0b8 with the exact candidate as a parent and zero file differences between candidate and merge commit.","Post-merge main CI #502 PASS."]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":80,"release":0,"validation":0},
+  "certification": {
+    "status": "running",
+    "commitSha": null,
+    "evidence": [
+      "VS-20 certified and merged; governance closeout merged as 432a65e02cfd678d13b76bf14c4dce7bc4db2654 and post-closeout main CI #504 passed.",
+      "VS-21 activation b250f2936d2b2292032dd1a1a3e83b1c21c6152b and red TDD contract 930f0bff120f209fdcaa16d1fa7e098aa51b89ad.",
+      "Red CI #506 failed only because the pilot-readiness harness was intentionally absent; Security baseline #449 and Product Intake #374 passed.",
+      "Initial implementation 4f4e7b16b95b92423393db583d6c096ef59df61f exposed a strict generic fixture typecheck failure in CI #507; Security #450 and Product Intake #375 passed.",
+      "Technical matrix repair 70f8fd1c4cf29fdfe079f03ac2109844bd5efbcc passed CI #508, Security #451 and Product Intake #376 across four proof sectors and carousel/Reel paths.",
+      "UX review found stale navigation that labelled implemented Campaigns, Calendar and Performance as Later and left mobile pilot paths incomplete; bounded navigation/resilience fixes were added with regression coverage.",
+      "CI #518 preserved a compatibility defect after mobile navigation refactoring: Idea detail still imported MobileIdeasNav; the compatibility wrapper was restored.",
+      "Runtime freeze dfb664f9b81a82259660c6b6346a051f5a90714d passed CI #523, Security baseline #466 and Product Intake #391 with immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification, four-sector pilot matrix, navigation/resilience coverage and dashboard build.",
+      "Formal testing head 6e0e9940a926dcb75d4d913a0fa220ff3063a194 passed CI #524, Security baseline #467 and Product Intake #392 on the frozen runtime.",
+      "PR #54 scope review found no protected-path changes and zero unresolved review threads.",
+      "Real Auth0 deployed callback and production Meta publish/Insights/App Review remain external operational evidence and were not falsely certified by deterministic CI."
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-20.md","implementationPr":"https://github.com/ksazid/kairo/pull/52","evidence":["delivery/context/VS-19-closeout.md","delivery/context/VS-20.md","delivery/context/VS-20-closeout.md","docs/plans/VS-20-publishable-creative-media.md"]},
+  "links": {"specification":"docs/slices/VS-21.md","implementationPr":"https://github.com/ksazid/kairo/pull/54","evidence":["delivery/context/VS-20-closeout.md","delivery/context/VS-21.md","docs/plans/VS-21-pilot-e2e-hardening.md"]},
   "maxAttempts": 3
 }

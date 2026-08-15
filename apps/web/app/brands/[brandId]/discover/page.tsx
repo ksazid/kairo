@@ -12,7 +12,8 @@ export default async function DiscoverPage({ params, searchParams }: { params: P
   const { brandId } = await params;
   const [brand, opportunities, messages] = await Promise.all([getBrand(brandId), getOpportunities(brandId), searchParams]);
   if (!brand) return <main className="auth-page"><section className="auth-card"><h1>Brand not found.</h1><Link className="primary-button" href="/">Return to Today</Link></section></main>;
-  const returnTo = `/brands/${encodeURIComponent(brand.id)}/discover`;
+  const base = `/brands/${encodeURIComponent(brand.id)}`;
+  const returnTo = `${base}/discover`;
   const active = opportunities.filter((item) => item.status !== "ignored");
 
   return (
@@ -23,8 +24,11 @@ export default async function DiscoverPage({ params, searchParams }: { params: P
           {primaryNav.map((item) => {
             if (item === "Today") return <Link key={item} className="nav-item" href={`/?brand=${encodeURIComponent(brand.id)}`}>{item}</Link>;
             if (item === "Discover") return <Link key={item} className="nav-item active" href={returnTo} aria-current="page">{item}</Link>;
-            if (item === "Ideas") return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/ideas`}>{item}</Link>;
-            if (item === "Brand Brain") return <Link key={item} className="nav-item" href={`/brands/${encodeURIComponent(brand.id)}/brain`}>{item}</Link>;
+            if (item === "Ideas") return <Link key={item} className="nav-item" href={`${base}/ideas`}>{item}</Link>;
+            if (item === "Campaigns" || item === "Content Studio") return <Link key={item} className="nav-item" href={`${base}/campaigns`}>{item}</Link>;
+            if (item === "Calendar") return <Link key={item} className="nav-item" href={`${base}/calendar`}>{item}</Link>;
+            if (item === "Performance") return <Link key={item} className="nav-item" href={`${base}/performance`}>{item}</Link>;
+            if (item === "Brand Brain") return <Link key={item} className="nav-item" href={`${base}/brain`}>{item}</Link>;
             return <span key={item} className="nav-item disabled" aria-disabled="true">{item}<small>Later</small></span>;
           })}
         </nav>
@@ -53,8 +57,9 @@ export default async function DiscoverPage({ params, searchParams }: { params: P
         {mobileNav.map((item) => {
           if (item === "Today") return <Link key={item} href={`/?brand=${encodeURIComponent(brand.id)}`} className="mobile-nav-item">{item}</Link>;
           if (item === "Discover") return <Link key={item} href={returnTo} className="mobile-nav-item active" aria-current="page">{item}</Link>;
-          if (item === "Ideas") return <Link key={item} href={`/brands/${encodeURIComponent(brand.id)}/ideas`} className="mobile-nav-item">{item}</Link>;
-          if (item === "More") return <Link key={item} href={`/brands/${encodeURIComponent(brand.id)}/brain`} className="mobile-nav-item">{item}</Link>;
+          if (item === "Ideas") return <Link key={item} href={`${base}/ideas`} className="mobile-nav-item">{item}</Link>;
+          if (item === "Calendar") return <Link key={item} href={`${base}/calendar`} className="mobile-nav-item">{item}</Link>;
+          if (item === "More") return <Link key={item} href={`${base}/more`} className="mobile-nav-item">{item}</Link>;
           return <span key={item} className="mobile-nav-item disabled" aria-disabled="true">{item}</span>;
         })}
       </nav>

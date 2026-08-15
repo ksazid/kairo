@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getBrand, getCampaignDetail, getChannelAccounts, getContentReviewStatus } from "../../../../../src/lib/kairo-api";
+import { PilotMobileNav } from "../../../../pilot-mobile-nav";
 import { KairoSidebar } from "../../ideas/page";
 import { approveContentAction, createAssetAction, generateVersionAction, reviewContentAction, saveVersionAction, scheduleContentAction } from "../actions";
 import { ScheduleForm } from "./schedule-form";
@@ -29,5 +30,5 @@ export default async function Studio({ params, searchParams }: { params: Params;
         </section>
       </section>;
     })}</div> : <section className="studio-empty"><div><p className="eyebrow">First Content Asset</p><h2>Create the writing surface</h2><p>Start manually; contextual AI actions remain secondary and every save creates a version.</p></div><form className="asset-form" action={createAssetAction.bind(null, brand.id, campaignId)}><label>Channel<select name="channel"><option value="linkedin">LinkedIn</option><option value="instagram">Instagram</option><option value="manual">Manual</option></select></label><label>Format<input name="format" defaultValue="text" required /></label><label>Audience<input name="audience" required /></label><label>Topic<input name="topic" required /></label><label>Hook type<input name="hookType" required /></label><label>CTA<input name="cta" required /></label><label className="wide">Initial content<textarea name="content" rows={10} required maxLength={50000} /></label><button className="primary-button wide">Create Content Asset</button></form></section>}
-  </main></div>;
+  </main><PilotMobileNav brandId={brand.id} active="More" /></div>;
 }
