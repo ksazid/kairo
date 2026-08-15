@@ -1,55 +1,32 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-17",
-  "title": "Instagram Connection + Insights",
+  "sliceId": "VS-18",
+  "title": "Creative Asset Production",
   "status": "active",
   "lifecycle": "certification",
-  "riskLevel": "high",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-15", "FR-16", "FR-17", "FR-18", "FR-20"],
+  "requirements": ["FR-11", "FR-12", "FR-13", "FR-15", "FR-20"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-07", "VS-08", "VS-09", "VS-15", "VS-16"],
+  "dependencies": ["VS-05", "VS-06", "VS-14", "VS-15", "VS-17"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**","apps/api/src/**","apps/api/migrations/**","apps/worker/src/**","packages/domain/src/**","packages/contracts/src/**","docs/slices/VS-17.md","docs/plans/**","delivery/**",".engineering/STATE.json"],
+  "allowedPaths": ["packages/domain/**","apps/worker/**","apps/api/**","apps/api/migrations/**","tests/**","docs/slices/VS-18.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
   "protectedPaths": [".github/workflows/release.yml","infrastructure/**"],
-  "impact": {
-    "areas": ["architecture", "frontend", "api", "database", "authentication", "authorization", "sensitive-data", "customer-flow", "analytics", "operations-support"],
-    "notes": [
-      "Uses official Meta OAuth/provider APIs behind Kairo-owned deterministic adapters under DEC-004.",
-      "The first connection model remains compatible with Kairo's existing graph.facebook.com Instagram Professional publishing adapter.",
-      "Publishing uses an encrypted Page access-token credential while media Insights use a separately encrypted extended Facebook User access-token credential.",
-      "The extended User token must have enough verified lifetime for the 1h/24h/7d collection window; only its expiry timestamp is persisted in channel metadata.",
-      "Both provider credentials remain scoped, revocable and unavailable to agents/domain/web responses; abandoned/expired candidates and superseded reconnect credentials are revoked.",
-      "Insights reuse Kairo's existing Published Post lineage and metric snapshot/normalization model; unavailable metrics remain unavailable.",
-      "VS-16 exact SHA f2b3c7e43112512bbc7761d89220617a9e2b12db remains deployment-approved but actual Vercel deployment is pending provider rate-limit recovery."
-    ]
-  },
+  "impact": {"areas":["architecture","api","database","customer-flow","operations-support"],"notes":["Deterministic carousel PNG output and deterministic Reel storyboard/timed manifest only; renderer cannot invent claims.","Generated media remains Workspace/Brand scoped behind a private object-store port.","Renderer fails closed on copy overflow or unsupported raster glyphs rather than silently altering approved copy.","No autonomous publishing, release, deployment or production enablement."]},
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-17@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T06:56:00+02:00","rationale":"After the assistant explicitly presented the scope + implementation gate for VS-17 — Instagram Connection + Insights, Sazid Khan replied 'Go'."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"DEC-004 and the approved TRD already govern official Instagram Professional OAuth/capability verification, deterministic adapters, encrypted/scoped/revocable provider tokens, human publishing authority and manual fallback."},
-    {"type":"implementation","status":"approved","version":"VS-17@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T06:56:00+02:00","rationale":"The same explicit 'Go' authorizes bounded runtime implementation of the immediately presented VS-17 scope outside production."},
-    {"type":"certification","status":"pending","version":"VS-17@1.0","commitSha":null,"by":null,"at":null,"rationale":"Human certification must bind the final exact candidate SHA after the final deterministic gate set passes."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Implementation/certification do not authorize release."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Production Meta credentials, Meta permission eligibility, deployment and production enablement require separate exact-SHA approval and functional smoke evidence."}
+    {"type":"scope","status":"approved","version":"VS-18@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T13:41:00+02:00","rationale":"Explicit approval of the next two slices; VS-18 is Creative Asset Production."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing FR-11/12/13/15 and TRD media/storage/publishing policy apply."},
+    {"type":"implementation","status":"approved","version":"VS-18@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T13:41:00+02:00","rationale":"Bounded runtime implementation authorized under PES/Loop + TDD."},
+    {"type":"certification","status":"pending","version":"VS-18@1.0","commitSha":null,"by":null,"at":null,"rationale":"Final exact candidate must pass CI/Security/Product Intake and then receive SHA-bound human certification."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
-  "decisionIds": ["DEC-004"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":100},
-  "certification": {
-    "status":"running",
-    "commitSha":null,
-    "evidence":[
-      "Testing head dfd8be523c99c5e732c26d521dbdca1d369bf2a2: CI #469 PASS including clean PostgreSQL 18 migrations 0001-0015, production dependency audit, governance/preflight, full runtime verification, dashboard build and artifact upload.",
-      "Security baseline #418 PASS on testing head dfd8be523c99c5e732c26d521dbdca1d369bf2a2.",
-      "Product Intake #343 PASS on testing head dfd8be523c99c5e732c26d521dbdca1d369bf2a2.",
-      "High-risk review corrected provider token roles: Page credential for publishing; extended Facebook User credential for Insights; no raw provider token enters web/domain/agent state.",
-      "Review added fail-closed cleanup for partial selection writes, expired OAuth candidates, superseded reconnect credentials and expired Insights token lifetime.",
-      "PR #48 changed paths remain inside the approved VS-17 allowlist and no protected infrastructure/release workflow path changed.",
-      "PR #48 has no unresolved inline review threads."
-    ]
-  },
+  "decisionIds": [],
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":25,"release":0,"validation":85},
+  "certification": {"status":"running","commitSha":null,"evidence":["Red TDD head 872f8d7b4e330d0bae48926a4d92eadc96e12e59 defined deterministic PNG/Reel render, scoped storage and size-bound behavior before implementation.","Initial implementation head 587a136ea19fa0c62f09f9167346dfde3cee6ec8: CI #476 PASS, Security #424 PASS, Product Intake #349 PASS.","Testing review found copy-fidelity defects; lifecycle legally returned testing→implementing and regression tests were added.","Repaired runtime head ff33435184a6b8ff9568b39a60d2ce8b6f0aeba1: CI #479 PASS, Security #427 PASS, Product Intake #352 PASS.","Formal testing head ce0fe03ed50f14419df6806acec4ce8063885a93: CI #480 PASS, Security #428 PASS, Product Intake #353 PASS.","CI #480 passed immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build.","PR #49 scope contains only approved worker/governance/docs paths; no infrastructure or release workflow change and no new dependency/provider." ]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-17.md","implementationPr":"https://github.com/ksazid/kairo/pull/48","evidence":["delivery/context/VS-16-closeout.md","delivery/context/VS-17.md","docs/plans/VS-17-instagram-connection-insights.md"]},
+  "links": {"specification":"docs/slices/VS-18.md","implementationPr":"https://github.com/ksazid/kairo/pull/49","evidence":["delivery/context/VS-17-closeout.md","delivery/context/VS-18.md","docs/plans/VS-18-creative-asset-production.md"]},
   "maxAttempts": 3
 }
