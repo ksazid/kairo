@@ -3,7 +3,7 @@
   "sliceId": "VS-25",
   "title": "Auth0 Production-Readiness Correction",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01"],
@@ -16,8 +16,8 @@
     "areas": ["frontend","authentication","authorization","sensitive-data","customer-flow","operations-support"],
     "notes": [
       "Corrective FR-01 work only; no identity-provider or authorization-policy change.",
-      "OIDC discovery must recover after transient provider/network failures instead of poisoning a warm web instance.",
-      "Login and callback configuration failures must fail safely without exposing secrets or weakening PKCE/state validation.",
+      "OIDC discovery recovers after transient provider/network or synchronous configuration failures instead of poisoning a warm web instance.",
+      "Login and callback configuration failures fail safely without exposing secrets or weakening PKCE/state validation.",
       "The API keeps strict issuer/audience/JWKS validation while canonicalizing the issuer trailing slash.",
       "Real deployed Auth0 email/Google/callback/API/logout smoke remains external operational evidence.",
       "No database migration, release, deployment or production enablement is authorized by this implementation approval."
@@ -32,12 +32,14 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized for a new hotfix SHA."}
   ],
   "decisionIds": ["DEC-001"],
-  "progress": {"discovery":100,"decisions":100,"implementation":70,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":80,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[
     "VS-21 exact candidate 1d504782c060fdd4eaf891b79b4e9045d4f01d2b merged as d8df12f9fc0d07d7a369f56752cdc81dc02d56b4 with zero candidate-to-merge file differences; post-merge main CI #526 passed.",
     "VS-16/PR #47 production deployment of the manual-first Auth0 UI was previously authorized for f2b3c7e43112512bbc7761d89220617a9e2b12db but Vercel blocked that exact deployment with api-deployments-free-per-day.",
     "Current Kairo session establishment resolves accounts by provider+subject and does not require email claims.",
-    "CI #533 reached governance validation after clean migrations and dependency audit; it failed only because the initial corrective identifier VS-16R violated the required VS-<number> schema. Runtime verification was not run on that head."
+    "CI #533 reached governance validation after clean migrations and dependency audit; it failed only because the initial corrective identifier VS-16R violated the required VS-<number> schema. Runtime verification was not run on that head.",
+    "CI #539 passed numeric VS-25 governance, typecheck, API auth tests and the broader runtime suites, then exposed two web retry-cache timing failures; those tests were preserved and the implementation was corrected.",
+    "Frozen runtime head d2974aa951054f7fdcb542bbc3621884cde3f577 passed CI #541, Security baseline #483 and Product Intake #408, including immutable install, clean PostgreSQL 18 migrations, dependency audit, governance/preflight, full runtime tests and dashboard build."
   ]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
