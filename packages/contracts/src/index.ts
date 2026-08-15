@@ -74,6 +74,27 @@ export interface PutBrandBrainFieldRequest {
   expectedVersion?: number;
 }
 
+export type GuidedBrandObjective =
+  | "grow-audience"
+  | "build-authority"
+  | "generate-leads"
+  | "build-community"
+  | "promote-offer";
+
+export interface BuildBrandBrainRequest {
+  primaryObjective: GuidedBrandObjective;
+  publicReferenceUrl?: string;
+  ownerBoundary?: string;
+}
+
+export interface BrandBrainBuildResponse {
+  brain: BrandBrainFieldDto[];
+  generatorStatus: "generated" | "unavailable";
+  proposedCount: number;
+  skippedConfirmedCount: number;
+  sourceIds: string[];
+}
+
 export type KnowledgeSourceType = "url" | "website" | "document" | "note" | "pasted" | "research" | "product";
 export type KnowledgeSourceStatus = "active" | "disabled" | "replaced" | "removed" | "quarantined" | "failed";
 
