@@ -14,6 +14,7 @@
     "./publishing": "./src/publishing.ts",
     "./publishing-adapters": "./src/publishing-adapters.ts",
     "./performance": "./src/performance.ts",
+    "./instagram-insights": "./src/instagram-insights.ts",
     "./learner": "./src/learner.ts"
   },
   "scripts": {
