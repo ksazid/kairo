@@ -3,7 +3,7 @@
   "sliceId": "VS-26",
   "title": "Guided Brand Brain Setup & Review Control",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04", "FR-20"],
@@ -15,11 +15,11 @@
   "impact": {
     "areas": ["frontend", "api", "sensitive-data", "customer-flow", "operations-support"],
     "notes": [
-      "Normal Brand setup becomes lightweight and suggestion-led while the full editor moves behind Advanced Brand Brain / Review & Control.",
+      "Normal Brand setup is lightweight and suggestion-led while the full editor remains under Advanced Brand Brain / Review & Control.",
       "Owner goals and explicit hard directives are authoritative confirmed context; generated strategy remains source-backed inferred context until confirmed.",
       "Confirmed fields cannot be silently overwritten by guided inference.",
       "Public reference retrieval is bounded, DNS-validated, address-pinned and redirect-revalidated; public text is untrusted source material, never instructions.",
-      "Generated fields require field-level source provenance from inspected Brand references.",
+      "Generated fields require field-level provenance from inspected Brand references.",
       "No database migration, infrastructure, release, deployment, VS-23 or VS-24 activation is authorized."
     ]
   },
@@ -27,26 +27,29 @@
     {"type":"scope","status":"approved","version":"VS-26@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T20:23:00+02:00","rationale":"The owner approved the proposed VS-26 Guided Brand Brain Setup & Review Control scope after reviewing the reduced-input approach and explicitly said Good to go."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"FR-02/03/04, the approved Brand isolation architecture and DEC-006 already govern inferred-vs-confirmed context, provenance and source removal. The slice does not expand cross-Brand or publishing authority."},
     {"type":"implementation","status":"approved","version":"VS-26@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T20:23:00+02:00","rationale":"The owner's Good to go instruction authorizes bounded runtime implementation of the agreed guided setup and Advanced Review & Control experience."},
-    {"type":"certification","status":"pending","version":"VS-26@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires a future immutable candidate and explicit human exact-SHA approval."},
+    {"type":"certification","status":"pending","version":"VS-26@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact certification-candidate gates are running; explicit human approval remains required."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": ["DEC-006"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":80,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
+  "certification": {
+    "status":"running",
+    "commitSha":null,
+    "evidence":[
+      "RED TDD established owner authority, source provenance, confirmed-field non-overwrite, safe degradation, SSRF-safe public reference retrieval and zero-tool strategist proposal contracts before runtime implementation.",
+      "CI #583 exposed an invalid Next.js server-action re-export only at production web build after earlier deterministic tests/typechecks had passed; the implementation was repaired with explicit async server-action wrappers without weakening any gate.",
+      "Verified implementation head b227ee2d68f830fa92deed201be28042142f48b7 passed CI #589, Security baseline #528 and Product Intake #453, including clean PostgreSQL 18 migrations, dependency audit, preflight, full runtime verification and production web build.",
+      "Formal testing-transition head 908d5162903efc6b5a9906b6e60e768db45975f4 passed CI #590, Security baseline #529 and Product Intake #454."
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
     "specification":"docs/slices/VS-26.md",
     "implementationPr":"https://github.com/ksazid/kairo/pull/59",
-    "evidence":[
-      "docs/plans/VS-26-guided-brand-brain.md",
-      "docs/plans/VS-26-review.md",
-      "CI #589 PASS @ b227ee2d68f830fa92deed201be28042142f48b7",
-      "Security baseline #528 PASS @ b227ee2d68f830fa92deed201be28042142f48b7",
-      "Product Intake #453 PASS @ b227ee2d68f830fa92deed201be28042142f48b7"
-    ]
+    "evidence":["docs/plans/VS-26-guided-brand-brain.md","docs/plans/VS-26-review.md"]
   },
   "maxAttempts": 3
 }
