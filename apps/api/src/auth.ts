@@ -11,6 +11,11 @@ export interface OidcJwtVerifierOptions {
   jwksUri: string;
 }
 
+export function normalizeOidcIssuer(value: string): string {
+  const issuer = value.trim();
+  return issuer.endsWith("/") ? issuer : `${issuer}/`;
+}
+
 function bearerToken(header: string | undefined): string | null {
   if (!header) return null;
   const [scheme, token] = header.split(" ");
@@ -20,8 +25,10 @@ function bearerToken(header: string | undefined): string | null {
 
 export class OidcJwtVerifier implements IdentityVerifier {
   private readonly jwks;
+  private readonly options: OidcJwtVerifierOptions;
 
-  constructor(private readonly options: OidcJwtVerifierOptions) {
+  constructor(options: OidcJwtVerifierOptions) {
+    this.options = { ...options, issuer: normalizeOidcIssuer(options.issuer) };
     this.jwks = createRemoteJWKSet(new URL(options.jwksUri));
   }
 
