@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { oidcAudience, oidcClient, oidcConfiguration } from "../../../src/lib/oidc";
+import { oidcAudience, oidcClient, oidcClientSecret, oidcConfiguration } from "../../../src/lib/oidc";
 import { encodeOidcTransaction, OIDC_TRANSACTION_COOKIE, OIDC_TRANSACTION_MAX_AGE_SECONDS, safeReturnTo } from "../../../src/lib/oidc-session";
 
 export const dynamic = "force-dynamic";
@@ -23,12 +23,16 @@ export async function GET(request: NextRequest) {
   if (request.nextUrl.searchParams.get("connection") === "google-oauth2") parameters.connection = "google-oauth2";
 
   const response = NextResponse.redirect(oidc.buildAuthorizationUrl(configuration, parameters));
-  response.cookies.set(OIDC_TRANSACTION_COOKIE, encodeOidcTransaction({ state, codeVerifier, returnTo, createdAt: Date.now() }), {
-    httpOnly: true,
-    secure: request.nextUrl.protocol === "https:",
-    sameSite: "lax",
-    path: "/auth",
-    maxAge: OIDC_TRANSACTION_MAX_AGE_SECONDS,
-  });
+  response.cookies.set(
+    OIDC_TRANSACTION_COOKIE,
+    encodeOidcTransaction({ state, codeVerifier, returnTo, createdAt: Date.now() }, oidcClientSecret()),
+    {
+      httpOnly: true,
+      secure: request.nextUrl.protocol === "https:",
+      sameSite: "lax",
+      path: "/auth",
+      maxAge: OIDC_TRANSACTION_MAX_AGE_SECONDS,
+    },
+  );
   return response;
 }
