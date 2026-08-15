@@ -3,7 +3,7 @@
   "sliceId": "VS-14",
   "title": "Marketing Lab Benchmark Foundation",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-09", "FR-11", "FR-12", "FR-16", "FR-17", "FR-18", "FR-19", "FR-20"],
@@ -25,19 +25,23 @@
     {"type":"scope","status":"approved","version":"VS-14@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T03:35:00+02:00","rationale":"Approved planning and implementation of the Kairo Marketing Lab: Kairo Native vs Corey Skills vs future skills through a benchmark harness, Skill Registry and Brand-specific evidence-based winner selection, with Reels and carousels treated as benchmark formats."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"The approved TRD and Skills Architecture already require external skills to be pinned, provenance/permission reviewed, benchmarked and explicitly promoted. VS-14 implements that existing policy and narrows Corey to reference-only evaluation."},
     {"type":"implementation","status":"approved","version":"VS-14@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T03:35:00+02:00","rationale":"Authorized runtime-enabled implementation of the benchmark/registry foundation under PES/Loop + Superpowers/TDD. External arbitrary skill execution, live skill promotion, social publishing changes and production enablement are excluded."},
-    {"type":"certification","status":"pending","version":"VS-14@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after benchmark foundation implementation and deterministic gates pass."},
+    {"type":"certification","status":"pending","version":"VS-14@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact-SHA human certification remains required after final certification gates pass."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-14 does not authorize release or deployment."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-14 does not authorize production enablement or automatic Brand skill switching."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":25,"certification":0,"release":0,"validation":50},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":25,"release":0,"validation":75},
   "certification": {
-    "status":"not-started",
+    "status":"running",
     "commitSha":null,
     "evidence":[
       "Implementation verification head 27261d36de4929c7c3cca92089f25d9effe7f39a: CI #406 PASS, Security baseline #361 PASS, Product Intake #287 PASS.",
-      "CI #406 passed immutable install, PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build.",
-      "PR #44 scope review contains only governance/docs, evaluation/marketing-lab and packages/domain paths; no API, web, database migration, infrastructure, publishing adapter, release workflow or dependency-lock changes."
+      "Testing lifecycle head 3fb899a8658a36e23ec6ab57d439a19e9e43caf5: CI #408 PASS, Security baseline #363 PASS, Product Intake #289 PASS.",
+      "CI #408 passed immutable install, PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build on the frozen Marketing Lab runtime tree.",
+      "PR #44 scope review contains only governance/docs, evaluation/marketing-lab and packages/domain paths; no API, web, database migration, infrastructure, publishing adapter, release workflow or dependency-lock changes.",
+      "Corey challenger metadata is pinned to coreyhaines31/marketingskills@7868cb9251fad80a73d26e488a5ad5f6c4a9f335 with exact per-skill content hashes and reference-only zero-permission policy.",
+      "Benchmark tests enforce exact input fingerprints and skill versions, Truth as a hard gate, tie/insufficient-evidence fallback to Kairo Native, cost/latency guardrails, staged offline-shadow-live advancement, Brand-scoped qualification, and separate sandbox benchmark versus production execution permissions.",
+      "Creative-format tests validate Claim-linked CarouselPlan and ReelPlan structures; Meta Reel/carousel publishing remains explicitly outside VS-14."
     ]
   },
   "release": {"status":"not-authorized","releaseId":null},
