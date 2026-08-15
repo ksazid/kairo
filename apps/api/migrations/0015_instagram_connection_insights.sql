@@ -59,6 +59,7 @@ create table channel_oauth_candidates (
   unique (intent_id,account_ref)
 );
 create index channel_oauth_candidates_scope on channel_oauth_candidates(account_id,brand_id,intent_id);
+create unique index channel_oauth_candidates_one_selected on channel_oauth_candidates(intent_id) where selected_at is not null;
 
 create table metric_collection_jobs (
   id text primary key,
