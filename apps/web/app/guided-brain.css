@@ -1,0 +1,50 @@
+.guided-brain-main { max-width: 1180px; }
+.guided-setup-card { display: grid; grid-template-columns: minmax(0, .85fr) minmax(360px, 1.15fr); gap: 32px; padding: 28px; border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-lg); background: var(--k-surface); box-shadow: var(--k-shadow-subtle); }
+.guided-setup-copy > p:not(.eyebrow) { margin: 10px 0 0; color: var(--k-neutral-700); line-height: 23px; }
+.reference-chip { display: grid; gap: 4px; margin-top: 22px; padding: 12px 14px; border-radius: var(--k-radius-md); background: var(--k-neutral-50); border: 1px solid var(--k-neutral-200); }
+.reference-chip span { color: var(--k-neutral-400); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.reference-chip strong { min-width: 0; overflow-wrap: anywhere; color: var(--k-neutral-700); font-size: 13px; }
+.guided-setup-form { display: grid; gap: 18px; }
+.guided-setup-form label { display: grid; gap: 7px; color: var(--k-neutral-900); font-size: 14px; font-weight: 700; }
+.guided-setup-form label > span { color: var(--k-neutral-400); font-size: 12px; line-height: 18px; font-weight: 500; }
+.guided-setup-form input, .guided-setup-form select, .guided-setup-form textarea { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--k-neutral-200); border-radius: 10px; background: white; color: var(--k-neutral-900); }
+.guided-setup-form textarea { resize: vertical; line-height: 21px; }
+.guided-setup-form .primary-button { justify-self: start; min-width: 180px; }
+.brain-review-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; margin: 34px 0 16px; }
+.brain-review-header p:not(.eyebrow) { margin: 6px 0 0; color: var(--k-neutral-700); font-size: 14px; line-height: 20px; }
+.brain-review-stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.brain-review-stats span { padding: 7px 10px; border: 1px solid var(--k-neutral-200); border-radius: 999px; color: var(--k-neutral-700); background: white; font-size: 12px; }
+.brain-review-stats strong { color: var(--k-neutral-900); }
+.brain-summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.brain-summary-card { min-height: 170px; padding: 22px; border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-lg); background: var(--k-surface); }
+.brain-summary-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+.brain-summary-card p { margin: 20px 0 0; color: var(--k-neutral-700); font-size: 15px; line-height: 23px; }
+.review-queue, .advanced-entry-card { margin-top: 16px; padding: 24px; border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-lg); background: var(--k-surface); }
+.review-queue.has-items { border-color: color-mix(in srgb, var(--k-warning) 28%, var(--k-neutral-200)); }
+.review-queue > div:first-child > p:not(.eyebrow), .advanced-entry-card p { margin: 6px 0 0; color: var(--k-neutral-700); font-size: 14px; line-height: 21px; }
+.review-items { display: grid; gap: 8px; margin: 18px 0; }
+.review-items > div { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; align-items: start; gap: 14px; padding: 12px 14px; border-radius: var(--k-radius-md); background: var(--k-neutral-50); }
+.review-items strong { font-size: 13px; }
+.review-items span:not(.field-state) { color: var(--k-neutral-700); font-size: 13px; line-height: 19px; }
+.review-queue > .secondary-button { margin-top: 18px; }
+.advanced-entry-card { display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+.advanced-entry-card > div { max-width: 720px; }
+.advanced-entry-card .secondary-button { flex: 0 0 auto; }
+
+@media (max-width: 900px) {
+  .guided-setup-card { grid-template-columns: 1fr; gap: 24px; }
+  .brain-review-header { align-items: flex-start; flex-direction: column; gap: 14px; }
+}
+
+@media (max-width: 720px) {
+  .guided-brain-main { padding: 24px 18px 96px; }
+  .guided-brain-main .topbar { gap: 16px; }
+  .guided-brain-main .scope-picker { display: none; }
+  .guided-setup-card { padding: 20px; border-radius: var(--k-radius-md); }
+  .guided-setup-form .primary-button { width: 100%; }
+  .brain-summary-grid { grid-template-columns: 1fr; }
+  .brain-summary-card { min-height: 0; }
+  .review-items > div { grid-template-columns: 1fr; gap: 7px; }
+  .advanced-entry-card { align-items: stretch; flex-direction: column; }
+  .advanced-entry-card .secondary-button { width: 100%; }
+}
