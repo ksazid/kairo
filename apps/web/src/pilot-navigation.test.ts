@@ -38,4 +38,14 @@ describe("VS-21 pilot navigation contract", () => {
     ];
     for (const page of pages) expect(page).toContain("PilotMobileNav");
   });
+
+  it("high-risk pilot read surfaces expose local loading and recoverable error boundaries", () => {
+    for (const area of ["calendar", "performance", "operations"]) {
+      const loading = source(`../app/brands/[brandId]/${area}/loading.tsx`);
+      const error = source(`../app/brands/[brandId]/${area}/error.tsx`);
+      expect(loading).toContain("aria-busy");
+      expect(error).toContain("reset()");
+      expect(error).toContain("Retry");
+    }
+  });
 });
