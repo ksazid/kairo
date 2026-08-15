@@ -111,7 +111,7 @@ describe("PublishableCreativeMediaService", () => {
 
   it("encodes a verified Reel once, stores it privately and reuses the deterministic encoded object", async () => {
     const { pkg, manifest } = reelPackage();
-    const encoder: ReelEncoderPort = { version:"ffmpeg-h264-v1", encode:vi.fn(async input => { expect(input.frames.map(frame => frame.durationSeconds)).toEqual([2,3]); return { contentType:"video/mp4", bytes:mp4 }; }) };
+    const encoder: ReelEncoderPort = { version:"ffmpeg-h264-v1", encode:vi.fn(async (input:Parameters<ReelEncoderPort["encode"]>[0]) => { expect(input.frames.map((frame) => frame.durationSeconds)).toEqual([2,3]); return { contentType:"video/mp4" as const, bytes:mp4 }; }) };
     const store = storeWith(reelRecords(manifest));
     const service = new PublishableCreativeMediaService(store, encoder, { clock:() => now, publishingTtlSeconds:600 });
     const first = await service.prepare(scope, pkg);
@@ -152,7 +152,7 @@ describe("PublishableCreativeMediaService", () => {
 
   it("rejects malformed encoder output before storing or exposing it", async () => {
     const { pkg, manifest } = reelPackage();
-    const encoder: ReelEncoderPort = { version:"ffmpeg-h264-v1", encode:vi.fn(async () => ({ contentType:"video/mp4", bytes:new Uint8Array([1,2,3,4,5,6,7,8]) })) };
+    const encoder: ReelEncoderPort = { version:"ffmpeg-h264-v1", encode:vi.fn(async () => ({ contentType:"video/mp4" as const, bytes:new Uint8Array([1,2,3,4,5,6,7,8]) })) };
     const store = storeWith(reelRecords(manifest));
     const service = new PublishableCreativeMediaService(store, encoder, { clock:() => now });
     await expect(service.prepare(scope, pkg)).rejects.toThrow(/mp4|ftyp/i);

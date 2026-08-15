@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   FfmpegReelEncoder,
   type FfmpegExecutionPort,
+  type FfmpegExecutionRequest,
 } from "./reel-encoder";
 
 const png = new Uint8Array([137,80,78,71,13,10,26,10,1,2,3]);
@@ -9,7 +10,8 @@ const mp4 = new Uint8Array([0,0,0,24,102,116,121,112,105,115,111,109,0,0,2,0,105
 
 describe("FfmpegReelEncoder", () => {
   it("builds a confined direct-process request from Kairo-owned frame files and timings", async () => {
-    const run = vi.fn(async () => ({ exitCode:0, stderr:"", outputBytes:mp4 }));
+    let captured:FfmpegExecutionRequest|undefined;
+    const run = vi.fn(async (request:FfmpegExecutionRequest) => { captured=request; return { exitCode:0, stderr:"", outputBytes:mp4 }; });
     const execution: FfmpegExecutionPort = { run };
     const encoder = new FfmpegReelEncoder("/usr/bin/ffmpeg", execution, { timeoutMs:5_000, maxOutputBytes:1_000_000 });
     const result = await encoder.encode({
@@ -22,7 +24,8 @@ describe("FfmpegReelEncoder", () => {
     expect(result.contentType).toBe("video/mp4");
     expect(result.bytes).toEqual(mp4);
     expect(encoder.version).toMatch(/^ffmpeg-h264-/);
-    const request = run.mock.calls[0]![0];
+    expect(run).toHaveBeenCalledTimes(1);
+    const request = captured!;
     expect(request.executable).toBe("/usr/bin/ffmpeg");
     expect(request.shell).toBe(false);
     expect(request.outputFilename).toBe("output.mp4");
@@ -32,8 +35,8 @@ describe("FfmpegReelEncoder", () => {
     expect(request.args).toContain("yuv420p");
     expect(request.args).toContain("+faststart");
     expect(request.args).not.toContain("https://example.com/untrusted");
-    expect(request.files.map(file => file.name)).toEqual(["frame-000.png","frame-001.png","frames.txt"]);
-    const concat = new TextDecoder().decode(request.files.find(file => file.name==="frames.txt")!.bytes);
+    expect(request.files.map((file) => file.name)).toEqual(["frame-000.png","frame-001.png","frames.txt"]);
+    const concat = new TextDecoder().decode(request.files.find((file) => file.name==="frames.txt")!.bytes);
     expect(concat).toContain("duration 2");
     expect(concat).toContain("duration 3");
     expect(concat).toContain("file 'frame-000.png'");
