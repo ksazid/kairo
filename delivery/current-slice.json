@@ -3,7 +3,7 @@
   "sliceId": "VS-26",
   "title": "Guided Brand Brain Setup & Review Control",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04", "FR-20"],
@@ -18,7 +18,8 @@
       "Normal Brand setup becomes lightweight and suggestion-led while the full editor moves behind Advanced Brand Brain / Review & Control.",
       "Owner goals and explicit hard directives are authoritative confirmed context; generated strategy remains source-backed inferred context until confirmed.",
       "Confirmed fields cannot be silently overwritten by guided inference.",
-      "Public reference retrieval must be bounded and fail closed for unsafe targets; public text is untrusted source material, never instructions.",
+      "Public reference retrieval is bounded, DNS-validated, address-pinned and redirect-revalidated; public text is untrusted source material, never instructions.",
+      "Generated fields require field-level source provenance from inspected Brand references.",
       "No database migration, infrastructure, release, deployment, VS-23 or VS-24 activation is authorized."
     ]
   },
@@ -31,11 +32,21 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": ["DEC-006"],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":80,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-26.md","implementationPr":null,"evidence":["docs/plans/VS-26-guided-brand-brain.md"]},
+  "links": {
+    "specification":"docs/slices/VS-26.md",
+    "implementationPr":"https://github.com/ksazid/kairo/pull/59",
+    "evidence":[
+      "docs/plans/VS-26-guided-brand-brain.md",
+      "docs/plans/VS-26-review.md",
+      "CI #589 PASS @ b227ee2d68f830fa92deed201be28042142f48b7",
+      "Security baseline #528 PASS @ b227ee2d68f830fa92deed201be28042142f48b7",
+      "Product Intake #453 PASS @ b227ee2d68f830fa92deed201be28042142f48b7"
+    ]
+  },
   "maxAttempts": 3
 }
