@@ -17,6 +17,10 @@ export function oidcClientId(): string {
   return requiredEnv("OIDC_CLIENT_ID");
 }
 
+export function oidcClientSecret(): string {
+  return requiredEnv("OIDC_CLIENT_SECRET");
+}
+
 export function oidcAudience(): string {
   return requiredEnv("OIDC_AUDIENCE");
 }
@@ -25,7 +29,7 @@ export async function oidcConfiguration() {
   configurationPromise ??= client.discovery(
     new URL(oidcIssuer()),
     oidcClientId(),
-    requiredEnv("OIDC_CLIENT_SECRET"),
+    oidcClientSecret(),
   );
   return configurationPromise;
 }
