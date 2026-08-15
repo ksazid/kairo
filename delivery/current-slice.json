@@ -3,7 +3,7 @@
   "sliceId": "VS-19",
   "title": "Marketing Lab Shadow Execution",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-09", "FR-11", "FR-12", "FR-16", "FR-17", "FR-18", "FR-19", "FR-20"],
@@ -22,11 +22,11 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":["VS-18 exact candidate 77fa8290b08bd8d2adf8b03bd5478aeeabb7868c certified by Sazid Khan and merged as d1f32d20037b3814c3e9210ba07e785183a78af8.","Post-merge main CI #482 PASS."]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":70,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":["VS-18 exact candidate 77fa8290b08bd8d2adf8b03bd5478aeeabb7868c certified and merged as d1f32d20037b3814c3e9210ba07e785183a78af8; post-merge CI #482 PASS.","VS-19 red TDD head aa0b9f467870d546880be4b3a87383b39a4dbeac defined provenance, zero-authority, synthetic-data and Claim-lineage boundaries.","Implementation found stale VS-14 Corey source pins for social/video/content-strategy and corrected them against the exact upstream commit tree.","Self-review found snapshot normalization would break byte-exact Git blob identity; fixed at 0b39f499ed0c38eecf4b364469aee01ff9217644 with final-newline regression coverage.","Implementation head 7eabd5ad1edb8cb5635b92746ff3b6065cb880f9 passed CI #487, Security baseline #434 and Product Intake #359."]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-19.md","implementationPr":null,"evidence":["delivery/context/VS-18-closeout.md","delivery/context/VS-19.md","docs/plans/VS-19-marketing-lab-shadow-execution.md"]},
+  "links": {"specification":"docs/slices/VS-19.md","implementationPr":"https://github.com/ksazid/kairo/pull/50","evidence":["delivery/context/VS-18-closeout.md","delivery/context/VS-19.md","docs/plans/VS-19-marketing-lab-shadow-execution.md"]},
   "maxAttempts": 3
 }
