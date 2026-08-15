@@ -70,6 +70,23 @@ describe("creative renderer", () => {
     expect(() => renderCreativePlan(carousel, { width: 0, height: 180 })).toThrow(/width/i);
     expect(() => renderCreativePlan(reel, { width: 180, height: 5000 })).toThrow(/height/i);
   });
+
+  it("fails closed rather than silently truncating approved copy", () => {
+    const crowded: CarouselPlan = {
+      ...carousel,
+      slides: [
+        { ...carousel.slides[0]!, body: "evidence ".repeat(180).trim() },
+        carousel.slides[1]!,
+        carousel.slides[2]!,
+      ],
+    };
+    expect(() => renderCreativePlan(crowded, tinySquare)).toThrow(/does not fit/i);
+  });
+
+  it("fails closed for glyphs the deterministic bitmap renderer cannot faithfully represent", () => {
+    const multilingual: CarouselPlan = { ...carousel, coverHook: "Umrah تحديث" };
+    expect(() => renderCreativePlan(multilingual, tinySquare)).toThrow(/unsupported character/i);
+  });
 });
 
 describe("CreativeAssetProductionService", () => {

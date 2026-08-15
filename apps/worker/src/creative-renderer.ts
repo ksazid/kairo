@@ -207,7 +207,7 @@ function renderReel(plan: ReturnType<typeof validateReelPlan>, theme: Normalized
 }
 
 function fingerprint(plan: MarketingCreativePlan, theme: NormalizedTheme): string {
-  return sha256(Buffer.from(JSON.stringify({ rendererVersion: CREATIVE_RENDERER_VERSION, plan, theme }))); 
+  return sha256(Buffer.from(JSON.stringify({ rendererVersion: CREATIVE_RENDERER_VERSION, plan, theme })));
 }
 function artifact(role: CreativeArtifactRole, filename: string, contentType: RenderedCreativeArtifact["contentType"], bytes: Uint8Array, supportingClaimIds: string[], index: number): RenderedCreativeArtifact {
   return { role, filename, contentType, bytes, sha256: sha256(bytes), supportingClaimIds: [...supportingClaimIds], index };
@@ -226,7 +226,8 @@ class Canvas {
     for (let py = y0; py < y1; py++) for (let px = x0; px < x1; px++) this.pixel(px, py, color);
   }
   drawWrapped(text: string, x: number, y: number, maxWidth: number, scale: number, color: Rgb, maxLines: number): number {
-    const lines = wrap(text, Math.max(1, Math.floor(maxWidth / (4 * scale))), maxLines);
+    assertRenderableText(text);
+    const lines = wrapStrict(text, Math.max(1, Math.floor(maxWidth / (4 * scale))), maxLines);
     let cursorY = Math.floor(y);
     for (const line of lines) { this.drawLine(line, Math.floor(x), cursorY, scale, color); cursorY += 7 * scale; }
     return cursorY;
@@ -234,10 +235,10 @@ class Canvas {
   private drawLine(text: string, x: number, y: number, scale: number, color: Rgb): void {
     let cursor = x;
     for (const char of text.toUpperCase()) {
-      const glyph = GLYPHS[char] ?? GLYPHS["?"]!;
+      const glyph = char === " " ? GLYPHS[" "]! : GLYPHS[char]!;
       for (let row = 0; row < 5; row++) for (let col = 0; col < 3; col++) if (glyph[row]![col] === "1") this.fillRect(cursor + col * scale, y + row * scale, scale, scale, color);
       cursor += 4 * scale;
-      if (cursor >= this.width) break;
+      if (cursor >= this.width) throw new Error("Creative text does not fit the rendered line");
     }
   }
   private pixel(x: number, y: number, color: Rgb): void {
@@ -247,20 +248,29 @@ class Canvas {
   }
 }
 
-function wrap(input: string, maxChars: number, maxLines: number): string[] {
+function assertRenderableText(input: string): void {
+  for (const char of input.toUpperCase()) {
+    if (/\s/u.test(char)) continue;
+    if (!GLYPHS[char]) throw new Error(`Creative text contains unsupported character: ${char}`);
+  }
+}
+
+function wrapStrict(input: string, maxChars: number, maxLines: number): string[] {
   const words = input.trim().split(/\s+/).filter(Boolean);
+  const tokens = words.flatMap((word) => word.length > maxChars ? (word.match(new RegExp(`.{1,${maxChars}}`, "g")) ?? [word]) : [word]);
   const lines: string[] = [];
   let line = "";
-  for (const word of words) {
-    const chunks = word.length > maxChars ? word.match(new RegExp(`.{1,${maxChars}}`, "g")) ?? [word] : [word];
-    for (const chunk of chunks) {
-      const next = line ? `${line} ${chunk}` : chunk;
-      if (next.length > maxChars && line) { lines.push(line); line = chunk; } else line = next;
-      if (lines.length >= maxLines) break;
-    }
-    if (lines.length >= maxLines) break;
+  for (const token of tokens) {
+    const next = line ? `${line} ${token}` : token;
+    if (next.length <= maxChars) { line = next; continue; }
+    if (line) lines.push(line);
+    if (lines.length >= maxLines) throw new Error("Creative text does not fit the configured render area");
+    line = token;
   }
-  if (line && lines.length < maxLines) lines.push(line);
+  if (line) {
+    if (lines.length >= maxLines) throw new Error("Creative text does not fit the configured render area");
+    lines.push(line);
+  }
   if (!lines.length) lines.push("");
   return lines;
 }
@@ -287,7 +297,7 @@ function crc32(data: Uint8Array): number {
 }
 
 const GLYPHS: Record<string, readonly string[]> = {
-  " ":["000","000","000","000","000"],"?":["110","001","010","000","010"],".":["000","000","000","000","010"],",":["000","000","000","010","100"],"!":["010","010","010","000","010"],":":["000","010","000","010","000"],"-":["000","000","111","000","000"],"/":["001","001","010","100","100"],"&":["010","101","010","101","011"],"+":["000","010","111","010","000"],"%":["101","001","010","100","101"],"#":["101","111","101","111","101"],"'":["010","010","000","000","000"],"(":["010","100","100","100","010"],")":["010","001","001","001","010"],
+  " ":["000","000","000","000","000"],"?":["110","001","010","000","010"],".":["000","000","000","000","010"],",":["000","000","000","010","100"],"!":["010","010","010","000","010"],":":["000","010","000","010","000"],";":["000","010","000","010","100"],"-":["000","000","111","000","000"],"/":["001","001","010","100","100"],"&":["010","101","010","101","011"],"+":["000","010","111","010","000"],"%":["101","001","010","100","101"],"#":["101","111","101","111","101"],"'":["010","010","000","000","000"],"(":["010","100","100","100","010"],")":["010","001","001","001","010"],"=":["000","111","000","111","000"],
   "A":["010","101","111","101","101"],"B":["110","101","110","101","110"],"C":["011","100","100","100","011"],"D":["110","101","101","101","110"],"E":["111","100","110","100","111"],"F":["111","100","110","100","100"],"G":["011","100","101","101","011"],"H":["101","101","111","101","101"],"I":["111","010","010","010","111"],"J":["001","001","001","101","010"],"K":["101","101","110","101","101"],"L":["100","100","100","100","111"],"M":["101","111","111","101","101"],"N":["101","111","111","111","101"],"O":["010","101","101","101","010"],"P":["110","101","110","100","100"],"Q":["010","101","101","111","011"],"R":["110","101","110","101","101"],"S":["011","100","010","001","110"],"T":["111","010","010","010","010"],"U":["101","101","101","101","111"],"V":["101","101","101","101","010"],"W":["101","101","111","111","101"],"X":["101","101","010","101","101"],"Y":["101","101","010","010","010"],"Z":["111","001","010","100","111"],
   "0":["111","101","101","101","111"],"1":["010","110","010","010","111"],"2":["110","001","010","100","111"],"3":["110","001","010","001","110"],"4":["101","101","111","001","001"],"5":["111","100","110","001","110"],"6":["011","100","110","101","010"],"7":["111","001","010","010","010"],"8":["010","101","010","101","010"],"9":["010","101","011","001","110"]
 };
