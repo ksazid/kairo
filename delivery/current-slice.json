@@ -3,7 +3,7 @@
   "sliceId": "VS-15",
   "title": "Instagram Reel and Image Carousel Publishing",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
@@ -30,8 +30,15 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-15 implementation approval does not authorize production enablement or autonomous publishing."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":5,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":["Red TDD head 37063a25092836da1b0017e63812cfc375a25b11 defines domain media-shape/capability rules, Postgres media hydration and deterministic Meta Reel/carousel provider behavior before runtime implementation."]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":60,"certification":0,"release":0,"validation":50},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[
+    "Red TDD head 37063a25092836da1b0017e63812cfc375a25b11 defined domain media-shape/capability rules, Postgres media hydration and deterministic Meta Reel/carousel provider behavior before runtime implementation.",
+    "Implementation head 543a31f98fc6f713b8eb394e6d1cc7b0cd043753: CI #424 PASS, Security baseline #378 PASS, Product Intake #304 PASS.",
+    "CI #424 passed immutable install, clean PostgreSQL 18 migrations including 0014_instagram_rich_publishing.sql, production dependency audit, governance/preflight, full runtime verification and dashboard build.",
+    "Postgres VS-15 integration test proves scheduled Reel media/options round-trip through publish_commands and are hydrated into the authoritative PublishingJob instead of being lost as an empty media list.",
+    "Provider tests cover Reel IN_PROGRESS→FINISHED→publish, processing ERROR, bounded pending status, image-carousel child→parent→publish, child failure isolation and private-media fail-closed behavior.",
+    "PR #45 scope review contains only approved domain/API/worker/migration/tests/governance paths; no web UI, infrastructure, release workflow, OAuth or Insights changes."
+  ]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
