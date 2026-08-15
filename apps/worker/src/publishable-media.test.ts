@@ -133,6 +133,21 @@ describe("PublishableCreativeMediaService", () => {
     expect(encoder.encode).not.toHaveBeenCalled();
   });
 
+  it("rejects a Reel manifest with a timeline gap before invoking the encoder", async () => {
+    const base = reelPackage();
+    const parsed = JSON.parse(new TextDecoder().decode(base.manifest)) as { scenes:Array<{startSecond:number}> };
+    parsed.scenes[1]!.startSecond = 2.5;
+    const manifest = new TextEncoder().encode(JSON.stringify(parsed));
+    const pkg:StoredCreativePackage = {
+      ...base.pkg,
+      assets: base.pkg.assets.map((asset) => asset.role === "reel-render-manifest" ? { ...asset, contentHash:sha(manifest), sizeBytes:manifest.byteLength } : asset),
+    };
+    const encoder = unusedEncoder();
+    const service = new PublishableCreativeMediaService(storeWith(reelRecords(manifest)), encoder, { clock:() => now });
+    await expect(service.prepare(scope, pkg)).rejects.toThrow(/continuous|gap|overlap/i);
+    expect(encoder.encode).not.toHaveBeenCalled();
+  });
+
   it("fails closed when another Brand tries to prepare this Brand's private objects", async () => {
     const service = new PublishableCreativeMediaService(storeWith(carouselRecords()), unusedEncoder(), { clock:() => now });
     await expect(service.prepare({ workspaceId:"ws-1", brandId:"brand-2" }, carouselPackage())).rejects.toThrow(/scope/i);
@@ -142,6 +157,12 @@ describe("PublishableCreativeMediaService", () => {
     const store = storeWith(carouselRecords(), async () => ({ url:"http://media.example.test/file", expiresAt:new Date(now.getTime()+60_000).toISOString() }));
     const service = new PublishableCreativeMediaService(store, unusedEncoder(), { clock:() => now });
     await expect(service.prepare(scope, carouselPackage())).rejects.toThrow(/https/i);
+  });
+
+  it("rejects private IPv6 publishing egress URLs", async () => {
+    const store = storeWith(carouselRecords(), async () => ({ url:"https://[fd00::1]/file", expiresAt:new Date(now.getTime()+60_000).toISOString() }));
+    const service = new PublishableCreativeMediaService(store, unusedEncoder(), { clock:() => now });
+    await expect(service.prepare(scope, carouselPackage())).rejects.toThrow(/private host/i);
   });
 
   it("rejects a store that grants a publishing URL beyond the configured TTL", async () => {
