@@ -5,6 +5,7 @@ import {
   createBrandSkillSelection,
   createMarketingSkillRegistry,
   type MarketingSkillManifest,
+  type SkillSourceRef,
 } from "./skill-registry";
 
 function nativeSkill(): MarketingSkillManifest {
@@ -42,6 +43,12 @@ function coreyReference(): MarketingSkillManifest {
   };
 }
 
+function coreyGithubSource(): Extract<SkillSourceRef, { kind: "github" }> {
+  const source = coreyReference().source;
+  if (source.kind !== "github") throw new Error("fixture must be GitHub-backed");
+  return source;
+}
+
 describe("VS-14 marketing skill registry", () => {
   it("keeps Kairo Native executable while reference-only challengers remain non-executable", () => {
     expect(canExecuteMarketingSkill(nativeSkill())).toBe(true);
@@ -50,9 +57,11 @@ describe("VS-14 marketing skill registry", () => {
 
   it("requires exact immutable GitHub provenance for external challengers", () => {
     const reference = coreyReference();
-    if (reference.source.kind !== "github") throw new Error("fixture must be GitHub-backed");
-    expect(() => createMarketingSkillRegistry([{ ...reference, source: { ...reference.source, commitSha: "main" } }])).toThrow(DomainValidationError);
-    expect(() => createMarketingSkillRegistry([{ ...reference, source: { ...reference.source, contentHash: "missing" } }])).toThrow(DomainValidationError);
+    const source = coreyGithubSource();
+    const badCommit: MarketingSkillManifest = { ...reference, source: { ...source, commitSha: "main" } };
+    const badHash: MarketingSkillManifest = { ...reference, source: { ...source, contentHash: "missing" } };
+    expect(() => createMarketingSkillRegistry([badCommit])).toThrow(DomainValidationError);
+    expect(() => createMarketingSkillRegistry([badHash])).toThrow(DomainValidationError);
   });
 
   it("indexes candidates by capability without making evaluation status executable", () => {
