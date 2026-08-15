@@ -3,7 +3,7 @@
   "sliceId": "VS-17",
   "title": "Instagram Connection + Insights",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-15", "FR-16", "FR-17", "FR-18", "FR-20"],
@@ -17,7 +17,8 @@
     "notes": [
       "Uses official Meta OAuth/provider APIs behind Kairo-owned deterministic adapters under DEC-004.",
       "The first connection model remains compatible with Kairo's existing graph.facebook.com Instagram Professional publishing adapter.",
-      "Provider tokens must remain encrypted, scoped, revocable and unavailable to agents/domain/web responses.",
+      "Publishing uses the Page access-token credential while media Insights use the separate Facebook User access-token credential required by Meta's Facebook Login Insights flow.",
+      "Both provider credentials remain encrypted, scoped, revocable and unavailable to agents/domain/web responses.",
       "Insights reuse Kairo's existing Published Post lineage and metric snapshot/normalization model; missing metrics remain unavailable.",
       "VS-16 exact SHA f2b3c7e43112512bbc7761d89220617a9e2b12db remains deployment-approved but actual Vercel deployment is pending provider rate-limit recovery."
     ]
@@ -31,8 +32,17 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Production Meta credentials, deployment and production enablement require separate exact-SHA approval and functional smoke evidence."}
   ],
   "decisionIds": ["DEC-004"],
-  "progress": {"discovery":100,"decisions":100,"implementation":80,"testing":20,"certification":0,"release":0,"validation":20},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":70,"certification":0,"release":0,"validation":70},
+  "certification": {
+    "status":"not-started",
+    "commitSha":null,
+    "evidence":[
+      "Implementation head 55cc64ecb87c966c703c97e74f8ccb9917e416d6: CI #456 PASS including clean PostgreSQL 18 migrations 0001-0015, production dependency audit, governance/preflight, full runtime verification, dashboard build and artifact upload.",
+      "Security baseline #405 PASS on implementation head 55cc64ecb87c966c703c97e74f8ccb9917e416d6.",
+      "Product Intake #330 PASS on implementation head 55cc64ecb87c966c703c97e74f8ccb9917e416d6.",
+      "Provider review corrected Meta token separation before testing: Page credential for publishing; Facebook User credential for Insights."
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
