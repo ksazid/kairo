@@ -26,7 +26,10 @@ const validOutput: CarouselPlan = {
 
 class CapturingRuntime implements AgentRuntimePort {
   requests: AgentInvocationRequest[] = [];
-  constructor(private readonly costUsd: number | undefined = 0.006) {}
+  constructor(
+    private readonly includeCost = true,
+    private readonly costUsd = 0.006,
+  ) {}
   async invoke<TOutput>(request: AgentInvocationRequest): Promise<AgentRuntimeResult<TOutput>> {
     this.requests.push(request);
     return {
@@ -35,7 +38,7 @@ class CapturingRuntime implements AgentRuntimePort {
         runtime: "test-native",
         provider: "fixture",
         model: "fixture-model",
-        ...(this.costUsd !== undefined ? { costUsd: this.costUsd } : {}),
+        ...(this.includeCost ? { costUsd: this.costUsd } : {}),
         latencyMs: 190,
       },
     };
@@ -76,7 +79,7 @@ describe("VS-23 qualification baseline harness", () => {
 
   it("refuses to manufacture cost evidence when the runtime did not measure cost", async () => {
     const benchmarkCase = toMotorcycleCarouselQualificationCase(motorcycleFixture());
-    const execution = await executeKairoNativeCarouselBaseline(new CapturingRuntime(undefined), benchmarkCase);
+    const execution = await executeKairoNativeCarouselBaseline(new CapturingRuntime(false), benchmarkCase);
     expect(() => buildMarketingNativeObservation(execution, {
       truthPassed: true,
       scores: { brandFit: 80, hookQuality: 80, originality: 80, formatQuality: 80, criticScore: 80 },
@@ -85,7 +88,7 @@ describe("VS-23 qualification baseline harness", () => {
 
   it("builds a shadow-stage native observation only from supplied evaluation evidence", async () => {
     const benchmarkCase = toMotorcycleCarouselQualificationCase(motorcycleFixture());
-    const execution = await executeKairoNativeCarouselBaseline(new CapturingRuntime(0.006), benchmarkCase);
+    const execution = await executeKairoNativeCarouselBaseline(new CapturingRuntime(true, 0.006), benchmarkCase);
     const observation = buildMarketingNativeObservation(execution, {
       truthPassed: true,
       scores: { brandFit: 80, hookQuality: 76, originality: 72, formatQuality: 84, criticScore: 86 },
