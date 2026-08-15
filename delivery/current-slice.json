@@ -3,7 +3,7 @@
   "sliceId": "VS-13",
   "title": "Free Discovery Adapters",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-06", "FR-07", "FR-20"],
@@ -25,19 +25,23 @@
     {"type":"scope","status":"approved","version":"VS-13@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Approved proceeding to the next planned phase after VS-12A certification: implement RSS/Atom, Hacker News, Bluesky and YouTube free/public discovery adapters behind the existing sector-aware generic Hunter."},
     {"type":"policy","status":"approved","version":"DEC-009","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Approved DEC-009 provider/credential boundary: official/public APIs and approved feeds only, optional secret-scoped YouTube API key, provider isolation, deterministic budgets and no unrestricted scraping or user-session harvesting."},
     {"type":"implementation","status":"approved","version":"VS-13@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-14T22:17:00+02:00","rationale":"Authorized runtime-enabled VS-13 implementation using PES/Loop + Superpowers/TDD within the approved provider, path, quota and credential boundaries."},
-    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Awaiting exact-SHA human certification after final certification gates."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-13 implementation does not authorize release or deployment."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
+    {"type":"certification","status":"approved","version":"VS-13@1.0","commitSha":"fcae905b1595ed270c7bf5508fb6d4e5b0929d0e","by":"Sazid Khan","at":"2026-08-15T02:32:00+02:00","rationale":"Approved exact-SHA certification and merge of PR #41 after CI #390, Security baseline #347 and Product Intake #274 passed on candidate fcae905b1595ed270c7bf5508fb6d4e5b0929d0e. Release, deployment and production enablement remain unauthorized."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-13 certification and merge do not authorize release or deployment."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"VS-13 certification and merge do not authorize production enablement."}
   ],
   "decisionIds": ["DEC-009","DEC-005"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":100},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":100},
   "certification": {
-    "status":"running",
-    "commitSha":null,
+    "status":"passed",
+    "commitSha":"fcae905b1595ed270c7bf5508fb6d4e5b0929d0e",
     "evidence":[
       "Implementation head 1f25f89b49f9dfb53b2c3fc12e74c8949906f19c: CI #388 PASS, Security baseline #345 PASS, Product Intake #272 PASS.",
       "Testing head 93036bd1a46e2124db6b7bff07be2b89539159d8: CI #389 PASS, Security baseline #346 PASS, Product Intake #273 PASS.",
-      "CI verification includes immutable npm install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime tests/typechecks and dashboard build.",
+      "Exact certification candidate fcae905b1595ed270c7bf5508fb6d4e5b0929d0e: CI #390 PASS, Security baseline #347 PASS, Product Intake #274 PASS.",
+      "Human certification and merge approval recorded on PR #41 on 2026-08-15 Europe/Malta for exact SHA fcae905b1595ed270c7bf5508fb6d4e5b0929d0e.",
+      "PR #41 merged as 21260b0a00a73a71ed20faf45c08c76211320458 using expected-head-SHA protection.",
+      "Compare fcae905b1595ed270c7bf5508fb6d4e5b0929d0e..21260b0a00a73a71ed20faf45c08c76211320458 shows zero file changes; merge provenance is runtime-identical to the certified candidate.",
+      "Post-merge CI #391 PASS on 21260b0a00a73a71ed20faf45c08c76211320458, including immutable install, PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build.",
       "Tests cover RSS/Atom normalization and malformed-feed isolation, HN bounded fan-out/cache/relevance, Bluesky public AppView/no-auth/rate-limit handling, YouTube missing-key/quota/key-nonpropagation, source routing, provider isolation, canonical cross-provider dedupe and no-filler behavior.",
       "PR #41 path review found no protected API/web/infrastructure/release path changes and no unresolved review threads."
     ]
@@ -45,6 +49,6 @@
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-13.md","implementationPr":"https://github.com/ksazid/kairo/pull/41","evidence":["delivery/context/VS-12A-closeout.md","delivery/context/VS-13.md","docs/plans/VS-12-sector-aware-hunter.md","docs/plans/VS-13-implementation.md"]},
+  "links": {"specification":"docs/slices/VS-13.md","implementationPr":"https://github.com/ksazid/kairo/pull/41","evidence":["delivery/context/VS-12A-closeout.md","delivery/context/VS-13.md","delivery/context/VS-13-closeout.md","docs/plans/VS-12-sector-aware-hunter.md","docs/plans/VS-13-implementation.md"]},
   "maxAttempts": 3
 }
