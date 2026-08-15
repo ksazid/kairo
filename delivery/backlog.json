@@ -3,38 +3,6 @@
   "slices": [
     {
       "schemaVersion": 2,
-      "sliceId": "VS-22",
-      "title": "Research Evidence Enrichment",
-      "status": "inactive",
-      "lifecycle": "proposed",
-      "riskLevel": "medium",
-      "implementationMode": "specification-only",
-      "requirements": ["FR-07", "FR-20"],
-      "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-      "dependencies": ["VS-21"],
-      "blockers": [],
-      "allowedPaths": ["packages/domain/**","apps/worker/**","apps/api/**","tests/**","docs/slices/VS-22.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
-      "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
-      "impact": {"areas":["architecture","sensitive-data"],"notes":["Candidate scope is OpenAlex/Crossref-style public research evidence enrichment behind existing provider-neutral research ports.","Brand-private context must not be exported to public evidence providers.","No runtime implementation is approved by this backlog entry."]},
-      "approvals": [
-        {"type":"scope","status":"pending","version":"VS-22@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires explicit human scope approval before activation."},
-        {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing public-evidence, provenance and Brand-isolation policies govern the proposed adapter class."},
-        {"type":"implementation","status":"pending","version":"VS-22@1.0","commitSha":null,"by":null,"at":null,"rationale":"Not authorized by backlog planning."},
-        {"type":"certification","status":"pending","version":"VS-22@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires a future immutable candidate and human approval."},
-        {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
-        {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
-      ],
-      "decisionIds": [],
-      "progress": {"discovery":0,"decisions":0,"implementation":0,"testing":0,"certification":0,"release":0,"validation":0},
-      "certification": {"status":"not-started","commitSha":null,"evidence":[]},
-      "release": {"status":"not-authorized","releaseId":null},
-      "rollback": {"status":"not-applicable","rollbackId":null},
-      "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-      "links": {"specification":"docs/slices/VS-22.md","implementationPr":null,"evidence":[]},
-      "maxAttempts": 3
-    },
-    {
-      "schemaVersion": 2,
       "sliceId": "VS-23",
       "title": "Marketing Lab Live Evaluation",
       "status": "inactive",

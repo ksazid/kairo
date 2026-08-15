@@ -1,50 +1,46 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-25",
-  "title": "Auth0 Production-Readiness Correction",
+  "sliceId": "VS-22",
+  "title": "Research Evidence Enrichment",
   "status": "active",
   "lifecycle": "certification",
-  "riskLevel": "high",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-01"],
+  "requirements": ["FR-07", "FR-20"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-16", "VS-21"],
-  "blockers": ["A real production Auth0 callback/session smoke still requires a successfully deployed exact SHA; current Vercel deployments are blocked by the Free-plan build-rate limit."],
-  "allowedPaths": ["apps/web/**","apps/api/src/auth.ts","apps/api/src/auth.test.ts","docs/slices/VS-25.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**","packages/domain/**","apps/worker/**"],
+  "dependencies": ["VS-21", "VS-25"],
+  "blockers": [],
+  "allowedPaths": ["packages/domain/**","apps/worker/**","apps/api/**","tests/**","docs/slices/VS-22.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
   "impact": {
-    "areas": ["frontend","authentication","authorization","sensitive-data","customer-flow","operations-support"],
+    "areas": ["architecture", "sensitive-data"],
     "notes": [
-      "Corrective FR-01 work only; no identity-provider or authorization-policy change.",
-      "OIDC discovery recovers after transient provider/network or synchronous configuration failures instead of poisoning a warm web instance.",
-      "Login and callback configuration failures fail safely without exposing secrets or weakening PKCE/state validation.",
-      "The API keeps strict issuer/audience/JWKS validation while canonicalizing the issuer trailing slash.",
-      "Real deployed Auth0 email/Google/callback/API/logout smoke remains external operational evidence.",
-      "No database migration, release, deployment or production enablement is authorized by this implementation approval."
+      "OpenAlex/Crossref-style public research evidence is added behind existing provider-neutral discovery/tool ports.",
+      "Scholarly providers receive only an explicit global-public publicResearchQuery; Brand-private context is never used to derive the external request.",
+      "Provider failures degrade independently and cannot fabricate successful evidence.",
+      "No database migration, release, deployment or production enablement is authorized."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-25@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T17:49:00+02:00","rationale":"The owner explicitly instructed to fix the auth issue before proceeding. This corrective slice preempts the proposed backlog without changing VS-22/23/24 identities."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"DEC-001 and VS-16 already govern Auth0/OIDC. This correction does not change provider, credential ownership, Workspace/Brand authorization or token policy."},
-    {"type":"implementation","status":"approved","version":"VS-25@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T17:49:00+02:00","rationale":"The instruction to fix auth authorizes bounded corrective runtime implementation under PES/Loop before resuming VS-22."},
-    {"type":"certification","status":"pending","version":"VS-25@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA human certification after deterministic gates."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized for a new hotfix SHA."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized for a new hotfix SHA."}
+    {"type":"scope","status":"approved","version":"VS-22@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T18:24:00+02:00","rationale":"The owner instructed Kairo to verify whether VS-22/23/24 were already implemented and, if not, proceed. Repository verification proved VS-22 is proposed only; this instruction authorizes its bounded scope."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing public-evidence, provenance, prompt-injection and Brand-isolation policies govern the adapter class. The implementation adds an explicit public-only query boundary rather than expanding data exposure."},
+    {"type":"implementation","status":"approved","version":"VS-22@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T18:24:00+02:00","rationale":"The owner's instruction to proceed authorizes runtime implementation after verification showed the slice was not implemented."},
+    {"type":"certification","status":"pending","version":"VS-22@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact candidate gates are running; human certification remains required."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
-  "decisionIds": ["DEC-001"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":80,"release":0,"validation":0},
+  "decisionIds": [],
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
   "certification": {"status":"running","commitSha":null,"evidence":[
-    "VS-21 exact candidate 1d504782c060fdd4eaf891b79b4e9045d4f01d2b merged as d8df12f9fc0d07d7a369f56752cdc81dc02d56b4 with zero candidate-to-merge file differences; post-merge main CI #526 passed.",
-    "VS-16/PR #47 production deployment of the manual-first Auth0 UI was previously authorized for f2b3c7e43112512bbc7761d89220617a9e2b12db but Vercel blocked that exact deployment with api-deployments-free-per-day.",
-    "Current Kairo session establishment resolves accounts by provider+subject and does not require email claims.",
-    "CI #533 reached governance validation after clean migrations and dependency audit; it failed only because the initial corrective identifier VS-16R violated the required VS-<number> schema. Runtime verification was not run on that head.",
-    "CI #539 passed numeric VS-25 governance, typecheck, API auth tests and the broader runtime suites, then exposed two web retry-cache timing failures; those tests were preserved and the implementation was corrected.",
-    "Frozen runtime head d2974aa951054f7fdcb542bbc3621884cde3f577 passed CI #541, Security baseline #483 and Product Intake #408.",
-    "Formal testing head adc83c3661365840bf6edec7c8823c70c0281aff passed CI #543, Security baseline #485 and Product Intake #410 on the frozen auth runtime."
+    "VS-25 exact feature head 5b7fb36b33d384231cd84936c31b5b821f1dff32 merged as 6c8c263f8c3327459796a3c9adcbf2a890b6b594 after CI #545, Security #487 and Product Intake #412 passed.",
+    "The previous Vercel build-rate blocker cleared on the merged VS-25 commit; interactive Auth0 email/Google/callback/API/logout smoke remains separate operational evidence and is not claimed here.",
+    "VS-22 initial GREEN head d16076dc4eea446428ba193a351ef5a867223fb8 passed Security #494 and Product Intake #419; CI #553 stopped at preflight because the first activation metadata used an invalid lifecycle name and duplicated the active slice in backlog. Runtime verification did not run on that head.",
+    "Corrected VS-22 runtime/testing head 49b8236654b4d13379c5bce1b88a112f8752eea2 passed Product Intake #422, Security baseline #497 and CI #556 including preflight and runtime verification.",
+    "Formal testing-transition head dcf862a5523d8687b5809c5e852dd0f8bef89ea8 passed Product Intake #423, Security baseline #498 and CI #557 including full runtime verification; zero review threads were open before certification freeze."
   ]},
   "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"ready","rollbackId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-25.md","implementationPr":"https://github.com/ksazid/kairo/pull/55","evidence":["delivery/context/VS-21-closeout.md","delivery/context/VS-16.md","docs/plans/VS-25-auth0-production-readiness.md"]},
+  "links": {"specification":"docs/slices/VS-22.md","implementationPr":"https://github.com/ksazid/kairo/pull/56","evidence":["delivery/context/VS-25-closeout.md","docs/plans/VS-22-research-evidence-enrichment.md","docs/plans/VS-22-review.md"]},
   "maxAttempts": 3
 }
