@@ -3,7 +3,7 @@
   "sliceId": "VS-22",
   "title": "Research Evidence Enrichment",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-07", "FR-20"],
@@ -30,15 +30,16 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":80,"testing":20,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[
     "VS-25 exact feature head 5b7fb36b33d384231cd84936c31b5b821f1dff32 merged as 6c8c263f8c3327459796a3c9adcbf2a890b6b594 after CI #545, Security #487 and Product Intake #412 passed.",
-    "The previous Vercel build-rate blocker has cleared on the merged VS-25 commit; interactive Auth0 email/Google/callback/API/logout smoke remains separate operational evidence and is not claimed here.",
-    "VS-22 initial GREEN head d16076dc4eea446428ba193a351ef5a867223fb8 passed Security #494 and Product Intake #419; CI #553 stopped at preflight because the first activation metadata used an invalid lifecycle name and duplicated the active slice in backlog. Runtime verification did not run on that head."
+    "The previous Vercel build-rate blocker cleared on the merged VS-25 commit; interactive Auth0 email/Google/callback/API/logout smoke remains separate operational evidence and is not claimed here.",
+    "VS-22 initial GREEN head d16076dc4eea446428ba193a351ef5a867223fb8 passed Security #494 and Product Intake #419; CI #553 stopped at preflight because the first activation metadata used an invalid lifecycle name and duplicated the active slice in backlog. Runtime verification did not run on that head.",
+    "Corrected VS-22 runtime/testing head 49b8236654b4d13379c5bce1b88a112f8752eea2 passed Product Intake #422, Security baseline #497 and CI #556 including preflight and runtime verification."
   ]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-22.md","implementationPr":"https://github.com/ksazid/kairo/pull/56","evidence":["delivery/context/VS-25-closeout.md","docs/plans/VS-22-research-evidence-enrichment.md"]},
+  "links": {"specification":"docs/slices/VS-22.md","implementationPr":"https://github.com/ksazid/kairo/pull/56","evidence":["delivery/context/VS-25-closeout.md","docs/plans/VS-22-research-evidence-enrichment.md","docs/plans/VS-22-review.md"]},
   "maxAttempts": 3
 }
