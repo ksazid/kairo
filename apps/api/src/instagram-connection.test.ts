@@ -87,6 +87,7 @@ describe("VS-17 Instagram connection", () => {
     const state = new URL(started.authorizationUrl).searchParams.get("state")!;
     const completed = await instance.complete("alice", "meta-code", state);
     expect(completed.status).toBe("selection-required");
+    if (completed.status !== "selection-required") throw new Error("expected selection");
     expect(completed.candidates).toHaveLength(2);
     expect(saved).toHaveLength(0);
     await expect(instance.complete("alice", "meta-code", state)).rejects.toThrow(/expired|invalid|used/i);
