@@ -12,7 +12,8 @@ export type MarketingCapability =
 export type MarketingFormat = "text" | "static" | "carousel" | "reel";
 export type SkillExecutionMode = "native" | "reference-only" | "sandboxed";
 export type SkillStatus = "approved" | "evaluation" | "rejected" | "disabled";
-export type SkillBenchmarkStatus = "baseline" | "pending" | "qualified" | "failed";
+export type SkillBenchmarkStatus = "baseline" | "pending" | "shadow" | "live" | "qualified" | "failed";
+export type MarketingBenchmarkExecutionStage = "shadow" | "live";
 
 export type SkillSourceRef =
   | { kind: "kairo-native" }
@@ -111,12 +112,22 @@ export function validateMarketingSkillManifest(input: MarketingSkillManifest): M
   if (executionMode === "reference-only" && (permissions.network || permissions.secrets || permissions.brandPrivateContext || permissions.publishing)) {
     throw new DomainValidationError("Reference-only skills must have zero runtime permissions");
   }
-  if (executionMode === "sandboxed" && (status !== "approved" || benchmarkStatus !== "qualified")) {
-    throw new DomainValidationError("Sandboxed external skills require approved and qualified status");
+  if (executionMode === "sandboxed") {
+    if (!["shadow", "live", "qualified"].includes(benchmarkStatus)) throw new DomainValidationError("Sandboxed skills require shadow, live or qualified benchmark status");
+    if (status === "rejected" || status === "disabled") throw new DomainValidationError("Rejected or disabled skills cannot be sandboxed");
+    if (benchmarkStatus === "qualified" && status !== "approved") throw new DomainValidationError("Qualified sandboxed skills require approved status");
   }
   if (permissions.publishing) throw new DomainValidationError("Marketing skills cannot receive publishing authority");
 
   return { id, version, name, capabilities, source, executionMode, permissions, status, benchmarkStatus };
+}
+
+export function canRunMarketingSkillInBenchmark(input: MarketingSkillManifest, stage: MarketingBenchmarkExecutionStage): boolean {
+  const skill = validateMarketingSkillManifest(input);
+  if (skill.executionMode === "native") return skill.status === "approved" && skill.benchmarkStatus === "baseline";
+  if (skill.executionMode !== "sandboxed" || (skill.status !== "evaluation" && skill.status !== "approved")) return false;
+  if (stage === "shadow") return skill.benchmarkStatus === "shadow" || skill.benchmarkStatus === "live" || skill.benchmarkStatus === "qualified";
+  return skill.benchmarkStatus === "live" || skill.benchmarkStatus === "qualified";
 }
 
 export function canExecuteMarketingSkill(input: MarketingSkillManifest): boolean {
@@ -151,9 +162,7 @@ export function createBrandSkillSelection(input: {
     q.format !== format ||
     q.challengerSkillId !== skill.id ||
     q.challengerSkillVersion !== skill.version
-  ) {
-    throw new DomainValidationError("Brand skill selection requires matching Brand qualification evidence");
-  }
+  ) throw new DomainValidationError("Brand skill selection requires matching Brand qualification evidence");
   return { workspaceId, brandId, capability, format, skillId: skill.id, skillVersion: skill.version, selectedAt: timestamp(input.selectedAt, "selectedAt") };
 }
 
@@ -161,7 +170,7 @@ const CAPABILITIES = ["social-strategy", "content-strategy", "hook-strategy", "c
 const FORMATS = ["text", "static", "carousel", "reel"] as const;
 const EXECUTION_MODES = ["native", "reference-only", "sandboxed"] as const;
 const STATUSES = ["approved", "evaluation", "rejected", "disabled"] as const;
-const BENCHMARK_STATUSES = ["baseline", "pending", "qualified", "failed"] as const;
+const BENCHMARK_STATUSES = ["baseline", "pending", "shadow", "live", "qualified", "failed"] as const;
 
 function validateSource(source: SkillSourceRef): SkillSourceRef {
   if (!source || typeof source !== "object") throw new DomainValidationError("skill.source is required");
