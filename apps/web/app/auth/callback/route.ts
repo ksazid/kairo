@@ -16,13 +16,13 @@ function signInFailure(request: NextRequest, message: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const transaction = decodeOidcTransaction(
-    request.cookies.get(OIDC_TRANSACTION_COOKIE)?.value,
-    oidcClientSecret(),
-  );
-  if (!transaction) return signInFailure(request, "Authentication session expired. Please sign in again.");
-
   try {
+    const transaction = decodeOidcTransaction(
+      request.cookies.get(OIDC_TRANSACTION_COOKIE)?.value,
+      oidcClientSecret(),
+    );
+    if (!transaction) return signInFailure(request, "Authentication session expired. Please sign in again.");
+
     const oidc = oidcClient();
     const configuration = await oidcConfiguration();
     const tokens = await oidc.authorizationCodeGrant(configuration, new URL(request.url), {
