@@ -3,7 +3,7 @@
   "sliceId": "VS-18",
   "title": "Creative Asset Production",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-11", "FR-12", "FR-13", "FR-15", "FR-20"],
@@ -12,7 +12,7 @@
   "blockers": [],
   "allowedPaths": ["packages/domain/**","apps/worker/**","apps/api/**","apps/api/migrations/**","tests/**","docs/slices/VS-18.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
   "protectedPaths": [".github/workflows/release.yml","infrastructure/**"],
-  "impact": {"areas":["architecture","api","database","customer-flow","operations-support"],"notes":["Deterministic PNG carousel output and deterministic Reel storyboard/timed manifest only; renderer cannot invent claims.","Generated media remains Workspace/Brand scoped behind a private object-store port.","Final MP4 encoder/provider remains replaceable and outside VS-18; no shell or new external media provider was introduced.","No autonomous publishing, release, deployment or production enablement."]},
+  "impact": {"areas":["architecture","api","database","customer-flow","operations-support"],"notes":["Deterministic PNG carousel output and deterministic Reel storyboard/timed manifest only; renderer cannot invent claims.","Generated media remains Workspace/Brand scoped behind a private object-store port.","Testing review found silent text truncation/unsupported-glyph degradation; lifecycle returned to implementing so rendering fails closed rather than altering approved copy.","No autonomous publishing, release, deployment or production enablement."]},
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-18@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T13:41:00+02:00","rationale":"Explicit approval of the next two slices; VS-18 is Creative Asset Production."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Existing FR-11/12/13/15 and TRD media/storage/publishing policy apply."},
@@ -22,8 +22,8 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":70,"certification":0,"release":0,"validation":60},
-  "certification": {"status":"not-started","commitSha":null,"evidence":["Red TDD head 872f8d7b4e330d0bae48926a4d92eadc96e12e59 defined deterministic PNG/Reel render, scoped storage and size-bound behavior before implementation.","Implementation head 587a136ea19fa0c62f09f9167346dfde3cee6ec8: CI #476 PASS, Security baseline #424 PASS, Product Intake #349 PASS.","CI #476 passed immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification and dashboard build.","Renderer uses Node built-ins only; no new dependency, shell execution, provider credential or autonomous publishing path was added."]},
+  "progress": {"discovery":100,"decisions":100,"implementation":95,"testing":70,"certification":0,"release":0,"validation":60},
+  "certification": {"status":"not-started","commitSha":null,"evidence":["Red TDD head 872f8d7b4e330d0bae48926a4d92eadc96e12e59 defined deterministic PNG/Reel render, scoped storage and size-bound behavior before implementation.","Implementation head 587a136ea19fa0c62f09f9167346dfde3cee6ec8: CI #476 PASS, Security baseline #424 PASS, Product Intake #349 PASS.","Testing review identified silent copy truncation and unsupported-glyph substitution as a fidelity defect; fix is required before certification."]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
