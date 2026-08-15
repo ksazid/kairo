@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-14","activeTask":"marketing-lab-benchmark-foundation","branch":"impl/vs14-marketing-lab","lastSuccessfulStep":"vs14-scope-and-implementation-approved","attempts":0,"blockers":[],"nextPermittedAction":"superpowers-plan-then-tdd-implementation"}
+{"schemaVersion":1,"activeSlice":"VS-14","activeTask":"implementing-marketing-lab-benchmark-foundation","branch":"impl/vs14-marketing-lab","lastSuccessfulStep":"vs14-red-tests-committed-eefd5990","attempts":0,"blockers":[],"nextPermittedAction":"implement-domain-to-pass-red-tests"}
