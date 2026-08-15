@@ -1,56 +1,50 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-21",
-  "title": "Pilot End-to-End Validation and Hardening",
+  "sliceId": "VS-25",
+  "title": "Auth0 Production-Readiness Correction",
   "status": "active",
   "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-01","FR-02","FR-03","FR-04","FR-05","FR-06","FR-07","FR-08","FR-09","FR-10","FR-11","FR-12","FR-13","FR-14","FR-15","FR-16","FR-17","FR-18","FR-19","FR-20"],
+  "requirements": ["FR-01"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-20"],
-  "blockers": [],
-  "allowedPaths": ["packages/domain/**","apps/api/**","apps/web/**","apps/worker/**","scripts/**","tests/**","docs/slices/VS-21.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
+  "dependencies": ["VS-16", "VS-21"],
+  "blockers": ["A real production Auth0 callback/session smoke still requires a successfully deployed exact SHA; current Vercel deployments are blocked by the Free-plan build-rate limit."],
+  "allowedPaths": ["apps/web/**","apps/api/src/auth.ts","apps/api/src/auth.test.ts","docs/slices/VS-25.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**","packages/domain/**","apps/worker/**"],
   "impact": {
-    "areas": ["architecture","frontend","api","authentication","authorization","sensitive-data","customer-flow","operator-flow","analytics","operations-support"],
+    "areas": ["frontend","authentication","authorization","sensitive-data","customer-flow","operations-support"],
     "notes": [
-      "This slice validates and hardens the existing V1 product loop; it does not add new product scope.",
-      "Cross-Brand isolation, Truth/Claims policy, human approval and deterministic publishing remain mandatory.",
-      "Real provider credentials, production Meta App Review, release, deployment and production enablement remain outside this slice.",
-      "Database migrations are protected; any defect requiring schema change must stop for an explicit scope decision."
+      "Corrective FR-01 work only; no identity-provider or authorization-policy change.",
+      "OIDC discovery recovers after transient provider/network or synchronous configuration failures instead of poisoning a warm web instance.",
+      "Login and callback configuration failures fail safely without exposing secrets or weakening PKCE/state validation.",
+      "The API keeps strict issuer/audience/JWKS validation while canonicalizing the issuer trailing slash.",
+      "Real deployed Auth0 email/Google/callback/API/logout smoke remains external operational evidence.",
+      "No database migration, release, deployment or production enablement is authorized by this implementation approval."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-21@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T16:19:00+02:00","rationale":"Explicitly approved the proposed VS-21 Pilot End-to-End Validation & Hardening scope with the instruction to go."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Approved PRD/TRD, security decisions and prior certified slices already govern the existing V1 product loop being validated."},
-    {"type":"implementation","status":"approved","version":"VS-21@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T16:19:00+02:00","rationale":"Runtime validation and bounded defect fixes inside the defined pilot-hardening scope were explicitly authorized."},
-    {"type":"certification","status":"pending","version":"VS-21@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA human approval after final gates."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
+    {"type":"scope","status":"approved","version":"VS-25@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T17:49:00+02:00","rationale":"The owner explicitly instructed to fix the auth issue before proceeding. This corrective slice preempts the proposed backlog without changing VS-22/23/24 identities."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"DEC-001 and VS-16 already govern Auth0/OIDC. This correction does not change provider, credential ownership, Workspace/Brand authorization or token policy."},
+    {"type":"implementation","status":"approved","version":"VS-25@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T17:49:00+02:00","rationale":"The instruction to fix auth authorizes bounded corrective runtime implementation under PES/Loop before resuming VS-22."},
+    {"type":"certification","status":"pending","version":"VS-25@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA human certification after deterministic gates."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized for a new hotfix SHA."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized for a new hotfix SHA."}
   ],
-  "decisionIds": [],
+  "decisionIds": ["DEC-001"],
   "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":80,"release":0,"validation":0},
-  "certification": {
-    "status": "running",
-    "commitSha": null,
-    "evidence": [
-      "VS-20 certified and merged; governance closeout merged as 432a65e02cfd678d13b76bf14c4dce7bc4db2654 and post-closeout main CI #504 passed.",
-      "VS-21 activation b250f2936d2b2292032dd1a1a3e83b1c21c6152b and red TDD contract 930f0bff120f209fdcaa16d1fa7e098aa51b89ad.",
-      "Red CI #506 failed only because the pilot-readiness harness was intentionally absent; Security baseline #449 and Product Intake #374 passed.",
-      "Initial implementation 4f4e7b16b95b92423393db583d6c096ef59df61f exposed a strict generic fixture typecheck failure in CI #507; Security #450 and Product Intake #375 passed.",
-      "Technical matrix repair 70f8fd1c4cf29fdfe079f03ac2109844bd5efbcc passed CI #508, Security #451 and Product Intake #376 across four proof sectors and carousel/Reel paths.",
-      "UX review found stale navigation that labelled implemented Campaigns, Calendar and Performance as Later and left mobile pilot paths incomplete; bounded navigation/resilience fixes were added with regression coverage.",
-      "CI #518 preserved a compatibility defect after mobile navigation refactoring: Idea detail still imported MobileIdeasNav; the compatibility wrapper was restored.",
-      "Runtime freeze dfb664f9b81a82259660c6b6346a051f5a90714d passed CI #523, Security baseline #466 and Product Intake #391 with immutable install, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, full runtime verification, four-sector pilot matrix, navigation/resilience coverage and dashboard build.",
-      "Formal testing head 6e0e9940a926dcb75d4d913a0fa220ff3063a194 passed CI #524, Security baseline #467 and Product Intake #392 on the frozen runtime.",
-      "PR #54 scope review found no protected-path changes and zero unresolved review threads.",
-      "Real Auth0 deployed callback and production Meta publish/Insights/App Review remain external operational evidence and were not falsely certified by deterministic CI."
-    ]
-  },
+  "certification": {"status":"running","commitSha":null,"evidence":[
+    "VS-21 exact candidate 1d504782c060fdd4eaf891b79b4e9045d4f01d2b merged as d8df12f9fc0d07d7a369f56752cdc81dc02d56b4 with zero candidate-to-merge file differences; post-merge main CI #526 passed.",
+    "VS-16/PR #47 production deployment of the manual-first Auth0 UI was previously authorized for f2b3c7e43112512bbc7761d89220617a9e2b12db but Vercel blocked that exact deployment with api-deployments-free-per-day.",
+    "Current Kairo session establishment resolves accounts by provider+subject and does not require email claims.",
+    "CI #533 reached governance validation after clean migrations and dependency audit; it failed only because the initial corrective identifier VS-16R violated the required VS-<number> schema. Runtime verification was not run on that head.",
+    "CI #539 passed numeric VS-25 governance, typecheck, API auth tests and the broader runtime suites, then exposed two web retry-cache timing failures; those tests were preserved and the implementation was corrected.",
+    "Frozen runtime head d2974aa951054f7fdcb542bbc3621884cde3f577 passed CI #541, Security baseline #483 and Product Intake #408.",
+    "Formal testing head adc83c3661365840bf6edec7c8823c70c0281aff passed CI #543, Security baseline #485 and Product Intake #410 on the frozen auth runtime."
+  ]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-21.md","implementationPr":"https://github.com/ksazid/kairo/pull/54","evidence":["delivery/context/VS-20-closeout.md","delivery/context/VS-21.md","docs/plans/VS-21-pilot-e2e-hardening.md"]},
+  "links": {"specification":"docs/slices/VS-25.md","implementationPr":"https://github.com/ksazid/kairo/pull/55","evidence":["delivery/context/VS-21-closeout.md","delivery/context/VS-16.md","docs/plans/VS-25-auth0-production-readiness.md"]},
   "maxAttempts": 3
 }
