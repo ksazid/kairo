@@ -1,55 +1,152 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-26",
-  "title": "Guided Brand Brain Setup & Review Control",
+  "sliceId": "VS-27",
+  "title": "Hermes Runtime Integration",
   "status": "active",
   "lifecycle": "certification",
-  "riskLevel": "medium",
+  "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-02", "FR-03", "FR-04", "FR-20"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-02", "VS-21", "VS-22"],
+  "requirements": ["FR-12", "FR-20"],
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": "Operations Owner",
+    "security": "Security Owner"
+  },
+  "dependencies": ["VS-03", "VS-06", "VS-26"],
   "blockers": [],
-  "allowedPaths": ["packages/contracts/**","packages/domain/**","apps/worker/**","apps/api/**","apps/web/**","tests/**","docs/slices/VS-26.md","docs/plans/**","delivery/**","README.md",".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
+  "allowedPaths": [
+    "services/hermes-runtime/**",
+    "apps/worker/**",
+    "apps/api/**",
+    "packages/agent-contracts/**",
+    "tests/**",
+    "docs/slices/VS-27.md",
+    "docs/plans/**",
+    "delivery/**",
+    ".engineering/STATE.json",
+    "README.md",
+    ".github/workflows/ci.yml"
+  ],
+  "protectedPaths": [
+    ".github/workflows/release.yml",
+    "infrastructure/**",
+    "apps/api/migrations/**"
+  ],
   "impact": {
-    "areas": ["frontend", "api", "sensitive-data", "customer-flow", "operations-support"],
+    "areas": [
+      "architecture",
+      "api",
+      "sensitive-data",
+      "deployment",
+      "operations-support"
+    ],
     "notes": [
-      "Normal Brand setup is lightweight and suggestion-led while the full editor remains under Advanced Brand Brain / Review & Control.",
-      "Owner goals and explicit hard directives are authoritative confirmed context; generated strategy remains source-backed inferred context until confirmed.",
-      "Confirmed fields cannot be silently overwritten by guided inference.",
-      "Public reference retrieval is bounded, DNS-validated, address-pinned and redirect-revalidated; public text is untrusted source material, never instructions.",
-      "Generated fields require field-level provenance from inspected Brand references.",
-      "No database migration, infrastructure, release, deployment, VS-23 or VS-24 activation is authorized."
+      "Activates the TRD-approved Hermes reasoning-runtime boundary while preserving DirectModelRuntime as a viable fallback.",
+      "Groq and OpenRouter credentials remain inside the Hermes service boundary and are never exposed to agents, domain state, browser code or committed configuration.",
+      "Hermes is constrained to zero tools, no persistent memory/context, no project-plugin/profile inheritance, no persistent Hermes prompt logs and a Kairo-authenticated versioned invocation contract.",
+      "Normal routing is Groq primary with OpenRouter fallback; OpenRouter fallback requires ZDR/no-collection/parameter support and controlled benchmark mode is primary-only.",
+      "Python CI uses fake providers for contract tests plus a real pinned Hermes container/version/zero-tool check; it receives no provider credentials and performs no model inference.",
+      "No database migration, release, deployment, provider-secret entry, VS-23 live activation or VS-24 promotion is authorized by this slice."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-26@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T20:23:00+02:00","rationale":"The owner approved the proposed VS-26 Guided Brand Brain Setup & Review Control scope after reviewing the reduced-input approach and explicitly said Good to go."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"FR-02/03/04, the approved Brand isolation architecture and DEC-006 already govern inferred-vs-confirmed context, provenance and source removal. The slice does not expand cross-Brand or publishing authority."},
-    {"type":"implementation","status":"approved","version":"VS-26@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-15T20:23:00+02:00","rationale":"The owner's Good to go instruction authorizes bounded runtime implementation of the agreed guided setup and Advanced Review & Control experience."},
-    {"type":"certification","status":"pending","version":"VS-26@1.0","commitSha":null,"by":null,"at":null,"rationale":"Exact certification-candidate gates are running; explicit human approval remains required."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-27@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-16T02:35:00+02:00",
+      "rationale": "The owner explicitly selected Hermes with Groq and OpenRouter, created both provider keys privately, and instructed Go after the bounded Hermes integration direction and secret boundary were explained."
+    },
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "The approved TRD already defines Hermes as the preferred AgentRuntimePort implementation, DirectModelRuntime fallback, provider-neutral model access, secret isolation, zero agent publishing authority and auditable model cost. This slice does not broaden those policies."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-27@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-16T02:35:00+02:00",
+      "rationale": "The owner's Go instruction authorizes bounded implementation of the agreed Hermes runtime integration. Merge, release, deployment, provider-secret entry and production enablement remain separate approvals."
+    },
+    {
+      "type": "certification",
+      "status": "pending",
+      "version": "VS-27@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Implementation and internal review are complete. Exact-head Product Intake, Security and full CI including the installed pinned-Hermes zero-tool container gate must pass before human exact-SHA certification approval is requested."
+    },
+    {
+      "type": "release",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Not authorized."
+    },
+    {
+      "type": "production-enable",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Not authorized."
+    }
   ],
-  "decisionIds": ["DEC-006"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
+  "decisionIds": [],
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
+    "release": 0,
+    "validation": 0
+  },
   "certification": {
-    "status":"running",
-    "commitSha":null,
-    "evidence":[
-      "RED TDD established owner authority, source provenance, confirmed-field non-overwrite, safe degradation, SSRF-safe public reference retrieval and zero-tool strategist proposal contracts before runtime implementation.",
-      "CI #583 exposed an invalid Next.js server-action re-export only at production web build after earlier deterministic tests/typechecks had passed; the implementation was repaired with explicit async server-action wrappers without weakening any gate.",
-      "Verified implementation head b227ee2d68f830fa92deed201be28042142f48b7 passed CI #589, Security baseline #528 and Product Intake #453, including clean PostgreSQL 18 migrations, dependency audit, preflight, full runtime verification and production web build.",
-      "Formal testing-transition head 908d5162903efc6b5a9906b6e60e768db45975f4 passed CI #590, Security baseline #529 and Product Intake #454."
+    "status": "running",
+    "commitSha": null,
+    "evidence": [
+      "RED TypeScript and Python service contracts were committed before corresponding runtime behavior.",
+      "A first full CI attempt exposed a strict TypeScript implicit-any defect in the new API validator map while Python Hermes contracts, PostgreSQL migration verification, dependency audit and preflight had passed; the typing defect was repaired without weakening a gate.",
+      "Subsequent review added exact pinned Hermes container/version/zero-tool verification, OpenRouter ZDR/no-collection routing, Groq ZDR deployment precondition, Hermes persistent-file-log suppression, provider timeout propagation and forced ambient Hermes profile isolation.",
+      "docs/plans/VS-27-review.md records the implementation/security review and explicitly lists real-provider invocation, deployment, secret entry and VS-23 qualification as unproven/deferred."
     ]
   },
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
-  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
+  "release": {
+    "status": "not-authorized",
+    "releaseId": null
+  },
+  "rollback": {
+    "status": "not-applicable",
+    "rollbackId": null
+  },
+  "postRelease": {
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": null,
+    "metrics": []
+  },
   "links": {
-    "specification":"docs/slices/VS-26.md",
-    "implementationPr":"https://github.com/ksazid/kairo/pull/59",
-    "evidence":["docs/plans/VS-26-guided-brand-brain.md","docs/plans/VS-26-review.md"]
+    "specification": "docs/slices/VS-27.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/63",
+    "evidence": [
+      "docs/plans/VS-27-hermes-runtime.md",
+      "docs/plans/VS-27-review.md"
+    ]
   },
   "maxAttempts": 3
 }

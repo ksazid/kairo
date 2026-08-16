@@ -14,11 +14,13 @@ export class AgentRuntimeError extends Error {
 
 type OutputValidator = (value: unknown) => boolean;
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+export type HermesRoutingMode = "resilient" | "primary-only";
 
 export interface HermesBridgeRuntimeOptions {
   endpoint: string;
   serviceToken: string;
   validators: Record<string, OutputValidator>;
+  routingMode?: HermesRoutingMode;
   fetchImpl?: FetchLike;
 }
 
@@ -33,11 +35,13 @@ interface HermesBridgeResponse {
 
 export class HermesBridgeRuntime implements AgentRuntimePort {
   private readonly fetchImpl: FetchLike;
+  private readonly routingMode: HermesRoutingMode;
 
   constructor(private readonly options: HermesBridgeRuntimeOptions) {
     this.fetchImpl = options.fetchImpl ?? fetch;
     if (!/^https?:\/\//.test(options.endpoint)) throw new AgentRuntimeError("Hermes bridge endpoint must be HTTP(S)");
     if (!options.serviceToken.trim()) throw new AgentRuntimeError("Hermes bridge service token is required");
+    this.routingMode = routingMode(options.routingMode ?? "resilient");
   }
 
   async invoke<TOutput>(request: AgentInvocationRequest): Promise<AgentRuntimeResult<TOutput>> {
@@ -68,6 +72,7 @@ export class HermesBridgeRuntime implements AgentRuntimePort {
           },
           enabledTools: [],
           policyFingerprint: HERMES_POLICY_FINGERPRINT,
+          routingMode: this.routingMode,
         }),
         signal: controller.signal,
       });
@@ -104,6 +109,20 @@ export class HermesBridgeRuntime implements AgentRuntimePort {
       clearTimeout(timeout);
     }
   }
+}
+
+export function hermesBridgeRuntimeFromEnv(
+  validators: Record<string, OutputValidator>,
+  env: Record<string, string | undefined> = process.env,
+  routing: HermesRoutingMode = "resilient",
+): HermesBridgeRuntime | null {
+  const endpoint = env.KAIRO_HERMES_ENDPOINT?.trim();
+  const serviceToken = env.KAIRO_HERMES_SERVICE_TOKEN?.trim();
+  if (!endpoint && !serviceToken) return null;
+  if (!endpoint || !serviceToken) {
+    throw new AgentRuntimeError("KAIRO_HERMES_ENDPOINT and KAIRO_HERMES_SERVICE_TOKEN must be configured together");
+  }
+  return new HermesBridgeRuntime({ endpoint, serviceToken, validators, routingMode: routing });
 }
 
 export interface DirectModelRuntimeOptions {
@@ -164,6 +183,10 @@ export class AgentRuntimeRouter implements AgentRuntimePort {
 export { HERMES_POLICY_FINGERPRINT };
 
 function schemaKey(name: string, version: string): string { return `${name}@${version}`; }
+function routingMode(value: unknown): HermesRoutingMode {
+  if (value === "resilient" || value === "primary-only") return value;
+  throw new AgentRuntimeError("Hermes routing mode is not supported");
+}
 function numberOrUndefined(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
