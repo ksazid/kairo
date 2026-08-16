@@ -169,11 +169,30 @@ describe("VS-27 Hermes environment composition", () => {
     expect(hermesBridgeRuntimeFromEnv(validators, {})).toBeNull();
   });
 
-  it("requires endpoint and service token together without any provider key", () => {
-    expect(() => hermesBridgeRuntimeFromEnv(validators, { KAIRO_HERMES_ENDPOINT: "https://hermes.example.test" })).toThrow(/together/i);
-    expect(() => hermesBridgeRuntimeFromEnv(validators, { KAIRO_HERMES_SERVICE_TOKEN: "service-only" })).toThrow(/together/i);
+  it("keeps configured Hermes credentials dormant unless the runtime flag is explicitly enabled", () => {
+    expect(hermesBridgeRuntimeFromEnv(validators, {
+      KAIRO_HERMES_ENDPOINT: "https://hermes.example.test",
+      KAIRO_HERMES_SERVICE_TOKEN: "bridge-secret",
+    })).toBeNull();
+    expect(hermesBridgeRuntimeFromEnv(validators, {
+      KAIRO_HERMES_RUNTIME_ENABLED: "0",
+      KAIRO_HERMES_ENDPOINT: "https://hermes.example.test",
+      KAIRO_HERMES_SERVICE_TOKEN: "bridge-secret",
+    })).toBeNull();
+  });
+
+  it("requires endpoint and service token together only when Hermes is explicitly enabled", () => {
+    expect(() => hermesBridgeRuntimeFromEnv(validators, {
+      KAIRO_HERMES_RUNTIME_ENABLED: "1",
+      KAIRO_HERMES_ENDPOINT: "https://hermes.example.test",
+    })).toThrow(/enabled=1/i);
+    expect(() => hermesBridgeRuntimeFromEnv(validators, {
+      KAIRO_HERMES_RUNTIME_ENABLED: "1",
+      KAIRO_HERMES_SERVICE_TOKEN: "service-only",
+    })).toThrow(/enabled=1/i);
 
     const runtime = hermesBridgeRuntimeFromEnv(validators, {
+      KAIRO_HERMES_RUNTIME_ENABLED: "1",
       KAIRO_HERMES_ENDPOINT: "https://hermes.example.test",
       KAIRO_HERMES_SERVICE_TOKEN: "bridge-secret",
       GROQ_API_KEY: "must-not-be-needed-by-kairo",
