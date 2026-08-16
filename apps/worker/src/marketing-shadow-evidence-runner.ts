@@ -9,6 +9,7 @@ import {
 } from "./marketing-shadow-qualification";
 import {
   MarketingShadowExecutionService,
+  verifyPinnedSkillSnapshot,
   type MarketingSkillSnapshot,
 } from "./marketing-shadow";
 
@@ -87,13 +88,14 @@ export async function runMarketingShadowPairedEvidence(
   });
   if (!response.ok) throw new Error(`Pinned Corey skill snapshot fetch failed with ${response.status}`);
 
-  const snapshot: MarketingSkillSnapshot = {
+  const candidateSnapshot: MarketingSkillSnapshot = {
     repository: source.repository,
     commitSha: source.commitSha,
     path: source.path,
     blobSha: source.contentHash,
     content: await response.text(),
   };
+  const snapshot = verifyPinnedSkillSnapshot(manifest, candidateSnapshot);
 
   const registry = createMarketingSkillRegistry([manifest]);
   const shadow = new MarketingShadowExecutionService(runtime, registry, {
