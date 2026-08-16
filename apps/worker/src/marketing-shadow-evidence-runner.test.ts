@@ -8,8 +8,10 @@ import {
   runMarketingShadowPairedEvidence,
 } from "./marketing-shadow-evidence-runner";
 
+let runtimeCalls = 0;
 const runtime: AgentRuntimePort = {
   async invoke<TOutput>(request: AgentInvocationRequest) {
+    runtimeCalls += 1;
     const benchmarkCase = request.task.context.benchmarkCase as {
       claims: Array<{ id: string }>;
       requiredClaimIds: string[];
@@ -45,9 +47,13 @@ const runtime: AgentRuntimePort = {
 };
 
 describe("VS-23 paired shadow evidence runner", () => {
-  it("fails closed when the fetched Corey snapshot does not match the pinned Git blob", async () => {
+  it("fails closed on a tampered Corey snapshot before any paced model lane", async () => {
+    runtimeCalls = 0;
+    const pauses: number[] = [];
     const fakeFetch: typeof fetch = async () => new Response("tampered skill", { status: 200 });
-    await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch)).rejects.toThrow(/blob hash/i);
+    await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch, async (ms) => { pauses.push(ms); })).rejects.toThrow(/blob hash/i);
+    expect(runtimeCalls).toBe(0);
+    expect(pauses).toEqual([]);
   });
 
   it("fails closed when the pinned Corey source cannot be fetched", async () => {
@@ -57,20 +63,9 @@ describe("VS-23 paired shadow evidence runner", () => {
 
   it("paces eight sequential qualification lanes with seven fixed provider-window gaps", async () => {
     const pauses: number[] = [];
-    const invocations: number[] = [];
-    const pacedInvoke = createMarketingEvidenceLanePacer(async (ms) => {
-      pauses.push(ms);
-    });
-
-    for (let index = 0; index < 8; index += 1) {
-      await pacedInvoke(async () => {
-        invocations.push(index);
-        return index;
-      });
-    }
-
-    expect(invocations).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
-    expect(pauses).toEqual(Array.from({ length: 7 }, () => MARKETING_EVIDENCE_INTER_LANE_DELAY_MS));
+    const invoke = createMarketingEvidenceLanePacer(async (ms) => { pauses.push(ms); });
+    for (let index = 0; index < 8; index += 1) await invoke(async () => index);
+    expect(pauses).toEqual(Array(7).fill(MARKETING_EVIDENCE_INTER_LANE_DELAY_MS));
     expect(MARKETING_EVIDENCE_INTER_LANE_DELAY_MS).toBe(65_000);
   });
 
