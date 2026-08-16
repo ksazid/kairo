@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { DomainValidationError, ResourceNotFoundError } from "@kairo/domain";
 import { connectChannelAccount, type ChannelAccount, type PublishCapability } from "@kairo/domain/publishing";
 
-const REQUIRED_CONNECTION_SCOPES=["pages_show_list","instagram_basic","instagram_content_publish","pages_read_engagement","instagram_manage_insights"] as const;
+const REQUIRED_CONNECTION_SCOPES=["pages_show_list","business_management","instagram_basic","instagram_content_publish","pages_read_engagement","instagram_manage_insights"] as const;
 
 export interface InstagramOAuthIntent {id:string;workspaceId:string;brandId:string;accountId:string;provider:"meta-instagram";stateHash:string;expiresAt:string;createdAt:string;consumedAt?:string}
 export interface InstagramConnectionCandidate {id:string;intentId:string;workspaceId:string;brandId:string;accountId:string;pageRef:string;pageName:string;accountRef:string;displayName:string;username?:string;credentialRef:string;insightsCredentialRef:string;tokenExpiresAt:string;grantedScopes:string[];createdAt:string;selectedAt?:string}
