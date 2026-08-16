@@ -35,6 +35,11 @@ const evidence = {
 describe("marketing shadow evidence attempt orchestration", () => {
   it("requires a unique run ID and exact release SHA only when the evidence flag is on", () => {
     expect(marketingShadowEvidenceRequestFromEnv({})).toBeNull();
+    expect(marketingShadowEvidenceRequestFromEnv({
+      KAIRO_MARKETING_SHADOW_EVIDENCE_RUN: "0",
+      KAIRO_MARKETING_SHADOW_EVIDENCE_RUN_ID: "stale value with spaces",
+      KAIRO_RELEASE_SHA: "stale",
+    })).toBeNull();
     expect(() => marketingShadowEvidenceRequestFromEnv({
       KAIRO_MARKETING_SHADOW_EVIDENCE_RUN: "1",
       KAIRO_RELEASE_SHA: request.releaseSha,
