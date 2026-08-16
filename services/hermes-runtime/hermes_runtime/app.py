@@ -7,10 +7,12 @@ from fastapi import FastAPI, Header, HTTPException, Request
 
 from .config import ConfigurationError, RuntimeConfig
 from .core import HermesRuntimeError, ProviderError, RuntimeService
+from .diagnostics import run_provider_diagnostic
 from .upstream import HermesAgentExecutor, HermesSecurityError
 
 
 logger = logging.getLogger("kairo.hermes.runtime")
+logger.setLevel(logging.INFO)
 
 
 @asynccontextmanager
@@ -22,7 +24,8 @@ async def lifespan(app: FastAPI):
         # Failing lifespan prevents the service from becoming ready. Never
         # include environment values or provider exception bodies in logs.
         raise RuntimeError(f"Hermes runtime startup rejected: {type(error).__name__}") from error
-    app.state.runtime_service = RuntimeService(config, executor)
+    runtime = RuntimeService(config, executor)
+    app.state.runtime_service = runtime
     app.state.runtime_version = config.runtime_version
     logger.info(
         "KAIRO_HERMES_RUNTIME_READY primary_provider=%s primary_model=%s primary_pricing=%s fallback_provider=%s fallback_model=%s fallback_pricing=%s",
@@ -33,6 +36,7 @@ async def lifespan(app: FastAPI):
         config.fallback.model,
         config.fallback.pricing_version,
     )
+    run_provider_diagnostic(runtime, config)
     yield
 
 
