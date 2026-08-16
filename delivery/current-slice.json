@@ -3,7 +3,7 @@
   "sliceId": "VS-29",
   "title": "Guided Brand Brain Redirect Correction",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "low",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-03"],
@@ -99,8 +99,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 50,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -108,7 +108,10 @@
   "certification": {
     "status": "not-started",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "Regression test was committed first at 356c9f6c33c30cd5b83233abffd9aa153932be3f and asserts the success path redirects exactly once.",
+      "Bounded implementation fix was committed at 8f42028c9ccacdd5cb4ecc977e44b104b1023808."
+    ]
   },
   "release": {
     "status": "not-authorized",
