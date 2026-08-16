@@ -3,6 +3,7 @@ import type {
   ModelGatewayRequest,
   ModelGatewayResult,
 } from "@kairo/agent-contracts";
+import { responseFormatForOutputSchema } from "./model-output-schemas";
 
 export class ModelGatewayError extends Error {
   readonly code = "model_gateway_error";
@@ -60,7 +61,7 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
           { role: "user", content: request.input },
         ],
         max_tokens: request.policy.maxOutputTokens,
-        response_format: { type: "json_object" },
+        response_format: responseFormatForOutputSchema(this.provider, this.model, request.outputSchema),
       }),
     });
     if (!response.ok) throw new ModelGatewayError(`Model provider returned ${response.status}`);
