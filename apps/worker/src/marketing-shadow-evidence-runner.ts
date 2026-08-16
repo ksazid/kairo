@@ -39,6 +39,15 @@ export interface MarketingShadowLaneEvidence {
   >;
 }
 
+export interface MarketingShadowRuntimeRoute {
+  runtime: "hermes";
+  runtimeVersion: string;
+  provider: string;
+  model: string;
+  modelVersion?: string;
+  pricingVersion: string;
+}
+
 export interface MarketingShadowPairEvidence {
   caseId: string;
   inputFingerprint: string;
@@ -56,6 +65,7 @@ export interface MarketingShadowEvidenceRun {
     path: string;
     blobSha: string;
   };
+  runtimeRoute: MarketingShadowRuntimeRoute;
   pairs: MarketingShadowPairEvidence[];
 }
 
@@ -96,6 +106,7 @@ export async function runMarketingShadowPairedEvidence(
   if (fixtures.length !== 4) throw new Error("Exactly four approved motorcycle carousel fixtures are required");
 
   const pairs: MarketingShadowPairEvidence[] = [];
+  let expectedRoute: MarketingShadowRuntimeRoute | undefined;
   for (const fixture of fixtures) {
     const benchmarkCase = toMotorcycleCarouselQualificationCase(fixture);
     const native = await executeKairoNativeCarouselBaseline(runtime, benchmarkCase);
@@ -109,6 +120,17 @@ export async function runMarketingShadowPairedEvidence(
     }
     requireMeasuredMetadata(native.metadata, `${fixture.id}:native`);
     requireMeasuredMetadata(corey.metadata, `${fixture.id}:corey`);
+
+    const nativeRoute = marketingEvidenceRuntimeRoute(native.metadata, `${fixture.id}:native`);
+    const coreyRoute = marketingEvidenceRuntimeRoute(corey.metadata, `${fixture.id}:corey`);
+    if (runtimeRouteKey(nativeRoute) !== runtimeRouteKey(coreyRoute)) {
+      throw new Error(`Paired Hermes provider/model route mismatch for ${fixture.id}`);
+    }
+    if (!expectedRoute) expectedRoute = nativeRoute;
+    else if (runtimeRouteKey(expectedRoute) !== runtimeRouteKey(nativeRoute)) {
+      throw new Error(`Hermes provider/model route changed during the qualification run at ${fixture.id}`);
+    }
+
     pairs.push({
       caseId: fixture.id,
       inputFingerprint: native.inputFingerprint,
@@ -117,6 +139,7 @@ export async function runMarketingShadowPairedEvidence(
     });
   }
 
+  if (!expectedRoute) throw new Error("Qualification evidence requires an explicit Hermes runtime route");
   return {
     schemaVersion: 1,
     evidenceKind: "vs23-shadow-qualification-paired-execution",
@@ -127,6 +150,7 @@ export async function runMarketingShadowPairedEvidence(
       path: source.path,
       blobSha: source.contentHash,
     },
+    runtimeRoute: expectedRoute,
     pairs,
   };
 }
@@ -138,6 +162,34 @@ function requireMeasuredMetadata(metadata: AgentInvocationMetadata, lane: string
   if (metadata.costUsd === undefined || !Number.isFinite(metadata.costUsd) || metadata.costUsd < 0) {
     throw new Error(`Measured cost metadata is required for ${lane}`);
   }
+}
+
+export function marketingEvidenceRuntimeRoute(
+  metadata: AgentInvocationMetadata,
+  lane: string,
+): MarketingShadowRuntimeRoute {
+  if (metadata.runtime !== "hermes") throw new Error(`Hermes runtime evidence is required for ${lane}`);
+  const runtimeVersion = requiredMetadataText(metadata.runtimeVersion, "runtimeVersion", lane);
+  const provider = requiredMetadataText(metadata.provider, "provider", lane);
+  const model = requiredMetadataText(metadata.model, "model", lane);
+  const pricingVersion = requiredMetadataText(metadata.pricingVersion, "pricingVersion", lane);
+  return {
+    runtime: "hermes",
+    runtimeVersion,
+    provider,
+    model,
+    ...(metadata.modelVersion ? { modelVersion: metadata.modelVersion } : {}),
+    pricingVersion,
+  };
+}
+
+function runtimeRouteKey(route: MarketingShadowRuntimeRoute): string {
+  return JSON.stringify(route);
+}
+
+function requiredMetadataText(value: unknown, field: string, lane: string): string {
+  if (typeof value !== "string" || !value.trim()) throw new Error(`${field} metadata is required for ${lane}`);
+  return value.trim();
 }
 
 function safeMetadata(metadata: AgentInvocationMetadata): MarketingShadowLaneEvidence["metadata"] {
