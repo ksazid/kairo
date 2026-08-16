@@ -43,9 +43,11 @@ const agentOutputValidators={
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
 };
+const evidenceRequested=process.env.KAIRO_MARKETING_SHADOW_EVIDENCE_RUN?.trim()==="1";
 const gateway=openAICompatibleGatewayFromEnv();
 const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
 const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
+const evidenceHermesRuntime=evidenceRequested?hermesBridgeRuntimeFromEnv(agentOutputValidators,process.env,"primary-only"):null;
 const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRuntime,directRuntime):(hermesRuntime??directRuntime??undefined);
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
@@ -105,11 +107,11 @@ try {
     metricTimer=setInterval(()=>void collectMetricTick(),60_000);
     metricTimer.unref();
   }
-  if(process.env.KAIRO_MARKETING_SHADOW_EVIDENCE_RUN?.trim()==="1"){
-    if(!hermesRuntime){
+  if(evidenceRequested){
+    if(!evidenceHermesRuntime){
       app.log.error("KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: Hermes runtime is not configured");
     }else{
-      void runMarketingShadowPairedEvidence(hermesRuntime)
+      void runMarketingShadowPairedEvidence(evidenceHermesRuntime)
         .then(evidence=>app.log.info({evidence},"KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE"))
         .catch(error=>app.log.error({err:error},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED"));
     }
