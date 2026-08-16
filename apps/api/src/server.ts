@@ -29,6 +29,7 @@ import{
   marketingShadowEvidenceRequestFromEnv,
   PgMarketingShadowEvidenceRunStore,
 }from"./marketing-shadow-evidence-run";
+import{directModelProviderDiagnosticRequested,runDirectModelProviderDiagnostic}from"./direct-model-diagnostic";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -46,8 +47,10 @@ const agentOutputValidators={
   "critic-review@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
+  "direct-model-diagnostic@1":(value:unknown)=>!!value&&typeof value==="object"&&!Array.isArray(value)&&(value as{ok?:unknown}).ok===true&&Object.keys(value as Record<string,unknown>).length===1,
 };
 const evidenceRequest=marketingShadowEvidenceRequestFromEnv();
+const directModelDiagnosticRequested=directModelProviderDiagnosticRequested();
 const gateway=openAICompatibleGatewayFromEnv();
 const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
 const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
@@ -109,6 +112,15 @@ try {
     void collectMetricTick();
     metricTimer=setInterval(()=>void collectMetricTick(),60_000);
     metricTimer.unref();
+  }
+  if(directModelDiagnosticRequested){
+    if(!directRuntime){
+      app.log.error("KAIRO_DIRECT_MODEL_PROVIDER_DIAGNOSTIC_FAILED: DirectModelRuntime is not configured");
+    }else{
+      void runDirectModelProviderDiagnostic(directRuntime)
+        .then(metadata=>app.log.warn({metadata},"KAIRO_DIRECT_MODEL_PROVIDER_DIAGNOSTIC_OK"))
+        .catch(error=>app.log.error({err:error},"KAIRO_DIRECT_MODEL_PROVIDER_DIAGNOSTIC_FAILED"));
+    }
   }
   if(evidenceRequest){
     if(!hermesRuntime){
