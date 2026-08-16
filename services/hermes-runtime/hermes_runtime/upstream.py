@@ -41,9 +41,6 @@ class HermesAgentExecutor:
         max_output_tokens: int,
         timeout_ms: int,
     ) -> ProviderResult:
-        # Provider request timeouts are owned by the pinned Hermes transport.
-        # Kairo's bridge independently enforces its outer invocation timeout.
-        del timeout_ms
         try:
             from run_agent import AIAgent
 
@@ -65,7 +62,7 @@ class HermesAgentExecutor:
                 quiet_mode=True,
                 ephemeral_system_prompt=system_prompt,
                 max_tokens=max_output_tokens,
-                request_overrides=_request_overrides(provider),
+                request_overrides=_request_overrides(provider, timeout_ms),
                 skip_context_files=True,
                 load_soul_identity=False,
                 skip_memory=True,
@@ -114,8 +111,15 @@ class HermesAgentExecutor:
                     pass
 
 
-def _request_overrides(provider: ProviderConfig) -> dict[str, object]:
-    overrides: dict[str, object] = {"response_format": {"type": "json_object"}}
+def _request_overrides(provider: ProviderConfig, timeout_ms: int) -> dict[str, object]:
+    # The pinned Hermes Chat Completions transport applies request_overrides
+    # last, and the OpenAI-compatible clients accept a per-request timeout.
+    # This gives the provider call the same ceiling as Kairo's outer bridge.
+    timeout_seconds = max(0.1, timeout_ms / 1000)
+    overrides: dict[str, object] = {
+        "response_format": {"type": "json_object"},
+        "timeout": timeout_seconds,
+    }
     if provider.provider == "openrouter":
         # OpenRouter supports per-request privacy routing. Brand-private Kairo
         # traffic may use the fallback only when an endpoint both refuses data
