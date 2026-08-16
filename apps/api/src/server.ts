@@ -16,6 +16,8 @@ import{registerGuidedBrandBrainRoutes}from"./guided-brand-brain-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
+import{runMarketingShadowPairedEvidence}from"@kairo/worker/marketing-shadow-evidence-runner";
+import{validateCarouselPlan}from"@kairo/domain/creative-formats";
 import{PerformanceCollectionWorker}from"@kairo/worker/performance";
 import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
 import{InstagramConnectionService}from"./instagram-connection";
@@ -39,6 +41,7 @@ const agentOutputValidators={
   "content-draft@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),
   "critic-review@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
+  "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
 };
 const gateway=openAICompatibleGatewayFromEnv();
 const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
@@ -101,6 +104,15 @@ try {
     void collectMetricTick();
     metricTimer=setInterval(()=>void collectMetricTick(),60_000);
     metricTimer.unref();
+  }
+  if(process.env.KAIRO_MARKETING_SHADOW_EVIDENCE_RUN?.trim()==="1"){
+    if(!hermesRuntime){
+      app.log.error("KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: Hermes runtime is not configured");
+    }else{
+      void runMarketingShadowPairedEvidence(hermesRuntime)
+        .then(evidence=>app.log.info({evidence},"KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE"))
+        .catch(error=>app.log.error({err:error},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED"));
+    }
   }
 } catch (error) {
   app.log.error(error);
