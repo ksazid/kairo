@@ -35,6 +35,10 @@ The separately approved four-case Kairo API evidence run was then started on exa
 
 The schema-validation failure exposed a Kairo prompt-contract gap rather than a provider failure: Hermes was told only the output schema identifier `marketing-carousel-plan@1`, while the Kairo validator requires the concrete carousel shape and Claim-lineage fields. The corrective change therefore supplies the exact Kairo-owned `marketing-carousel-plan@1` output contract to the Hermes system prompt for that schema only. It does not relax or replace Kairo's existing validator, change provider/model/routing, alter benchmark inputs or budgets, grant tools/network/secrets/publishing authority, or expose production Brand or Instagram data. Unknown schemas continue without an invented contract and remain fail-closed at their existing Kairo validators.
 
+The explicit carousel contract was merged and deployed to Hermes at exact SHA `293fb4a2ae224f65ce0b85464d19873a7fef8425`. A separately approved Kairo API benchmark retry on that same exact SHA progressed beyond the prior schema failure. During the sequential lane execution, Groq reported its `openai/gpt-oss-120b` on-demand token-per-minute limit of 8000 and returned HTTP 429 responses with retry windows of roughly 23 to 34 seconds. The pinned Hermes client correctly honored those retry windows, but a later Corey lane exceeded Kairo's unchanged 30-second per-invocation timeout and the run failed closed with `Hermes invocation timed out`. No complete paired evidence set, human score or winner was produced. The evidence flag was immediately returned to `0`, and the flag-off Kairo API deployment on the same SHA was confirmed live.
+
+The provider-window correction is benchmark orchestration only: insert a fixed 65-second gap between sequential Hermes lanes so the eight approved executions do not self-throttle the observed one-minute Groq TPM window. The delay occurs outside each Hermes invocation, so it is not included in the measured provider/runtime latency used by the qualification thresholds. It does not change the 30-second lane timeout, 2200-token ceiling, $0.03 cost ceiling, model, provider routing, fallback policy, inputs, output contract, scoring, Truth rules, edit-distance rules, or exact-route invariant.
+
 ## Explicit exclusions
 
 - No private production Brand context.
@@ -50,6 +54,7 @@ The schema-validation failure exposed a Kairo prompt-contract gap rather than a 
 3. Keep the benchmark evidence flag off while running the separately gated Hermes-local one-shot provider diagnostic and collecting only the safe route/failure marker.
 4. Correct the confirmed provider/runtime compatibility cause, including keeping the synthetic verification ceiling representative of the already-approved benchmark ceiling, and separately certify/deploy each correction.
 5. Ensure Hermes receives the concrete Kairo output contract required by the local validator without weakening schema or lineage enforcement.
-6. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
-7. Present the four pairs blind as A/B for human scoring.
-8. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
+6. Pace sequential qualification lanes outside their measured invocation windows when required by the provider's documented/observed TPM boundary.
+7. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
+8. Present the four pairs blind as A/B for human scoring.
+9. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
