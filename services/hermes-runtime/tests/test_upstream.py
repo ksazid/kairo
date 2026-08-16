@@ -1,3 +1,4 @@
+import os
 import sys
 import types
 from pathlib import Path
@@ -70,6 +71,21 @@ def test_startup_guard_accepts_only_an_exact_empty_tool_surface(monkeypatch):
     install_model_tools(monkeypatch, [{"type": "function", "function": {"name": "terminal"}}])
     with pytest.raises(HermesSecurityError, match="zero-tool"):
         assert_zero_tool_profile()
+
+
+def test_executor_forces_isolated_hermes_home_and_disables_project_plugin_opt_in(monkeypatch):
+    install_model_tools(monkeypatch, [])
+    monkeypatch.setenv("HERMES_HOME", "/tmp/ambient-hermes")
+    monkeypatch.setenv("HERMES_ENABLE_PROJECT_PLUGINS", "1")
+    monkeypatch.setenv("HERMES_KANBAN_TASK", "ambient-task")
+    monkeypatch.setenv("HERMES_PROFILE", "ambient-profile")
+
+    HermesAgentExecutor()
+
+    assert os.environ["HERMES_HOME"] == "/tmp/kairo-hermes"
+    assert "HERMES_ENABLE_PROJECT_PLUGINS" not in os.environ
+    assert "HERMES_KANBAN_TASK" not in os.environ
+    assert "HERMES_PROFILE" not in os.environ
 
 
 def test_executor_instantiates_one_memoryless_tooled_off_hermes_turn(monkeypatch):
