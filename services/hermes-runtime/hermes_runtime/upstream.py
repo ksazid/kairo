@@ -47,6 +47,7 @@ class HermesAgentExecutor:
             # Re-apply before every fresh upstream object. The pinned Hermes
             # initializer normally creates persistent agent/error logs even in
             # quiet mode; Brand-private Kairo prompts must not be written there.
+            _isolate_hermes_environment()
             _disable_hermes_file_logging()
             agent = AIAgent(
                 provider=provider.provider,
@@ -199,8 +200,13 @@ def _safe_provider_error(provider: str, error: Exception) -> str:
 
 
 def _isolate_hermes_environment() -> None:
-    # Kairo's service image intentionally has no user/project Hermes config.
-    # A dedicated ephemeral HERMES_HOME prevents ambient host state from
-    # becoming prompt context, plugins, memory, credentials or tool policy.
-    os.environ.setdefault("HERMES_HOME", "/tmp/kairo-hermes")
-    os.environ.pop("HERMES_KANBAN_TASK", None)
+    # Force a dedicated ephemeral profile regardless of ambient host/process
+    # configuration. Kairo must never inherit a user Hermes home, profile,
+    # project plugin opt-in, kanban task, or other project-scoped state.
+    os.environ["HERMES_HOME"] = "/tmp/kairo-hermes"
+    for name in (
+        "HERMES_ENABLE_PROJECT_PLUGINS",
+        "HERMES_KANBAN_TASK",
+        "HERMES_PROFILE",
+    ):
+        os.environ.pop(name, None)
