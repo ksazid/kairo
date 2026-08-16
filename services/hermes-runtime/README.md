@@ -32,7 +32,7 @@ The service accepts only `POST /kairo/v1/invoke` and requires:
 - `enabledTools: []`;
 - one of `resilient` or `primary-only` routing modes.
 
-The service starts and invokes Hermes with a zero-tool profile, isolated ephemeral Hermes home, no project-context files, no persistent memory, no trajectory saving and no checkpoints. Any detected tool or memory surface fails closed.
+The service starts and invokes Hermes with a zero-tool profile, isolated ephemeral Hermes home, no project-context files, no persistent memory, no trajectory saving and no checkpoints. The wrapper disables Hermes' normal persistent file logging before agent construction. Any detected tool, memory or file-log surface fails closed.
 
 ## Secret placement
 
@@ -64,6 +64,8 @@ The service also requires explicit non-secret provider policy configuration.
 - `HERMES_PRIMARY_OUTPUT_USD_PER_1M_TOKENS`
 - `HERMES_PRIMARY_PRICING_VERSION`
 
+Before allowing Brand-private traffic, enable **Zero Data Retention** for the Groq organization/project in Groq Data Controls. Groq's inference API does not give this wrapper a reliable per-request ZDR switch, so this is an explicit deployment precondition rather than something Kairo pretends to verify in code.
+
 ### Fallback — OpenRouter
 
 - `HERMES_FALLBACK_PROVIDER=openrouter`
@@ -73,7 +75,15 @@ The service also requires explicit non-secret provider policy configuration.
 - `HERMES_FALLBACK_OUTPUT_USD_PER_1M_TOKENS`
 - `HERMES_FALLBACK_PRICING_VERSION`
 
-For controlled benchmark evidence, never use a dynamic router such as `openrouter/free`. Pin one exact provider/model and invoke Hermes through Kairo's `primary-only` mode so baseline and challenger cannot silently execute on different models.
+The wrapper enforces OpenRouter's per-request provider preferences:
+
+- Zero Data Retention (`zdr: true`);
+- no data-collecting provider endpoints (`data_collection: deny`);
+- parameter compatibility (`require_parameters: true`) so JSON-mode support cannot be silently dropped.
+
+If no eligible private endpoint exists, the fallback fails rather than weakening the privacy requirement.
+
+For controlled benchmark evidence, never use a dynamic model router such as `openrouter/free`. Pin one exact provider/model and invoke Hermes through Kairo's `primary-only` mode so baseline and challenger cannot silently execute on different models.
 
 Pricing values are operator-owned evidence, not hard-coded assumptions. Verify the provider's current rate/plan at configuration time. If a selected route is genuinely zero-cost, configure `0` with a dated pricing-version label that identifies the verified provider/model/plan snapshot.
 
@@ -84,6 +94,7 @@ Pricing values are operator-owned evidence, not hard-coded assumptions. Verify t
 1. Call Groq primary.
 2. Fall back to OpenRouter only for an eligible transport/capacity failure such as rate limiting, timeout/connection failure or provider 5xx.
 3. Invalid requests, policy failures, schema failures and other non-eligible failures do not silently change provider.
+4. OpenRouter fallback still has to satisfy the ZDR/no-collection/parameter-support policy above.
 
 ### `primary-only`
 
@@ -128,8 +139,10 @@ This repository content prepares the service; it does **not** authorize deployme
 At deployment time:
 
 1. deploy Hermes separately from `kairo-api`;
-2. configure provider keys only on Hermes;
-3. verify `/health/ready`;
-4. configure only the Hermes endpoint + service token on Kairo API;
-5. verify a synthetic, non-publishing model call and its token/cost provenance;
-6. only then run governed qualification evidence.
+2. enable Groq ZDR in Data Controls;
+3. configure provider keys only on Hermes;
+4. verify current provider/model pricing and configure the dated pricing snapshots;
+5. verify `/health/ready`;
+6. configure only the Hermes endpoint + service token on Kairo API;
+7. verify a synthetic, non-publishing model call and its token/cost provenance;
+8. only then run governed qualification evidence.
