@@ -3,7 +3,7 @@
   "sliceId": "VS-29",
   "title": "Guided Brand Brain Redirect Correction",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "low",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-03"],
@@ -100,17 +100,21 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 50,
-    "certification": 0,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
     "evidence": [
       "Regression test was committed first at 356c9f6c33c30cd5b83233abffd9aa153932be3f and asserts the success path redirects exactly once.",
-      "Bounded implementation fix was committed at 8f42028c9ccacdd5cb4ecc977e44b104b1023808."
+      "Bounded implementation fix was committed at 8f42028c9ccacdd5cb4ecc977e44b104b1023808.",
+      "Implementation/testing head a5664fa08ad33f7fe654e343c2878d6c64414ea4: Product Intake #477 passed.",
+      "Implementation/testing head a5664fa08ad33f7fe654e343c2878d6c64414ea4: Security baseline #558 passed.",
+      "Implementation/testing head a5664fa08ad33f7fe654e343c2878d6c64414ea4: CI #631 passed including preflight, runtime tests/build and clean PostgreSQL migration verification.",
+      "docs/plans/VS-29-review.md records the independent acceptance and scope review."
     ]
   },
   "release": {
@@ -129,8 +133,11 @@
   },
   "links": {
     "specification": "docs/slices/VS-29.md",
-    "implementationPr": null,
-    "evidence": ["docs/plans/VS-29-brand-brain-redirect-correction.md"]
+    "implementationPr": "https://github.com/ksazid/kairo/pull/66",
+    "evidence": [
+      "docs/plans/VS-29-brand-brain-redirect-correction.md",
+      "docs/plans/VS-29-review.md"
+    ]
   },
   "maxAttempts": 3
 }
