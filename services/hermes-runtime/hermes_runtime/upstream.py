@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -28,6 +29,7 @@ class HermesAgentExecutor:
 
     def __init__(self) -> None:
         _isolate_hermes_environment()
+        _disable_hermes_file_logging()
         assert_zero_tool_profile()
 
     def execute(
@@ -45,6 +47,10 @@ class HermesAgentExecutor:
         try:
             from run_agent import AIAgent
 
+            # Re-apply before every fresh upstream object. The pinned Hermes
+            # initializer normally creates persistent agent/error logs even in
+            # quiet mode; Brand-private Kairo prompts must not be written there.
+            _disable_hermes_file_logging()
             agent = AIAgent(
                 provider=provider.provider,
                 base_url=provider.base_url,
@@ -59,7 +65,7 @@ class HermesAgentExecutor:
                 quiet_mode=True,
                 ephemeral_system_prompt=system_prompt,
                 max_tokens=max_output_tokens,
-                request_overrides={"response_format": {"type": "json_object"}},
+                request_overrides=_request_overrides(provider),
                 skip_context_files=True,
                 load_soul_identity=False,
                 skip_memory=True,
@@ -73,6 +79,8 @@ class HermesAgentExecutor:
                 raise HermesSecurityError("Hermes instantiated a non-empty tool surface")
             if getattr(agent, "_memory_store", None) is not None or getattr(agent, "_memory_manager", None) is not None:
                 raise HermesSecurityError("Hermes instantiated persistent memory for a Kairo invocation")
+            if _hermes_file_handlers():
+                raise HermesSecurityError("Hermes instantiated persistent file logging for a Kairo invocation")
             # The pinned runtime supports this internal persistence guard. It
             # prevents the ephemeral Kairo turn from entering Hermes' session
             # store while Kairo remains the sole business source of truth.
@@ -104,6 +112,53 @@ class HermesAgentExecutor:
                     close()
                 except Exception:
                     pass
+
+
+def _request_overrides(provider: ProviderConfig) -> dict[str, object]:
+    overrides: dict[str, object] = {"response_format": {"type": "json_object"}}
+    if provider.provider == "openrouter":
+        # OpenRouter supports per-request privacy routing. Brand-private Kairo
+        # traffic may use the fallback only when an endpoint both refuses data
+        # collection and provides Zero Data Retention. require_parameters keeps
+        # JSON-mode support from being silently dropped by provider routing.
+        overrides["extra_body"] = {
+            "provider": {
+                "zdr": True,
+                "data_collection": "deny",
+                "require_parameters": True,
+            }
+        }
+    return overrides
+
+
+def _disable_hermes_file_logging() -> None:
+    try:
+        import hermes_logging
+    except ImportError:
+        # Offline unit tests intentionally do not install the upstream package.
+        return
+
+    reset = getattr(hermes_logging, "_reset_queued_handlers", None)
+    if callable(reset):
+        reset()
+
+    def no_file_logging(*_args, hermes_home=None, **_kwargs):
+        home = Path(hermes_home or os.environ.get("HERMES_HOME", "/tmp/kairo-hermes"))
+        return home / "logs"
+
+    hermes_logging.setup_logging = no_file_logging
+    hermes_logging.setup_verbose_logging = lambda: None
+
+
+def _hermes_file_handlers() -> list[object]:
+    try:
+        import hermes_logging
+    except ImportError:
+        return []
+    handlers = getattr(hermes_logging, "rotating_file_handlers", None)
+    if not callable(handlers):
+        return []
+    return list(handlers())
 
 
 def _usage(agent: Any, *names: str) -> int | None:
