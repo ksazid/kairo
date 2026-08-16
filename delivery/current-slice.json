@@ -25,7 +25,8 @@
     "docs/plans/**",
     "delivery/**",
     ".engineering/STATE.json",
-    "README.md"
+    "README.md",
+    ".github/workflows/ci.yml"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
@@ -45,6 +46,7 @@
       "Groq and OpenRouter credentials remain inside the Hermes service boundary and are never exposed to agents, domain state, browser code or committed configuration.",
       "Hermes is constrained to zero tools, no persistent memory/context/skills and a Kairo-authenticated versioned invocation contract.",
       "Normal routing is Groq primary with OpenRouter fallback; controlled benchmark mode is primary-only to preserve comparable evidence.",
+      "Python CI is offline/fake-provider only and does not receive provider credentials or perform model inference.",
       "No database migration, release, deployment, provider-secret entry, VS-23 live activation or VS-24 promotion is authorized by this slice."
     ]
   },
@@ -108,8 +110,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
+    "implementation": 70,
+    "testing": 30,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -135,7 +137,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-27.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/63",
     "evidence": ["docs/plans/VS-27-hermes-runtime.md"]
   },
   "maxAttempts": 3
