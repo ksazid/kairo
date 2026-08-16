@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { AgentInvocationRequest, AgentRuntimePort } from "@kairo/agent-contracts";
 import {
   directModelProviderDiagnosticRequested,
@@ -14,8 +14,10 @@ describe("DirectModelRuntime provider diagnostic", () => {
 
   it("uses one synthetic global-public zero-tool invocation and returns safe metadata only", async () => {
     let captured: AgentInvocationRequest | undefined;
+    let invocationCount = 0;
     const runtime: AgentRuntimePort = {
-      invoke: vi.fn(async <TOutput>(request: AgentInvocationRequest) => {
+      async invoke<TOutput>(request: AgentInvocationRequest) {
+        invocationCount += 1;
         captured = request;
         return {
           output: { ok: true } as TOutput,
@@ -30,11 +32,12 @@ describe("DirectModelRuntime provider diagnostic", () => {
             latencyMs: 120,
           },
         };
-      }),
+      },
     };
 
     const metadata = await runDirectModelProviderDiagnostic(runtime);
 
+    expect(invocationCount).toBe(1);
     expect(captured).toEqual({
       role: "judge",
       scope: { visibility: "global-public" },
