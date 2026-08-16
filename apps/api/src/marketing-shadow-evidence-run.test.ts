@@ -23,8 +23,7 @@ const evidence = {
     blobSha: "c".repeat(40),
   },
   runtimeRoute: {
-    runtime: "hermes",
-    runtimeVersion: "hermes-agent@test",
+    runtime: "direct-model",
     provider: "test-provider",
     model: "test-model",
     pricingVersion: "test-pricing",
@@ -73,7 +72,7 @@ describe("marketing shadow evidence attempt orchestration", () => {
     })).toEqual(request);
   });
 
-  it.each(["started", "completed", "failed"] as const)("does not invoke Hermes again when a durable run ID is already %s", async (status) => {
+  it.each(["started", "completed", "failed"] as const)("does not invoke DirectModel again when a durable run ID is already %s", async (status) => {
     const run = vi.fn();
     const store: MarketingShadowEvidenceRunStore = {
       claim: vi.fn().mockResolvedValue({ claimed: false, status }),
