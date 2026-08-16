@@ -9,6 +9,7 @@ import {
 } from "./marketing-shadow-qualification";
 import {
   MarketingShadowExecutionService,
+  verifyPinnedSkillSnapshot,
   type MarketingSkillSnapshot,
 } from "./marketing-shadow";
 
@@ -21,6 +22,9 @@ const CASE_IDS = new Set([
 
 const COREY_SOURCE_URL =
   "https://raw.githubusercontent.com/coreyhaines31/marketingskills/7868cb9251fad80a73d26e488a5ad5f6c4a9f335/skills/social/SKILL.md";
+
+export const MARKETING_EVIDENCE_INTER_LANE_DELAY_MS = 65_000;
+export type MarketingEvidencePause = (ms: number) => Promise<void>;
 
 export interface MarketingShadowLaneEvidence {
   output: unknown;
@@ -72,6 +76,7 @@ export interface MarketingShadowEvidenceRun {
 export async function runMarketingShadowPairedEvidence(
   runtime: AgentRuntimePort,
   fetchImpl: typeof fetch = fetch,
+  pause: MarketingEvidencePause = defaultMarketingEvidencePause,
 ): Promise<MarketingShadowEvidenceRun> {
   const manifest = challengerData.manifest as unknown as MarketingSkillManifest;
   const source = manifest.source;
@@ -83,13 +88,14 @@ export async function runMarketingShadowPairedEvidence(
   });
   if (!response.ok) throw new Error(`Pinned Corey skill snapshot fetch failed with ${response.status}`);
 
-  const snapshot: MarketingSkillSnapshot = {
+  const candidateSnapshot: MarketingSkillSnapshot = {
     repository: source.repository,
     commitSha: source.commitSha,
     path: source.path,
     blobSha: source.contentHash,
     content: await response.text(),
   };
+  const snapshot = verifyPinnedSkillSnapshot(manifest, candidateSnapshot);
 
   const registry = createMarketingSkillRegistry([manifest]);
   const shadow = new MarketingShadowExecutionService(runtime, registry, {
@@ -105,16 +111,17 @@ export async function runMarketingShadowPairedEvidence(
     .sort((a, b) => a.id.localeCompare(b.id));
   if (fixtures.length !== 4) throw new Error("Exactly four approved motorcycle carousel fixtures are required");
 
+  const pacedInvoke = createMarketingEvidenceLanePacer(pause);
   const pairs: MarketingShadowPairEvidence[] = [];
   let expectedRoute: MarketingShadowRuntimeRoute | undefined;
   for (const fixture of fixtures) {
     const benchmarkCase = toMotorcycleCarouselQualificationCase(fixture);
-    const native = await executeKairoNativeCarouselBaseline(runtime, benchmarkCase);
-    const corey = await shadow.execute({
+    const native = await pacedInvoke(() => executeKairoNativeCarouselBaseline(runtime, benchmarkCase));
+    const corey = await pacedInvoke(() => shadow.execute({
       challenger: { id: manifest.id, version: manifest.version },
       snapshot,
       benchmarkCase,
-    });
+    }));
     if (native.inputFingerprint !== corey.inputFingerprint) {
       throw new Error(`Paired input fingerprint mismatch for ${fixture.id}`);
     }
@@ -153,6 +160,21 @@ export async function runMarketingShadowPairedEvidence(
     runtimeRoute: expectedRoute,
     pairs,
   };
+}
+
+export function createMarketingEvidenceLanePacer(
+  pause: MarketingEvidencePause = defaultMarketingEvidencePause,
+): <T>(invoke: () => Promise<T>) => Promise<T> {
+  let invocationCount = 0;
+  return async <T>(invoke: () => Promise<T>): Promise<T> => {
+    if (invocationCount > 0) await pause(MARKETING_EVIDENCE_INTER_LANE_DELAY_MS);
+    invocationCount += 1;
+    return invoke();
+  };
+}
+
+function defaultMarketingEvidencePause(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function requireMeasuredMetadata(metadata: AgentInvocationMetadata, lane: string): void {

@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { AgentInvocationRequest, AgentRuntimePort } from "@kairo/agent-contracts";
 import type { CarouselPlan } from "@kairo/domain/creative-formats";
-import { marketingEvidenceRuntimeRoute, runMarketingShadowPairedEvidence } from "./marketing-shadow-evidence-runner";
+import {
+  createMarketingEvidenceLanePacer,
+  MARKETING_EVIDENCE_INTER_LANE_DELAY_MS,
+  marketingEvidenceRuntimeRoute,
+  runMarketingShadowPairedEvidence,
+} from "./marketing-shadow-evidence-runner";
 
+let runtimeCalls = 0;
 const runtime: AgentRuntimePort = {
   async invoke<TOutput>(request: AgentInvocationRequest) {
+    runtimeCalls += 1;
     const benchmarkCase = request.task.context.benchmarkCase as {
       claims: Array<{ id: string }>;
       requiredClaimIds: string[];
@@ -40,14 +47,26 @@ const runtime: AgentRuntimePort = {
 };
 
 describe("VS-23 paired shadow evidence runner", () => {
-  it("fails closed when the fetched Corey snapshot does not match the pinned Git blob", async () => {
+  it("fails closed on a tampered Corey snapshot before any paced model lane", async () => {
+    runtimeCalls = 0;
+    const pauses: number[] = [];
     const fakeFetch: typeof fetch = async () => new Response("tampered skill", { status: 200 });
-    await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch)).rejects.toThrow(/blob hash/i);
+    await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch, async (ms) => { pauses.push(ms); })).rejects.toThrow(/blob hash/i);
+    expect(runtimeCalls).toBe(0);
+    expect(pauses).toEqual([]);
   });
 
   it("fails closed when the pinned Corey source cannot be fetched", async () => {
     const fakeFetch: typeof fetch = async () => new Response("missing", { status: 503 });
     await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch)).rejects.toThrow(/503/);
+  });
+
+  it("paces eight sequential qualification lanes with seven fixed provider-window gaps", async () => {
+    const pauses: number[] = [];
+    const invoke = createMarketingEvidenceLanePacer(async (ms) => { pauses.push(ms); });
+    for (let index = 0; index < 8; index += 1) await invoke(async () => index);
+    expect(pauses).toEqual(Array(7).fill(MARKETING_EVIDENCE_INTER_LANE_DELAY_MS));
+    expect(MARKETING_EVIDENCE_INTER_LANE_DELAY_MS).toBe(65_000);
   });
 
   it("requires an explicit Hermes provider/model/pricing route for qualification evidence", () => {
