@@ -111,6 +111,20 @@ export class HermesBridgeRuntime implements AgentRuntimePort {
   }
 }
 
+export function hermesBridgeRuntimeFromEnv(
+  validators: Record<string, OutputValidator>,
+  env: Record<string, string | undefined> = process.env,
+  routing: HermesRoutingMode = "resilient",
+): HermesBridgeRuntime | null {
+  const endpoint = env.KAIRO_HERMES_ENDPOINT?.trim();
+  const serviceToken = env.KAIRO_HERMES_SERVICE_TOKEN?.trim();
+  if (!endpoint && !serviceToken) return null;
+  if (!endpoint || !serviceToken) {
+    throw new AgentRuntimeError("KAIRO_HERMES_ENDPOINT and KAIRO_HERMES_SERVICE_TOKEN must be configured together");
+  }
+  return new HermesBridgeRuntime({ endpoint, serviceToken, validators, routingMode: routing });
+}
+
 export interface DirectModelRuntimeOptions {
   gateway: ModelGatewayPort;
   policy: (request: AgentInvocationRequest) => ModelPolicy;
