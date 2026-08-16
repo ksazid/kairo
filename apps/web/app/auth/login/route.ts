@@ -4,15 +4,24 @@ import { encodeOidcTransaction, OIDC_TRANSACTION_COOKIE, OIDC_TRANSACTION_MAX_AG
 
 export const dynamic = "force-dynamic";
 
+const DIRECT_SOCIAL_CONNECTIONS = new Set(["google-oauth2", "apple"]);
+
 function loginHint(request: NextRequest): string | undefined {
   const value = request.nextUrl.searchParams.get("login_hint")?.trim();
   if (!value) return undefined;
   return value.slice(0, 320);
 }
 
+function directSocialConnection(request: NextRequest): string | undefined {
+  const value = request.nextUrl.searchParams.get("connection")?.trim();
+  return value && DIRECT_SOCIAL_CONNECTIONS.has(value) ? value : undefined;
+}
+
 function authenticationUnavailable(request: NextRequest): NextResponse {
   const target = new URL("/sign-in", request.url);
   target.searchParams.set("error", "Authentication service is temporarily unavailable. Please try again.");
+  const returnTo = safeReturnTo(request.nextUrl.searchParams.get("returnTo"));
+  if (returnTo !== "/") target.searchParams.set("returnTo", returnTo);
   const response = NextResponse.redirect(target);
   response.cookies.set(OIDC_TRANSACTION_COOKIE, "", {
     httpOnly: true,
@@ -41,7 +50,8 @@ export async function GET(request: NextRequest) {
       state,
     };
     if (request.nextUrl.searchParams.get("screen_hint") === "signup") parameters.screen_hint = "signup";
-    if (request.nextUrl.searchParams.get("connection") === "google-oauth2") parameters.connection = "google-oauth2";
+    const connection = directSocialConnection(request);
+    if (connection) parameters.connection = connection;
     const hintedEmail = loginHint(request);
     if (hintedEmail) parameters.login_hint = hintedEmail;
 

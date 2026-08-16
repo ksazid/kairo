@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { BrandOpportunityDto } from "@kairo/contracts";
-import { createWorkspaceAction } from "./actions";
 import { OpportunityList } from "./opportunity-list";
 import { getBrands, getOpportunities, getSession } from "../src/lib/kairo-api";
 
@@ -11,12 +11,12 @@ type SearchParams = Promise<{ workspace?: string; brand?: string; notice?: strin
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const session = await getSession();
-  if (!session) return <SignIn />;
-  if (session.workspaces.length === 0) return <Onboarding displayName={session.account.displayName ?? session.account.email ?? "there"} />;
+  if (!session) redirect("/auth/login?returnTo=/");
+  if (session.workspaces.length === 0) redirect("/onboarding");
 
   const params = await searchParams;
   const workspace = session.workspaces.find((item) => item.id === params.workspace) ?? session.workspaces[0];
-  if (!workspace) return <Onboarding displayName={session.account.displayName ?? session.account.email ?? "there"} />;
+  if (!workspace) redirect("/onboarding");
   const brands = await getBrands(workspace.id);
   const brand = brands.find((item) => item.id === params.brand) ?? brands[0] ?? null;
 
@@ -93,12 +93,4 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
       </nav>
     </div>
   );
-}
-
-function SignIn() {
-  return <main className="auth-page"><section className="auth-card"><div className="wordmark large"><span className="brandmark" aria-hidden="true" />Kairo</div><p className="eyebrow">Content Intelligence for Brands</p><h1>Know what your Brand should say next.</h1><p className="lede">Start with a secure Workspace. Kairo keeps each Brand&apos;s context and future learning isolated.</p><a className="primary-button" href="/auth/login">Sign in securely</a><p className="fine-print">Sign-in uses standards-based OIDC/OAuth. Workspace access is enforced by Kairo, not by possession of an identity token alone.</p></section></main>;
-}
-
-function Onboarding({ displayName }: { displayName: string }) {
-  return <main className="onboarding-page"><section className="onboarding-card"><div className="wordmark"><span className="brandmark" aria-hidden="true" />Kairo</div><p className="eyebrow">Welcome, {displayName}</p><h1>Give Kairo your Brand.</h1><p className="lede">Start with the essentials. Kairo will help build the Brand Brain next instead of asking you to write a strategy document.</p><form action={createWorkspaceAction} className="onboarding-form"><label>Workspace name<input name="workspaceName" required maxLength={120} placeholder="My Studio" autoComplete="organization" /></label><label>Brand name<input name="brandName" required maxLength={120} placeholder="The Duke 390" /></label><label>Website or social profile <span>optional</span><input name="publicReferenceUrl" type="url" placeholder="https://instagram.com/yourbrand" inputMode="url" /></label><button className="primary-button" type="submit">Continue to Brand Brain</button></form><p className="fine-print">You will choose the Brand&apos;s primary goal next. Everything Kairo infers remains reviewable.</p><a className="text-link" href="/auth/logout">Sign out</a></section></main>;
 }
