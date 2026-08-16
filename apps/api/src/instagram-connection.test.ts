@@ -46,7 +46,7 @@ class Meta implements MetaInstagramOAuthPort {
   async exchangeAndDiscover(code: string) {
     expect(code).toBe("meta-code");
     return {
-      grantedScopes: ["instagram_basic", "instagram_content_publish", "instagram_manage_insights", "pages_read_engagement", "pages_show_list"],
+      grantedScopes: ["business_management", "instagram_basic", "instagram_content_publish", "instagram_manage_insights", "pages_read_engagement", "pages_show_list"],
       userAccessToken: "secret-user-token",
       userAccessTokenExpiresInSeconds: 60 * 24 * 60 * 60,
       accounts: [
