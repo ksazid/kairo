@@ -1,5 +1,6 @@
 import sys
 import types
+from pathlib import Path
 
 import pytest
 
@@ -7,7 +8,17 @@ from hermes_runtime.config import ProviderConfig
 from hermes_runtime.upstream import HermesAgentExecutor, HermesSecurityError, assert_zero_tool_profile
 
 
-def provider():
+def provider(name="groq"):
+    if name == "openrouter":
+        return ProviderConfig(
+            provider="openrouter",
+            base_url="https://openrouter.ai/api/v1",
+            model="openai/gpt-oss-120b:free",
+            api_key="provider-secret",
+            input_usd_per_million_tokens=0,
+            output_usd_per_million_tokens=0,
+            pricing_version="openrouter-free-test",
+        )
     return ProviderConfig(
         provider="groq",
         base_url="https://api.groq.com/openai/v1",
@@ -25,19 +36,7 @@ def install_model_tools(monkeypatch, tools):
     monkeypatch.setitem(sys.modules, "model_tools", module)
 
 
-def test_startup_guard_accepts_only_an_exact_empty_tool_surface(monkeypatch):
-    install_model_tools(monkeypatch, [])
-    assert_zero_tool_profile()
-
-    install_model_tools(monkeypatch, [{"type": "function", "function": {"name": "terminal"}}])
-    with pytest.raises(HermesSecurityError, match="zero-tool"):
-        assert_zero_tool_profile()
-
-
-def test_executor_instantiates_one_memoryless_tooled_off_hermes_turn(monkeypatch):
-    install_model_tools(monkeypatch, [])
-    captured = {}
-
+def install_fake_agent(monkeypatch, captured):
     class FakeAgent:
         def __init__(self, **kwargs):
             captured.update(kwargs)
@@ -62,6 +61,21 @@ def test_executor_instantiates_one_memoryless_tooled_off_hermes_turn(monkeypatch
     run_agent = types.ModuleType("run_agent")
     run_agent.AIAgent = FakeAgent
     monkeypatch.setitem(sys.modules, "run_agent", run_agent)
+
+
+def test_startup_guard_accepts_only_an_exact_empty_tool_surface(monkeypatch):
+    install_model_tools(monkeypatch, [])
+    assert_zero_tool_profile()
+
+    install_model_tools(monkeypatch, [{"type": "function", "function": {"name": "terminal"}}])
+    with pytest.raises(HermesSecurityError, match="zero-tool"):
+        assert_zero_tool_profile()
+
+
+def test_executor_instantiates_one_memoryless_tooled_off_hermes_turn(monkeypatch):
+    install_model_tools(monkeypatch, [])
+    captured = {}
+    install_fake_agent(monkeypatch, captured)
 
     result = HermesAgentExecutor().execute(
         provider(),
@@ -89,6 +103,51 @@ def test_executor_instantiates_one_memoryless_tooled_off_hermes_turn(monkeypatch
     assert result.output_text == '{"ok":true}'
     assert result.input_tokens == 321
     assert result.output_tokens == 123
+
+
+def test_openrouter_fallback_enforces_zdr_no_collection_and_parameter_support(monkeypatch):
+    install_model_tools(monkeypatch, [])
+    captured = {}
+    install_fake_agent(monkeypatch, captured)
+
+    HermesAgentExecutor().execute(
+        provider("openrouter"),
+        system_prompt="system",
+        user_prompt="{}",
+        max_output_tokens=100,
+        timeout_ms=1000,
+    )
+
+    assert captured["request_overrides"] == {
+        "response_format": {"type": "json_object"},
+        "extra_body": {
+            "provider": {
+                "zdr": True,
+                "data_collection": "deny",
+                "require_parameters": True,
+            }
+        },
+    }
+
+
+def test_executor_disables_upstream_persistent_file_logging(monkeypatch):
+    install_model_tools(monkeypatch, [])
+    state = {"reset": 0}
+    module = types.ModuleType("hermes_logging")
+
+    def reset():
+        state["reset"] += 1
+
+    module._reset_queued_handlers = reset
+    module.rotating_file_handlers = lambda: []
+    module.setup_logging = lambda **_kwargs: Path("/should/not/be/used")
+    module.setup_verbose_logging = lambda: None
+    monkeypatch.setitem(sys.modules, "hermes_logging", module)
+
+    HermesAgentExecutor()
+
+    assert state["reset"] == 1
+    assert module.setup_logging(hermes_home=Path("/tmp/kairo-test")) == Path("/tmp/kairo-test/logs")
 
 
 def test_executor_rejects_tools_or_memory_even_if_upstream_resolver_regresses(monkeypatch):
