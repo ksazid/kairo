@@ -3,7 +3,7 @@
   "sliceId": "VS-28",
   "title": "Kairo Root Login & Onboarding Routing",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01"],
@@ -76,7 +76,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Exact-head Product Intake, Security and CI must pass before human exact-SHA certification approval is requested."
+      "rationale": "Implementation and independent review are complete. Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd passed Product Intake #475, Security #555 and full CI #623. Fresh exact-head gates must pass after review/governance evidence is committed before human certification approval."
     },
     {
       "type": "release",
@@ -101,16 +101,22 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 25,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "apps/web/src/auth-entry.test.ts locks the signed-out root, onboarding, recovery-only sign-in, bounded provider and logo contracts.",
+      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: Product Intake #475 passed.",
+      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: Security baseline #555 passed.",
+      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: CI #623 passed including runtime verification and Next production build.",
+      "docs/plans/VS-28-review.md records acceptance/security review and explicitly leaves Auth0 tenant branding, Apple setup and deployed browser E2E unproven."
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -128,8 +134,11 @@
   },
   "links": {
     "specification": "docs/slices/VS-28.md",
-    "implementationPr": null,
-    "evidence": ["docs/plans/VS-28-kairo-login-entry.md"]
+    "implementationPr": "https://github.com/ksazid/kairo/pull/64",
+    "evidence": [
+      "docs/plans/VS-28-kairo-login-entry.md",
+      "docs/plans/VS-28-review.md"
+    ]
   },
   "maxAttempts": 3
 }
