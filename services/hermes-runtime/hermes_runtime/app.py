@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 import logging
+import os
 
 from fastapi import FastAPI, Header, HTTPException, Request
 
@@ -11,6 +12,7 @@ from .upstream import HermesAgentExecutor, HermesSecurityError
 
 
 logger = logging.getLogger("kairo.hermes.runtime")
+logger.setLevel(logging.INFO)
 
 
 @asynccontextmanager
@@ -22,7 +24,8 @@ async def lifespan(app: FastAPI):
         # Failing lifespan prevents the service from becoming ready. Never
         # include environment values or provider exception bodies in logs.
         raise RuntimeError(f"Hermes runtime startup rejected: {type(error).__name__}") from error
-    app.state.runtime_service = RuntimeService(config, executor)
+    runtime = RuntimeService(config, executor)
+    app.state.runtime_service = runtime
     app.state.runtime_version = config.runtime_version
     logger.info(
         "KAIRO_HERMES_RUNTIME_READY primary_provider=%s primary_model=%s primary_pricing=%s fallback_provider=%s fallback_model=%s fallback_pricing=%s",
@@ -33,6 +36,7 @@ async def lifespan(app: FastAPI):
         config.fallback.model,
         config.fallback.pricing_version,
     )
+    _run_provider_diagnostic(runtime, config)
     yield
 
 
@@ -81,3 +85,68 @@ def invoke(
     except HermesSecurityError as error:
         logger.error("KAIRO_HERMES_SECURITY_ERROR type=%s", type(error).__name__)
         raise HTTPException(status_code=503, detail="Hermes zero-tool security invariant failed") from error
+
+
+def _run_provider_diagnostic(
+    runtime: RuntimeService,
+    config: RuntimeConfig,
+    env: dict[str, str] | None = None,
+) -> None:
+    values = env if env is not None else os.environ
+    if values.get("KAIRO_HERMES_PROVIDER_DIAGNOSTIC_RUN", "").strip() != "1":
+        return
+
+    try:
+        result = runtime.invoke(
+            _provider_diagnostic_payload(),
+            authorization=f"Bearer {config.service_token}",
+        )
+    except HermesRuntimeError as error:
+        logger.warning(
+            "KAIRO_HERMES_PROVIDER_DIAGNOSTIC_FAILED kind=runtime status=%s detail=%s",
+            error.status_code,
+            str(error),
+        )
+    except ProviderError as error:
+        logger.warning(
+            "KAIRO_HERMES_PROVIDER_DIAGNOSTIC_FAILED kind=provider fallback_eligible=%s error=%s",
+            error.fallback_eligible,
+            str(error),
+        )
+    except HermesSecurityError as error:
+        logger.error(
+            "KAIRO_HERMES_PROVIDER_DIAGNOSTIC_FAILED kind=security type=%s",
+            type(error).__name__,
+        )
+    else:
+        metadata = result.get("metadata") if isinstance(result, dict) else None
+        safe = metadata if isinstance(metadata, dict) else {}
+        logger.warning(
+            "KAIRO_HERMES_PROVIDER_DIAGNOSTIC_OK provider=%s model=%s pricing=%s latency_ms=%s cost_usd=%s",
+            safe.get("provider", "unknown"),
+            safe.get("model", "unknown"),
+            safe.get("pricingVersion", "unknown"),
+            safe.get("latencyMs", "unknown"),
+            safe.get("costUsd", "unknown"),
+        )
+
+
+def _provider_diagnostic_payload() -> dict[str, object]:
+    return {
+        "role": "judge",
+        "scope": {"visibility": "global-public"},
+        "approvedContextVersion": "hermes-provider-diagnostic-v1",
+        "task": {
+            "instruction": "Return exactly one JSON object with ok set to true.",
+            "context": {"purpose": "provider-route-diagnostic"},
+        },
+        "outputSchema": {"name": "HermesProviderDiagnostic", "version": "1"},
+        "budget": {
+            "maxOutputTokens": 32,
+            "maxCostUsd": 0.01,
+            "timeoutMs": 10000,
+        },
+        "enabledTools": [],
+        "policyFingerprint": "kairo-hermes-reasoning-only-vs03:d2c6af3aa258c47d64c41a56fe9ff61815334e17",
+        "routingMode": "resilient",
+    }
