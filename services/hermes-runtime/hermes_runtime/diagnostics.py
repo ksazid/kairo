@@ -65,10 +65,14 @@ def provider_diagnostic_payload() -> dict[str, object]:
             "context": {"purpose": "provider-route-diagnostic"},
         },
         "outputSchema": {"name": "HermesProviderDiagnostic", "version": "1"},
+        # Keep the synthetic verifier inside the exact execution ceiling used
+        # by the four-case marketing qualification. The previous 32-token / 10s
+        # diagnostic was materially tighter than the benchmark and caused the
+        # model to hit finish_reason=length before Kairo could validate JSON.
         "budget": {
-            "maxOutputTokens": 32,
-            "maxCostUsd": 0.01,
-            "timeoutMs": 10000,
+            "maxOutputTokens": 2200,
+            "maxCostUsd": 0.03,
+            "timeoutMs": 30000,
         },
         "enabledTools": [],
         "policyFingerprint": "kairo-hermes-reasoning-only-vs03:d2c6af3aa258c47d64c41a56fe9ff61815334e17",
