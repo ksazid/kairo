@@ -24,9 +24,9 @@ const COREY_SOURCE_URL =
   "https://raw.githubusercontent.com/coreyhaines31/marketingskills/7868cb9251fad80a73d26e488a5ad5f6c4a9f335/skills/social/SKILL.md";
 
 export const MARKETING_EVIDENCE_INTER_LANE_DELAY_MS = 65_000;
-export const MARKETING_EVIDENCE_HERMES_READY_MAX_ATTEMPTS = 6;
+export const MARKETING_EVIDENCE_HERMES_READY_DEADLINE_MS = 180_000;
 export const MARKETING_EVIDENCE_HERMES_READY_REQUEST_TIMEOUT_MS = 20_000;
-export const MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS = 2_000;
+export const MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS = 5_000;
 export type MarketingEvidencePause = (ms: number) => Promise<void>;
 
 export interface MarketingShadowLaneEvidence {
@@ -171,6 +171,7 @@ export async function waitForMarketingEvidenceHermesReady(
   endpoint: string | null | undefined = process.env.KAIRO_HERMES_ENDPOINT,
   fetchImpl: typeof fetch = fetch,
   pause: MarketingEvidencePause = defaultMarketingEvidencePause,
+  now: () => number = Date.now,
 ): Promise<void> {
   const normalizedEndpoint = endpoint?.trim();
   if (!normalizedEndpoint) return;
@@ -178,12 +179,16 @@ export async function waitForMarketingEvidenceHermesReady(
     throw new Error("Hermes readiness endpoint must be HTTP(S)");
   }
 
+  const deadlineAt = now() + MARKETING_EVIDENCE_HERMES_READY_DEADLINE_MS;
   let lastStatus: number | undefined;
-  for (let attempt = 1; attempt <= MARKETING_EVIDENCE_HERMES_READY_MAX_ATTEMPTS; attempt += 1) {
+  while (now() < deadlineAt) {
+    const remainingBeforeRequest = deadlineAt - now();
+    if (remainingBeforeRequest <= 0) break;
+
     const controller = new AbortController();
     const timeout = setTimeout(
       () => controller.abort(),
-      MARKETING_EVIDENCE_HERMES_READY_REQUEST_TIMEOUT_MS,
+      Math.min(MARKETING_EVIDENCE_HERMES_READY_REQUEST_TIMEOUT_MS, remainingBeforeRequest),
     );
     try {
       const response = await fetchImpl(`${normalizedEndpoint.replace(/\/$/, "")}/health/ready`, {
@@ -199,9 +204,9 @@ export async function waitForMarketingEvidenceHermesReady(
       clearTimeout(timeout);
     }
 
-    if (attempt < MARKETING_EVIDENCE_HERMES_READY_MAX_ATTEMPTS) {
-      await pause(MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS);
-    }
+    const remainingAfterRequest = deadlineAt - now();
+    if (remainingAfterRequest <= 0) break;
+    await pause(Math.min(MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS, remainingAfterRequest));
   }
 
   throw new Error(
