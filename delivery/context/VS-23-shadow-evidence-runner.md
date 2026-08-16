@@ -27,6 +27,8 @@ A Hermes-local, default-off, one-shot synthetic provider self-test was then cert
 
 The corrective compatibility change removes provider-level forced JSON mode only for the Groq route. It does not alter the model, provider routing, fallback policy, privacy controls, tools, memory or publishing authority. Kairo's runtime continues to parse every provider response as a JSON object and fail closed on malformed output or missing usage/cost evidence, so JSON/schema enforcement remains inside the Kairo-owned boundary.
 
+The Groq compatibility correction was merged and deployed to Hermes at exact SHA `87e16d550487e2aae07274784030d7e770b1aec4`. A post-fix synthetic verification reached Groq without the prior HTTP 400, confirming that the provider-level JSON-mode incompatibility was removed. The verifier then hit `finish_reason=length` because its own payload allowed only 32 output tokens and 10 seconds; Hermes' one-iteration upstream path requested continuation/summary, and Kairo correctly rejected the resulting non-JSON final response. No benchmark output or winner was produced. The diagnostic flag was returned to `0`. The corrective verifier change therefore aligns only the synthetic diagnostic budget with the existing marketing qualification ceiling: 2200 output tokens, $0.03 maximum measured cost and 30 seconds. It does not increase the benchmark's approved budget.
+
 ## Explicit exclusions
 
 - No private production Brand context.
@@ -40,7 +42,7 @@ The corrective compatibility change removes provider-level forced JSON mode only
 1. Certify an exact runner/runtime diagnostic SHA through CI, Security and Product Intake.
 2. Obtain explicit exact-SHA deployment approval for the affected service.
 3. Keep the benchmark evidence flag off while running the separately gated Hermes-local one-shot provider diagnostic and collecting only the safe route/failure marker.
-4. Correct the confirmed Groq JSON-mode compatibility cause and separately certify/deploy that correction.
+4. Correct the confirmed provider/runtime compatibility cause, including keeping the synthetic verification ceiling representative of the already-approved benchmark ceiling, and separately certify/deploy each correction.
 5. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
 6. Present the four pairs blind as A/B for human scoring.
 7. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
