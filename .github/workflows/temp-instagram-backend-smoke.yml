@@ -1,0 +1,38 @@
+name: TEMP Instagram backend smoke
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Smoke live Kairo API identity and health
+        env:
+          KAIRO_API_URL: https://kairo-api-kebs.onrender.com
+          KAIRO_RELEASE_SHA: 63002c27c6f874569573f4513bab351f43e32439
+        run: node scripts/pilot-smoke.mjs
+      - name: Verify bodyless Instagram connect reaches auth boundary
+        env:
+          KAIRO_API_URL: https://kairo-api-kebs.onrender.com
+        run: |
+          node --input-type=module <<'NODE'
+          const base = process.env.KAIRO_API_URL;
+          const response = await fetch(`${base}/api/v1/brands/backend-smoke/channels/instagram/connect`, { method: 'POST' });
+          const text = await response.text();
+          if (response.status === 400 && /FST_ERR_CTP_EMPTY_JSON_BODY|Body cannot be empty when content-type is set to 'application\/json'/i.test(text)) {
+            throw new Error(`bodyless request still hit Fastify JSON parser failure: ${text}`);
+          }
+          if (response.status !== 401) {
+            throw new Error(`expected authentication boundary 401, received ${response.status}: ${text}`);
+          }
+          console.log('bodyless Instagram connect reached authentication boundary without JSON parser failure');
+          NODE
