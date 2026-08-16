@@ -21,7 +21,9 @@ The certified primary-only runner at production SHA `63e887d01804ade01f4b77826ae
 
 The certified resilient runner at Kairo API SHA `8babc4ff680df40b23a17ebc8cfcdeb8f08cf763` was then deployed for the approved retry. The first Kairo Native invocation again returned `Hermes bridge returned 502` before any paired output was produced. A queued redeploy of the same approved SHA reached the same fail-closed result before the flag-off deployment completed. `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN` is now disabled. No output, human score or winner evidence was claimed from either failed invocation.
 
-The Hermes service had never completed a real provider-backed Kairo invocation before these attempts; prior certification used fake-provider contracts and zero-tool container verification. The next permitted diagnostic change is metadata-only runtime observability: log the configured provider/model/pricing labels at Hermes startup and log Kairo-sanitized provider/runtime failure categories without prompts, request bodies, provider exception bodies, API keys or service tokens.
+The Hermes service had never completed a real provider-backed Kairo invocation before these attempts; prior certification used fake-provider contracts and zero-tool container verification. Metadata-only diagnostics were then certified and deployed to `kairo-hermes-runtime` at exact SHA `695ac433353db7fa5b56f654a3c5a34b4134449a`. The service became live and healthy. The startup `INFO` marker was filtered by the service logging configuration, and with the benchmark evidence flag intentionally off there was no provider-backed request from which to collect the new warning-level failure category.
+
+The next bounded diagnostic step is therefore a Hermes-local, default-off, one-shot synthetic provider self-test controlled by `KAIRO_HERMES_PROVIDER_DIAGNOSTIC_RUN=1`. It executes inside the existing Hermes secret boundary with global-public synthetic context, zero tools, no Brand/Instagram data and no publishing authority. It must log only the selected provider/model/pricing route or a Kairo-sanitized provider/runtime/security failure category. The benchmark evidence flag remains off throughout this diagnostic.
 
 ## Explicit exclusions
 
@@ -35,7 +37,8 @@ The Hermes service had never completed a real provider-backed Kairo invocation b
 
 1. Certify an exact runner/runtime diagnostic SHA through CI, Security and Product Intake.
 2. Obtain explicit exact-SHA deployment approval for the affected service.
-3. Keep the evidence flag off while verifying the safe Hermes startup route and failure category.
-4. After the runtime cause is corrected and separately approved, enable the one-shot evidence flag for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
-5. Present the four pairs blind as A/B for human scoring.
-6. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
+3. Keep the benchmark evidence flag off while running the separately gated Hermes-local one-shot provider diagnostic and collecting only the safe route/failure marker.
+4. Correct the confirmed runtime/provider cause and separately certify/deploy that correction.
+5. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
+6. Present the four pairs blind as A/B for human scoring.
+7. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
