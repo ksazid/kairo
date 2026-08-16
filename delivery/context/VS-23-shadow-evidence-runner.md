@@ -29,6 +29,12 @@ The corrective compatibility change removes provider-level forced JSON mode only
 
 The Groq compatibility correction was merged and deployed to Hermes at exact SHA `87e16d550487e2aae07274784030d7e770b1aec4`. A post-fix synthetic verification reached Groq without the prior HTTP 400, confirming that the provider-level JSON-mode incompatibility was removed. The verifier then hit `finish_reason=length` because its own payload allowed only 32 output tokens and 10 seconds; Hermes' one-iteration upstream path requested continuation/summary, and Kairo correctly rejected the resulting non-JSON final response. No benchmark output or winner was produced. The diagnostic flag was returned to `0`. The corrective verifier change therefore aligns only the synthetic diagnostic budget with the existing marketing qualification ceiling: 2200 output tokens, $0.03 maximum measured cost and 30 seconds. It does not increase the benchmark's approved budget.
 
+The representative verifier correction was merged and deployed at exact SHA `8548ac455970abde6a012ef19251778d51d57de0`. With the benchmark flag still off, the one-shot Hermes verification completed successfully on Groq `openai/gpt-oss-120b`, returned a valid JSON object, reported measured latency of 13404 ms and measured cost of approximately $0.00016455, and then the provider diagnostic flag was returned to `0` with a flag-off deployment confirmed live.
+
+The separately approved four-case Kairo API evidence run was then started on exact SHA `8548ac455970abde6a012ef19251778d51d57de0`. It executed once and reached Hermes successfully, but the first Kairo Native case failed closed with `Hermes output failed Kairo schema validation`; no Corey lane, paired output, human score or winner evidence was produced. The evidence flag was returned to `0`, and the flag-off Kairo API deployment was confirmed live.
+
+The schema-validation failure exposed a Kairo prompt-contract gap rather than a provider failure: Hermes was told only the output schema identifier `marketing-carousel-plan@1`, while the Kairo validator requires the concrete carousel shape and Claim-lineage fields. The corrective change therefore supplies the exact Kairo-owned `marketing-carousel-plan@1` output contract to the Hermes system prompt for that schema only. It does not relax or replace Kairo's existing validator, change provider/model/routing, alter benchmark inputs or budgets, grant tools/network/secrets/publishing authority, or expose production Brand or Instagram data. Unknown schemas continue without an invented contract and remain fail-closed at their existing Kairo validators.
+
 ## Explicit exclusions
 
 - No private production Brand context.
@@ -43,6 +49,7 @@ The Groq compatibility correction was merged and deployed to Hermes at exact SHA
 2. Obtain explicit exact-SHA deployment approval for the affected service.
 3. Keep the benchmark evidence flag off while running the separately gated Hermes-local one-shot provider diagnostic and collecting only the safe route/failure marker.
 4. Correct the confirmed provider/runtime compatibility cause, including keeping the synthetic verification ceiling representative of the already-approved benchmark ceiling, and separately certify/deploy each correction.
-5. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
-6. Present the four pairs blind as A/B for human scoring.
-7. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
+5. Ensure Hermes receives the concrete Kairo output contract required by the local validator without weakening schema or lineage enforcement.
+6. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
+7. Present the four pairs blind as A/B for human scoring.
+8. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
