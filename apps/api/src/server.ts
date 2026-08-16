@@ -123,11 +123,11 @@ try {
     }
   }
   if(evidenceRequest){
-    if(!hermesRuntime){
-      app.log.error({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: Hermes runtime is not configured");
+    if(!directRuntime){
+      app.log.error({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: DirectModelRuntime is not configured");
     }else{
       const evidenceStore=new PgMarketingShadowEvidenceRunStore(pool);
-      void executeMarketingShadowEvidenceAttempt(evidenceStore,hermesRuntime,evidenceRequest)
+      void executeMarketingShadowEvidenceAttempt(evidenceStore,directRuntime,evidenceRequest)
         .then(result=>{
           if(result.kind==="skipped"){
             app.log.warn({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha,priorStatus:result.priorStatus},"KAIRO_MARKETING_SHADOW_EVIDENCE_SKIPPED_ALREADY_CLAIMED");
