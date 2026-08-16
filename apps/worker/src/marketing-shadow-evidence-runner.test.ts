@@ -35,8 +35,7 @@ const runtime: AgentRuntimePort = {
     return {
       output: output as TOutput,
       metadata: {
-        runtime: "hermes",
-        runtimeVersion: "hermes-agent@test",
+        runtime: "direct-model",
         provider: "test-provider",
         model: "test-model",
         inputTokens: 10,
@@ -64,7 +63,7 @@ describe("VS-23 paired shadow evidence runner", () => {
     await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch)).rejects.toThrow(/503/);
   });
 
-  it("keeps probing Hermes until a cold runtime becomes ready inside the deadline", async () => {
+  it("keeps probing dormant Hermes readiness utility until a cold runtime becomes ready inside the deadline", async () => {
     let now = 0;
     let calls = 0;
     const pauses: number[] = [];
@@ -87,7 +86,7 @@ describe("VS-23 paired shadow evidence runner", () => {
     expect(pauses).toEqual(Array(3).fill(MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS));
   });
 
-  it("uses the full readiness deadline before failing closed without model execution", async () => {
+  it("keeps the dormant Hermes readiness utility bounded without model execution", async () => {
     let now = 0;
     let calls = 0;
     const pauses: number[] = [];
@@ -119,18 +118,31 @@ describe("VS-23 paired shadow evidence runner", () => {
     expect(MARKETING_EVIDENCE_INTER_LANE_DELAY_MS).toBe(65_000);
   });
 
-  it("requires an explicit Hermes provider/model/pricing route for qualification evidence", () => {
-    expect(() => marketingEvidenceRuntimeRoute({
+  it("requires an explicit DirectModel provider/model/pricing route for qualification evidence", () => {
+    expect(marketingEvidenceRuntimeRoute({
       runtime: "direct-model",
       provider: "test-provider",
       model: "test-model",
       pricingVersion: "test-pricing",
       latencyMs: 1,
-    }, "case:native")).toThrow(/Hermes runtime evidence/i);
+    }, "case:native")).toEqual({
+      runtime: "direct-model",
+      provider: "test-provider",
+      model: "test-model",
+      pricingVersion: "test-pricing",
+    });
 
     expect(() => marketingEvidenceRuntimeRoute({
       runtime: "hermes",
       runtimeVersion: "hermes-agent@test",
+      provider: "test-provider",
+      model: "test-model",
+      pricingVersion: "test-pricing",
+      latencyMs: 1,
+    }, "case:native")).toThrow(/DirectModel runtime evidence/i);
+
+    expect(() => marketingEvidenceRuntimeRoute({
+      runtime: "direct-model",
       provider: "test-provider",
       model: "test-model",
       latencyMs: 1,
