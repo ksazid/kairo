@@ -47,12 +47,12 @@ const agentOutputValidators={
   "critic-review@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
-  "direct-model-diagnostic@1":(value:unknown)=>!!value&&typeof value==="object"&&!Array.isArray(value)&&(value as{ok?:unknown}).ok===true&&Object.keys(value as Record<string,unknown>).length===1,
 };
 const evidenceRequest=marketingShadowEvidenceRequestFromEnv();
 const directModelDiagnosticRequested=directModelProviderDiagnosticRequested();
 const gateway=openAICompatibleGatewayFromEnv();
 const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
+const directModelDiagnosticRuntime=gateway&&directModelDiagnosticRequested?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"global-public",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:{"direct-model-diagnostic@1":(value:unknown)=>!!value&&typeof value==="object"&&!Array.isArray(value)&&(value as{ok?:unknown}).ok===true&&Object.keys(value as Record<string,unknown>).length===1}}):null;
 const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
 const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRuntime,directRuntime):(hermesRuntime??directRuntime??undefined);
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
@@ -114,10 +114,10 @@ try {
     metricTimer.unref();
   }
   if(directModelDiagnosticRequested){
-    if(!directRuntime){
+    if(!directModelDiagnosticRuntime){
       app.log.error("KAIRO_DIRECT_MODEL_PROVIDER_DIAGNOSTIC_FAILED: DirectModelRuntime is not configured");
     }else{
-      void runDirectModelProviderDiagnostic(directRuntime)
+      void runDirectModelProviderDiagnostic(directModelDiagnosticRuntime)
         .then(metadata=>app.log.warn({metadata},"KAIRO_DIRECT_MODEL_PROVIDER_DIAGNOSTIC_OK"))
         .catch(error=>app.log.error({err:error},"KAIRO_DIRECT_MODEL_PROVIDER_DIAGNOSTIC_FAILED"));
     }
