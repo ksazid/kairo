@@ -24,6 +24,9 @@ const COREY_SOURCE_URL =
   "https://raw.githubusercontent.com/coreyhaines31/marketingskills/7868cb9251fad80a73d26e488a5ad5f6c4a9f335/skills/social/SKILL.md";
 
 export const MARKETING_EVIDENCE_INTER_LANE_DELAY_MS = 65_000;
+export const MARKETING_EVIDENCE_HERMES_READY_MAX_ATTEMPTS = 6;
+export const MARKETING_EVIDENCE_HERMES_READY_REQUEST_TIMEOUT_MS = 20_000;
+export const MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS = 2_000;
 export type MarketingEvidencePause = (ms: number) => Promise<void>;
 
 export interface MarketingShadowLaneEvidence {
@@ -97,6 +100,8 @@ export async function runMarketingShadowPairedEvidence(
   };
   const snapshot = verifyPinnedSkillSnapshot(manifest, candidateSnapshot);
 
+  await waitForMarketingEvidenceHermesReady(process.env.KAIRO_HERMES_ENDPOINT, fetch, pause);
+
   const registry = createMarketingSkillRegistry([manifest]);
   const shadow = new MarketingShadowExecutionService(runtime, registry, {
     allowedDatasetIds: ["marketing-lab-cross-sector-synthetic-fixtures"],
@@ -160,6 +165,50 @@ export async function runMarketingShadowPairedEvidence(
     runtimeRoute: expectedRoute,
     pairs,
   };
+}
+
+export async function waitForMarketingEvidenceHermesReady(
+  endpoint: string | null | undefined = process.env.KAIRO_HERMES_ENDPOINT,
+  fetchImpl: typeof fetch = fetch,
+  pause: MarketingEvidencePause = defaultMarketingEvidencePause,
+): Promise<void> {
+  const normalizedEndpoint = endpoint?.trim();
+  if (!normalizedEndpoint) return;
+  if (!/^https?:\/\//.test(normalizedEndpoint)) {
+    throw new Error("Hermes readiness endpoint must be HTTP(S)");
+  }
+
+  let lastStatus: number | undefined;
+  for (let attempt = 1; attempt <= MARKETING_EVIDENCE_HERMES_READY_MAX_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      MARKETING_EVIDENCE_HERMES_READY_REQUEST_TIMEOUT_MS,
+    );
+    try {
+      const response = await fetchImpl(`${normalizedEndpoint.replace(/\/$/, "")}/health/ready`, {
+        method: "GET",
+        headers: { accept: "application/json" },
+        signal: controller.signal,
+      });
+      lastStatus = response.status;
+      if (response.ok) return;
+    } catch {
+      lastStatus = undefined;
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (attempt < MARKETING_EVIDENCE_HERMES_READY_MAX_ATTEMPTS) {
+      await pause(MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS);
+    }
+  }
+
+  throw new Error(
+    lastStatus === undefined
+      ? "Hermes readiness preflight failed before qualification lanes"
+      : `Hermes readiness preflight failed with ${lastStatus} before qualification lanes`,
+  );
 }
 
 export function createMarketingEvidenceLanePacer(
