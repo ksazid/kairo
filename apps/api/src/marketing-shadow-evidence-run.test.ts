@@ -51,15 +51,15 @@ describe("marketing shadow evidence attempt orchestration", () => {
     })).toEqual(request);
   });
 
-  it("does not invoke Hermes again when the durable run ID was already claimed", async () => {
+  it.each(["started", "completed", "failed"] as const)("does not invoke Hermes again when a durable run ID is already %s", async (status) => {
     const run = vi.fn();
     const store: MarketingShadowEvidenceRunStore = {
-      claim: vi.fn().mockResolvedValue({ claimed: false, status: "started" }),
+      claim: vi.fn().mockResolvedValue({ claimed: false, status }),
       complete: vi.fn(),
       fail: vi.fn(),
     };
     const result = await executeMarketingShadowEvidenceAttempt(store, {} as never, request, run as never);
-    expect(result).toEqual({ kind: "skipped", priorStatus: "started" });
+    expect(result).toEqual({ kind: "skipped", priorStatus: status });
     expect(run).not.toHaveBeenCalled();
     expect(store.complete).not.toHaveBeenCalled();
     expect(store.fail).not.toHaveBeenCalled();
