@@ -84,8 +84,8 @@ describe("marketing shadow evidence attempt orchestration", () => {
   });
 
   it("records only a bounded failure category when the model run fails", async () => {
-    class BenchmarkFailure extends Error {}
-    const failure = new BenchmarkFailure("provider details must not be persisted");
+    const failure = new Error("provider details must not be persisted");
+    failure.name = "AgentRuntimeError";
     const store: MarketingShadowEvidenceRunStore = {
       claim: vi.fn().mockResolvedValue({ claimed: true, status: "started" }),
       complete: vi.fn(),
@@ -93,7 +93,7 @@ describe("marketing shadow evidence attempt orchestration", () => {
     };
     const run = vi.fn().mockRejectedValue(failure);
     await expect(executeMarketingShadowEvidenceAttempt(store, {} as never, request, run as never)).rejects.toBe(failure);
-    expect(store.fail).toHaveBeenCalledWith(request.runId, "Error");
+    expect(store.fail).toHaveBeenCalledWith(request.runId, "AgentRuntimeError");
     expect(store.complete).not.toHaveBeenCalled();
   });
 
