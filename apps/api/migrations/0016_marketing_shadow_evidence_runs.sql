@@ -8,6 +8,7 @@ create table marketing_shadow_evidence_runs (
   finished_at timestamptz,
   check (run_id ~ '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$'),
   check (release_sha ~ '^[0-9a-f]{40}$'),
+  check (failure_kind is null or failure_kind ~ '^[A-Za-z][A-Za-z0-9_.:-]{0,63}$'),
   check (
     (status='started' and evidence is null and failure_kind is null and finished_at is null)
     or
