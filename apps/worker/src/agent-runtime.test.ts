@@ -35,13 +35,13 @@ function bridgeResponse(overrides: Record<string, unknown> = {}): Response {
   return new Response(JSON.stringify({
     policy: { fingerprint: HERMES_POLICY_FINGERPRINT, enabledTools: [], runtimeVersion: "pinned-test" },
     output: validOutput,
-    metadata: { provider: "mock", model: "mock-model", inputTokens: 10, outputTokens: 5, costUsd: 0.001, latencyMs: 12 },
+    metadata: { provider: "mock", model: "mock-model", inputTokens: 10, outputTokens: 5, costUsd: 0.001, pricingVersion: "mock-pricing-v1", latencyMs: 12 },
     ...overrides,
   }), { status: 200, headers: { "content-type": "application/json" } });
 }
 
-describe("VS-03 Hermes reasoning-only adapter", () => {
-  it("sends no Kairo capability list or transport secret in the model-visible body", async () => {
+describe("VS-27 Hermes reasoning-only adapter", () => {
+  it("sends no Kairo capability list or transport secret in the model-visible body and defaults to resilient routing", async () => {
     let body = "";
     let authorization = "";
     const runtime = new HermesBridgeRuntime({
@@ -58,10 +58,40 @@ describe("VS-03 Hermes reasoning-only adapter", () => {
     const result = await runtime.invoke<typeof validOutput>(request());
     const parsed = JSON.parse(body) as Record<string, unknown>;
     expect(parsed.enabledTools).toEqual([]);
+    expect(parsed.routingMode).toBe("resilient");
     expect(parsed).not.toHaveProperty("capabilities");
     expect(body).not.toContain("transport-secret");
     expect(authorization).toBe("Bearer transport-secret");
-    expect(result.metadata.runtime).toBe("hermes");
+    expect(result.metadata).toMatchObject({
+      runtime: "hermes",
+      pricingVersion: "mock-pricing-v1",
+    });
+  });
+
+  it("sends primary-only routing for controlled benchmark invocations", async () => {
+    let body = "";
+    const runtime = new HermesBridgeRuntime({
+      endpoint: "http://hermes.internal",
+      serviceToken: "transport-secret",
+      validators,
+      routingMode: "primary-only",
+      fetchImpl: async (_input, init) => {
+        body = String(init?.body ?? "");
+        return bridgeResponse();
+      },
+    });
+
+    await runtime.invoke(request());
+    expect(JSON.parse(body)).toMatchObject({ routingMode: "primary-only", enabledTools: [] });
+  });
+
+  it("rejects an unsupported routing mode before any invocation", () => {
+    expect(() => new HermesBridgeRuntime({
+      endpoint: "http://hermes.internal",
+      serviceToken: "transport-secret",
+      validators,
+      routingMode: "unbounded" as never,
+    })).toThrow(/routing mode/i);
   });
 
   it("fails closed when Hermes cannot attest the exact zero-tool policy", async () => {
