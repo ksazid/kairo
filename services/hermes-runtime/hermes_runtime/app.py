@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI, Header, HTTPException, Request
 
 from .config import ConfigurationError, RuntimeConfig
 from .core import HermesRuntimeError, ProviderError, RuntimeService
 from .upstream import HermesAgentExecutor, HermesSecurityError
+
+
+logger = logging.getLogger("kairo.hermes.runtime")
 
 
 @asynccontextmanager
@@ -20,6 +24,15 @@ async def lifespan(app: FastAPI):
         raise RuntimeError(f"Hermes runtime startup rejected: {type(error).__name__}") from error
     app.state.runtime_service = RuntimeService(config, executor)
     app.state.runtime_version = config.runtime_version
+    logger.info(
+        "KAIRO_HERMES_RUNTIME_READY primary_provider=%s primary_model=%s primary_pricing=%s fallback_provider=%s fallback_model=%s fallback_pricing=%s",
+        config.primary.provider,
+        config.primary.model,
+        config.primary.pricing_version,
+        config.fallback.provider,
+        config.fallback.model,
+        config.fallback.pricing_version,
+    )
     yield
 
 
@@ -49,8 +62,22 @@ def invoke(
     try:
         return runtime.invoke(payload, authorization=authorization)
     except HermesRuntimeError as error:
+        logger.warning(
+            "KAIRO_HERMES_RUNTIME_ERROR status=%s detail=%s",
+            error.status_code,
+            str(error),
+        )
         raise HTTPException(status_code=error.status_code, detail=str(error)) from error
     except ProviderError as error:
+        # ProviderError messages are constructed by the Kairo-owned adapter and
+        # contain only provider name, HTTP status (when known) and exception
+        # class. Never log the provider exception body, request, prompt or key.
+        logger.warning(
+            "KAIRO_HERMES_PROVIDER_ERROR fallback_eligible=%s error=%s",
+            error.fallback_eligible,
+            str(error),
+        )
         raise HTTPException(status_code=502, detail="Hermes model provider is unavailable") from error
     except HermesSecurityError as error:
+        logger.error("KAIRO_HERMES_SECURITY_ERROR type=%s", type(error).__name__)
         raise HTTPException(status_code=503, detail="Hermes zero-tool security invariant failed") from error
