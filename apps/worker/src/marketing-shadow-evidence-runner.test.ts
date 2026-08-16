@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { AgentInvocationRequest, AgentRuntimePort } from "@kairo/agent-contracts";
 import type { CarouselPlan } from "@kairo/domain/creative-formats";
-import { marketingEvidenceRuntimeRoute, runMarketingShadowPairedEvidence } from "./marketing-shadow-evidence-runner";
+import {
+  createMarketingEvidenceLanePacer,
+  MARKETING_EVIDENCE_INTER_LANE_DELAY_MS,
+  marketingEvidenceRuntimeRoute,
+  runMarketingShadowPairedEvidence,
+} from "./marketing-shadow-evidence-runner";
 
 const runtime: AgentRuntimePort = {
   async invoke<TOutput>(request: AgentInvocationRequest) {
@@ -48,6 +53,25 @@ describe("VS-23 paired shadow evidence runner", () => {
   it("fails closed when the pinned Corey source cannot be fetched", async () => {
     const fakeFetch: typeof fetch = async () => new Response("missing", { status: 503 });
     await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch)).rejects.toThrow(/503/);
+  });
+
+  it("paces eight sequential qualification lanes with seven fixed provider-window gaps", async () => {
+    const pauses: number[] = [];
+    const invocations: number[] = [];
+    const pacedInvoke = createMarketingEvidenceLanePacer(async (ms) => {
+      pauses.push(ms);
+    });
+
+    for (let index = 0; index < 8; index += 1) {
+      await pacedInvoke(async () => {
+        invocations.push(index);
+        return index;
+      });
+    }
+
+    expect(invocations).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(pauses).toEqual(Array.from({ length: 7 }, () => MARKETING_EVIDENCE_INTER_LANE_DELAY_MS));
+    expect(MARKETING_EVIDENCE_INTER_LANE_DELAY_MS).toBe(65_000);
   });
 
   it("requires an explicit Hermes provider/model/pricing route for qualification evidence", () => {
