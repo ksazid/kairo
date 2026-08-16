@@ -47,7 +47,6 @@ const evidenceRequested=process.env.KAIRO_MARKETING_SHADOW_EVIDENCE_RUN?.trim()=
 const gateway=openAICompatibleGatewayFromEnv();
 const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
 const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
-const evidenceHermesRuntime=evidenceRequested?hermesBridgeRuntimeFromEnv(agentOutputValidators,process.env,"primary-only"):null;
 const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRuntime,directRuntime):(hermesRuntime??directRuntime??undefined);
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
@@ -108,10 +107,10 @@ try {
     metricTimer.unref();
   }
   if(evidenceRequested){
-    if(!evidenceHermesRuntime){
+    if(!hermesRuntime){
       app.log.error("KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: Hermes runtime is not configured");
     }else{
-      void runMarketingShadowPairedEvidence(evidenceHermesRuntime)
+      void runMarketingShadowPairedEvidence(hermesRuntime)
         .then(evidence=>app.log.info({evidence},"KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE"))
         .catch(error=>app.log.error({err:error},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED"));
     }
