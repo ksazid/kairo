@@ -21,8 +21,13 @@ suite("PostgreSQL marketing shadow evidence run store", () => {
   beforeEach(() => pool.query("truncate marketing_shadow_evidence_runs"));
   afterAll(() => pool.end());
 
-  it("allows exactly one claim for a run ID across repeated process starts", async () => {
-    await expect(store.claim("vs23-run-a", releaseSha)).resolves.toEqual({ claimed: true, status: "started" });
+  it("allows exactly one claim for a run ID across concurrent or repeated process starts", async () => {
+    const claims = await Promise.all([
+      store.claim("vs23-run-a", releaseSha),
+      store.claim("vs23-run-a", releaseSha),
+    ]);
+    expect(claims.filter((claim) => claim.claimed)).toHaveLength(1);
+    expect(claims.filter((claim) => !claim.claimed)).toHaveLength(1);
     await expect(store.claim("vs23-run-a", releaseSha)).resolves.toEqual({ claimed: false, status: "started" });
     await expect(store.claim("vs23-run-a", "b".repeat(40))).rejects.toThrow(/different release SHA/);
   });
