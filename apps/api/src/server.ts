@@ -15,7 +15,7 @@ import{registerReadinessRoutes}from"./readiness-routes";
 import{registerGuidedBrandBrainRoutes}from"./guided-brand-brain-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
-import {DirectModelRuntime}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
+import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
 import{PerformanceCollectionWorker}from"@kairo/worker/performance";
 import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
 import{InstagramConnectionService}from"./instagram-connection";
@@ -35,8 +35,15 @@ const coreStore=new PgKairoRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
 const operationsStore=new PgOperationsRepository(pool);
 const telemetrySink=new PgOperationsTelemetrySink(pool,operationsStore);
+const agentOutputValidators={
+  "content-draft@1":value=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),
+  "critic-review@1":value=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),
+  "brand-brain-proposals@1":value=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
+};
 const gateway=openAICompatibleGatewayFromEnv();
-const baseRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:{"content-draft@1":value=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),"critic-review@1":value=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),"brand-brain-proposals@1":value=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals)} }):undefined;
+const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
+const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
+const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRuntime,directRuntime):(hermesRuntime??directRuntime??undefined);
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
 const identityVerifier=new OidcJwtVerifier({
