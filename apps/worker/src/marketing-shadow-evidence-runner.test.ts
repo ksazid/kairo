@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AgentInvocationRequest, AgentRuntimePort } from "@kairo/agent-contracts";
 import type { CarouselPlan } from "@kairo/domain/creative-formats";
-import { runMarketingShadowPairedEvidence } from "./marketing-shadow-evidence-runner";
+import { marketingEvidenceRuntimeRoute, runMarketingShadowPairedEvidence } from "./marketing-shadow-evidence-runner";
 
 const runtime: AgentRuntimePort = {
   async invoke<TOutput>(request: AgentInvocationRequest) {
@@ -24,7 +24,17 @@ const runtime: AgentRuntimePort = {
     };
     return {
       output: output as TOutput,
-      metadata: { runtime: "hermes", provider: "test", model: "test", inputTokens: 10, outputTokens: 20, costUsd: 0.001, latencyMs: 5 },
+      metadata: {
+        runtime: "hermes",
+        runtimeVersion: "hermes-agent@test",
+        provider: "test-provider",
+        model: "test-model",
+        inputTokens: 10,
+        outputTokens: 20,
+        costUsd: 0.001,
+        pricingVersion: "test-pricing",
+        latencyMs: 5,
+      },
     };
   },
 };
@@ -38,5 +48,23 @@ describe("VS-23 paired shadow evidence runner", () => {
   it("fails closed when the pinned Corey source cannot be fetched", async () => {
     const fakeFetch: typeof fetch = async () => new Response("missing", { status: 503 });
     await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch)).rejects.toThrow(/503/);
+  });
+
+  it("requires an explicit Hermes provider/model/pricing route for qualification evidence", () => {
+    expect(() => marketingEvidenceRuntimeRoute({
+      runtime: "direct-model",
+      provider: "test-provider",
+      model: "test-model",
+      pricingVersion: "test-pricing",
+      latencyMs: 1,
+    }, "case:native")).toThrow(/Hermes runtime evidence/i);
+
+    expect(() => marketingEvidenceRuntimeRoute({
+      runtime: "hermes",
+      runtimeVersion: "hermes-agent@test",
+      provider: "test-provider",
+      model: "test-model",
+      latencyMs: 1,
+    }, "case:native")).toThrow(/pricingVersion metadata/i);
   });
 });
