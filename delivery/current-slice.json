@@ -3,7 +3,7 @@
   "sliceId": "VS-27",
   "title": "Hermes Runtime Integration",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-20"],
@@ -44,9 +44,9 @@
     "notes": [
       "Activates the TRD-approved Hermes reasoning-runtime boundary while preserving DirectModelRuntime as a viable fallback.",
       "Groq and OpenRouter credentials remain inside the Hermes service boundary and are never exposed to agents, domain state, browser code or committed configuration.",
-      "Hermes is constrained to zero tools, no persistent memory/context/skills and a Kairo-authenticated versioned invocation contract.",
-      "Normal routing is Groq primary with OpenRouter fallback; controlled benchmark mode is primary-only to preserve comparable evidence.",
-      "Python CI is offline/fake-provider only and does not receive provider credentials or perform model inference.",
+      "Hermes is constrained to zero tools, no persistent memory/context, no project-plugin/profile inheritance, no persistent Hermes prompt logs and a Kairo-authenticated versioned invocation contract.",
+      "Normal routing is Groq primary with OpenRouter fallback; OpenRouter fallback requires ZDR/no-collection/parameter support and controlled benchmark mode is primary-only.",
+      "Python CI uses fake providers for contract tests plus a real pinned Hermes container/version/zero-tool check; it receives no provider credentials and performs no model inference.",
       "No database migration, release, deployment, provider-secret entry, VS-23 live activation or VS-24 promotion is authorized by this slice."
     ]
   },
@@ -85,7 +85,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Exact candidate SHA and complete CI/security evidence are required before certification."
+      "rationale": "Implementation and internal review are complete. Exact-head Product Intake, Security and full CI including the installed pinned-Hermes zero-tool container gate must pass before human exact-SHA certification approval is requested."
     },
     {
       "type": "release",
@@ -110,16 +110,21 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 70,
-    "testing": 30,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "RED TypeScript and Python service contracts were committed before corresponding runtime behavior.",
+      "A first full CI attempt exposed a strict TypeScript implicit-any defect in the new API validator map while Python Hermes contracts, PostgreSQL migration verification, dependency audit and preflight had passed; the typing defect was repaired without weakening a gate.",
+      "Subsequent review added exact pinned Hermes container/version/zero-tool verification, OpenRouter ZDR/no-collection routing, Groq ZDR deployment precondition, Hermes persistent-file-log suppression, provider timeout propagation and forced ambient Hermes profile isolation.",
+      "docs/plans/VS-27-review.md records the implementation/security review and explicitly lists real-provider invocation, deployment, secret entry and VS-23 qualification as unproven/deferred."
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -138,7 +143,10 @@
   "links": {
     "specification": "docs/slices/VS-27.md",
     "implementationPr": "https://github.com/ksazid/kairo/pull/63",
-    "evidence": ["docs/plans/VS-27-hermes-runtime.md"]
+    "evidence": [
+      "docs/plans/VS-27-hermes-runtime.md",
+      "docs/plans/VS-27-review.md"
+    ]
   },
   "maxAttempts": 3
 }
