@@ -16,7 +16,6 @@ import{registerGuidedBrandBrainRoutes}from"./guided-brand-brain-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
-import{runMarketingShadowPairedEvidence}from"@kairo/worker/marketing-shadow-evidence-runner";
 import{validateCarouselPlan}from"@kairo/domain/creative-formats";
 import{PerformanceCollectionWorker}from"@kairo/worker/performance";
 import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
@@ -25,6 +24,11 @@ import{PgEncryptedChannelCredentialVault,PgInstagramConnectionRepository}from"./
 import{MetaInstagramOAuthClient}from"./meta-instagram-oauth";
 import{registerInstagramConnectionRoutes}from"./instagram-connection-routes";
 import{InstagramMetricCollectionRunner,PgMetricCollectionJobStore}from"./instagram-metric-runner";
+import{
+  executeMarketingShadowEvidenceAttempt,
+  marketingShadowEvidenceRequestFromEnv,
+  PgMarketingShadowEvidenceRunStore,
+}from"./marketing-shadow-evidence-run";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -43,7 +47,7 @@ const agentOutputValidators={
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
 };
-const evidenceRequested=process.env.KAIRO_MARKETING_SHADOW_EVIDENCE_RUN?.trim()==="1";
+const evidenceRequest=marketingShadowEvidenceRequestFromEnv();
 const gateway=openAICompatibleGatewayFromEnv();
 const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
 const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
@@ -106,13 +110,26 @@ try {
     metricTimer=setInterval(()=>void collectMetricTick(),60_000);
     metricTimer.unref();
   }
-  if(evidenceRequested){
+  if(evidenceRequest){
     if(!hermesRuntime){
-      app.log.error("KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: Hermes runtime is not configured");
+      app.log.error({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: Hermes runtime is not configured");
     }else{
-      void runMarketingShadowPairedEvidence(hermesRuntime)
-        .then(evidence=>app.log.info({evidence},"KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE"))
-        .catch(error=>app.log.error({err:error},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED"));
+      const evidenceStore=new PgMarketingShadowEvidenceRunStore(pool);
+      void executeMarketingShadowEvidenceAttempt(evidenceStore,hermesRuntime,evidenceRequest)
+        .then(result=>{
+          if(result.kind==="skipped"){
+            app.log.warn({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha,priorStatus:result.priorStatus},"KAIRO_MARKETING_SHADOW_EVIDENCE_SKIPPED_ALREADY_CLAIMED");
+            return;
+          }
+          app.log.info({
+            runId:evidenceRequest.runId,
+            releaseSha:evidenceRequest.releaseSha,
+            persisted:true,
+            pairCount:result.evidence.pairs.length,
+            runtimeRoute:result.evidence.runtimeRoute,
+          },"KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE");
+        })
+        .catch(error=>app.log.error({err:error,runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED"));
     }
   }
 } catch (error) {
