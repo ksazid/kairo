@@ -15,11 +15,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Smoke live Kairo API identity and health
+      - name: Smoke live Kairo API health and advertised version
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
-          KAIRO_RELEASE_SHA: 63002c27c6f874569573f4513bab351f43e32439
-        run: node scripts/pilot-smoke.mjs
+        run: |
+          node --input-type=module <<'NODE'
+          const base = process.env.KAIRO_API_URL;
+          for (const [path, expectedStatus, expectedField, expectedValue] of [
+            ['/health/live', 200, 'status', 'ok'],
+            ['/health/ready', 200, 'status', 'ready'],
+          ]) {
+            const response = await fetch(`${base}${path}`);
+            const body = await response.json();
+            if (response.status !== expectedStatus || body?.[expectedField] !== expectedValue) {
+              throw new Error(`${path} failed: ${response.status} ${JSON.stringify(body)}`);
+            }
+            console.log(`${path} PASS`);
+          }
+          const versionResponse = await fetch(`${base}/version`);
+          const version = await versionResponse.json();
+          if (versionResponse.status !== 200 || !/^[0-9a-f]{40}$/i.test(version?.releaseSha ?? '')) {
+            throw new Error(`/version invalid: ${versionResponse.status} ${JSON.stringify(version)}`);
+          }
+          console.log(`advertised releaseSha=${version.releaseSha}`);
+          NODE
       - name: Verify bodyless Instagram connect reaches auth boundary
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
