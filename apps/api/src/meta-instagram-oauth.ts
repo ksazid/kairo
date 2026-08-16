@@ -4,6 +4,7 @@ type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<
 
 const REQUIRED_SCOPES = [
   "pages_show_list",
+  "business_management",
   "instagram_basic",
   "instagram_content_publish",
   "pages_read_engagement",
