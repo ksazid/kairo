@@ -1,64 +1,55 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-27",
-  "title": "Hermes Runtime Integration",
+  "sliceId": "VS-28",
+  "title": "Kairo Root Login & Onboarding Routing",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-12", "FR-20"],
+  "requirements": ["FR-01"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-03", "VS-06", "VS-26"],
+  "dependencies": ["VS-16", "VS-25"],
   "blockers": [],
   "allowedPaths": [
-    "services/hermes-runtime/**",
-    "apps/worker/**",
-    "apps/api/**",
-    "packages/agent-contracts/**",
+    "apps/web/**",
     "tests/**",
-    "docs/slices/VS-27.md",
+    "docs/slices/VS-28.md",
     "docs/plans/**",
     "delivery/**",
     ".engineering/STATE.json",
-    "README.md",
-    ".github/workflows/ci.yml"
+    "README.md"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
+    "apps/api/**",
     "apps/api/migrations/**"
   ],
   "impact": {
-    "areas": [
-      "architecture",
-      "api",
-      "sensitive-data",
-      "deployment",
-      "operations-support"
-    ],
+    "areas": ["frontend", "authentication", "customer-flow", "sensitive-data"],
     "notes": [
-      "Activates the TRD-approved Hermes reasoning-runtime boundary while preserving DirectModelRuntime as a viable fallback.",
-      "Groq and OpenRouter credentials remain inside the Hermes service boundary and are never exposed to agents, domain state, browser code or committed configuration.",
-      "Hermes is constrained to zero tools, no persistent memory/context, no project-plugin/profile inheritance, no persistent Hermes prompt logs and a Kairo-authenticated versioned invocation contract.",
-      "Normal routing is Groq primary with OpenRouter fallback; OpenRouter fallback requires ZDR/no-collection/parameter support and controlled benchmark mode is primary-only.",
-      "Python CI uses fake providers for contract tests plus a real pinned Hermes container/version/zero-tool check; it receives no provider credentials and performs no model inference.",
-      "No database migration, release, deployment, provider-secret entry, VS-23 live activation or VS-24 promotion is authorized by this slice."
+      "Makes the signed-out root route enter Auth0 Universal Login directly instead of adding a Kairo-owned credential step.",
+      "Moves Workspace creation to a dedicated authenticated /onboarding route and deterministically routes users with no Workspace there after callback.",
+      "Keeps passwords outside Kairo; Auth0 remains the credential boundary while Kairo retains Workspace and Brand authorization.",
+      "Uses the same standards-based Authorization Code + PKCE architecture that can be reused by future mobile clients with a platform-appropriate Auth0 application/callback.",
+      "Google remains enabled through Auth0 when configured; Apple is prepared as an Auth0 connection but is not claimed operational until Apple/Auth0 credentials are configured.",
+      "No release, deployment, Auth0 tenant mutation, Apple Developer configuration or production enablement is authorized by this slice."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-27@1.0",
+      "version": "VS-28@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-16T02:35:00+02:00",
-      "rationale": "The owner explicitly selected Hermes with Groq and OpenRouter, created both provider keys privately, and instructed Go after the bounded Hermes integration direction and secret boundary were explained."
+      "at": "2026-08-16T06:35:00+02:00",
+      "rationale": "The owner explicitly instructed Go after defining the root-as-login experience, Kairo-only branding, Auth0 email/password, Google and Apple-ready social login, deterministic onboarding routing and future mobile reuse."
     },
     {
       "type": "policy",
@@ -67,25 +58,25 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The approved TRD already defines Hermes as the preferred AgentRuntimePort implementation, DirectModelRuntime fallback, provider-neutral model access, secret isolation, zero agent publishing authority and auditable model cost. This slice does not broaden those policies."
+      "rationale": "DEC-001 and VS-16 already govern managed standards-based OIDC/OAuth, Auth0-hosted credential handling and Kairo-owned Workspace/Brand authorization."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-27@1.0",
+      "version": "VS-28@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-16T02:35:00+02:00",
-      "rationale": "The owner's Go instruction authorizes bounded implementation of the agreed Hermes runtime integration. Merge, release, deployment, provider-secret entry and production enablement remain separate approvals."
+      "at": "2026-08-16T06:35:00+02:00",
+      "rationale": "The owner's Go instruction authorizes bounded implementation of the agreed login-entry and onboarding-routing correction outside production."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-27@1.0",
+      "version": "VS-28@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Implementation and internal review are complete. Exact-head Product Intake, Security and full CI including the installed pinned-Hermes zero-tool container gate must pass before human exact-SHA certification approval is requested."
+      "rationale": "Exact-head Product Intake, Security and CI must pass before human exact-SHA certification approval is requested."
     },
     {
       "type": "release",
@@ -110,21 +101,16 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 50,
+    "implementation": 25,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
+    "status": "not-started",
     "commitSha": null,
-    "evidence": [
-      "RED TypeScript and Python service contracts were committed before corresponding runtime behavior.",
-      "A first full CI attempt exposed a strict TypeScript implicit-any defect in the new API validator map while Python Hermes contracts, PostgreSQL migration verification, dependency audit and preflight had passed; the typing defect was repaired without weakening a gate.",
-      "Subsequent review added exact pinned Hermes container/version/zero-tool verification, OpenRouter ZDR/no-collection routing, Groq ZDR deployment precondition, Hermes persistent-file-log suppression, provider timeout propagation and forced ambient Hermes profile isolation.",
-      "docs/plans/VS-27-review.md records the implementation/security review and explicitly lists real-provider invocation, deployment, secret entry and VS-23 qualification as unproven/deferred."
-    ]
+    "evidence": []
   },
   "release": {
     "status": "not-authorized",
@@ -141,12 +127,9 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-27.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/63",
-    "evidence": [
-      "docs/plans/VS-27-hermes-runtime.md",
-      "docs/plans/VS-27-review.md"
-    ]
+    "specification": "docs/slices/VS-28.md",
+    "implementationPr": null,
+    "evidence": ["docs/plans/VS-28-kairo-login-entry.md"]
   },
   "maxAttempts": 3
 }
