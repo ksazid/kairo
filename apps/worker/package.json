@@ -21,6 +21,8 @@
     "./learner": "./src/learner.ts",
     "./creative-renderer": "./src/creative-renderer.ts",
     "./marketing-shadow": "./src/marketing-shadow.ts",
+    "./marketing-shadow-qualification": "./src/marketing-shadow-qualification.ts",
+    "./marketing-shadow-evidence-runner": "./src/marketing-shadow-evidence-runner.ts",
     "./marketing-shadow-comparison": "./src/marketing-shadow-comparison.ts",
     "./publishable-media": "./src/publishable-media.ts",
     "./reel-encoder": "./src/reel-encoder.ts",
