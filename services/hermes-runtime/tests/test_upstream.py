@@ -114,7 +114,6 @@ def test_executor_instantiates_one_memoryless_tooled_off_hermes_turn(monkeypatch
     assert captured["skip_memory"] is True
     assert captured["checkpoints_enabled"] is False
     assert captured["request_overrides"] == {
-        "response_format": {"type": "json_object"},
         "timeout": 5.0,
     }
     assert captured["persist_disabled_at_run"] is True
@@ -138,8 +137,8 @@ def test_openrouter_fallback_enforces_zdr_no_collection_and_parameter_support(mo
     )
 
     assert captured["request_overrides"] == {
-        "response_format": {"type": "json_object"},
         "timeout": 1.0,
+        "response_format": {"type": "json_object"},
         "extra_body": {
             "provider": {
                 "zdr": True,

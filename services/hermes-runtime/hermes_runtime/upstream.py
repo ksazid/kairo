@@ -118,9 +118,15 @@ def _request_overrides(provider: ProviderConfig, timeout_ms: int) -> dict[str, o
     # This gives the provider call the same ceiling as Kairo's outer bridge.
     timeout_seconds = max(0.1, timeout_ms / 1000)
     overrides: dict[str, object] = {
-        "response_format": {"type": "json_object"},
         "timeout": timeout_seconds,
     }
+    if provider.provider != "groq":
+        # Live diagnostics on 2026-08-16 showed Groq's openai/gpt-oss-120b
+        # route rejecting forced json_object generation before Hermes could
+        # return content. Kairo still parses and validates every provider
+        # response as a JSON object after generation, so the Groq route stays
+        # fail-closed without provider-level JSON mode.
+        overrides["response_format"] = {"type": "json_object"}
     if provider.provider == "openrouter":
         # OpenRouter supports per-request privacy routing. Brand-private Kairo
         # traffic may use the fallback only when an endpoint both refuses data
