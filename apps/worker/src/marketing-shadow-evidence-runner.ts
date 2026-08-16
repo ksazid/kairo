@@ -47,8 +47,7 @@ export interface MarketingShadowLaneEvidence {
 }
 
 export interface MarketingShadowRuntimeRoute {
-  runtime: "hermes";
-  runtimeVersion: string;
+  runtime: "direct-model";
   provider: string;
   model: string;
   modelVersion?: string;
@@ -100,8 +99,6 @@ export async function runMarketingShadowPairedEvidence(
   };
   const snapshot = verifyPinnedSkillSnapshot(manifest, candidateSnapshot);
 
-  await waitForMarketingEvidenceHermesReady(process.env.KAIRO_HERMES_ENDPOINT, fetch, pause);
-
   const registry = createMarketingSkillRegistry([manifest]);
   const shadow = new MarketingShadowExecutionService(runtime, registry, {
     allowedDatasetIds: ["marketing-lab-cross-sector-synthetic-fixtures"],
@@ -136,11 +133,11 @@ export async function runMarketingShadowPairedEvidence(
     const nativeRoute = marketingEvidenceRuntimeRoute(native.metadata, `${fixture.id}:native`);
     const coreyRoute = marketingEvidenceRuntimeRoute(corey.metadata, `${fixture.id}:corey`);
     if (runtimeRouteKey(nativeRoute) !== runtimeRouteKey(coreyRoute)) {
-      throw new Error(`Paired Hermes provider/model route mismatch for ${fixture.id}`);
+      throw new Error(`Paired DirectModel provider/model route mismatch for ${fixture.id}`);
     }
     if (!expectedRoute) expectedRoute = nativeRoute;
     else if (runtimeRouteKey(expectedRoute) !== runtimeRouteKey(nativeRoute)) {
-      throw new Error(`Hermes provider/model route changed during the qualification run at ${fixture.id}`);
+      throw new Error(`DirectModel provider/model route changed during the qualification run at ${fixture.id}`);
     }
 
     pairs.push({
@@ -151,7 +148,7 @@ export async function runMarketingShadowPairedEvidence(
     });
   }
 
-  if (!expectedRoute) throw new Error("Qualification evidence requires an explicit Hermes runtime route");
+  if (!expectedRoute) throw new Error("Qualification evidence requires an explicit DirectModel runtime route");
   return {
     schemaVersion: 1,
     evidenceKind: "vs23-shadow-qualification-paired-execution",
@@ -244,14 +241,12 @@ export function marketingEvidenceRuntimeRoute(
   metadata: AgentInvocationMetadata,
   lane: string,
 ): MarketingShadowRuntimeRoute {
-  if (metadata.runtime !== "hermes") throw new Error(`Hermes runtime evidence is required for ${lane}`);
-  const runtimeVersion = requiredMetadataText(metadata.runtimeVersion, "runtimeVersion", lane);
+  if (metadata.runtime !== "direct-model") throw new Error(`DirectModel runtime evidence is required for ${lane}`);
   const provider = requiredMetadataText(metadata.provider, "provider", lane);
   const model = requiredMetadataText(metadata.model, "model", lane);
   const pricingVersion = requiredMetadataText(metadata.pricingVersion, "pricingVersion", lane);
   return {
-    runtime: "hermes",
-    runtimeVersion,
+    runtime: "direct-model",
     provider,
     model,
     ...(metadata.modelVersion ? { modelVersion: metadata.modelVersion } : {}),
