@@ -9,11 +9,12 @@ Close the remaining Issue #58 evidence gap by executing the already-prepared fou
 - Execute exactly `motorcycle-carousel-01` through `motorcycle-carousel-04` from `evaluation/marketing-lab/benchmark-cases.json`.
 - Run the Kairo Native `kairo-native-carousel@1` baseline and the pinned `corey-social-shadow@2.2.0+7868cb9` challenger on the identical transformed input for each case.
 - Use Hermes directly for qualification evidence. Hermes may use its governed provider fallback, but the runner must fail closed unless all eight executions report the exact same Hermes runtime/provider/model/pricing route; provider fallback therefore cannot be silent or create a mixed-route comparison.
-- Retrieve only the exact pinned public Corey skill source and verify its Git blob hash before supplying it as untrusted reference context.
+- Retrieve only the exact pinned public Corey skill source and verify its Git blob hash before any model invocation and before supplying it as untrusted reference context.
 - Give the challenger zero tool calls, no social/network capability, no secrets, no Instagram credentials and no publishing authority.
 - Require measured cost and latency metadata for both lanes; missing evidence fails closed.
-- Emit only synthetic benchmark outputs, source provenance, the explicit runtime route and safe runtime metadata to the application evidence log marker.
-- The runner is default-off and starts only when `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN=1` is explicitly configured for an approved evidence deployment.
+- Persist only synthetic benchmark outputs, source provenance, the explicit runtime route and safe runtime metadata in the governed evidence-run record; application logs contain only the run ID, release SHA, pair count and safe route summary on success.
+- The runner is default-off and starts only when `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN=1` is explicitly configured for an approved evidence deployment together with a unique non-secret `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN_ID` and the exact approved `KAIRO_RELEASE_SHA`.
+- Each run ID is durably claimed in PostgreSQL before the first model invocation. A process restart or duplicate deployment with the same run ID must skip every model invocation rather than repeat an already-started, completed or failed approved attempt.
 
 ## Runtime evidence observed on 2026-08-16
 
@@ -35,9 +36,11 @@ The separately approved four-case Kairo API evidence run was then started on exa
 
 The schema-validation failure exposed a Kairo prompt-contract gap rather than a provider failure: Hermes was told only the output schema identifier `marketing-carousel-plan@1`, while the Kairo validator requires the concrete carousel shape and Claim-lineage fields. The corrective change therefore supplies the exact Kairo-owned `marketing-carousel-plan@1` output contract to the Hermes system prompt for that schema only. It does not relax or replace Kairo's existing validator, change provider/model/routing, alter benchmark inputs or budgets, grant tools/network/secrets/publishing authority, or expose production Brand or Instagram data. Unknown schemas continue without an invented contract and remain fail-closed at their existing Kairo validators.
 
-The explicit carousel contract was merged and deployed to Hermes at exact SHA `293fb4a2ae224f65ce0b85464d19873a7fef8425`. A separately approved Kairo API benchmark retry on that same exact SHA progressed beyond the prior schema failure. During the sequential lane execution, Groq reported its `openai/gpt-oss-120b` on-demand token-per-minute limit of 8000 and returned HTTP 429 responses with retry windows of roughly 23 to 34 seconds. The pinned Hermes client correctly honored those retry windows, but a later Corey lane exceeded Kairo's unchanged 30-second per-invocation timeout and the run failed closed with `Hermes invocation timed out`. No complete paired evidence set, human score or winner was produced. The evidence flag was immediately returned to `0`, and the flag-off Kairo API deployment on the same SHA was confirmed live.
+The explicit carousel contract was merged and deployed to Kairo at exact SHA `293fb4a2ae224f65ce0b85464d19873a7fef8425`. A separately approved Kairo API benchmark retry on that exact SHA progressed beyond the prior schema failure. During the sequential lane execution, Groq reported its `openai/gpt-oss-120b` on-demand token-per-minute limit of 8000 and returned HTTP 429 responses with retry windows of roughly 23 to 34 seconds. The pinned Hermes client correctly honored those retry windows, but a later Corey lane exceeded Kairo's unchanged 30-second per-invocation timeout and the run failed closed with `Hermes invocation timed out`. No complete paired evidence set, human score or winner was produced. The evidence flag was immediately returned to `0`, and the flag-off Kairo API deployment on the same SHA was confirmed live.
 
 The provider-window correction is benchmark orchestration only: insert a fixed 65-second gap between sequential Hermes lanes so the eight approved executions do not self-throttle the observed one-minute Groq TPM window. The delay occurs outside each Hermes invocation, so it is not included in the measured provider/runtime latency used by the qualification thresholds. It does not change the 30-second lane timeout, 2200-token ceiling, $0.03 cost ceiling, model, provider routing, fallback policy, inputs, output contract, scoring, Truth rules, edit-distance rules, or exact-route invariant.
+
+The longer paced run creates a second operational risk: while the evidence flag remains enabled, a Render process restart or duplicate deployment could otherwise launch the same startup benchmark again. The correction therefore assigns every explicitly approved attempt a unique non-secret run ID and atomically claims it in PostgreSQL before invoking Hermes. Repeated startup with the same run ID is a no-op for model execution regardless of whether the original attempt is still started, completed or failed. A run ID is also permanently bound to one exact release SHA. Completed synthetic evidence is stored as JSONB so the four blind pairs can be recovered for scoring without relying on one oversized application log event. Failed attempts persist only a bounded failure category, not provider bodies, prompts, credentials or model output. Evidence persistence retries transient write failures up to three times; it never reruns a model lane to recover a persistence failure.
 
 ## Explicit exclusions
 
@@ -54,7 +57,10 @@ The provider-window correction is benchmark orchestration only: insert a fixed 6
 3. Keep the benchmark evidence flag off while running the separately gated Hermes-local one-shot provider diagnostic and collecting only the safe route/failure marker.
 4. Correct the confirmed provider/runtime compatibility cause, including keeping the synthetic verification ceiling representative of the already-approved benchmark ceiling, and separately certify/deploy each correction.
 5. Ensure Hermes receives the concrete Kairo output contract required by the local validator without weakening schema or lineage enforcement.
-6. Pace sequential qualification lanes outside their measured invocation windows when required by the provider's documented/observed TPM boundary.
-7. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
-8. Present the four pairs blind as A/B for human scoring.
-9. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
+6. Pace sequential qualification lanes outside their measured invocation windows when required by the provider's observed TPM boundary.
+7. Apply the certified `marketing_shadow_evidence_runs` migration before enabling the evidence flag; a missing table must fail before any model invocation.
+8. Configure one new approved `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN_ID`, the exact approved `KAIRO_RELEASE_SHA`, and `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN=1` together. Do not manually trigger a second deploy after Render creates the environment-update deploy.
+9. Allow only the process that atomically claims that run ID to execute the eight paced lanes. Duplicate process starts must log the prior status and skip model execution.
+10. After completion or failure, immediately return `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN` to `0`. Retrieve completed evidence from the durable run record rather than depending on log retention/truncation.
+11. Present the four pairs blind as A/B for human scoring.
+12. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
