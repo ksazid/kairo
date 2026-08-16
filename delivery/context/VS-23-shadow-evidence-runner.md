@@ -19,6 +19,10 @@ Close the remaining Issue #58 evidence gap by executing the already-prepared fou
 
 The certified primary-only runner at production SHA `63e887d01804ade01f4b77826ae311b2d32cb666` was attempted twice. Both attempts failed on the first Kairo Native invocation with `Hermes bridge returned 502`; no paired output, score, preference or winner evidence was produced. The one-shot flag was disabled after each failed attempt. The corrective runner permits Hermes' existing governed provider fallback only under the uniform-route invariant above.
 
+The certified resilient runner at Kairo API SHA `8babc4ff680df40b23a17ebc8cfcdeb8f08cf763` was then deployed for the approved retry. The first Kairo Native invocation again returned `Hermes bridge returned 502` before any paired output was produced. A queued redeploy of the same approved SHA reached the same fail-closed result before the flag-off deployment completed. `KAIRO_MARKETING_SHADOW_EVIDENCE_RUN` is now disabled. No output, human score or winner evidence was claimed from either failed invocation.
+
+The Hermes service had never completed a real provider-backed Kairo invocation before these attempts; prior certification used fake-provider contracts and zero-tool container verification. The next permitted diagnostic change is metadata-only runtime observability: log the configured provider/model/pricing labels at Hermes startup and log Kairo-sanitized provider/runtime failure categories without prompts, request bodies, provider exception bodies, API keys or service tokens.
+
 ## Explicit exclusions
 
 - No private production Brand context.
@@ -29,8 +33,9 @@ The certified primary-only runner at production SHA `63e887d01804ade01f4b77826ae
 
 ## Completion sequence
 
-1. Certify an exact runner SHA through CI, Security and Product Intake.
-2. Obtain explicit exact-SHA deployment approval.
-3. Enable the one-shot evidence flag for the approved deployment, collect the paired execution log, then disable the flag.
-4. Present the four pairs blind as A/B for human scoring.
-5. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
+1. Certify an exact runner/runtime diagnostic SHA through CI, Security and Product Intake.
+2. Obtain explicit exact-SHA deployment approval for the affected service.
+3. Keep the evidence flag off while verifying the safe Hermes startup route and failure category.
+4. After the runtime cause is corrected and separately approved, enable the one-shot evidence flag for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
+5. Present the four pairs blind as A/B for human scoring.
+6. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
