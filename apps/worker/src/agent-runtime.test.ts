@@ -11,6 +11,7 @@ import {
   DirectModelRuntime,
   HERMES_POLICY_FINGERPRINT,
   HermesBridgeRuntime,
+  hermesBridgeRuntimeFromEnv,
 } from "./agent-runtime";
 
 const validOutput = { qualifies: true, relevance: 0.9 };
@@ -160,5 +161,24 @@ describe("VS-27 Hermes reasoning-only adapter", () => {
       costUsd: 0.0012,
       pricingVersion: "fixture-pricing-v1",
     });
+  });
+});
+
+describe("VS-27 Hermes environment composition", () => {
+  it("leaves Hermes disabled when no bridge configuration exists", () => {
+    expect(hermesBridgeRuntimeFromEnv(validators, {})).toBeNull();
+  });
+
+  it("requires endpoint and service token together without any provider key", () => {
+    expect(() => hermesBridgeRuntimeFromEnv(validators, { KAIRO_HERMES_ENDPOINT: "https://hermes.example.test" })).toThrow(/together/i);
+    expect(() => hermesBridgeRuntimeFromEnv(validators, { KAIRO_HERMES_SERVICE_TOKEN: "service-only" })).toThrow(/together/i);
+
+    const runtime = hermesBridgeRuntimeFromEnv(validators, {
+      KAIRO_HERMES_ENDPOINT: "https://hermes.example.test",
+      KAIRO_HERMES_SERVICE_TOKEN: "bridge-secret",
+      GROQ_API_KEY: "must-not-be-needed-by-kairo",
+      OPENROUTER_API_KEY: "must-not-be-needed-by-kairo",
+    });
+    expect(runtime).toBeInstanceOf(HermesBridgeRuntime);
   });
 });
