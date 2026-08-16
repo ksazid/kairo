@@ -116,11 +116,12 @@ export function hermesBridgeRuntimeFromEnv(
   env: Record<string, string | undefined> = process.env,
   routing: HermesRoutingMode = "resilient",
 ): HermesBridgeRuntime | null {
+  if (env.KAIRO_HERMES_RUNTIME_ENABLED?.trim() !== "1") return null;
+
   const endpoint = env.KAIRO_HERMES_ENDPOINT?.trim();
   const serviceToken = env.KAIRO_HERMES_SERVICE_TOKEN?.trim();
-  if (!endpoint && !serviceToken) return null;
   if (!endpoint || !serviceToken) {
-    throw new AgentRuntimeError("KAIRO_HERMES_ENDPOINT and KAIRO_HERMES_SERVICE_TOKEN must be configured together");
+    throw new AgentRuntimeError("KAIRO_HERMES_ENDPOINT and KAIRO_HERMES_SERVICE_TOKEN must be configured together when KAIRO_HERMES_RUNTIME_ENABLED=1");
   }
   return new HermesBridgeRuntime({ endpoint, serviceToken, validators, routingMode: routing });
 }
