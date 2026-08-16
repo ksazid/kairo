@@ -82,6 +82,15 @@ export function marketingShadowEvidenceRequestFromEnv(
   if (!RELEASE_SHA_PATTERN.test(releaseSha)) {
     throw new Error("KAIRO_RELEASE_SHA must be an exact lowercase 40-character commit SHA for shadow evidence");
   }
+  if (env.RENDER?.trim() === "true") {
+    const deployedSha = env.RENDER_GIT_COMMIT?.trim() ?? "";
+    if (!RELEASE_SHA_PATTERN.test(deployedSha)) {
+      throw new Error("RENDER_GIT_COMMIT must identify the exact deployed commit before shadow evidence can run");
+    }
+    if (deployedSha !== releaseSha) {
+      throw new Error("KAIRO_RELEASE_SHA does not match the actual Render deployed commit");
+    }
+  }
   return { runId, releaseSha };
 }
 
