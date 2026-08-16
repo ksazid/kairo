@@ -1,9 +1,7 @@
 from types import SimpleNamespace
 
-import pytest
-
-from hermes_runtime.app import _provider_diagnostic_payload, _run_provider_diagnostic
 from hermes_runtime.core import ProviderError
+from hermes_runtime.diagnostics import provider_diagnostic_payload, run_provider_diagnostic
 
 
 class FakeRuntime:
@@ -23,7 +21,7 @@ def test_provider_diagnostic_is_default_off():
     runtime = FakeRuntime(result={"metadata": {}})
     config = SimpleNamespace(service_token="service-secret")
 
-    _run_provider_diagnostic(runtime, config, {})
+    run_provider_diagnostic(runtime, config, {})
 
     assert runtime.calls == []
 
@@ -44,7 +42,7 @@ def test_provider_diagnostic_uses_synthetic_zero_tool_payload_and_logs_only_safe
     config = SimpleNamespace(service_token="service-secret")
 
     with caplog.at_level("WARNING", logger="kairo.hermes.runtime"):
-        _run_provider_diagnostic(
+        run_provider_diagnostic(
             runtime,
             config,
             {"KAIRO_HERMES_PROVIDER_DIAGNOSTIC_RUN": "1"},
@@ -53,7 +51,7 @@ def test_provider_diagnostic_uses_synthetic_zero_tool_payload_and_logs_only_safe
     assert len(runtime.calls) == 1
     payload, authorization = runtime.calls[0]
     assert authorization == "Bearer service-secret"
-    assert payload == _provider_diagnostic_payload()
+    assert payload == provider_diagnostic_payload()
     assert payload["enabledTools"] == []
     assert payload["scope"] == {"visibility": "global-public"}
     assert "KAIRO_HERMES_PROVIDER_DIAGNOSTIC_OK" in caplog.text
@@ -72,7 +70,7 @@ def test_provider_diagnostic_logs_sanitized_provider_failure_only(caplog):
     config = SimpleNamespace(service_token="service-secret")
 
     with caplog.at_level("WARNING", logger="kairo.hermes.runtime"):
-        _run_provider_diagnostic(
+        run_provider_diagnostic(
             runtime,
             config,
             {"KAIRO_HERMES_PROVIDER_DIAGNOSTIC_RUN": "1"},
