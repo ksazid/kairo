@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "sliceId": "VS-28",
   "title": "Kairo Root Login & Onboarding Routing",
-  "status": "active",
-  "lifecycle": "certification",
+  "status": "completed",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01"],
@@ -71,12 +71,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-28@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Implementation and independent review are complete. Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd passed Product Intake #475, Security #555 and full CI #623. Fresh exact-head gates must pass after review/governance evidence is committed before human certification approval."
+      "commitSha": "a21c5c8293caa5932807461cae811bd555649915",
+      "by": "Sazid Khan",
+      "at": "2026-08-16T07:00:00+02:00",
+      "rationale": "The owner explicitly approved certification and merge of PR #64 bound to exact SHA a21c5c8293caa5932807461cae811bd555649915 after exact-head Product Intake #476, Security baseline #556 and CI #624 passed."
     },
     {
       "type": "release",
@@ -103,19 +103,22 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 50,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "a21c5c8293caa5932807461cae811bd555649915",
     "evidence": [
       "apps/web/src/auth-entry.test.ts locks the signed-out root, onboarding, recovery-only sign-in, bounded provider and logo contracts.",
-      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: Product Intake #475 passed.",
-      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: Security baseline #555 passed.",
-      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: CI #623 passed including runtime verification and Next production build.",
-      "docs/plans/VS-28-review.md records acceptance/security review and explicitly leaves Auth0 tenant branding, Apple setup and deployed browser E2E unproven."
+      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: Product Intake #475, Security baseline #555 and CI #623 passed.",
+      "Exact certification candidate a21c5c8293caa5932807461cae811bd555649915: Product Intake #476 passed.",
+      "Exact certification candidate a21c5c8293caa5932807461cae811bd555649915: Security baseline #556 passed.",
+      "Exact certification candidate a21c5c8293caa5932807461cae811bd555649915: CI #624 passed including runtime verification and Next production build.",
+      "docs/plans/VS-28-review.md records acceptance/security review and explicitly leaves Auth0 tenant branding, Apple setup and deployed browser E2E unproven.",
+      "Human certification and merge approval was provided by Sazid Khan on 2026-08-16 at 07:00 Europe/Malta and recorded on PR #64.",
+      "PR #64 merged exact approved head to main as merge commit c6d25b9d690b1dd61e7c6f60ee6d5fc10f157796."
     ]
   },
   "release": {
