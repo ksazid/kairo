@@ -23,7 +23,9 @@ The certified resilient runner at Kairo API SHA `8babc4ff680df40b23a17ebc8cfcdeb
 
 The Hermes service had never completed a real provider-backed Kairo invocation before these attempts; prior certification used fake-provider contracts and zero-tool container verification. Metadata-only diagnostics were then certified and deployed to `kairo-hermes-runtime` at exact SHA `695ac433353db7fa5b56f654a3c5a34b4134449a`. The service became live and healthy. The startup `INFO` marker was filtered by the service logging configuration, and with the benchmark evidence flag intentionally off there was no provider-backed request from which to collect the new warning-level failure category.
 
-The next bounded diagnostic step is therefore a Hermes-local, default-off, one-shot synthetic provider self-test controlled by `KAIRO_HERMES_PROVIDER_DIAGNOSTIC_RUN=1`. It executes inside the existing Hermes secret boundary with global-public synthetic context, zero tools, no Brand/Instagram data and no publishing authority. It must log only the selected provider/model/pricing route or a Kairo-sanitized provider/runtime/security failure category. The benchmark evidence flag remains off throughout this diagnostic.
+A Hermes-local, default-off, one-shot synthetic provider self-test was then certified and deployed at exact SHA `9c0d795aa2eca8f66d5aa78d757716d94881ab59`. `KAIRO_HERMES_PROVIDER_DIAGNOSTIC_RUN=1` was enabled only for that approved diagnostic deployment while the benchmark evidence flag remained off. The safe route marker confirmed the primary route as Groq `openai/gpt-oss-120b` with pricing version `groq-free-2026-08-16`; the fallback remained OpenRouter `openai/gpt-oss-120b:free`. The synthetic invocation reached and authenticated to Groq, but the provider returned HTTP 400 because the route rejected Hermes' forced `response_format=json_object` generation. The diagnostic flag was immediately returned to `0`, and the same approved SHA was redeployed live with the self-test disabled. No benchmark output or winner evidence was produced.
+
+The corrective compatibility change removes provider-level forced JSON mode only for the Groq route. It does not alter the model, provider routing, fallback policy, privacy controls, tools, memory or publishing authority. Kairo's runtime continues to parse every provider response as a JSON object and fail closed on malformed output or missing usage/cost evidence, so JSON/schema enforcement remains inside the Kairo-owned boundary.
 
 ## Explicit exclusions
 
@@ -38,7 +40,7 @@ The next bounded diagnostic step is therefore a Hermes-local, default-off, one-s
 1. Certify an exact runner/runtime diagnostic SHA through CI, Security and Product Intake.
 2. Obtain explicit exact-SHA deployment approval for the affected service.
 3. Keep the benchmark evidence flag off while running the separately gated Hermes-local one-shot provider diagnostic and collecting only the safe route/failure marker.
-4. Correct the confirmed runtime/provider cause and separately certify/deploy that correction.
+4. Correct the confirmed Groq JSON-mode compatibility cause and separately certify/deploy that correction.
 5. Enable the one-shot benchmark evidence flag only for the approved Kairo API SHA, collect the paired execution log, then disable the flag.
 6. Present the four pairs blind as A/B for human scoring.
 7. Add truth/quality, preference and edit-distance evidence and derive the deterministic verdict from the existing qualification thresholds.
