@@ -44,8 +44,7 @@ suite("PostgreSQL marketing shadow evidence run store", () => {
         blobSha: "c".repeat(40),
       },
       runtimeRoute: {
-        runtime: "hermes",
-        runtimeVersion: "hermes-agent@test",
+        runtime: "direct-model",
         provider: "test-provider",
         model: "test-model",
         pricingVersion: "test-pricing",
