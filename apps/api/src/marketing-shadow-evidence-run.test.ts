@@ -56,6 +56,23 @@ describe("marketing shadow evidence attempt orchestration", () => {
     })).toEqual(request);
   });
 
+  it("requires the approved release SHA to match Render's actual deployed commit", () => {
+    expect(() => marketingShadowEvidenceRequestFromEnv({
+      RENDER: "true",
+      RENDER_GIT_COMMIT: "b".repeat(40),
+      KAIRO_MARKETING_SHADOW_EVIDENCE_RUN: "1",
+      KAIRO_MARKETING_SHADOW_EVIDENCE_RUN_ID: request.runId,
+      KAIRO_RELEASE_SHA: request.releaseSha,
+    })).toThrow(/actual Render deployed commit/);
+    expect(marketingShadowEvidenceRequestFromEnv({
+      RENDER: "true",
+      RENDER_GIT_COMMIT: request.releaseSha,
+      KAIRO_MARKETING_SHADOW_EVIDENCE_RUN: "1",
+      KAIRO_MARKETING_SHADOW_EVIDENCE_RUN_ID: request.runId,
+      KAIRO_RELEASE_SHA: request.releaseSha,
+    })).toEqual(request);
+  });
+
   it.each(["started", "completed", "failed"] as const)("does not invoke Hermes again when a durable run ID is already %s", async (status) => {
     const run = vi.fn();
     const store: MarketingShadowEvidenceRunStore = {
