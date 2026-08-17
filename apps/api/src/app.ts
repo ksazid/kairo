@@ -20,11 +20,11 @@ import { CampaignService, type CampaignRepository, type ContentGenerationPort, t
 import type { ContentChannel } from "@kairo/domain/campaign";
 import { ReviewService, type CriticEvaluationPort, type ReviewRepository } from "@kairo/domain/review-service";
 import type { ApprovalDestination } from "@kairo/domain/review";
-import { PublishingService,type PublishingRepository } from "@kairo/domain/publishing-service";
+import { PublishingGateway, PublishingService, type DistributionDestinationInput, type PublishingRepository } from "@kairo/domain/publishing-service";
 import type { PublishContentType } from "@kairo/domain/publishing";
-import { AnalyticsService,type AnalyticsRepository } from "@kairo/domain/analytics-service";
+import { AnalyticsService, type AnalyticsRepository } from "@kairo/domain/analytics-service";
 import type { MetricName } from "@kairo/domain/analytics";
-import {LearningService,type LearningRepository}from"@kairo/domain/learning-service";
+import { LearningService, type LearningRepository } from "@kairo/domain/learning-service";
 import type { IdentityVerifier } from "./auth";
 
 export interface BuildAppOptions {
@@ -37,7 +37,7 @@ export interface BuildAppOptions {
   criticEvaluator?: CriticEvaluationPort;
   publishingStore?: PublishingRepository;
   analyticsStore?: AnalyticsRepository;
-  learningStore?:LearningRepository;
+  learningStore?: LearningRepository;
   identityVerifier: IdentityVerifier;
   logger?: boolean;
 }
@@ -49,9 +49,10 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   const research = options.researchStore ? new ResearchService(options.researchStore) : null;
   const campaigns = options.campaignStore && options.researchStore ? new CampaignService(options.campaignStore, options.researchStore, options.contentGenerator) : null;
   const reviews = options.campaignStore && options.researchStore && options.reviewStore && options.criticEvaluator ? new ReviewService(options.campaignStore, options.researchStore, options.reviewStore, options.criticEvaluator) : null;
-  const publishing = options.campaignStore && options.reviewStore && options.publishingStore ? new PublishingService(options.store,options.campaignStore,options.reviewStore,options.publishingStore) : null;
-  const analytics=options.analyticsStore?new AnalyticsService(options.analyticsStore):null;
-  const learning=options.learningStore?new LearningService(options.learningStore):null;
+  const publishing = options.campaignStore && options.reviewStore && options.publishingStore ? new PublishingService(options.store, options.campaignStore, options.reviewStore, options.publishingStore) : null;
+  const publishingGateway = reviews && publishing ? new PublishingGateway(reviews, publishing) : null;
+  const analytics = options.analyticsStore ? new AnalyticsService(options.analyticsStore) : null;
+  const learning = options.learningStore ? new LearningService(options.learningStore) : null;
 
   app.addHook("onRequest", async (request, reply) => { reply.header("x-correlation-id", request.id); });
 
@@ -211,12 +212,44 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
     app.get<{ Params: { brandId: string; campaignId: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; const detail = await campaigns.get(account.id, request.params.brandId, request.params.campaignId); if (!detail) throw new ResourceNotFoundError("Campaign not found"); return detail; });
     app.post<{ Params: { brandId: string; campaignId: string }; Body: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; content: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await campaigns.createAsset(account.id, request.params.brandId, request.params.campaignId, request.body)); });
     app.post<{ Params: { brandId: string; campaignId: string; assetId: string }; Body: { expectedVersion: number; content: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/versions", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await campaigns.appendManualEdit(account.id, request.params.brandId, request.params.campaignId, request.params.assetId, request.body)); });
-    app.post<{Params:{brandId:string;campaignId:string;assetId:string};Body:{expectedVersion:number;action:GenerateContentAction;section?:string;brandContextVersion:string}}>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/generate",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return reply.status(201).send(await campaigns.generateVersion(account.id,request.params.brandId,request.params.campaignId,request.params.assetId,request.body));});
+    app.post<{ Params: { brandId: string; campaignId: string; assetId: string }; Body: { expectedVersion: number; action: GenerateContentAction; section?: string; brandContextVersion: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/generate", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await campaigns.generateVersion(account.id, request.params.brandId, request.params.campaignId, request.params.assetId, request.body)); });
   }
-  if(reviews){app.get<{Params:{brandId:string;assetId:string}}>("/api/v1/brands/:brandId/assets/:assetId/review-status",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return reviews.status(account.id,request.params.brandId,request.params.assetId);});app.post<{Params:{brandId:string;campaignId:string;assetId:string};Body:{expectedVersion:number;brandContextVersion:string;revisionCycle:number}}>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/review",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return reply.status(201).send(await reviews.review(account.id,request.params.brandId,request.params.campaignId,request.params.assetId,request.body));});app.post<{Params:{brandId:string;campaignId:string;assetId:string};Body:{expectedVersion:number;destination:ApprovalDestination}}>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/approve",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return reply.status(201).send(await reviews.approve(account.id,request.params.brandId,request.params.campaignId,request.params.assetId,request.body));});}
-  if(publishing){app.get<{Params:{brandId:string}}>("/api/v1/brands/:brandId/channel-accounts",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return(await publishing.accounts(account.id,request.params.brandId)).map(({credentialRef:_,...safe})=>safe)});app.get<{Params:{brandId:string};Querystring:{from?:string;to?:string}}>("/api/v1/brands/:brandId/calendar",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;for(const [name,value]of Object.entries(request.query))if(value&&Number.isNaN(Date.parse(value)))throw new DomainValidationError(`${name} must be a valid timestamp`);if(request.query.from&&request.query.to&&Date.parse(request.query.from)>Date.parse(request.query.to))throw new DomainValidationError("from cannot be after to");return publishing.calendar(account.id,request.params.brandId,request.query.from,request.query.to)});app.post<{Params:{brandId:string;campaignId:string;assetId:string};Body:{channelAccountId:string;contentType:PublishContentType;scheduledFor:string}}>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/schedule",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return reply.status(201).send(await publishing.schedule(account.id,request.params.brandId,request.params.campaignId,request.params.assetId,request.body))});app.post<{Params:{brandId:string;commandId:string}}>("/api/v1/brands/:brandId/publish-commands/:commandId/retry",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return publishing.retry(account.id,request.params.brandId,request.params.commandId)});app.post<{Params:{brandId:string;commandId:string}}>("/api/v1/brands/:brandId/publish-commands/:commandId/cancel",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return publishing.cancel(account.id,request.params.brandId,request.params.commandId)})}
-  if(analytics){app.get<{Params:{brandId:string}}>("/api/v1/brands/:brandId/performance",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;return analytics.performance(account.id,request.params.brandId)});app.get<{Params:{brandId:string};Querystring:{name:MetricName}}>("/api/v1/brands/:brandId/performance/baseline",async(request,reply)=>{const account=await authenticate(request,reply,service,options.identityVerifier);if(!account)return;if(!request.query.name)throw new DomainValidationError("name is required");return analytics.baseline(account.id,request.params.brandId,request.query.name)})}
-  if(learning){app.get<{Params:{brandId:string}}>("/api/v1/brands/:brandId/learnings",async(request,reply)=>{const a=await authenticate(request,reply,service,options.identityVerifier);if(!a)return;return learning.list(a.id,request.params.brandId)});app.post<{Params:{brandId:string;learningId:string};Body:{action:"accept"|"reject"|"correct";expectedVersion:number;reason?:string;statement?:string;interpretation?:string}}>("/api/v1/brands/:brandId/learnings/:learningId/decision",async(request,reply)=>{const a=await authenticate(request,reply,service,options.identityVerifier);if(!a)return;return learning.decide(a.id,request.params.brandId,request.params.learningId,request.body)});app.get<{Params:{brandId:string}}>("/api/v1/brands/:brandId/experiments",async(request,reply)=>{const a=await authenticate(request,reply,service,options.identityVerifier);if(!a)return;return learning.experiments(a.id,request.params.brandId)})}
+
+  if (reviews) {
+    app.get<{ Params: { brandId: string; assetId: string } }>("/api/v1/brands/:brandId/assets/:assetId/review-status", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reviews.status(account.id, request.params.brandId, request.params.assetId); });
+    app.post<{ Params: { brandId: string; campaignId: string; assetId: string }; Body: { expectedVersion: number; brandContextVersion: string; revisionCycle: number } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/review", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await reviews.review(account.id, request.params.brandId, request.params.campaignId, request.params.assetId, request.body)); });
+    app.post<{ Params: { brandId: string; campaignId: string; assetId: string }; Body: { expectedVersion: number; destination: ApprovalDestination } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/approve", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await reviews.approve(account.id, request.params.brandId, request.params.campaignId, request.params.assetId, request.body)); });
+  }
+
+  if (publishing) {
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/channel-accounts", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return (await publishing.accounts(account.id, request.params.brandId)).map(({ credentialRef: _, ...safe }) => safe); });
+    app.get<{ Params: { brandId: string }; Querystring: { from?: string; to?: string } }>("/api/v1/brands/:brandId/calendar", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; for (const [name, value] of Object.entries(request.query)) if (value && Number.isNaN(Date.parse(value))) throw new DomainValidationError(`${name} must be a valid timestamp`); if (request.query.from && request.query.to && Date.parse(request.query.from) > Date.parse(request.query.to)) throw new DomainValidationError("from cannot be after to"); return publishing.calendar(account.id, request.params.brandId, request.query.from, request.query.to); });
+    app.post<{ Params: { brandId: string; campaignId: string; assetId: string }; Body: { channelAccountId: string; contentType: PublishContentType; scheduledFor: string } }>("/api/v1/brands/:brandId/campaigns/:campaignId/assets/:assetId/schedule", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return reply.status(201).send(await publishing.schedule(account.id, request.params.brandId, request.params.campaignId, request.params.assetId, request.body)); });
+    app.post<{ Params: { brandId: string; commandId: string } }>("/api/v1/brands/:brandId/publish-commands/:commandId/retry", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return publishing.retry(account.id, request.params.brandId, request.params.commandId); });
+    app.post<{ Params: { brandId: string; commandId: string } }>("/api/v1/brands/:brandId/publish-commands/:commandId/cancel", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return publishing.cancel(account.id, request.params.brandId, request.params.commandId); });
+  }
+
+  if (publishingGateway) {
+    app.post<{
+      Params: { brandId: string; campaignId: string };
+      Body: { scheduledFor: string; destinations: DistributionDestinationInput[] };
+    }>("/api/v1/brands/:brandId/campaigns/:campaignId/distributions", async (request, reply) => {
+      const account = await authenticate(request, reply, service, options.identityVerifier);
+      if (!account) return;
+      return reply.status(201).send(await publishingGateway.distribute(account.id, request.params.brandId, request.params.campaignId, request.body));
+    });
+  }
+
+  if (analytics) {
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/performance", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return analytics.performance(account.id, request.params.brandId); });
+    app.get<{ Params: { brandId: string }; Querystring: { name: MetricName } }>("/api/v1/brands/:brandId/performance/baseline", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; if (!request.query.name) throw new DomainValidationError("name is required"); return analytics.baseline(account.id, request.params.brandId, request.query.name); });
+  }
+
+  if (learning) {
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/learnings", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return learning.list(account.id, request.params.brandId); });
+    app.post<{ Params: { brandId: string; learningId: string }; Body: { action: "accept" | "reject" | "correct"; expectedVersion: number; reason?: string; statement?: string; interpretation?: string } }>("/api/v1/brands/:brandId/learnings/:learningId/decision", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return learning.decide(account.id, request.params.brandId, request.params.learningId, request.body); });
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/experiments", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return learning.experiments(account.id, request.params.brandId); });
+  }
 
   return app;
 }
