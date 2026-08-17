@@ -217,6 +217,14 @@ export function videoProjectReviewText(project: VideoProject): string {
   ].join("\n\n");
 }
 
+export function reviewableVideoProjectContent(content: string): string {
+  try {
+    return videoProjectReviewText(parseVideoProject(content));
+  } catch {
+    return content;
+  }
+}
+
 function reflowScenes(scenes: VideoProjectScene[]): Pick<VideoProject, "scenes" | "targetDurationSeconds"> {
   return reflowScenesWithDurations(scenes, scenes.map(durationOf));
 }
