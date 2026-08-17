@@ -21,6 +21,7 @@
     "apps/worker/src/publishing-adapters*.ts",
     "apps/worker/src/publishing*.test.ts",
     "apps/worker/package.json",
+    "apps/api/src/publishing-gateway-api.test.ts",
     "docs/slices/VS-31.md",
     "docs/plans/VS-31-*.md",
     "delivery/**",
@@ -40,6 +41,7 @@
       "Introduces deterministic channel-content profiles around the existing Drafter without adding a new LLM/provider route.",
       "Generated content is validated before Content Version creation and is never silently truncated to satisfy channel limits.",
       "Existing provider publishing adapters reuse shared content-limit policy while retaining provider-specific account/media/API behavior.",
+      "A VS-30 API regression fixture is allowed only to remove a hard-coded schedule timestamp that became past during VS-31 CI; production scheduling rules are unchanged.",
       "No new channel, OAuth flow, database migration, production enablement, deployment or real publication is authorized by this slice."
     ]
   },
@@ -103,8 +105,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 90,
-    "testing": 20,
+    "implementation": 95,
+    "testing": 40,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -135,7 +137,8 @@
       "docs/plans/VS-31-platform-specific-content-adapters.md",
       "apps/worker/src/content-channel-adapters.test.ts",
       "apps/worker/src/drafter.test.ts",
-      "apps/worker/src/publishing.test.ts"
+      "apps/worker/src/publishing.test.ts",
+      "apps/api/src/publishing-gateway-api.test.ts"
     ]
   },
   "maxAttempts": 3
