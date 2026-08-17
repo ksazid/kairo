@@ -19,6 +19,7 @@
     "apps/worker/src/content-channel-adapters*.ts",
     "apps/worker/src/drafter*.ts",
     "apps/worker/src/publishing-adapters*.ts",
+    "apps/worker/src/publishing*.test.ts",
     "apps/worker/package.json",
     "docs/slices/VS-31.md",
     "docs/plans/VS-31-*.md",
@@ -102,8 +103,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 5,
-    "testing": 0,
+    "implementation": 90,
+    "testing": 20,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -129,9 +130,12 @@
   },
   "links": {
     "specification": "docs/slices/VS-31.md",
-    "implementationPr": null,
+    "implementationPr": "PR-91",
     "evidence": [
-      "docs/plans/VS-31-platform-specific-content-adapters.md"
+      "docs/plans/VS-31-platform-specific-content-adapters.md",
+      "apps/worker/src/content-channel-adapters.test.ts",
+      "apps/worker/src/drafter.test.ts",
+      "apps/worker/src/publishing.test.ts"
     ]
   },
   "maxAttempts": 3
