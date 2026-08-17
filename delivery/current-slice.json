@@ -1,25 +1,26 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-51",
-  "title": "Ideas + Research + Angles Design Remediation",
+  "sliceId": "VS-52",
+  "title": "Campaigns + Content Studio Design Remediation",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-06", "FR-08", "FR-09"],
+  "requirements": ["FR-10", "FR-11", "FR-12", "FR-13"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-50"],
+  "dependencies": ["VS-51"],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/app/brands/[brandId]/ideas/**",
-    "apps/web/app/ideas.css",
-    "docs/slices/VS-51.md",
-    "docs/plans/VS-51-*.md",
+    "apps/web/app/brands/[brandId]/campaigns/page.tsx",
+    "apps/web/app/brands/[brandId]/campaigns/[campaignId]/page.tsx",
+    "apps/web/app/studio.css",
+    "docs/slices/VS-52.md",
+    "docs/plans/VS-52-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -35,9 +36,10 @@
   "impact": {
     "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Migrates Ideas and Idea detail to the shared Kairo shell while preserving current Idea/Research/Angle actions and contracts.",
-      "Makes Research claims primary and moves raw evidence/uncertainty into progressive disclosure without removing provenance.",
-      "Replaces the dense two-column Angle grid with a single comparison flow while keeping framing visible and selection human-controlled.",
+      "Migrates Campaigns and Content Studio to the shared Kairo shell introduced by VS-50.",
+      "Makes Campaign work list-first and moves Campaign creation into progressive disclosure.",
+      "Makes the Content Studio writing surface primary while AI assistance, version history, evidence and detailed Critic findings remain accessible through contextual disclosure.",
+      "Preserves exact-version review, destination-specific approval, account-group distribution, scheduling and manual-publishing fallbacks without changing their server actions or contracts.",
       "No API, domain, database, provider, publishing, deployment or production changes are introduced."
     ]
   },
@@ -45,11 +47,11 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-51@1.0",
+      "version": "VS-52@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T20:08:00+02:00",
-      "rationale": "Owner instructed Go next immediately after VS-50 merged, authorizing the next bounded design-remediation slice from Issue #94."
+      "at": "2026-08-17T23:54:00+02:00",
+      "rationale": "Owner instructed Go next immediately after VS-51 merged, authorizing the next bounded design-remediation slice from Issue #94: Campaigns + Content Studio."
     },
     {
       "type": "policy",
@@ -58,16 +60,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-51 changes presentation hierarchy and shared-shell adoption only; FR-06, FR-08, FR-09 and product/DESIGN.md remain authoritative."
+      "rationale": "VS-52 changes presentation hierarchy and shell adoption only; FR-10 through FR-13 and product/DESIGN.md remain authoritative."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-51@1.0",
+      "version": "VS-52@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T20:08:00+02:00",
-      "rationale": "Owner instruction authorizes implementation, tests/build checks, UI review and PR preparation; certification/merge/release/production remain separate gates."
+      "at": "2026-08-17T23:54:00+02:00",
+      "rationale": "Owner instruction authorizes bounded UI implementation, deterministic checks, UI review and PR preparation; certification, merge, release and production remain separate gates."
     },
     {
       "type": "certification",
@@ -76,7 +78,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires exact-head deterministic evidence and UI Review before explicit approval."
+      "rationale": "Requires exact-head Product Intake, Security and CI evidence plus UI Review before explicit merge approval."
     },
     {
       "type": "release",
@@ -123,23 +125,25 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can capture and revisit Ideas, read evidence-backed Research and choose or refine Angles with less permanent control clutter and clearer decision hierarchy.",
+    "expectedOutcome": "Users can move from Campaign direction into a calm writing-first Studio, use AI and evidence context only when needed, and understand exact-version review/approval state without a dense control dashboard.",
     "metrics": [
-      "Ideas navigation regressions",
-      "Research evidence/provenance regressions",
-      "Angle edit/select regressions",
+      "Campaign creation regressions",
+      "Content version-save regressions",
+      "Review/approval regressions",
+      "Account-group distribution regressions",
+      "schedule/manual-publish fallback regressions",
       "responsive overflow regressions",
       "UI review accessibility findings"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-51.md",
+    "specification": "docs/slices/VS-52.md",
     "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-51-ui-remediation.md",
-      "docs/plans/VS-51-ui-review.md",
-      "apps/web/app/brands/[brandId]/ideas/page.tsx",
-      "apps/web/app/brands/[brandId]/ideas/[ideaId]/page.tsx"
+      "docs/plans/VS-52-ui-remediation.md",
+      "docs/plans/VS-52-ui-review.md",
+      "apps/web/app/brands/[brandId]/campaigns/page.tsx",
+      "apps/web/app/brands/[brandId]/campaigns/[campaignId]/page.tsx"
     ]
   },
   "maxAttempts": 3
