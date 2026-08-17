@@ -11,11 +11,11 @@ export function GroupDistributionForm({ groups, action }: { groups: ChannelAccou
     if (!value || !iso.current) { event.preventDefault(); return; }
     iso.current.value = new Date(value).toISOString();
   }}>
-    <div><strong>Distribute with account group</strong><p>One user action, one independent approval and publish command per destination.</p></div>
+    <div><strong>Distribute text with account group</strong><p>One user action, one independent approval and publish command per destination. Rich media remains on its existing media-aware publishing path.</p></div>
     <input ref={iso} type="hidden" name="scheduledForIso" />
+    <input type="hidden" name="contentType" value="text" />
     <label>Account group<select name="groupId" required>{groups.map((group) => <option value={group.id} key={group.id}>{group.name} · {group.memberAccountIds.length}</option>)}</select></label>
-    <label>Format<select name="contentType" required><option value="text">text</option><option value="image">image</option><option value="video">video</option><option value="carousel">carousel</option><option value="reel">reel</option></select></label>
     <label>Publish time<input ref={local} type="datetime-local" required /></label>
-    <button className="primary-button" type="submit">Distribute to group</button>
+    <button className="primary-button" type="submit">Distribute text to group</button>
   </form>;
 }
