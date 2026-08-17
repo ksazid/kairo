@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { ConcurrencyConflictError, DomainValidationError, ResourceNotFoundError } from "./index";
 import type { ResearchRepository } from "./research-service";
 import { appendContentVersion, createCampaign, createContentAsset, createInitialContentVersion, type Campaign, type ContentAsset, type ContentChannel, type ContentVersion } from "./campaign";
+import { assertVideoProjectScope, parseVideoProject, type VideoProject } from "./video-project";
 
 export interface CampaignDetail { campaign: Campaign; assets: Array<{ asset: ContentAsset; versions: ContentVersion[] }> }
 export interface CampaignRepository {
@@ -28,13 +29,23 @@ export class CampaignService {
   async createAsset(accountId: string, brandId: string, campaignId: string, input: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; content: string }): Promise<CampaignDetail> {
     const detail = await this.campaigns.getCampaign(accountId, brandId, campaignId);
     if (!detail) throw new ResourceNotFoundError("Campaign not found");
+    if (videoProjectOrNull(input.content)) throw new DomainValidationError("Create the Reel Content Asset first, then initialize its Video Project in Video Studio");
     const asset = createContentAsset({ id: randomUUID(), campaign: detail.campaign, channel: input.channel, format: input.format, audience: input.audience, topic: input.topic, hookType: input.hookType, cta: input.cta, createdAt: this.now().toISOString() });
     const version = createInitialContentVersion({ id: randomUUID(), asset, content: input.content, supportingClaimIds: detail.campaign.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString() });
     return this.campaigns.saveAssetWithVersion(accountId, { ...asset, currentVersion: 1 }, version);
   }
   appendManualEdit(accountId: string, brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; content: string }): Promise<CampaignDetail> {
     if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
-    return this.campaigns.appendVersion(accountId, brandId, campaignId, assetId, input.expectedVersion, (asset, parent) => appendContentVersion({ id: randomUUID(), asset, parent, expectedVersion: input.expectedVersion, content: input.content, supportingClaimIds: parent.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString() }));
+    return this.campaigns.appendVersion(accountId, brandId, campaignId, assetId, input.expectedVersion, (asset, parent) => {
+      const parentProject = videoProjectOrNull(parent.content);
+      const nextProject = videoProjectOrNull(input.content);
+      if (parentProject) {
+        assertProjectForAsset(parentProject, asset);
+        if (!nextProject) throw new DomainValidationError("Structured Reel Video Projects must be edited through Video Studio");
+      }
+      if (nextProject) assertProjectForAsset(nextProject, asset);
+      return appendContentVersion({ id: randomUUID(), asset, parent, expectedVersion: input.expectedVersion, content: input.content, supportingClaimIds: parent.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString() });
+    });
   }
   async generateVersion(accountId:string,brandId:string,campaignId:string,assetId:string,input:{expectedVersion:number;action:GenerateContentAction;section?:string;brandContextVersion:string}):Promise<CampaignDetail>{
     if(!this.generator)throw new DomainValidationError("Content generation is not configured");
@@ -42,7 +53,11 @@ export class CampaignService {
     const detail=await this.campaigns.getCampaign(accountId,brandId,campaignId);if(!detail)throw new ResourceNotFoundError("Campaign not found");
     const bundle=await this.research.getIdeaBundle(accountId,brandId,detail.campaign.ideaId);if(!bundle?.research)throw new ResourceNotFoundError("Campaign Research not found");const research=bundle.research;
     const entry=detail.assets.find(item=>item.asset.id===assetId);if(!entry)throw new ResourceNotFoundError("Content Asset not found");if(entry.asset.currentVersion!==input.expectedVersion)throw new ConcurrencyConflictError("Content Version is stale");const parent=entry.versions.at(-1);if(!parent)throw new ResourceNotFoundError("Content Version not found");
+    const parentProject=videoProjectOrNull(parent.content);if(parentProject){assertProjectForAsset(parentProject,entry.asset);throw new DomainValidationError("Structured Reel Video Projects must be edited through Video Studio; generic AI transformations are not timeline-aware")}
     const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset:entry.asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))});
     return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,()=>generated);
   }
 }
+
+function videoProjectOrNull(content:string):VideoProject|null{try{return parseVideoProject(content)}catch{return null}}
+function assertProjectForAsset(project:VideoProject,asset:ContentAsset):VideoProject{if(asset.format.trim().toLowerCase()!=="reel")throw new DomainValidationError("Video Project content requires a Reel Content Asset");return assertVideoProjectScope(project,{workspaceId:asset.workspaceId,brandId:asset.brandId,campaignId:asset.campaignId,assetId:asset.id})}

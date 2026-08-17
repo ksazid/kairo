@@ -6,6 +6,7 @@ import "./interaction-review.css";
 import "./discovery.css";
 import "./ideas.css";
 import "./studio.css";
+import "./video-studio.css";
 import "./calendar.css";
 import "./guided-brain.css";
 import { SessionKeepalive } from "./session-keepalive";
