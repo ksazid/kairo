@@ -3,7 +3,7 @@ import { DomainValidationError } from "@kairo/domain";
 
 export type ChannelContentMode = "text-first" | "visual-caption" | "video-caption" | "generic";
 
-export interface ChannelContentProfile {
+export type ChannelContentProfile = {
   channel: ContentChannel;
   format: string;
   contentMode: ChannelContentMode;
@@ -16,7 +16,7 @@ export interface ChannelContentProfile {
   };
   requirements: string[];
   recommendations: string[];
-}
+};
 
 export function resolveChannelContentProfile(channel: ContentChannel, format: string): ChannelContentProfile {
   const normalizedFormat = requiredText(format, "format", 120).toLowerCase();
