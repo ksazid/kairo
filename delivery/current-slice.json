@@ -35,11 +35,11 @@
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["customer-flow", "accessibility", "responsive-ui", "operations-support"],
+    "areas": ["frontend", "customer-flow", "operations-support"],
     "notes": [
       "Upgrades the existing Brand Calendar route rather than creating a parallel scheduler.",
       "Uses Kairo's approved product/DESIGN.md baseline with UI UX Pro Max as the primary workflow/accessibility skill and ui-review as the evidence review skill.",
-      "Adds visual month orientation and URL-state Campaign/channel/status filters while preserving truthful deterministic publish command state.",
+      "Adds visual month orientation and URL-state Brand/Campaign/channel/status filters while preserving truthful deterministic publish command state.",
       "Existing retry/cancel actions remain the only publish-command mutations in this slice; there is no drag-drop mutation or autonomous scheduling.",
       "Plan My Week, new social providers, OAuth changes, analytics ingestion, deployment and real publication are outside scope."
     ]
@@ -104,8 +104,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 15,
-    "testing": 0,
+    "implementation": 90,
+    "testing": 45,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -131,7 +131,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-32.md",
-    "implementationPr": null,
+    "implementationPr": "PR-92",
     "evidence": [
       "docs/plans/VS-32-visual-content-calendar.md",
       "apps/web/src/lib/calendar-view-model.test.ts",
