@@ -1,58 +1,62 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-29",
-  "title": "Instagram Production Publishing Activation",
+  "sliceId": "VS-30",
+  "title": "Unified Multi-channel Publishing Gateway",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
+  "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15", "FR-20"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-15"],
+  "dependencies": ["VS-15", "VS-29"],
   "blockers": [],
   "allowedPaths": [
-    "apps/api/src/publishing-worker-*.ts",
-    "apps/api/src/publishing-execution-postgres-store.ts",
-    "apps/api/src/*publishing-worker*.test.ts",
-    "apps/api/package.json",
-    "Dockerfile.publisher",
-    "docs/slices/VS-29.md",
-    "docs/plans/VS-29-*.md",
+    "packages/domain/src/review*.ts",
+    "packages/domain/src/publishing*.ts",
+    "packages/domain/src/*publishing*.test.ts",
+    "apps/api/src/review-*.ts",
+    "apps/api/src/publishing-*.ts",
+    "apps/api/src/*publishing*.test.ts",
+    "apps/api/src/app.ts",
+    "apps/api/src/server.ts",
+    "apps/api/migrations/**",
+    "scripts/**migration*.mjs",
+    "docs/slices/VS-30.md",
+    "docs/plans/VS-30-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
-    "apps/api/migrations/**",
     "infrastructure/**",
+    "Dockerfile.publisher",
     "apps/web/**"
   ],
   "impact": {
-    "areas": ["api", "sensitive-data", "deployment", "operations-support"],
+    "areas": ["api", "database", "authorization", "sensitive-data", "customer-flow", "deployment", "operations-support"],
     "notes": [
-      "Adds a separately runnable executor for already-approved Instagram publish commands; it does not create or approve content.",
-      "Reuses the existing encrypted channel credential vault and Meta publishing adapter; plaintext channel tokens remain outside domain state and logs.",
-      "Restricts the production publishing executor to Instagram so it cannot consume unrelated channel work.",
-      "The existing authenticated Instagram OAuth API route remains unchanged and dormant unless the complete Meta/encryption configuration is supplied.",
-      "Deterministic end-to-end contract coverage now exercises runner to worker to Instagram adapter to mocked Meta requests to settlement without making real provider calls.",
-      "No real account connection, new publisher runtime deployment, release, production enablement or publication is authorized by this test-completion candidate."
+      "Adds a destination-neutral fan-out use case above existing deterministic per-destination publish commands.",
+      "Preserves explicit human approval for every selected destination; multi-select is a convenience action, not blanket publication authority.",
+      "Requires a narrow approval-schema migration because the current schema permits only one destination approval per content version.",
+      "Provider credentials remain behind credential references and deterministic adapter infrastructure.",
+      "No new social provider, production deployment, production enablement or real publication is authorized by this slice."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-29@1.0",
+      "version": "VS-30@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T02:16:00+02:00",
-      "rationale": "The owner said Go on the explicitly described next engineering step: activate production-ready Instagram publishing by adding the runnable publishing-worker path and using the existing production Instagram connection path, while keeping credential shortcuts and actual publication out of scope."
+      "at": "2026-08-17T10:07:00+02:00",
+      "rationale": "Owner explicitly prioritized roadmap capability #2 after current work and granted standing pre-approval to finish current engineering work and immediately continue implementation without repeated Go prompts."
     },
     {
       "type": "policy",
@@ -61,16 +65,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-15 and the existing Instagram connection implementation already govern deterministic publishing, encrypted credential references, provider behavior and authenticated account connection."
+      "rationale": "The approved PRD/TRD already require multi-channel Campaign executions, destination-bound human approval and deterministic publishing."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-29@1.0",
+      "version": "VS-30@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T02:16:00+02:00",
-      "rationale": "The owner's Go instruction authorizes the bounded non-production implementation described immediately before execution: runnable Instagram publishing executor plus production connection readiness verification, stopping before merge/deployment/publication."
+      "at": "2026-08-17T10:07:00+02:00",
+      "rationale": "Standing pre-approval covers implementation, testing and PR preparation for roadmap item #2 while exact-SHA certification/release/production gates remain mandatory."
     },
     {
       "type": "certification",
@@ -79,7 +83,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires exact-SHA Product Intake, Security and CI evidence plus exact-SHA human certification approval."
+      "rationale": "Requires final exact-SHA deterministic evidence and explicit exact-SHA approval."
     },
     {
       "type": "release",
@@ -88,7 +92,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires exact-SHA approval."
+      "rationale": "Requires separate exact-SHA release approval."
     },
     {
       "type": "production-enable",
@@ -97,15 +101,15 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires exact-SHA approval."
+      "rationale": "Requires separate exact-SHA production-enable approval."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
+    "implementation": 10,
+    "testing": 0,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -120,22 +124,19 @@
     "releaseId": null
   },
   "rollback": {
-    "status": "not-applicable",
+    "status": "ready",
     "rollbackId": null
   },
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
+    "expectedOutcome": "One approved content version can be distributed to multiple explicitly approved destinations through isolated deterministic commands without duplicate publication or secret leakage.",
+    "metrics": ["multi-destination scheduling success", "duplicate command prevention", "destination-isolated failure rate"]
   },
   "links": {
-    "specification": "docs/slices/VS-29.md",
-    "implementationPr": 87,
-    "evidence": [
-      "docs/plans/VS-29-instagram-production-publishing.md",
-      "docs/plans/VS-29-instagram-publishing-e2e.md"
-    ]
+    "specification": "docs/slices/VS-30.md",
+    "implementationPr": null,
+    "evidence": ["docs/plans/VS-30-unified-multichannel-publishing-gateway.md"]
   },
   "maxAttempts": 3
 }
