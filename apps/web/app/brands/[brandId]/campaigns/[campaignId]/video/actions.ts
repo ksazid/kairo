@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import {
+  assertVideoProjectScope,
   createVideoProject,
   moveVideoProjectScene,
   parseVideoProject,
@@ -29,6 +30,10 @@ async function currentVideoAsset(brandId: string, campaignId: string, assetId: s
   if (!current) throw new Error("Content Version not found");
   if (entry.asset.currentVersion !== expectedVersion || current.version !== expectedVersion) throw new Error("Content Version is stale");
   return { detail, entry, current };
+}
+
+function projectFor(content: string, workspaceId: string, brandId: string, campaignId: string, assetId: string): VideoProject {
+  return assertVideoProjectScope(parseVideoProject(content), { workspaceId, brandId, campaignId, assetId });
 }
 
 async function saveProject(brandId: string, campaignId: string, assetId: string, expectedVersion: number, project: VideoProject, notice: string) {
@@ -91,8 +96,8 @@ export async function initializeVideoProjectAction(brandId: string, campaignId: 
 
 export async function saveVideoProjectCopyAction(brandId: string, campaignId: string, assetId: string, expectedVersion: number, form: FormData) {
   try {
-    const { current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
-    const project = parseVideoProject(current.content);
+    const { detail, current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
+    const project = projectFor(current.content, detail.campaign.workspaceId, brandId, campaignId, assetId);
     const updated = validateVideoProject({
       ...project,
       hook: String(form.get("hook") ?? ""),
@@ -107,8 +112,8 @@ export async function saveVideoProjectCopyAction(brandId: string, campaignId: st
 
 export async function saveVideoProjectSceneAction(brandId: string, campaignId: string, assetId: string, expectedVersion: number, sceneId: string, form: FormData) {
   try {
-    const { current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
-    const project = parseVideoProject(current.content);
+    const { detail, current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
+    const project = projectFor(current.content, detail.campaign.workspaceId, brandId, campaignId, assetId);
     const updated = updateVideoProjectScene(project, sceneId, {
       visual: String(form.get("visual") ?? ""),
       onScreenText: String(form.get("onScreenText") ?? ""),
@@ -122,8 +127,8 @@ export async function saveVideoProjectSceneAction(brandId: string, campaignId: s
 
 export async function retimeVideoProjectSceneAction(brandId: string, campaignId: string, assetId: string, expectedVersion: number, sceneId: string, form: FormData) {
   try {
-    const { current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
-    const project = parseVideoProject(current.content);
+    const { detail, current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
+    const project = projectFor(current.content, detail.campaign.workspaceId, brandId, campaignId, assetId);
     const updated = retimeVideoProjectScene(project, sceneId, Number(form.get("durationSeconds") ?? 0));
     await saveProject(brandId, campaignId, assetId, expectedVersion, updated, "Scene timing saved as a new Content Version");
   } catch (error) {
@@ -133,8 +138,8 @@ export async function retimeVideoProjectSceneAction(brandId: string, campaignId:
 
 export async function moveVideoProjectSceneAction(brandId: string, campaignId: string, assetId: string, expectedVersion: number, sceneId: string, toIndex: number) {
   try {
-    const { current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
-    const project = parseVideoProject(current.content);
+    const { detail, current } = await currentVideoAsset(brandId, campaignId, assetId, expectedVersion);
+    const project = projectFor(current.content, detail.campaign.workspaceId, brandId, campaignId, assetId);
     const updated = moveVideoProjectScene(project, sceneId, toIndex);
     await saveProject(brandId, campaignId, assetId, expectedVersion, updated, "Scene order saved as a new Content Version");
   } catch (error) {
