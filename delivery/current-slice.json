@@ -3,7 +3,7 @@
   "sliceId": "VS-33",
   "title": "Channel / Account Groups",
   "status": "active",
-  "lifecycle": "implementation",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15"],
@@ -42,6 +42,7 @@
       "Adds Brand-scoped reusable destination groups without granting group-level approval or publishing authority.",
       "Expands group selections into the existing VS-30 concrete destination distribution contract.",
       "Each expanded destination still receives independent approval, capability validation, idempotency and PublishCommand state.",
+      "The first group-distribution UI is text-only so it never offers rich formats without a media payload; rich media remains on the existing media-aware publishing path.",
       "Adds migration 0018 for group metadata only; no production migration execution is authorized by this slice.",
       "No new social provider, OAuth scope, provider credential flow, autonomous scheduler, deployment or real publication is introduced."
     ]
@@ -106,8 +107,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 80,
-    "testing": 20,
+    "implementation": 100,
+    "testing": 60,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -133,11 +134,13 @@
   },
   "links": {
     "specification": "docs/slices/VS-33.md",
-    "implementationPr": null,
+    "implementationPr": "PR-93",
     "evidence": [
       "packages/domain/src/channel-account-group-service.test.ts",
       "apps/api/migrations/0018_channel_account_groups.sql",
-      "apps/web/app/brands/[brandId]/channels/groups/page.tsx"
+      "apps/web/app/brands/[brandId]/channels/groups/page.tsx",
+      "apps/web/app/brands/[brandId]/campaigns/[campaignId]/group-distribution-form.tsx",
+      "docs/plans/VS-33-ui-review.md"
     ]
   },
   "maxAttempts": 3
