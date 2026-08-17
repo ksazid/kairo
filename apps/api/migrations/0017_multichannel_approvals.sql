@@ -36,6 +36,10 @@ alter table content_approvals
     check (destination_channel in ('linkedin','instagram','manual')),
   add constraint content_approvals_destination_account_ref_check
     check (length(btrim(destination_account_ref)) > 0),
+  add constraint content_approvals_destination_channel_sync_check
+    check (destination_channel = destination->>'channel'),
+  add constraint content_approvals_destination_account_ref_sync_check
+    check (destination_account_ref = destination->>'accountRef'),
   add constraint content_approvals_destination_unique
     unique(workspace_id,brand_id,asset_id,version,destination_channel,destination_account_ref);
 
