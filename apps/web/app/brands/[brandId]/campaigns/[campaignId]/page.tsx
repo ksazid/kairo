@@ -82,7 +82,12 @@ export default async function Studio({ params, searchParams }: { params: Params;
                       <span className="angle-channel">{asset.channel} · {asset.format}</span>
                       <h2 id={`asset-${asset.id}`}>{asset.topic}</h2>
                     </div>
-                    <span className={`review-status ${approval ? "approved" : review?.status ?? "draft"}`}>{label}</span>
+                    <div className="studio-asset-actions">
+                      {asset.format.toLowerCase() === "reel" ? (
+                        <Link className="secondary-button" href={`/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}/video/${encodeURIComponent(asset.id)}`}>Open Video Studio</Link>
+                      ) : null}
+                      <span className={`review-status ${approval ? "approved" : review?.status ?? "draft"}`}>{label}</span>
+                    </div>
                   </header>
 
                   <form
