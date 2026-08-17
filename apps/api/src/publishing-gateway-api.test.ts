@@ -15,6 +15,8 @@ class Verifier implements IdentityVerifier {
   }
 }
 
+const futureSchedule = "2099-01-01T11:00:00Z";
+
 describe("VS-30 multi-channel distribution API", () => {
   it("fans one authenticated campaign action into safe idempotent Instagram and LinkedIn schedules", async () => {
     const store = new MemoryKairoRepository();
@@ -115,7 +117,7 @@ describe("VS-30 multi-channel distribution API", () => {
     }));
 
     const payload = {
-      scheduledFor: "2026-08-17T11:00:00Z",
+      scheduledFor: futureSchedule,
       destinations: [
         {
           assetId: instagramAsset.id,
@@ -162,7 +164,7 @@ describe("VS-30 multi-channel distribution API", () => {
       method: "POST",
       url: `/api/v1/brands/${brand.id}/campaigns/${campaignId}/distributions`,
       headers,
-      payload: { scheduledFor: "2026-08-17T11:00:00Z", destinations: [null] },
+      payload: { scheduledFor: futureSchedule, destinations: [null] },
     });
     expect(malformed.statusCode).toBe(400);
     expect(malformed.json().detail).toMatch(/destinations\[0\] must be an object/i);
