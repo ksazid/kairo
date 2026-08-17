@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-32",
-  "title": "Visual Content Calendar",
+  "sliceId": "VS-33",
+  "title": "Channel / Account Groups",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
@@ -13,16 +13,19 @@
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-30", "VS-31"],
+  "dependencies": ["VS-30", "VS-32"],
   "blockers": [],
   "allowedPaths": [
-    ".agents/skills/ui-ux-pro-max/**",
-    "apps/web/app/brands/[brandId]/calendar/**",
-    "apps/web/app/calendar.css",
-    "apps/web/src/lib/calendar-view-model*.ts",
-    "apps/web/src/lib/calendar-view-model*.test.ts",
-    "docs/slices/VS-32.md",
-    "docs/plans/VS-32-*.md",
+    "packages/domain/src/channel-account-group*.ts",
+    "packages/domain/package.json",
+    "apps/api/src/channel-account-group*.ts",
+    "apps/api/migrations/0018_channel_account_groups.sql",
+    "apps/api/src/server.ts",
+    "apps/web/src/lib/channel-account-groups-api.ts",
+    "apps/web/app/brands/[brandId]/channels/groups/**",
+    "apps/web/app/brands/[brandId]/campaigns/**",
+    "docs/slices/VS-33.md",
+    "docs/plans/VS-33-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -30,29 +33,29 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/api/migrations/**",
     "apps/worker/**",
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["frontend", "customer-flow", "operations-support"],
+    "areas": ["api", "frontend", "database", "customer-flow"],
     "notes": [
-      "Upgrades the existing Brand Calendar route rather than creating a parallel scheduler.",
-      "Uses Kairo's approved product/DESIGN.md baseline with UI UX Pro Max as the primary workflow/accessibility skill and ui-review as the evidence review skill.",
-      "Adds visual month orientation and URL-state Brand/Campaign/channel/status filters while preserving truthful deterministic publish command state.",
-      "Existing retry/cancel actions remain the only publish-command mutations in this slice; there is no drag-drop mutation or autonomous scheduling.",
-      "Plan My Week, new social providers, OAuth changes, analytics ingestion, deployment and real publication are outside scope."
+      "Adds Brand-scoped reusable destination groups without granting group-level approval or publishing authority.",
+      "Expands group selections into the existing VS-30 concrete destination distribution contract.",
+      "Each expanded destination still receives independent approval, capability validation, idempotency and PublishCommand state.",
+      "The first group-distribution UI is text-only so it never offers rich formats without a media payload; rich media remains on the existing media-aware publishing path.",
+      "Adds migration 0018 for group metadata only; no production migration execution is authorized by this slice.",
+      "No new social provider, OAuth scope, provider credential flow, autonomous scheduler, deployment or real publication is introduced."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-32@1.0",
+      "version": "VS-33@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T16:29:00+02:00",
-      "rationale": "Owner prioritized roadmap items through #13, requested continuous implementation under standing pre-approval, required all approved relevant skills from this point forward, and said Go to continue after VS-31."
+      "at": "2026-08-17T18:48:00+02:00",
+      "rationale": "Owner approved VS-32 certification and merge, then explicitly instructed Go next into roadmap item #5 Channel / Account Groups under the existing standing implementation authorization."
     },
     {
       "type": "policy",
@@ -61,16 +64,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Approved PRD FR-14 already requires a simple calendar with Brand/Campaign/channel/status filtering and scheduling visibility; the slice does not expand autonomous publishing policy."
+      "rationale": "The slice is a reusable selection layer over already-approved FR-05/FR-10/FR-13/FR-15 behavior and preserves per-destination human approval and deterministic publication controls."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-32@1.0",
+      "version": "VS-33@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T16:29:00+02:00",
-      "rationale": "Standing implementation pre-approval covers code, tests, CI fixes, UI review and PR preparation for the priority roadmap; exact-SHA certification/merge/release/production gates remain separate."
+      "at": "2026-08-17T18:48:00+02:00",
+      "rationale": "Standing implementation pre-approval covers code, tests, CI fixes, UI review and PR preparation; certification, merge, release and production enablement remain exact-SHA gates."
     },
     {
       "type": "certification",
@@ -105,7 +108,7 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 90,
+    "testing": 60,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -126,18 +129,18 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can understand and filter planned/published content quickly from a simple visual calendar without losing truthful publication state or accessibility.",
-    "metrics": ["calendar filter correctness", "calendar accessibility review verdict", "responsive overflow regressions", "publishing-state display regressions"]
+    "expectedOutcome": "Users can save and reuse Brand-scoped channel-account sets while all external destinations remain independently approved and auditable.",
+    "metrics": ["group scope violations", "group distribution partial failures", "duplicate destination regressions", "single-destination publishing regressions"]
   },
   "links": {
-    "specification": "docs/slices/VS-32.md",
-    "implementationPr": "PR-92",
+    "specification": "docs/slices/VS-33.md",
+    "implementationPr": "PR-93",
     "evidence": [
-      "docs/plans/VS-32-visual-content-calendar.md",
-      "docs/plans/VS-32-ui-review.md",
-      "apps/web/src/lib/calendar-view-model.test.ts",
-      "apps/web/app/brands/[brandId]/calendar/page.tsx",
-      "apps/web/app/calendar.css"
+      "packages/domain/src/channel-account-group-service.test.ts",
+      "apps/api/migrations/0018_channel_account_groups.sql",
+      "apps/web/app/brands/[brandId]/channels/groups/page.tsx",
+      "apps/web/app/brands/[brandId]/campaigns/[campaignId]/group-distribution-form.tsx",
+      "docs/plans/VS-33-ui-review.md"
     ]
   },
   "maxAttempts": 3

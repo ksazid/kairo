@@ -13,6 +13,8 @@ import{PgOperationsRepository}from"./operations-postgres-store";
 import{registerOperationsRoutes}from"./operations-routes";
 import{registerReadinessRoutes}from"./readiness-routes";
 import{registerGuidedBrandBrainRoutes}from"./guided-brand-brain-routes";
+import{PgChannelAccountGroupRepository}from"./channel-account-group-postgres-store";
+import{registerChannelAccountGroupRoutes}from"./channel-account-group-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
@@ -40,6 +42,7 @@ function requiredEnv(name: string): string {
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const coreStore=new PgKairoRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
+const groupStore=new PgChannelAccountGroupRepository(pool);
 const operationsStore=new PgOperationsRepository(pool);
 const telemetrySink=new PgOperationsTelemetrySink(pool,operationsStore);
 const agentOutputValidators={
@@ -78,6 +81,7 @@ const app = buildApp({
 });
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
+registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:async()=>{await pool.query("select 1")}});
 
 const meta=metaInstagramConfig();
