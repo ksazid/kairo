@@ -1,27 +1,30 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-34",
-  "title": "Format Intelligence Library",
+  "sliceId": "VS-50",
+  "title": "App Shell + Today + Discover Design Remediation",
   "status": "active",
   "lifecycle": "testing",
-  "riskLevel": "low",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-03", "FR-09", "FR-10", "FR-11", "FR-12"],
+  "requirements": ["FR-01", "FR-02", "FR-06"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-30", "VS-33"],
+  "dependencies": ["VS-33"],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/src/format-intelligence*.ts",
-    "packages/domain/package.json",
-    "apps/web/app/brands/[brandId]/formats/**",
-    "apps/web/app/brands/[brandId]/more/page.tsx",
-    "docs/slices/VS-34.md",
-    "docs/plans/VS-34-*.md",
+    "apps/web/app/page.tsx",
+    "apps/web/app/opportunity-list.tsx",
+    "apps/web/app/discovery.css",
+    "apps/web/app/kairo-product-shell.tsx",
+    "apps/web/app/brands/[brandId]/discover/**",
+    "apps/web/src/lib/product-navigation*.ts",
+    "apps/web/src/lib/product-navigation*.test.ts",
+    "docs/slices/VS-50.md",
+    "docs/plans/VS-50-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -29,27 +32,30 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/api/migrations/**",
+    "apps/api/**",
     "apps/worker/**",
+    "packages/domain/**",
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["architecture", "frontend", "customer-flow"],
+    "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Adds advisory format recommendations and a Brand-scoped library; it does not grant approval, scheduling or publishing authority.",
-      "Connected-account PublishCapability remains authoritative for actual publication.",
-      "No provider/OAuth, database, deployment or production configuration change is introduced."
+      "Consolidates Today/Discover navigation into one shared Kairo product shell without changing authentication, authorization or Opportunity domain semantics.",
+      "Moves Today toward the approved Opportunity-first attention queue and demotes explanatory/context UI through progressive disclosure.",
+      "Moves Discover away from dashboard-like summary tiles while preserving evidence, relevance and action semantics.",
+      "VS-50 is intentionally isolated from any concurrently active main-branch feature slice; PR #96 remains draft and must synchronize with latest main before certification.",
+      "No API, database, publishing, provider, deployment or production changes are introduced."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-34@1.0",
+      "version": "VS-50@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-17T19:16:00+02:00",
-      "rationale": "Owner explicitly instructed Go ahead after VS-33 certification and merge, continuing the approved priority roadmap into item #6 Format Intelligence Library."
+      "rationale": "Owner approved the Kairo UI compliance programme, instructed Go ahead, then explicitly asked to keep checking and proceed once VS-33 cleared. VS-50 is the first bounded remediation scope from Issue #94 and is isolated from concurrent feature-slice runtime paths."
     },
     {
       "type": "policy",
@@ -58,16 +64,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "This slice adds advisory product-contract intelligence only and preserves all existing human approval and deterministic publishing controls."
+      "rationale": "VS-50 changes presentation hierarchy and shared navigation implementation only; approved PRD requirements and product/DESIGN.md remain authoritative and no product policy is expanded."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-34@1.0",
+      "version": "VS-50@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-17T19:16:00+02:00",
-      "rationale": "Owner instruction authorizes implementation, tests, UI review and PR preparation; certification, merge, release and production enablement remain exact-SHA gates."
+      "rationale": "Owner instructed the design programme to proceed. Implementation is authorized for App Shell + Today + Discover using UI UX Pro Max, ui-review, Superpowers, slice-planner, implementer and verifier; certification, merge, release and production gates remain separate."
     },
     {
       "type": "certification",
@@ -76,7 +82,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires deterministic evidence and explicit approval bound to the final candidate SHA."
+      "rationale": "Requires synchronization with latest main, deterministic evidence, UI Review PASS and explicit approval bound to the final exact candidate SHA."
     },
     {
       "type": "release",
@@ -102,7 +108,7 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 100,
+    "testing": 20,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -117,22 +123,28 @@
     "releaseId": null
   },
   "rollback": {
-    "status": "not-applicable",
+    "status": "ready",
     "rollbackId": null
   },
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can choose formats with clear Kairo-specific guidance before content approval without weakening publication controls.",
-    "metrics": ["format library load failures", "unsupported recommendation regressions", "publishing authority regressions"]
+    "expectedOutcome": "Users can understand the selected Brand, identify the strongest current Opportunities and move between Today and Discover with substantially less dashboard/context clutter.",
+    "metrics": [
+      "Today opportunity hierarchy regressions",
+      "Discover action-semantic regressions",
+      "navigation route regressions",
+      "responsive overflow regressions",
+      "UI review accessibility findings"
+    ]
   },
   "links": {
-    "specification": "docs/slices/VS-34.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/95",
+    "specification": "docs/slices/VS-50.md",
+    "implementationPr": "PR-96",
     "evidence": [
-      "packages/domain/src/format-intelligence.test.ts",
-      "apps/web/app/brands/[brandId]/formats/page.tsx",
-      "docs/plans/VS-34-ui-review.md"
+      "docs/plans/VS-50-ui-remediation.md",
+      "apps/web/app/kairo-product-shell.tsx",
+      "apps/web/src/lib/product-navigation.test.ts"
     ]
   },
   "maxAttempts": 3
