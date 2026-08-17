@@ -28,6 +28,7 @@
     "./operations": "./src/operations.ts",
     "./skill-registry": "./src/skill-registry.ts",
     "./creative-formats": "./src/creative-formats.ts",
+    "./format-intelligence": "./src/format-intelligence.ts",
     "./marketing-benchmark": "./src/marketing-benchmark.ts",
     "./marketing-lab": "./src/marketing-lab.ts"
   },

@@ -12,6 +12,7 @@ export default async function MorePage({ params }: { params: Params }) {
   const base = `/brands/${encodeURIComponent(brand.id)}`;
   const destinations = [
     { title: "Campaigns & Content Studio", description: "Develop selected Angles, review immutable versions and record human approval.", href: `${base}/campaigns` },
+    { title: "Format intelligence", description: "Compare Kairo formats by channel fit, objective and production effort before you commit to an execution.", href: `${base}/formats` },
     { title: "Performance", description: "Inspect measured channel evidence, reconnect Instagram and review Candidate Learnings.", href: `${base}/performance` },
     { title: "Brand Brain", description: "Review the private Brand context, knowledge and boundaries Kairo may rely on.", href: `${base}/brain` },
     { title: "Operations", description: "Inspect retries, intervention states and pilot operational health.", href: `${base}/operations` },

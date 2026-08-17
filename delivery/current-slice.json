@@ -1,31 +1,27 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-33",
-  "title": "Channel / Account Groups",
+  "sliceId": "VS-34",
+  "title": "Format Intelligence Library",
   "status": "active",
   "lifecycle": "testing",
-  "riskLevel": "medium",
+  "riskLevel": "low",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15"],
+  "requirements": ["FR-03", "FR-09", "FR-10", "FR-11", "FR-12"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-30", "VS-32"],
+  "dependencies": ["VS-30", "VS-33"],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/src/channel-account-group*.ts",
+    "packages/domain/src/format-intelligence*.ts",
     "packages/domain/package.json",
-    "apps/api/src/channel-account-group*.ts",
-    "apps/api/migrations/0018_channel_account_groups.sql",
-    "apps/api/src/server.ts",
-    "apps/web/src/lib/channel-account-groups-api.ts",
-    "apps/web/app/brands/[brandId]/channels/groups/**",
-    "apps/web/app/brands/[brandId]/campaigns/**",
-    "docs/slices/VS-33.md",
-    "docs/plans/VS-33-*.md",
+    "apps/web/app/brands/[brandId]/formats/**",
+    "apps/web/app/brands/[brandId]/more/page.tsx",
+    "docs/slices/VS-34.md",
+    "docs/plans/VS-34-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -33,29 +29,27 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
+    "apps/api/migrations/**",
     "apps/worker/**",
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["api", "frontend", "database", "customer-flow"],
+    "areas": ["architecture", "frontend", "customer-flow"],
     "notes": [
-      "Adds Brand-scoped reusable destination groups without granting group-level approval or publishing authority.",
-      "Expands group selections into the existing VS-30 concrete destination distribution contract.",
-      "Each expanded destination still receives independent approval, capability validation, idempotency and PublishCommand state.",
-      "The first group-distribution UI is text-only so it never offers rich formats without a media payload; rich media remains on the existing media-aware publishing path.",
-      "Adds migration 0018 for group metadata only; no production migration execution is authorized by this slice.",
-      "No new social provider, OAuth scope, provider credential flow, autonomous scheduler, deployment or real publication is introduced."
+      "Adds advisory format recommendations and a Brand-scoped library; it does not grant approval, scheduling or publishing authority.",
+      "Connected-account PublishCapability remains authoritative for actual publication.",
+      "No provider/OAuth, database, deployment or production configuration change is introduced."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-33@1.0",
+      "version": "VS-34@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T18:48:00+02:00",
-      "rationale": "Owner approved VS-32 certification and merge, then explicitly instructed Go next into roadmap item #5 Channel / Account Groups under the existing standing implementation authorization."
+      "at": "2026-08-17T19:16:00+02:00",
+      "rationale": "Owner explicitly instructed Go ahead after VS-33 certification and merge, continuing the approved priority roadmap into item #6 Format Intelligence Library."
     },
     {
       "type": "policy",
@@ -64,16 +58,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice is a reusable selection layer over already-approved FR-05/FR-10/FR-13/FR-15 behavior and preserves per-destination human approval and deterministic publication controls."
+      "rationale": "This slice adds advisory product-contract intelligence only and preserves all existing human approval and deterministic publishing controls."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-33@1.0",
+      "version": "VS-34@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T18:48:00+02:00",
-      "rationale": "Standing implementation pre-approval covers code, tests, CI fixes, UI review and PR preparation; certification, merge, release and production enablement remain exact-SHA gates."
+      "at": "2026-08-17T19:16:00+02:00",
+      "rationale": "Owner instruction authorizes implementation, tests, UI review and PR preparation; certification, merge, release and production enablement remain exact-SHA gates."
     },
     {
       "type": "certification",
@@ -82,7 +76,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires deterministic evidence and explicit approval bound to the final exact candidate SHA."
+      "rationale": "Requires deterministic evidence and explicit approval bound to the final candidate SHA."
     },
     {
       "type": "release",
@@ -108,7 +102,7 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 60,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -123,24 +117,22 @@
     "releaseId": null
   },
   "rollback": {
-    "status": "ready",
+    "status": "not-applicable",
     "rollbackId": null
   },
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can save and reuse Brand-scoped channel-account sets while all external destinations remain independently approved and auditable.",
-    "metrics": ["group scope violations", "group distribution partial failures", "duplicate destination regressions", "single-destination publishing regressions"]
+    "expectedOutcome": "Users can choose formats with clear Kairo-specific guidance before content approval without weakening publication controls.",
+    "metrics": ["format library load failures", "unsupported recommendation regressions", "publishing authority regressions"]
   },
   "links": {
-    "specification": "docs/slices/VS-33.md",
-    "implementationPr": "PR-93",
+    "specification": "docs/slices/VS-34.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/95",
     "evidence": [
-      "packages/domain/src/channel-account-group-service.test.ts",
-      "apps/api/migrations/0018_channel_account_groups.sql",
-      "apps/web/app/brands/[brandId]/channels/groups/page.tsx",
-      "apps/web/app/brands/[brandId]/campaigns/[campaignId]/group-distribution-form.tsx",
-      "docs/plans/VS-33-ui-review.md"
+      "packages/domain/src/format-intelligence.test.ts",
+      "apps/web/app/brands/[brandId]/formats/page.tsx",
+      "docs/plans/VS-34-ui-review.md"
     ]
   },
   "maxAttempts": 3
