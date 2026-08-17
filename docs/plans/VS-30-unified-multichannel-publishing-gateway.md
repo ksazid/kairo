@@ -2,94 +2,104 @@
 
 ## Intent
 
-Promote Kairo's existing provider-neutral publishing primitives into one application-level distribution gateway without replacing the existing domain commands, workers, adapter contracts or encrypted credential boundary.
+Promote Kairo's existing provider-neutral publishing primitives into one application-level Campaign distribution gateway without replacing existing domain commands, workers, adapter contracts or the encrypted credential boundary.
 
 ## Architectural decision
 
 Do **not** create a provider-specific orchestration pipeline and do **not** create a second source of truth for publication state.
 
-The gateway validates/fans out one user distribution action into existing per-destination `PublishCommand` records. Each automatic destination has its own explicit approval and continues through the existing deterministic worker/adapter/reconciliation path.
+The gateway validates and fans out one authenticated user distribution action into existing per-destination `PublishCommand` records. Each selected destination uses the appropriate channel-specific Content Asset/Version, has its own explicit approval and continues through the existing deterministic worker/adapter/reconciliation path.
 
-## Work order
+## Implemented work order
 
 ### 1. Characterise current publishing surface
-- Preserve existing Instagram, LinkedIn and manual behaviour in tests.
-- Verify secret boundaries, account scoping and idempotency invariants.
+- Existing Instagram, LinkedIn and manual command behaviour retained.
+- Existing credential-reference, account-scope and publish-attempt idempotency boundaries retained.
 
 ### 2. Evolve destination approval persistence
-- Permit multiple `ContentApproval` rows for the same reviewed content version when their destinations differ.
-- Keep approvals idempotent per version + channel + accountRef.
-- Do not weaken the requirement that every publish command references an explicit approval.
+- Multiple `ContentApproval` rows are permitted for the same reviewed version when destinations differ.
+- Approval remains unique/idempotent per version + channel + accountRef.
+- Existing `PublishCommand.approvalId` remains explicit and unique.
+- Migration `0017_multichannel_approvals.sql` derives indexed destination columns from the existing JSON destination and keeps legacy JSON-only inserts compatible through a synchronising trigger.
 
-### 3. Add destination-neutral request/result contracts
+### 3. Destination-neutral request/result contracts
 
 ```text
 DistributionRequest
-- campaignId / assetId / expectedVersion
+- campaignId (route)
 - scheduledFor
 - destinations[]
+  - assetId
+  - expectedVersion
   - channelAccountId
   - contentType
   - mediaItems/options
 
 DistributionResult
+- campaignId
+- scheduledFor
 - destinations[]
+  - assetId
   - channelAccountId
-  - channel/accountRef when safe
+  - safe channel/accountRef
   - commandId when created
   - scheduled | manual-required | unsupported | reconnect-required | rejected
-  - safe reason/code
+  - safe reason when applicable
 ```
 
 Contracts never carry provider credentials.
 
-### 4. Implement PublishingGateway
+### 4. PublishingGateway
 For each requested destination:
-1. load the account inside Workspace + Brand scope;
-2. obtain the destination-bound approval for the current version;
-3. validate capability/media shape through existing `createPublishCommand` rules;
-4. create/persist one command independently;
-5. return normalized destination state.
+1. load the channel account inside Workspace + Brand scope;
+2. reject/describe reconnect-required or disabled accounts independently;
+3. verify channel content capability before provider execution;
+4. invoke the existing human approval service for the selected destination and exact current asset version;
+5. create or reuse the destination command through the existing `PublishingService`;
+6. persist and return that destination independently.
 
 Partial failure is intentional.
 
 ### 5. Idempotent fan-out
-- Repeated distribution requests must not create duplicate effective commands.
-- Add repository lookup keyed by version + channel account + scheduled target where necessary.
-- Preserve existing publish-attempt idempotency.
+- `PublishingService.schedule()` looks up an existing command by destination approval before creating a new command.
+- Replaying the same Campaign distribution action returns the same effective command IDs rather than creating duplicate publication commands.
+- Existing publish-attempt idempotency/reconciliation remains unchanged.
 
 ### 6. API integration
-Add a versioned multi-destination endpoint while retaining current single-destination behaviour:
+Additive endpoint:
 
 ```text
-POST /api/v1/brands/:brandId/publishing/distributions
+POST /api/v1/brands/:brandId/campaigns/:campaignId/distributions
 ```
 
-### 7. Worker alignment
-- Keep `PublishingJobRunner` and deterministic adapter execution unchanged unless a test-backed refactor is needed.
-- VS-29 Instagram-only production executor remains Instagram-only.
-- Do not production-enable LinkedIn in this slice.
+The existing single-asset `.../schedule` endpoint remains available for compatibility.
 
-### 8. Deterministic tests
-Required cases:
-1. one content version can store Instagram and LinkedIn approvals independently;
+### 7. Worker alignment
+- `PublishingJobRunner` and deterministic provider adapter execution remain unchanged.
+- VS-29 Instagram production executor remains Instagram-only.
+- LinkedIn is not production-enabled by this slice.
+
+### 8. Deterministic verification
+Covered cases include:
+1. one reviewed version can hold separate destination approvals;
 2. duplicate approval for the same destination is idempotent;
-3. Instagram + LinkedIn fan-out creates two isolated commands;
+3. Campaign fan-out across an Instagram asset and LinkedIn asset produces isolated commands;
 4. valid Instagram + reconnect-required LinkedIn yields partial success;
-5. manual destination remains manual-required;
-6. duplicate distribution retry is idempotent;
-7. cross-Brand account is rejected;
-8. approval/current-version mismatch is rejected;
-9. content type/capability mismatch fails before provider invocation;
-10. no secret value appears in distribution result;
-11. existing Instagram image/carousel/Reel and LinkedIn tests stay green;
-12. unknown provider outcomes retain reconciliation semantics.
+5. duplicate Campaign distribution retry reuses command IDs;
+6. account/capability/current-version failures are deterministic and destination-local;
+7. gateway/API results contain no credential refs or plaintext secrets;
+8. legacy approval inserts continue working after migration;
+9. review status excludes stale-version approvals;
+10. existing single-destination and provider execution paths remain intact.
 
 ## Compatibility rule
-Existing `PublishCommand`, `PublishAttempt`, `PublishedPost`, adapter and credential-vault contracts remain authoritative unless a test-backed reason requires narrow evolution.
+
+Existing `PublishCommand`, `PublishAttempt`, `PublishedPost`, adapter and credential-vault contracts remain authoritative. The new gateway is an additive application use case.
 
 ## Security rule
-The gateway may know credential **references**, never plaintext credentials. Only deterministic adapter infrastructure resolves secrets immediately before provider execution.
+
+The gateway may know channel-account metadata and credential **references only through the existing account entity**; distribution responses never return credential refs. Plaintext provider credentials remain resolvable only by deterministic adapter infrastructure immediately before provider execution.
 
 ## Rollout rule
-Implement and certify the gateway without automatically enabling any new provider in production. Channel production enablement remains a separate exact-SHA governed decision.
+
+Implement and certify the gateway without automatically enabling a new provider in production. Channel production enablement remains a separate exact-SHA governed decision.
