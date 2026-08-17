@@ -1,26 +1,27 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-52",
-  "title": "Campaigns + Content Studio Design Remediation",
+  "sliceId": "VS-53",
+  "title": "Performance + Learning + Channel Management Design Remediation",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-10", "FR-11", "FR-12", "FR-13"],
+  "requirements": ["FR-05", "FR-16", "FR-17", "FR-18", "FR-19"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-51"],
+  "dependencies": ["VS-52"],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/app/brands/[brandId]/campaigns/page.tsx",
-    "apps/web/app/brands/[brandId]/campaigns/[campaignId]/page.tsx",
-    "apps/web/app/studio.css",
-    "docs/slices/VS-52.md",
-    "docs/plans/VS-52-*.md",
+    "apps/web/app/brands/[brandId]/performance/**",
+    "apps/web/app/brands/[brandId]/channels/groups/**",
+    "apps/web/app/performance.css",
+    "apps/web/app/channels.css",
+    "docs/slices/VS-53.md",
+    "docs/plans/VS-53-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -31,27 +32,27 @@
     "apps/api/**",
     "apps/worker/**",
     "packages/domain/**",
+    "apps/web/app/brands/[brandId]/channels/instagram/connect/route.ts",
     "Dockerfile.publisher"
   ],
   "impact": {
     "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Migrates Campaigns and Content Studio to the shared Kairo shell introduced by VS-50.",
-      "Makes Campaign work list-first and moves Campaign creation into progressive disclosure.",
-      "Makes the Content Studio writing surface primary while AI assistance, version history, evidence and detailed Critic findings remain accessible through contextual disclosure.",
-      "Preserves exact-version review, destination-specific approval, account-group distribution, scheduling and manual-publishing fallbacks without changing their server actions or contracts.",
-      "No API, domain, database, provider, publishing, deployment or production changes are introduced."
+      "Makes Performance narrative-first using What happened / Why might it have happened / What should we try next.",
+      "Keeps Brand Learning and Experiments distinct, evidence-visible and human-controlled.",
+      "Moves raw metrics/provenance into secondary inspection without removing unavailable-state truthfulness.",
+      "Remediates Instagram connection and Account Group presentation without modifying provider/OAuth/group actions or publishing authority."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-52@1.0",
+      "version": "VS-53@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T23:54:00+02:00",
-      "rationale": "Owner instructed Go next immediately after VS-51 merged, authorizing the next bounded design-remediation slice from Issue #94: Campaigns + Content Studio."
+      "at": "2026-08-18T00:39:00+02:00",
+      "rationale": "Owner instructed Go next after VS-52 merged, authorizing the next bounded UI-remediation slice from Issue #94."
     },
     {
       "type": "policy",
@@ -60,16 +61,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-52 changes presentation hierarchy and shell adoption only; FR-10 through FR-13 and product/DESIGN.md remain authoritative."
+      "rationale": "VS-53 changes presentation hierarchy only; FR-05, FR-16 through FR-19 and product/DESIGN.md remain authoritative."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-52@1.0",
+      "version": "VS-53@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T23:54:00+02:00",
-      "rationale": "Owner instruction authorizes bounded UI implementation, deterministic checks, UI review and PR preparation; certification, merge, release and production remain separate gates."
+      "at": "2026-08-18T00:39:00+02:00",
+      "rationale": "Owner instruction authorizes implementation, tests/build checks, UI review and PR preparation; certification/merge/release/production remain separate gates."
     },
     {
       "type": "certification",
@@ -78,7 +79,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires exact-head Product Intake, Security and CI evidence plus UI Review before explicit merge approval."
+      "rationale": "Requires exact-head Product Intake, Security, CI and implementation-level UI Review evidence before explicit merge approval."
     },
     {
       "type": "release",
@@ -125,25 +126,25 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can move from Campaign direction into a calm writing-first Studio, use AI and evidence context only when needed, and understand exact-version review/approval state without a dense control dashboard.",
+    "expectedOutcome": "Users understand measured outcomes, cautious Brand Learning, the next Experiment and channel destination state without metric-dashboard or configuration clutter.",
     "metrics": [
-      "Campaign creation regressions",
-      "Content version-save regressions",
-      "Review/approval regressions",
-      "Account-group distribution regressions",
-      "schedule/manual-publish fallback regressions",
+      "Performance navigation regressions",
+      "Learning accept/reject regressions",
+      "Experiment presentation regressions",
+      "channel connection regressions",
+      "Account Group create/update/delete regressions",
       "responsive overflow regressions",
       "UI review accessibility findings"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-52.md",
+    "specification": "docs/slices/VS-53.md",
     "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-52-ui-remediation.md",
-      "docs/plans/VS-52-ui-review.md",
-      "apps/web/app/brands/[brandId]/campaigns/page.tsx",
-      "apps/web/app/brands/[brandId]/campaigns/[campaignId]/page.tsx"
+      "docs/plans/VS-53-ui-remediation.md",
+      "docs/plans/VS-53-ui-review.md",
+      "apps/web/app/brands/[brandId]/performance/page.tsx",
+      "apps/web/app/brands/[brandId]/channels/groups/page.tsx"
     ]
   },
   "maxAttempts": 3
