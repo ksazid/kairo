@@ -1,34 +1,29 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-30",
-  "title": "Unified Multi-channel Publishing Gateway",
+  "sliceId": "VS-31",
+  "title": "Platform-specific Content Adapters",
   "status": "active",
   "lifecycle": "testing",
-  "riskLevel": "high",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15", "FR-20"],
+  "requirements": ["FR-05", "FR-10", "FR-11", "FR-12", "FR-15"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
-    "operations": "Operations Owner",
-    "security": "Security Owner"
+    "operations": null,
+    "security": null
   },
-  "dependencies": ["VS-15", "VS-29"],
+  "dependencies": ["VS-30"],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/src/review*.ts",
-    "packages/domain/src/publishing*.ts",
-    "packages/domain/src/*publishing*.test.ts",
-    "apps/api/src/review-*.ts",
-    "apps/api/src/publishing-*.ts",
-    "apps/api/src/*publishing*.test.ts",
-    "apps/api/src/vs30-*.test.ts",
-    "apps/api/src/app.ts",
-    "apps/api/src/server.ts",
-    "apps/api/migrations/**",
-    "scripts/**migration*.mjs",
-    "docs/slices/VS-30.md",
-    "docs/plans/VS-30-*.md",
+    "apps/worker/src/content-channel-adapters*.ts",
+    "apps/worker/src/drafter*.ts",
+    "apps/worker/src/publishing-adapters*.ts",
+    "apps/worker/src/publishing*.test.ts",
+    "apps/worker/package.json",
+    "apps/api/src/publishing-gateway-api.test.ts",
+    "docs/slices/VS-31.md",
+    "docs/plans/VS-31-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -36,29 +31,29 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "Dockerfile.publisher",
-    "apps/web/**"
+    "apps/web/**",
+    "apps/api/migrations/**",
+    "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["api", "database", "authorization", "sensitive-data", "customer-flow", "deployment", "operations-support"],
+    "areas": ["architecture", "customer-flow", "operations-support"],
     "notes": [
-      "Adds a Campaign-level destination-neutral fan-out use case above existing deterministic per-destination publish commands.",
-      "Preserves explicit human approval for every selected destination; multi-select is a convenience action, not blanket publication authority.",
-      "Uses channel-specific Campaign assets/versions rather than forcing identical content across destinations.",
-      "Adds a narrow approval-schema migration with legacy JSON-only insert compatibility.",
-      "Provider credentials remain behind credential references and deterministic adapter infrastructure; gateway results do not expose credential refs.",
-      "No new social provider, production deployment, production enablement or real publication is authorized by this slice."
+      "Introduces deterministic channel-content profiles around the existing Drafter without adding a new LLM/provider route.",
+      "Generated content is validated before Content Version creation and is never silently truncated to satisfy channel limits.",
+      "Existing provider publishing adapters reuse shared content-limit policy while retaining provider-specific account/media/API behavior.",
+      "A VS-30 API regression fixture is allowed only to remove a hard-coded schedule timestamp that became past during VS-31 CI; production scheduling rules are unchanged.",
+      "No new channel, OAuth flow, database migration, production enablement, deployment or real publication is authorized by this slice."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-30@1.0",
+      "version": "VS-31@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T10:07:00+02:00",
-      "rationale": "Owner explicitly prioritized roadmap capability #2 after current work and granted standing pre-approval to finish current engineering work and immediately continue implementation without repeated Go prompts."
+      "at": "2026-08-17T13:36:00+02:00",
+      "rationale": "Owner prioritized roadmap capabilities through #13, granted standing implementation pre-approval after current work, and explicitly said Go next after VS-30 merged."
     },
     {
       "type": "policy",
@@ -67,16 +62,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The approved PRD/TRD already require multi-channel Campaign executions, destination-bound human approval and deterministic publishing."
+      "rationale": "Approved PRD FR-05/FR-10/FR-11/FR-12/FR-15 and TRD already require replaceable channel adapters, channel fit and deterministic publishing."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-30@1.0",
+      "version": "VS-31@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T10:07:00+02:00",
-      "rationale": "Standing pre-approval covers implementation, testing and PR preparation for roadmap item #2 while exact-SHA certification/release/production gates remain mandatory."
+      "at": "2026-08-17T13:36:00+02:00",
+      "rationale": "Standing pre-approval covers implementation, tests, CI fixes and PR preparation for priority roadmap work; exact-SHA certification/merge/release/production gates remain separate."
     },
     {
       "type": "certification",
@@ -85,7 +80,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires final exact-SHA deterministic evidence and explicit exact-SHA approval."
+      "rationale": "Requires deterministic evidence and explicit approval bound to the final exact candidate SHA."
     },
     {
       "type": "release",
@@ -94,7 +89,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires separate exact-SHA release approval."
+      "rationale": "Separate exact-SHA release approval is required."
     },
     {
       "type": "production-enable",
@@ -103,7 +98,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires separate exact-SHA production-enable approval."
+      "rationale": "Separate exact-SHA production-enable approval is required."
     }
   ],
   "decisionIds": [],
@@ -132,17 +127,18 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "One Campaign action can schedule multiple explicitly approved channel-specific executions through isolated deterministic commands without duplicate publication or secret leakage.",
-    "metrics": ["multi-destination scheduling success", "duplicate command prevention", "destination-isolated failure rate"]
+    "expectedOutcome": "Channel executions are generated with explicit platform-aware guidance and rejected deterministically when they violate hard channel constraints, without changing publishing authority.",
+    "metrics": ["channel-profile validation pass rate", "channel-limit rejection rate", "publishing adapter policy drift regressions"]
   },
   "links": {
-    "specification": "docs/slices/VS-30.md",
-    "implementationPr": "PR-90",
+    "specification": "docs/slices/VS-31.md",
+    "implementationPr": "PR-91",
     "evidence": [
-      "docs/plans/VS-30-unified-multichannel-publishing-gateway.md",
-      "packages/domain/src/publishing-gateway.test.ts",
-      "apps/api/src/publishing-gateway-api.test.ts",
-      "apps/api/src/vs30-postgres-multichannel-approvals.integration.test.ts"
+      "docs/plans/VS-31-platform-specific-content-adapters.md",
+      "apps/worker/src/content-channel-adapters.test.ts",
+      "apps/worker/src/drafter.test.ts",
+      "apps/worker/src/publishing.test.ts",
+      "apps/api/src/publishing-gateway-api.test.ts"
     ]
   },
   "maxAttempts": 3

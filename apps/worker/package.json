@@ -11,6 +11,7 @@
     "./research-evidence-adapters": "./src/research-evidence-adapters.ts",
     "./brand-brain-builder": "./src/brand-brain-builder.ts",
     "./drafter": "./src/drafter.ts",
+    "./content-channel-adapters": "./src/content-channel-adapters.ts",
     "./reviewer": "./src/reviewer.ts",
     "./agent-runtime": "./src/agent-runtime.ts",
     "./model-gateway": "./src/model-gateway.ts",
