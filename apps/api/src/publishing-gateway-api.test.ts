@@ -158,6 +158,15 @@ describe("VS-30 multi-channel distribution API", () => {
       first.json().destinations.map((item: { commandId: string }) => item.commandId),
     );
 
+    const malformed = await app.inject({
+      method: "POST",
+      url: `/api/v1/brands/${brand.id}/campaigns/${campaignId}/distributions`,
+      headers,
+      payload: { scheduledFor: "2026-08-17T11:00:00Z", destinations: [null] },
+    });
+    expect(malformed.statusCode).toBe(400);
+    expect(malformed.json().detail).toMatch(/destinations\[0\] must be an object/i);
+
     const calendar = await app.inject({ method: "GET", url: `/api/v1/brands/${brand.id}/calendar`, headers });
     expect(calendar.statusCode).toBe(200);
     expect(calendar.json()).toHaveLength(2);
