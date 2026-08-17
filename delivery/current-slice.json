@@ -3,7 +3,7 @@
   "sliceId": "VS-29",
   "title": "Instagram Production Publishing Activation",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
@@ -40,7 +40,8 @@
       "Reuses the existing encrypted channel credential vault and Meta publishing adapter; plaintext channel tokens remain outside domain state and logs.",
       "Restricts the production publishing executor to Instagram so it cannot consume unrelated channel work.",
       "The existing authenticated Instagram OAuth API route remains unchanged and dormant unless the complete Meta/encryption configuration is supplied.",
-      "No real account connection, Render service creation, deployment, release, production enablement or publication is authorized by this slice."
+      "Deterministic end-to-end contract coverage now exercises runner to worker to Instagram adapter to mocked Meta requests to settlement without making real provider calls.",
+      "No real account connection, new publisher runtime deployment, release, production enablement or publication is authorized by this test-completion candidate."
     ]
   },
   "approvals": [
@@ -78,7 +79,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires exact-SHA Product Intake, Security and CI evidence."
+      "rationale": "Requires exact-SHA Product Intake, Security and CI evidence plus exact-SHA human certification approval."
     },
     {
       "type": "release",
@@ -87,7 +88,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Not authorized."
+      "rationale": "Requires exact-SHA approval."
     },
     {
       "type": "production-enable",
@@ -96,15 +97,15 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Not authorized."
+      "rationale": "Requires exact-SHA approval."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -130,8 +131,11 @@
   },
   "links": {
     "specification": "docs/slices/VS-29.md",
-    "implementationPr": null,
-    "evidence": ["docs/plans/VS-29-instagram-production-publishing.md"]
+    "implementationPr": 87,
+    "evidence": [
+      "docs/plans/VS-29-instagram-production-publishing.md",
+      "docs/plans/VS-29-instagram-publishing-e2e.md"
+    ]
   },
   "maxAttempts": 3
 }
