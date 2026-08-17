@@ -15,7 +15,7 @@ export function OpportunityList({
   emptyBody?: string;
 }) {
   if (opportunities.length === 0) {
-    return <section className="opportunity-empty" aria-live="polite"><p className="eyebrow">Hunter</p><h2>{emptyTitle}</h2><p>{emptyBody}</p></section>;
+    return <section className="opportunity-empty" aria-live="polite"><p className="eyebrow">Hunter</p><h3>{emptyTitle}</h3><p>{emptyBody}</p></section>;
   }
 
   return <div className="opportunity-list">{opportunities.map((item) => <OpportunityCard key={item.id} brandId={brandId} item={item} returnTo={returnTo} />)}</div>;
@@ -26,23 +26,24 @@ function OpportunityCard({ brandId, item, returnTo }: { brandId: string; item: B
   const evidence = scoreLabel(item.scores.evidence);
   const freshness = relativeTime(item.createdAt);
   const terminal = item.status === "ignored" || item.status === "developing";
+  const titleId = `opportunity-${item.id}-title`;
 
   return (
-    <article className={`opportunity-card ${terminal ? "muted-card" : ""}`}>
+    <article className={`opportunity-card ${terminal ? "muted-card" : ""}`} aria-labelledby={titleId}>
       <div className="opportunity-meta" aria-label="Opportunity signals">
         <span className={`signal-chip ${relevance.tone}`}>{relevance.label} relevance</span>
         <span className={`signal-chip ${evidence.tone}`}>{evidence.label} evidence</span>
         <span className="signal-chip neutral">{freshness}</span>
         {item.status !== "new" ? <span className="signal-chip neutral">{statusLabel(item.status)}</span> : null}
       </div>
-      <h2>{item.title}</h2>
+      <h3 id={titleId}>{item.title}</h3>
       <p className="opportunity-rationale">{item.rationale}</p>
       <div className="why-now"><span>Why now</span><p>{item.whyNow}</p></div>
       <div className="opportunity-actions">
         {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "develop", returnTo)}><button className="primary-button" type="submit">Develop</button></form> : null}
         {item.status === "new" ? <form action={opportunityAction.bind(null, brandId, item.id, "save", returnTo)}><button className="secondary-button" type="submit">Save</button></form> : null}
         {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "ignore", returnTo)}><button className="text-action" type="submit">Ignore</button></form> : null}
-        {item.status === "developing" ? <p className="action-note">Ready for the next Research/Angle slice.</p> : null}
+        {item.status === "developing" ? <p className="action-note">Ready for deeper Research and Angle development.</p> : null}
       </div>
     </article>
   );
