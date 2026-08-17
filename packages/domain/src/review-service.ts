@@ -140,11 +140,11 @@ export class ReviewService {
   }
 
   async status(accountId: string, brandId: string, assetId: string) {
-    const [review, approval, approvals] = await Promise.all([
+    const [review, allApprovals] = await Promise.all([
       this.reviews.getLatestReview(accountId, brandId, assetId),
-      this.reviews.getApproval(accountId, brandId, assetId),
       this.reviews.listApprovals(accountId, brandId, assetId),
     ]);
-    return { review, approval, approvals };
+    const approvals = review ? allApprovals.filter((item) => item.versionId === review.versionId) : [];
+    return { review, approval: approvals[0] ?? null, approvals };
   }
 }
