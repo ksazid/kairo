@@ -1,55 +1,57 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-28",
-  "title": "Kairo Root Login & Onboarding Routing",
-  "status": "completed",
-  "lifecycle": "certified",
+  "sliceId": "VS-29",
+  "title": "Instagram Production Publishing Activation",
+  "status": "active",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-01"],
+  "requirements": ["FR-05", "FR-13", "FR-14", "FR-15", "FR-20"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-16", "VS-25"],
+  "dependencies": ["VS-15"],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/**",
-    "tests/**",
-    "docs/slices/VS-28.md",
-    "docs/plans/**",
+    "apps/api/src/publishing-worker-*.ts",
+    "apps/api/src/publishing-execution-postgres-store.ts",
+    "apps/api/src/*publishing-worker*.test.ts",
+    "apps/api/package.json",
+    "Dockerfile.publisher",
+    "docs/slices/VS-29.md",
+    "docs/plans/VS-29-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
+    "apps/api/migrations/**",
     "infrastructure/**",
-    "apps/api/**",
-    "apps/api/migrations/**"
+    "apps/web/**"
   ],
   "impact": {
-    "areas": ["frontend", "authentication", "customer-flow", "sensitive-data"],
+    "areas": ["api", "sensitive-data", "deployment", "operations-support"],
     "notes": [
-      "Makes the signed-out root route enter Auth0 Universal Login directly instead of adding a Kairo-owned credential step.",
-      "Moves Workspace creation to a dedicated authenticated /onboarding route and deterministically routes users with no Workspace there after callback.",
-      "Keeps passwords outside Kairo; Auth0 remains the credential boundary while Kairo retains Workspace and Brand authorization.",
-      "Uses the same standards-based Authorization Code + PKCE architecture that can be reused by future mobile clients with a platform-appropriate Auth0 application/callback.",
-      "Google remains enabled through Auth0 when configured; Apple is prepared as an Auth0 connection but is not claimed operational until Apple/Auth0 credentials are configured.",
-      "No release, deployment, Auth0 tenant mutation, Apple Developer configuration or production enablement is authorized by this slice."
+      "Adds a separately runnable executor for already-approved Instagram publish commands; it does not create or approve content.",
+      "Reuses the existing encrypted channel credential vault and Meta publishing adapter; plaintext channel tokens remain outside domain state and logs.",
+      "Restricts the production publishing executor to Instagram so it cannot consume unrelated channel work.",
+      "The existing authenticated Instagram OAuth API route remains unchanged and dormant unless the complete Meta/encryption configuration is supplied.",
+      "No real account connection, Render service creation, deployment, release, production enablement or publication is authorized by this slice."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-28@1.0",
+      "version": "VS-29@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-16T06:35:00+02:00",
-      "rationale": "The owner explicitly instructed Go after defining the root-as-login experience, Kairo-only branding, Auth0 email/password, Google and Apple-ready social login, deterministic onboarding routing and future mobile reuse."
+      "at": "2026-08-17T02:16:00+02:00",
+      "rationale": "The owner said Go on the explicitly described next engineering step: activate production-ready Instagram publishing by adding the runnable publishing-worker path and using the existing production Instagram connection path, while keeping credential shortcuts and actual publication out of scope."
     },
     {
       "type": "policy",
@@ -58,25 +60,25 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "DEC-001 and VS-16 already govern managed standards-based OIDC/OAuth, Auth0-hosted credential handling and Kairo-owned Workspace/Brand authorization."
+      "rationale": "VS-15 and the existing Instagram connection implementation already govern deterministic publishing, encrypted credential references, provider behavior and authenticated account connection."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-28@1.0",
+      "version": "VS-29@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-16T06:35:00+02:00",
-      "rationale": "The owner's Go instruction authorizes bounded implementation of the agreed login-entry and onboarding-routing correction outside production."
+      "at": "2026-08-17T02:16:00+02:00",
+      "rationale": "The owner's Go instruction authorizes the bounded non-production implementation described immediately before execution: runnable Instagram publishing executor plus production connection readiness verification, stopping before merge/deployment/publication."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-28@1.0",
-      "commitSha": "a21c5c8293caa5932807461cae811bd555649915",
-      "by": "Sazid Khan",
-      "at": "2026-08-16T07:00:00+02:00",
-      "rationale": "The owner explicitly approved certification and merge of PR #64 bound to exact SHA a21c5c8293caa5932807461cae811bd555649915 after exact-head Product Intake #476, Security baseline #556 and CI #624 passed."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Requires exact-SHA Product Intake, Security and CI evidence."
     },
     {
       "type": "release",
@@ -101,25 +103,16 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "implementation": 10,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "a21c5c8293caa5932807461cae811bd555649915",
-    "evidence": [
-      "apps/web/src/auth-entry.test.ts locks the signed-out root, onboarding, recovery-only sign-in, bounded provider and logo contracts.",
-      "Implementation head c782ccad2fca2c1a586cb260aa16a1e35717c2cd: Product Intake #475, Security baseline #555 and CI #623 passed.",
-      "Exact certification candidate a21c5c8293caa5932807461cae811bd555649915: Product Intake #476 passed.",
-      "Exact certification candidate a21c5c8293caa5932807461cae811bd555649915: Security baseline #556 passed.",
-      "Exact certification candidate a21c5c8293caa5932807461cae811bd555649915: CI #624 passed including runtime verification and Next production build.",
-      "docs/plans/VS-28-review.md records acceptance/security review and explicitly leaves Auth0 tenant branding, Apple setup and deployed browser E2E unproven.",
-      "Human certification and merge approval was provided by Sazid Khan on 2026-08-16 at 07:00 Europe/Malta and recorded on PR #64.",
-      "PR #64 merged exact approved head to main as merge commit c6d25b9d690b1dd61e7c6f60ee6d5fc10f157796."
-    ]
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
   },
   "release": {
     "status": "not-authorized",
@@ -136,12 +129,9 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-28.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/64",
-    "evidence": [
-      "docs/plans/VS-28-kairo-login-entry.md",
-      "docs/plans/VS-28-review.md"
-    ]
+    "specification": "docs/slices/VS-29.md",
+    "implementationPr": null,
+    "evidence": ["docs/plans/VS-29-instagram-production-publishing.md"]
   },
   "maxAttempts": 3
 }
