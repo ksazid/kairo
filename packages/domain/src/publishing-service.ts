@@ -89,7 +89,10 @@ export class PublishingService {
     });
     if (!approval) throw new ResourceNotFoundError("Content Approval not found for destination");
     const existing = await this.publishing.getCommandByApproval(accountId, brandId, approval.id);
-    if (existing) return existing;
+    if (existing) {
+      if (!sameScheduleRequest(existing, input)) throw new ConcurrencyConflictError("Destination already has a different publish command");
+      return existing;
+    }
     return this.publishing.saveCommand(
       accountId,
       createPublishCommand({
@@ -258,8 +261,35 @@ function capabilityFor(contentType: PublishContentType): PublishCapability {
   return contentType === "reel" ? "publish-reel" : (`publish-${contentType}` as PublishCapability);
 }
 
+function sameScheduleRequest(
+  command: PublishCommand,
+  input: { channelAccountId: string; contentType: PublishContentType; mediaItems?: PublishMediaItem[]; options?: PublishOptions; scheduledFor: string },
+): boolean {
+  if (command.channelAccountId !== input.channelAccountId || command.contentType !== input.contentType) return false;
+  if (Number.isNaN(Date.parse(input.scheduledFor)) || Date.parse(command.scheduledFor) !== Date.parse(input.scheduledFor)) return false;
+  if (!sameMedia(command.mediaItems ?? [], input.mediaItems ?? [])) return false;
+  return command.options?.instagram?.shareToFeed === input.options?.instagram?.shareToFeed;
+}
+
+function sameMedia(current: PublishMediaItem[], requested: PublishMediaItem[]): boolean {
+  if (current.length !== requested.length) return false;
+  for (let index = 0; index < current.length; index += 1) {
+    const a = current[index];
+    const b = requested[index];
+    if (!a || !b || a.kind !== b.kind) return false;
+    let normalized: string;
+    try {
+      normalized = new URL(b.url).toString();
+    } catch {
+      return false;
+    }
+    if (a.url !== normalized) return false;
+  }
+  return true;
+}
+
 function safeReason(error: unknown): string {
-  if (error instanceof ConcurrencyConflictError) return "Content version changed; review and approve again";
+  if (error instanceof ConcurrencyConflictError) return "Destination already has a different publish command or the content version changed";
   if (error instanceof ResourceNotFoundError) return "Content, approval or destination is unavailable";
   if (error instanceof DomainValidationError) return error.message;
   throw error;
