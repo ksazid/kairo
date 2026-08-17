@@ -3,7 +3,7 @@
   "sliceId": "VS-32",
   "title": "Visual Content Calendar",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15"],
@@ -104,8 +104,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 90,
-    "testing": 45,
+    "implementation": 100,
+    "testing": 90,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -134,6 +134,7 @@
     "implementationPr": "PR-92",
     "evidence": [
       "docs/plans/VS-32-visual-content-calendar.md",
+      "docs/plans/VS-32-ui-review.md",
       "apps/web/src/lib/calendar-view-model.test.ts",
       "apps/web/app/brands/[brandId]/calendar/page.tsx",
       "apps/web/app/calendar.css"
