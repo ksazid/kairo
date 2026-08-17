@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { reviewableVideoProjectContent } from "@kairo/domain/video-project";
 import { getBrand, getCampaignDetail, getChannelAccounts, getContentReviewStatus } from "../../../../../src/lib/kairo-api";
 import { getChannelAccountGroups } from "../../../../../src/lib/channel-account-groups-api";
 import { KairoProductShell, KairoScopePicker } from "../../../../kairo-product-shell";
@@ -16,6 +17,14 @@ import { ScheduleForm } from "./schedule-form";
 
 type Params = Promise<{ brandId: string; campaignId: string }>;
 type SearchParams = Promise<{ notice?: string; error?: string }>;
+
+function readableContent(content: string, scope: { workspaceId: string; brandId: string; campaignId: string; assetId: string }): string {
+  try {
+    return reviewableVideoProjectContent(content, scope);
+  } catch {
+    return "Video Project scope validation failed. Open Video Studio to create a correctly scoped version before review.";
+  }
+}
 
 export default async function Studio({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { brandId, campaignId } = await params;
@@ -64,6 +73,9 @@ export default async function Studio({ params, searchParams }: { params: Params;
           <div className="studio-assets">
             {detail.assets.map(({ asset, versions }) => {
               const current = versions.at(-1)!;
+              const isReel = asset.format.toLowerCase() === "reel";
+              const contentScope = { workspaceId: detail.campaign.workspaceId, brandId: brand.id, campaignId, assetId: asset.id };
+              const currentDisplay = isReel ? readableContent(current.content, contentScope) : current.content;
               const status = reviewStatuses.get(asset.id)!;
               const review = status.review?.versionId === current.id ? status.review : null;
               const approval = status.approval?.versionId === current.id ? status.approval : null;
@@ -74,6 +86,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
                   : review?.status === "revision-required"
                     ? "Revision required"
                     : "Draft";
+              const videoStudioHref = `/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}/video/${encodeURIComponent(asset.id)}`;
 
               return (
                 <section className="studio-workspace" key={asset.id} aria-labelledby={`asset-${asset.id}`}>
@@ -83,30 +96,42 @@ export default async function Studio({ params, searchParams }: { params: Params;
                       <h2 id={`asset-${asset.id}`}>{asset.topic}</h2>
                     </div>
                     <div className="studio-asset-actions">
-                      {asset.format.toLowerCase() === "reel" ? (
-                        <Link className="secondary-button" href={`/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}/video/${encodeURIComponent(asset.id)}`}>Open Video Studio</Link>
-                      ) : null}
+                      {isReel ? <Link className="secondary-button" href={videoStudioHref}>Open Video Studio</Link> : null}
                       <span className={`review-status ${approval ? "approved" : review?.status ?? "draft"}`}>{label}</span>
                     </div>
                   </header>
 
-                  <form
-                    action={saveVersionAction.bind(null, brand.id, campaignId, asset.id, asset.currentVersion)}
-                    className="editor-panel"
-                  >
-                    <label htmlFor={`content-${asset.id}`}>Content</label>
-                    <textarea
-                      id={`content-${asset.id}`}
-                      name="content"
-                      defaultValue={current.content}
-                      required
-                      maxLength={50000}
-                    />
-                    <div className="editor-footer">
-                      <span>Version {current.version} · {current.actor}</span>
-                      <button className="primary-button" type="submit">Save new version</button>
-                    </div>
-                  </form>
+                  {isReel ? (
+                    <section className="editor-panel video-project-active" aria-label="Current Reel content">
+                      <div className="video-project-active-heading">
+                        <div>
+                          <strong>Structured Reel editing</strong>
+                          <p>Scene copy, order and timing are edited in Video Studio so Kairo can preserve a valid ReelPlan and exact Content Version lineage.</p>
+                        </div>
+                        <Link className="primary-button" href={videoStudioHref}>Edit video</Link>
+                      </div>
+                      <p className="video-project-readable-copy">{currentDisplay}</p>
+                      <div className="editor-footer"><span>Version {current.version} · {current.actor}</span><span>Video Project edits create a new version</span></div>
+                    </section>
+                  ) : (
+                    <form
+                      action={saveVersionAction.bind(null, brand.id, campaignId, asset.id, asset.currentVersion)}
+                      className="editor-panel"
+                    >
+                      <label htmlFor={`content-${asset.id}`}>Content</label>
+                      <textarea
+                        id={`content-${asset.id}`}
+                        name="content"
+                        defaultValue={current.content}
+                        required
+                        maxLength={50000}
+                      />
+                      <div className="editor-footer">
+                        <span>Version {current.version} · {current.actor}</span>
+                        <button className="primary-button" type="submit">Save new version</button>
+                      </div>
+                    </form>
+                  )}
 
                   <div className="studio-context-stack">
                     <details className="studio-context-disclosure">
@@ -143,7 +168,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
                           {[...versions].reverse().map((version) => (
                             <details key={version.id} open={version.id === current.id}>
                               <summary>Version {version.version} · {version.action}</summary>
-                              <p>{version.content}</p>
+                              <p>{isReel ? readableContent(version.content, contentScope) : version.content}</p>
                               <small>{new Date(version.createdAt).toLocaleString()}</small>
                             </details>
                           ))}
