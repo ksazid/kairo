@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { getBrand, getCampaignDetail, getChannelAccounts, getContentReviewStatus } from "../../../../../src/lib/kairo-api";
+import { getChannelAccountGroups } from "../../../../../src/lib/channel-account-groups-api";
 import { PilotMobileNav } from "../../../../pilot-mobile-nav";
 import { KairoSidebar } from "../../ideas/page";
-import { approveContentAction, createAssetAction, generateVersionAction, reviewContentAction, saveVersionAction, scheduleContentAction } from "../actions";
+import { approveContentAction, createAssetAction, distributeGroupAction, generateVersionAction, reviewContentAction, saveVersionAction, scheduleContentAction } from "../actions";
+import { GroupDistributionForm } from "./group-distribution-form";
 import { ScheduleForm } from "./schedule-form";
 type Params = Promise<{ brandId: string; campaignId: string }>;
 type SearchParams = Promise<{ notice?: string; error?: string }>;
 export default async function Studio({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { brandId, campaignId } = await params;
-  const [brand, detail, channelAccounts, messages] = await Promise.all([getBrand(brandId), getCampaignDetail(brandId, campaignId), getChannelAccounts(brandId), searchParams]);
+  const [brand, detail, channelAccounts, accountGroups, messages] = await Promise.all([getBrand(brandId), getCampaignDetail(brandId, campaignId), getChannelAccounts(brandId), getChannelAccountGroups(brandId), searchParams]);
   if (!brand) return null;
   const reviewStatuses = new Map(await Promise.all(detail.assets.map(async ({ asset }) => [asset.id, await getContentReviewStatus(brand.id, asset.id)] as const)));
   return <div className="app-shell"><KairoSidebar brandId={brand.id} active="Content Studio" /><main className="workspace-main studio-main">
-    <Link className="back-link" href={`/brands/${encodeURIComponent(brand.id)}/campaigns`}>← Campaigns</Link>
+    <div className="studio-toolbar"><Link className="back-link" href={`/brands/${encodeURIComponent(brand.id)}/campaigns`}>← Campaigns</Link><Link className="secondary-button" href={`/brands/${encodeURIComponent(brand.id)}/channels/groups`}>Account groups</Link></div>
     <header className="studio-header"><div><p className="eyebrow">Content Studio</p><h1>{detail.campaign.name}</h1><p>{detail.campaign.objective}</p></div><span className="idea-status">Human controlled</span></header>
     {messages.notice ? <p className="notice success" role="status">{messages.notice}</p> : null}{messages.error ? <p className="notice error" role="alert">{messages.error}</p> : null}
     {detail.assets.length ? <div className="studio-assets">{detail.assets.map(({ asset, versions }) => {
@@ -26,6 +28,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
           {review ? <div className="review-grid"><div><strong>Truth Gate</strong><p className={review.truth.passed ? "review-pass" : "review-fail"}>{review.truth.passed ? "Passed — evidence requirements satisfied." : "Hard failure — approval is blocked."}</p>{review.truth.findings.length ? <ul className="finding-list">{review.truth.findings.map((finding, index) => <li key={`${finding.code}-${index}`}><strong>{finding.code.replaceAll("-", " ")}</strong><span>{finding.message}</span></li>)}</ul> : null}</div><div><strong>Critic</strong>{review.critic ? <><p>{review.critic.score}/100 · {review.critic.passed ? "Passed" : "Revision required"}</p>{review.critic.findings.length ? <ul className="finding-list">{review.critic.findings.map((finding, index) => <li key={`${finding.code}-${index}`}><strong>{finding.severity}</strong><span>{finding.message}</span></li>)}</ul> : null}</> : <p>Not run because the Truth Gate failed.</p>}</div></div> : <p className="review-intro">Run deterministic evidence checks first, then the isolated Critic. Neither can approve or publish content.</p>}
           {!review || review.status === "revision-required" ? <form action={reviewContentAction.bind(null, brand.id, campaignId, asset.id, current.version)}><button className="secondary-button">{review ? "Review revised version" : "Review current version"}</button></form> : null}
           {review?.status === "passed" && !approval ? <form className="approval-form" action={approveContentAction.bind(null, brand.id, campaignId, asset.id, current.version, asset.channel)}><label>Destination account reference<input name="accountRef" required maxLength={300} placeholder="e.g. company-linkedin" /></label><button className="primary-button">Approve version {current.version}</button><p>Approval is destination-specific. It does not publish or schedule.</p></form> : null}
+          {review?.status === "passed" && accountGroups.length ? <GroupDistributionForm groups={accountGroups} action={distributeGroupAction.bind(null, brand.id, campaignId, asset.id, current.version)} /> : null}
           {approval ? <><div className="approval-record"><strong>Human approval recorded</strong><p>{approval.destination.channel} · {approval.destination.accountRef} · {new Date(approval.approvedAt).toLocaleString()}</p><small>Editing creates a new immutable version that requires a new review and approval.</small></div>{(()=>{const account=channelAccounts.find(a=>a.channel===approval.destination.channel&&a.accountRef===approval.destination.accountRef&&a.status==="connected");return account&&account.capabilities.length?<ScheduleForm account={account} action={scheduleContentAction.bind(null,brand.id,campaignId,asset.id)}/>:<div className="schedule-unavailable"><strong>Manual publishing required</strong><p>No connected destination with matching capabilities is available for this approval. Kairo will not silently publish elsewhere.</p></div>})()}</> : null}
         </section>
       </section>;
