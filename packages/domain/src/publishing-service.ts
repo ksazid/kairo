@@ -199,7 +199,9 @@ export class PublishingGateway {
 
     const seen = new Set<string>();
     const destinations: DistributionDestinationResult[] = [];
-    for (const destination of input.destinations) {
+    const rawDestinations = input.destinations as unknown[];
+    for (let index = 0; index < rawDestinations.length; index += 1) {
+      const destination = distributionDestination(rawDestinations[index], index);
       const key = `${destination.assetId}:${destination.channelAccountId}`;
       if (seen.has(key)) {
         destinations.push({ assetId: destination.assetId, channelAccountId: destination.channelAccountId, status: "rejected", reason: "Duplicate destination" });
@@ -252,6 +254,30 @@ export class PublishingGateway {
 
     return { campaignId, scheduledFor: input.scheduledFor, destinations };
   }
+}
+
+function distributionDestination(value: unknown, index: number): DistributionDestinationInput {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new DomainValidationError(`destinations[${index}] must be an object`);
+  const raw = value as Record<string, unknown>;
+  const assetId = requiredText(raw.assetId, `destinations[${index}].assetId`);
+  const channelAccountId = requiredText(raw.channelAccountId, `destinations[${index}].channelAccountId`);
+  if (!Number.isInteger(raw.expectedVersion) || (raw.expectedVersion as number) < 1) throw new DomainValidationError(`destinations[${index}].expectedVersion must be a positive integer`);
+  if (typeof raw.contentType !== "string" || !["text", "image", "video", "carousel", "reel"].includes(raw.contentType)) {
+    throw new DomainValidationError(`destinations[${index}].contentType is not supported`);
+  }
+  return {
+    assetId,
+    channelAccountId,
+    expectedVersion: raw.expectedVersion as number,
+    contentType: raw.contentType as PublishContentType,
+    ...(raw.mediaItems === undefined ? {} : { mediaItems: raw.mediaItems as PublishMediaItem[] }),
+    ...(raw.options === undefined ? {} : { options: raw.options as PublishOptions }),
+  };
+}
+
+function requiredText(value: unknown, field: string): string {
+  if (typeof value !== "string" || !value.trim()) throw new DomainValidationError(`${field} is required`);
+  return value.trim();
 }
 
 function capabilityFor(contentType: PublishContentType): PublishCapability {
