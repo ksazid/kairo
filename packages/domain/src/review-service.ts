@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { ConcurrencyConflictError, ResourceNotFoundError } from "./index";
 import type { CampaignRepository } from "./campaign-service";
 import type { ResearchRepository } from "./research-service";
+import { reviewableVideoProjectContent } from "./video-project";
 import {
   approveContentVersion,
   completeContentReview,
@@ -99,7 +100,7 @@ export class ReviewService {
       workspaceId: scope.workspaceId,
       brandId,
       versionId: version.id,
-      content: version.content,
+      content: reviewableVideoProjectContent(version.content),
       supportingClaims: version.supportingClaimIds.map((id) => ({ id, text: claims.get(id)?.text ?? "" })),
       brandContextVersion: input.brandContextVersion,
     });
