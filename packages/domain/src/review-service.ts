@@ -100,7 +100,12 @@ export class ReviewService {
       workspaceId: scope.workspaceId,
       brandId,
       versionId: version.id,
-      content: reviewableVideoProjectContent(version.content),
+      content: reviewableVideoProjectContent(version.content, {
+        workspaceId: scope.workspaceId,
+        brandId,
+        campaignId,
+        assetId,
+      }),
       supportingClaims: version.supportingClaimIds.map((id) => ({ id, text: claims.get(id)?.text ?? "" })),
       brandContextVersion: input.brandContextVersion,
     });
