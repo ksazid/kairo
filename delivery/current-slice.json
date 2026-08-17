@@ -37,7 +37,7 @@
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["backend", "frontend", "database", "customer-flow"],
+    "areas": ["api", "frontend", "database", "customer-flow"],
     "notes": [
       "Adds Brand-scoped reusable destination groups without granting group-level approval or publishing authority.",
       "Expands group selections into the existing VS-30 concrete destination distribution contract.",
