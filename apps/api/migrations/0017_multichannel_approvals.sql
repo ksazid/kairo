@@ -8,6 +8,21 @@ update content_approvals
 set destination_channel = destination->>'channel',
     destination_account_ref = destination->>'accountRef';
 
+create function sync_content_approval_destination_columns()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.destination_channel := new.destination->>'channel';
+  new.destination_account_ref := new.destination->>'accountRef';
+  return new;
+end;
+$$;
+
+create trigger trg_content_approval_destination_columns
+before insert or update of destination on content_approvals
+for each row execute function sync_content_approval_destination_columns();
+
 alter table content_approvals
   alter column destination_channel set not null,
   alter column destination_account_ref set not null;
