@@ -31,12 +31,15 @@ export interface VideoProject {
   supportingClaimIds: string[];
 }
 
-export interface CreateVideoProjectInput {
-  id: string;
+export interface VideoProjectScope {
   workspaceId: string;
   brandId: string;
   campaignId: string;
   assetId: string;
+}
+
+export interface CreateVideoProjectInput extends VideoProjectScope {
+  id: string;
   sourceVersionId: string;
   sourceVersion: number;
   plan: ReelPlan;
@@ -116,6 +119,23 @@ export function validateVideoProject(input: VideoProject): VideoProject {
     cta: validatedPlan.cta,
     supportingClaimIds: [...validatedPlan.supportingClaimIds],
   };
+}
+
+export function assertVideoProjectScope(project: VideoProject, expected: VideoProjectScope): VideoProject {
+  const value = validateVideoProject(project);
+  const scope: VideoProjectScope = {
+    workspaceId: scopedText(expected.workspaceId, "expectedScope.workspaceId"),
+    brandId: scopedText(expected.brandId, "expectedScope.brandId"),
+    campaignId: scopedText(expected.campaignId, "expectedScope.campaignId"),
+    assetId: scopedText(expected.assetId, "expectedScope.assetId"),
+  };
+  if (
+    value.workspaceId !== scope.workspaceId ||
+    value.brandId !== scope.brandId ||
+    value.campaignId !== scope.campaignId ||
+    value.assetId !== scope.assetId
+  ) throw new DomainValidationError("Video Project is outside the expected scope");
+  return value;
 }
 
 export function compileVideoProject(project: VideoProject): ReelPlan {
@@ -217,12 +237,15 @@ export function videoProjectReviewText(project: VideoProject): string {
   ].join("\n\n");
 }
 
-export function reviewableVideoProjectContent(content: string): string {
+export function reviewableVideoProjectContent(content: string, expectedScope?: VideoProjectScope): string {
+  let project: VideoProject;
   try {
-    return videoProjectReviewText(parseVideoProject(content));
+    project = parseVideoProject(content);
   } catch {
     return content;
   }
+  const scoped = expectedScope ? assertVideoProjectScope(project, expectedScope) : project;
+  return videoProjectReviewText(scoped);
 }
 
 function reflowScenes(scenes: VideoProjectScene[]): Pick<VideoProject, "scenes" | "targetDurationSeconds"> {
