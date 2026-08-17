@@ -1,31 +1,31 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-33",
-  "title": "Channel / Account Groups",
+  "sliceId": "VS-34",
+  "title": "App Shell + Today + Discover Design Remediation",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15"],
+  "requirements": ["FR-01", "FR-02", "FR-06"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-30", "VS-32"],
+  "dependencies": ["VS-33"],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/src/channel-account-group*.ts",
-    "packages/domain/package.json",
-    "apps/api/src/channel-account-group*.ts",
-    "apps/api/migrations/0018_channel_account_groups.sql",
-    "apps/api/src/server.ts",
-    "apps/web/src/lib/channel-account-groups-api.ts",
-    "apps/web/app/brands/[brandId]/channels/groups/**",
-    "apps/web/app/brands/[brandId]/campaigns/**",
-    "docs/slices/VS-33.md",
-    "docs/plans/VS-33-*.md",
+    "apps/web/app/page.tsx",
+    "apps/web/app/opportunity-list.tsx",
+    "apps/web/app/discovery.css",
+    "apps/web/app/kairo-product-shell.tsx",
+    "apps/web/app/pilot-mobile-nav.tsx",
+    "apps/web/app/brands/[brandId]/discover/**",
+    "apps/web/src/lib/product-navigation*.ts",
+    "apps/web/src/lib/product-navigation*.test.ts",
+    "docs/slices/VS-34.md",
+    "docs/plans/VS-34-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -33,29 +33,29 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
+    "apps/api/**",
     "apps/worker/**",
+    "packages/domain/**",
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["api", "frontend", "database", "customer-flow"],
+    "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Adds Brand-scoped reusable destination groups without granting group-level approval or publishing authority.",
-      "Expands group selections into the existing VS-30 concrete destination distribution contract.",
-      "Each expanded destination still receives independent approval, capability validation, idempotency and PublishCommand state.",
-      "The first group-distribution UI is text-only so it never offers rich formats without a media payload; rich media remains on the existing media-aware publishing path.",
-      "Adds migration 0018 for group metadata only; no production migration execution is authorized by this slice.",
-      "No new social provider, OAuth scope, provider credential flow, autonomous scheduler, deployment or real publication is introduced."
+      "Consolidates Today/Discover navigation into one shared Kairo product shell without changing authentication, authorization or Opportunity domain semantics.",
+      "Moves Today toward the approved Opportunity-first attention queue and demotes explanatory/context UI through progressive disclosure.",
+      "Moves Discover away from dashboard-like summary tiles while preserving evidence, relevance and action semantics.",
+      "No API, database, publishing, provider, deployment or production changes are introduced."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-33@1.0",
+      "version": "VS-34@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T18:48:00+02:00",
-      "rationale": "Owner approved VS-32 certification and merge, then explicitly instructed Go next into roadmap item #5 Channel / Account Groups under the existing standing implementation authorization."
+      "at": "2026-08-17T19:16:00+02:00",
+      "rationale": "Owner previously approved the Kairo UI compliance programme and instructed Go ahead, then after VS-33 certification/merge explicitly instructed to check now and proceed. Scope is bounded to the first approved remediation slice from Issue #94."
     },
     {
       "type": "policy",
@@ -64,16 +64,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice is a reusable selection layer over already-approved FR-05/FR-10/FR-13/FR-15 behavior and preserves per-destination human approval and deterministic publication controls."
+      "rationale": "VS-34 changes presentation hierarchy and shared navigation implementation only; approved PRD requirements and product/DESIGN.md remain authoritative and no product policy is expanded."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-33@1.0",
+      "version": "VS-34@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T18:48:00+02:00",
-      "rationale": "Standing implementation pre-approval covers code, tests, CI fixes, UI review and PR preparation; certification, merge, release and production enablement remain exact-SHA gates."
+      "at": "2026-08-17T19:16:00+02:00",
+      "rationale": "Owner instructed the design programme to proceed once the active slice cleared. Implementation is authorized for UI-01/VS-34 with UI UX Pro Max, ui-review, Superpowers, slice-planner, implementer and verifier; certification/merge/release remain separate gates."
     },
     {
       "type": "certification",
@@ -82,7 +82,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires deterministic evidence and explicit approval bound to the final exact candidate SHA."
+      "rationale": "Requires deterministic evidence, UI Review PASS and explicit approval bound to the final exact candidate SHA."
     },
     {
       "type": "release",
@@ -107,8 +107,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 60,
+    "implementation": 10,
+    "testing": 0,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -129,18 +129,22 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can save and reuse Brand-scoped channel-account sets while all external destinations remain independently approved and auditable.",
-    "metrics": ["group scope violations", "group distribution partial failures", "duplicate destination regressions", "single-destination publishing regressions"]
+    "expectedOutcome": "Users can understand the selected Brand, identify the strongest current Opportunities and move between Today and Discover with substantially less dashboard/context clutter.",
+    "metrics": [
+      "Today opportunity hierarchy regressions",
+      "Discover action-semantic regressions",
+      "navigation route regressions",
+      "responsive overflow regressions",
+      "UI review accessibility findings"
+    ]
   },
   "links": {
-    "specification": "docs/slices/VS-33.md",
-    "implementationPr": "PR-93",
+    "specification": "docs/slices/VS-34.md",
+    "implementationPr": null,
     "evidence": [
-      "packages/domain/src/channel-account-group-service.test.ts",
-      "apps/api/migrations/0018_channel_account_groups.sql",
-      "apps/web/app/brands/[brandId]/channels/groups/page.tsx",
-      "apps/web/app/brands/[brandId]/campaigns/[campaignId]/group-distribution-form.tsx",
-      "docs/plans/VS-33-ui-review.md"
+      "docs/plans/VS-34-ui-remediation.md",
+      "apps/web/app/kairo-product-shell.tsx",
+      "apps/web/src/lib/product-navigation.test.ts"
     ]
   },
   "maxAttempts": 3
