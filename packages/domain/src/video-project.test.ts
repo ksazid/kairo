@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DomainValidationError } from "./index";
 import {
+  assertVideoProjectScope,
   compileVideoProject,
   createVideoProject,
   moveVideoProjectScene,
@@ -58,6 +59,13 @@ const project = () => createVideoProject({
   sourceVersion: 7,
   plan: reel,
 });
+
+const expectedScope = {
+  workspaceId: "workspace-1",
+  brandId: "brand-1",
+  campaignId: "campaign-1",
+  assetId: "asset-1",
+};
 
 describe("VS-54 Video Project", () => {
   it("creates a scoped editable project that compiles back to the source ReelPlan", () => {
@@ -141,6 +149,12 @@ describe("VS-54 Video Project", () => {
     expect(() => parseVideoProject(duplicateScenes)).toThrow(DomainValidationError);
   });
 
+  it("fails closed when a structurally valid project claims a different Brand or Asset scope", () => {
+    expect(assertVideoProjectScope(project(), expectedScope).assetId).toBe("asset-1");
+    expect(() => assertVideoProjectScope(project(), { ...expectedScope, brandId: "brand-2" })).toThrow(DomainValidationError);
+    expect(() => reviewableVideoProjectContent(serializeVideoProject(project()), { ...expectedScope, assetId: "asset-2" })).toThrow(DomainValidationError);
+  });
+
   it("produces a readable review representation without exposing project metadata as creative copy", () => {
     const reviewText = videoProjectReviewText(project());
 
@@ -154,7 +168,7 @@ describe("VS-54 Video Project", () => {
 
   it("converts only valid Video Project JSON to review copy and leaves normal content unchanged", () => {
     const serialized = serializeVideoProject(project());
-    expect(reviewableVideoProjectContent(serialized)).toBe(videoProjectReviewText(project()));
-    expect(reviewableVideoProjectContent("A normal text post stays unchanged.")).toBe("A normal text post stays unchanged.");
+    expect(reviewableVideoProjectContent(serialized, expectedScope)).toBe(videoProjectReviewText(project()));
+    expect(reviewableVideoProjectContent("A normal text post stays unchanged.", expectedScope)).toBe("A normal text post stays unchanged.");
   });
 });
