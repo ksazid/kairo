@@ -1,30 +1,25 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-50",
-  "title": "App Shell + Today + Discover Design Remediation",
+  "sliceId": "VS-51",
+  "title": "Ideas + Research + Angles Design Remediation",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-01", "FR-02", "FR-06"],
+  "requirements": ["FR-06", "FR-08", "FR-09"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-33"],
+  "dependencies": ["VS-50"],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/app/page.tsx",
-    "apps/web/app/opportunity-list.tsx",
-    "apps/web/app/discovery.css",
-    "apps/web/app/kairo-product-shell.tsx",
-    "apps/web/app/brands/[brandId]/discover/**",
-    "apps/web/src/lib/product-navigation*.ts",
-    "apps/web/src/lib/product-navigation*.test.ts",
-    "docs/slices/VS-50.md",
-    "docs/plans/VS-50-*.md",
+    "apps/web/app/brands/[brandId]/ideas/**",
+    "apps/web/app/ideas.css",
+    "docs/slices/VS-51.md",
+    "docs/plans/VS-51-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -40,22 +35,21 @@
   "impact": {
     "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Consolidates Today/Discover navigation into one shared Kairo product shell without changing authentication, authorization or Opportunity domain semantics.",
-      "Moves Today toward the approved Opportunity-first attention queue and demotes explanatory/context UI through progressive disclosure.",
-      "Moves Discover away from dashboard-like summary tiles while preserving evidence, relevance and action semantics.",
-      "VS-50 is intentionally isolated from any concurrently active main-branch feature slice; PR #96 remains draft and must synchronize with latest main before certification.",
-      "No API, database, publishing, provider, deployment or production changes are introduced."
+      "Migrates Ideas and Idea detail to the shared Kairo shell while preserving current Idea/Research/Angle actions and contracts.",
+      "Makes Research claims primary and moves raw evidence/uncertainty into progressive disclosure without removing provenance.",
+      "Replaces the dense two-column Angle grid with a single comparison flow while keeping framing visible and selection human-controlled.",
+      "No API, domain, database, provider, publishing, deployment or production changes are introduced."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-50@1.0",
+      "version": "VS-51@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T19:16:00+02:00",
-      "rationale": "Owner approved the Kairo UI compliance programme, instructed Go ahead, then explicitly asked to keep checking and proceed once VS-33 cleared. VS-50 is the first bounded remediation scope from Issue #94 and is isolated from concurrent feature-slice runtime paths."
+      "at": "2026-08-17T20:08:00+02:00",
+      "rationale": "Owner instructed Go next immediately after VS-50 merged, authorizing the next bounded design-remediation slice from Issue #94."
     },
     {
       "type": "policy",
@@ -64,16 +58,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-50 changes presentation hierarchy and shared navigation implementation only; approved PRD requirements and product/DESIGN.md remain authoritative and no product policy is expanded."
+      "rationale": "VS-51 changes presentation hierarchy and shared-shell adoption only; FR-06, FR-08, FR-09 and product/DESIGN.md remain authoritative."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-50@1.0",
+      "version": "VS-51@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T19:16:00+02:00",
-      "rationale": "Owner instructed the design programme to proceed. Implementation is authorized for App Shell + Today + Discover using UI UX Pro Max, ui-review, Superpowers, slice-planner, implementer and verifier; certification, merge, release and production gates remain separate."
+      "at": "2026-08-17T20:08:00+02:00",
+      "rationale": "Owner instruction authorizes implementation, tests/build checks, UI review and PR preparation; certification/merge/release/production remain separate gates."
     },
     {
       "type": "certification",
@@ -82,7 +76,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires synchronization with latest main, deterministic evidence, UI Review PASS and explicit approval bound to the final exact candidate SHA."
+      "rationale": "Requires exact-head deterministic evidence and UI Review before explicit approval."
     },
     {
       "type": "release",
@@ -129,22 +123,23 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can understand the selected Brand, identify the strongest current Opportunities and move between Today and Discover with substantially less dashboard/context clutter.",
+    "expectedOutcome": "Users can capture and revisit Ideas, read evidence-backed Research and choose or refine Angles with less permanent control clutter and clearer decision hierarchy.",
     "metrics": [
-      "Today opportunity hierarchy regressions",
-      "Discover action-semantic regressions",
-      "navigation route regressions",
+      "Ideas navigation regressions",
+      "Research evidence/provenance regressions",
+      "Angle edit/select regressions",
       "responsive overflow regressions",
       "UI review accessibility findings"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-50.md",
-    "implementationPr": "PR-96",
+    "specification": "docs/slices/VS-51.md",
+    "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-50-ui-remediation.md",
-      "apps/web/app/kairo-product-shell.tsx",
-      "apps/web/src/lib/product-navigation.test.ts"
+      "docs/plans/VS-51-ui-remediation.md",
+      "docs/plans/VS-51-ui-review.md",
+      "apps/web/app/brands/[brandId]/ideas/page.tsx",
+      "apps/web/app/brands/[brandId]/ideas/[ideaId]/page.tsx"
     ]
   },
   "maxAttempts": 3
