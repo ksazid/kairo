@@ -20,6 +20,7 @@ import {
   type PublishContentType,
   type PublishMediaItem,
   type PublishOptions,
+  type PublishStatus,
   type PublishedPost,
 } from "./publishing";
 
@@ -161,7 +162,7 @@ export type DistributionDestinationInput = {
   options?: PublishOptions;
 };
 
-export type DistributionDestinationStatus = "scheduled" | "manual-required" | "unsupported" | "reconnect-required" | "rejected";
+export type DistributionDestinationStatus = PublishStatus | "unsupported" | "reconnect-required" | "rejected";
 
 export type DistributionDestinationResult = {
   assetId: string;
@@ -243,11 +244,7 @@ export class PublishingGateway {
           options: destination.options,
           scheduledFor: input.scheduledFor,
         });
-        destinations.push({
-          ...safe,
-          status: command.status === "manual-required" ? "manual-required" : "scheduled",
-          commandId: command.id,
-        });
+        destinations.push({ ...safe, status: command.status, commandId: command.id });
       } catch (error) {
         destinations.push({ ...safe, status: "rejected", reason: safeReason(error) });
       }
