@@ -6,6 +6,7 @@ import {
   moveVideoProjectScene,
   parseVideoProject,
   retimeVideoProjectScene,
+  reviewableVideoProjectContent,
   serializeVideoProject,
   updateVideoProjectScene,
   videoProjectReviewText,
@@ -149,5 +150,11 @@ describe("VS-54 Video Project", () => {
     expect(reviewText).toContain("Caption: A concise workflow shift to watch.");
     expect(reviewText).not.toContain("workspace-1");
     expect(reviewText).not.toContain("sourceVersionId");
+  });
+
+  it("converts only valid Video Project JSON to review copy and leaves normal content unchanged", () => {
+    const serialized = serializeVideoProject(project());
+    expect(reviewableVideoProjectContent(serialized)).toBe(videoProjectReviewText(project()));
+    expect(reviewableVideoProjectContent("A normal text post stays unchanged.")).toBe("A normal text post stays unchanged.");
   });
 });
