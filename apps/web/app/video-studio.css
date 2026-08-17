@@ -1,3 +1,4 @@
+.studio-asset-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 .video-studio-main{max-width:1120px}
 .video-studio-topline,.video-studio-header,.video-section-heading,.video-scene-header,.video-scene-actions,.video-project-overview,.video-render-boundary{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
 .video-studio-topline{align-items:center;margin-bottom:24px}
@@ -58,6 +59,7 @@
   .video-section-heading .secondary-button,.video-scene-actions .secondary-button,.video-initialize-actions .primary-button{justify-self:start}
 }
 @media(max-width:600px){
+  .studio-asset-actions{justify-content:flex-start}
   .video-studio-topline{display:grid}
   .video-copy-panel,.video-timeline,.video-initialize{padding:18px}
   .video-project-overview,.video-render-boundary,.video-studio-empty{padding:18px}
