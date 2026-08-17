@@ -3,7 +3,7 @@
   "sliceId": "VS-34",
   "title": "Format Intelligence Library",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "low",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-03", "FR-09", "FR-10", "FR-11", "FR-12"],
@@ -101,8 +101,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -128,10 +128,11 @@
   },
   "links": {
     "specification": "docs/slices/VS-34.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/95",
     "evidence": [
       "packages/domain/src/format-intelligence.test.ts",
-      "apps/web/app/brands/[brandId]/formats/page.tsx"
+      "apps/web/app/brands/[brandId]/formats/page.tsx",
+      "docs/plans/VS-34-ui-review.md"
     ]
   },
   "maxAttempts": 3
