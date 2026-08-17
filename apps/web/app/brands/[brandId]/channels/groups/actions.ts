@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createChannelAccountGroupRequest, deleteChannelAccountGroupRequest, updateChannelAccountGroupRequest } from "../../../../../../src/lib/channel-account-groups-api";
+import { createChannelAccountGroupRequest, deleteChannelAccountGroupRequest, updateChannelAccountGroupRequest } from "../../../../../src/lib/channel-account-groups-api";
 
 const url = (brandId: string) => `/brands/${encodeURIComponent(brandId)}/channels/groups`;
 const members = (form: FormData) => form.getAll("memberAccountIds").map(String).filter(Boolean);
