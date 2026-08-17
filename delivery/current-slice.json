@@ -1,29 +1,28 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-31",
-  "title": "Platform-specific Content Adapters",
+  "sliceId": "VS-32",
+  "title": "Visual Content Calendar",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-10", "FR-11", "FR-12", "FR-15"],
+  "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-30"],
+  "dependencies": ["VS-30", "VS-31"],
   "blockers": [],
   "allowedPaths": [
-    "apps/worker/src/content-channel-adapters*.ts",
-    "apps/worker/src/drafter*.ts",
-    "apps/worker/src/publishing-adapters*.ts",
-    "apps/worker/src/publishing*.test.ts",
-    "apps/worker/package.json",
-    "apps/api/src/publishing-gateway-api.test.ts",
-    "docs/slices/VS-31.md",
-    "docs/plans/VS-31-*.md",
+    ".agents/skills/ui-ux-pro-max/**",
+    "apps/web/app/brands/[brandId]/calendar/**",
+    "apps/web/app/calendar.css",
+    "apps/web/src/lib/calendar-view-model*.ts",
+    "apps/web/src/lib/calendar-view-model*.test.ts",
+    "docs/slices/VS-32.md",
+    "docs/plans/VS-32-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -31,29 +30,29 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/web/**",
     "apps/api/migrations/**",
+    "apps/worker/**",
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["architecture", "customer-flow", "operations-support"],
+    "areas": ["frontend", "customer-flow", "operations-support"],
     "notes": [
-      "Introduces deterministic channel-content profiles around the existing Drafter without adding a new LLM/provider route.",
-      "Generated content is validated before Content Version creation and is never silently truncated to satisfy channel limits.",
-      "Existing provider publishing adapters reuse shared content-limit policy while retaining provider-specific account/media/API behavior.",
-      "A VS-30 API regression fixture is allowed only to remove a hard-coded schedule timestamp that became past during VS-31 CI; production scheduling rules are unchanged.",
-      "No new channel, OAuth flow, database migration, production enablement, deployment or real publication is authorized by this slice."
+      "Upgrades the existing Brand Calendar route rather than creating a parallel scheduler.",
+      "Uses Kairo's approved product/DESIGN.md baseline with UI UX Pro Max as the primary workflow/accessibility skill and ui-review as the evidence review skill.",
+      "Adds visual month orientation and URL-state Brand/Campaign/channel/status filters while preserving truthful deterministic publish command state.",
+      "Existing retry/cancel actions remain the only publish-command mutations in this slice; there is no drag-drop mutation or autonomous scheduling.",
+      "Plan My Week, new social providers, OAuth changes, analytics ingestion, deployment and real publication are outside scope."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-31@1.0",
+      "version": "VS-32@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T13:36:00+02:00",
-      "rationale": "Owner prioritized roadmap capabilities through #13, granted standing implementation pre-approval after current work, and explicitly said Go next after VS-30 merged."
+      "at": "2026-08-17T16:29:00+02:00",
+      "rationale": "Owner prioritized roadmap items through #13, requested continuous implementation under standing pre-approval, required all approved relevant skills from this point forward, and said Go to continue after VS-31."
     },
     {
       "type": "policy",
@@ -62,16 +61,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Approved PRD FR-05/FR-10/FR-11/FR-12/FR-15 and TRD already require replaceable channel adapters, channel fit and deterministic publishing."
+      "rationale": "Approved PRD FR-14 already requires a simple calendar with Brand/Campaign/channel/status filtering and scheduling visibility; the slice does not expand autonomous publishing policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-31@1.0",
+      "version": "VS-32@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-17T13:36:00+02:00",
-      "rationale": "Standing pre-approval covers implementation, tests, CI fixes and PR preparation for priority roadmap work; exact-SHA certification/merge/release/production gates remain separate."
+      "at": "2026-08-17T16:29:00+02:00",
+      "rationale": "Standing implementation pre-approval covers code, tests, CI fixes, UI review and PR preparation for the priority roadmap; exact-SHA certification/merge/release/production gates remain separate."
     },
     {
       "type": "certification",
@@ -127,18 +126,18 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Channel executions are generated with explicit platform-aware guidance and rejected deterministically when they violate hard channel constraints, without changing publishing authority.",
-    "metrics": ["channel-profile validation pass rate", "channel-limit rejection rate", "publishing adapter policy drift regressions"]
+    "expectedOutcome": "Users can understand and filter planned/published content quickly from a simple visual calendar without losing truthful publication state or accessibility.",
+    "metrics": ["calendar filter correctness", "calendar accessibility review verdict", "responsive overflow regressions", "publishing-state display regressions"]
   },
   "links": {
-    "specification": "docs/slices/VS-31.md",
-    "implementationPr": "PR-91",
+    "specification": "docs/slices/VS-32.md",
+    "implementationPr": "PR-92",
     "evidence": [
-      "docs/plans/VS-31-platform-specific-content-adapters.md",
-      "apps/worker/src/content-channel-adapters.test.ts",
-      "apps/worker/src/drafter.test.ts",
-      "apps/worker/src/publishing.test.ts",
-      "apps/api/src/publishing-gateway-api.test.ts"
+      "docs/plans/VS-32-visual-content-calendar.md",
+      "docs/plans/VS-32-ui-review.md",
+      "apps/web/src/lib/calendar-view-model.test.ts",
+      "apps/web/app/brands/[brandId]/calendar/page.tsx",
+      "apps/web/app/calendar.css"
     ]
   },
   "maxAttempts": 3
