@@ -3,7 +3,7 @@
   "sliceId": "VS-30",
   "title": "Unified Multi-channel Publishing Gateway",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-05", "FR-10", "FR-13", "FR-14", "FR-15", "FR-20"],
@@ -22,6 +22,7 @@
     "apps/api/src/review-*.ts",
     "apps/api/src/publishing-*.ts",
     "apps/api/src/*publishing*.test.ts",
+    "apps/api/src/vs30-*.test.ts",
     "apps/api/src/app.ts",
     "apps/api/src/server.ts",
     "apps/api/migrations/**",
@@ -41,10 +42,11 @@
   "impact": {
     "areas": ["api", "database", "authorization", "sensitive-data", "customer-flow", "deployment", "operations-support"],
     "notes": [
-      "Adds a destination-neutral fan-out use case above existing deterministic per-destination publish commands.",
+      "Adds a Campaign-level destination-neutral fan-out use case above existing deterministic per-destination publish commands.",
       "Preserves explicit human approval for every selected destination; multi-select is a convenience action, not blanket publication authority.",
-      "Requires a narrow approval-schema migration because the current schema permits only one destination approval per content version.",
-      "Provider credentials remain behind credential references and deterministic adapter infrastructure.",
+      "Uses channel-specific Campaign assets/versions rather than forcing identical content across destinations.",
+      "Adds a narrow approval-schema migration with legacy JSON-only insert compatibility.",
+      "Provider credentials remain behind credential references and deterministic adapter infrastructure; gateway results do not expose credential refs.",
       "No new social provider, production deployment, production enablement or real publication is authorized by this slice."
     ]
   },
@@ -108,8 +110,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 90,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -130,13 +132,18 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "One approved content version can be distributed to multiple explicitly approved destinations through isolated deterministic commands without duplicate publication or secret leakage.",
+    "expectedOutcome": "One Campaign action can schedule multiple explicitly approved channel-specific executions through isolated deterministic commands without duplicate publication or secret leakage.",
     "metrics": ["multi-destination scheduling success", "duplicate command prevention", "destination-isolated failure rate"]
   },
   "links": {
     "specification": "docs/slices/VS-30.md",
-    "implementationPr": null,
-    "evidence": ["docs/plans/VS-30-unified-multichannel-publishing-gateway.md"]
+    "implementationPr": "PR-90",
+    "evidence": [
+      "docs/plans/VS-30-unified-multichannel-publishing-gateway.md",
+      "packages/domain/src/publishing-gateway.test.ts",
+      "apps/api/src/publishing-gateway-api.test.ts",
+      "apps/api/src/vs30-postgres-multichannel-approvals.integration.test.ts"
+    ]
   },
   "maxAttempts": 3
 }
