@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { parseVideoProject, type VideoProject } from "@kairo/domain/video-project";
+import { assertVideoProjectScope, parseVideoProject, type VideoProject } from "@kairo/domain/video-project";
 import { getBrand, getCampaignDetail } from "../../../../../../../src/lib/kairo-api";
 import { KairoProductShell, KairoScopePicker } from "../../../../../../kairo-product-shell";
 import {
@@ -13,9 +13,9 @@ import {
 type Params = Promise<{ brandId: string; campaignId: string; assetId: string }>;
 type SearchParams = Promise<{ notice?: string; error?: string }>;
 
-function projectFrom(content: string): VideoProject | null {
+function projectFrom(content: string, scope: { workspaceId: string; brandId: string; campaignId: string; assetId: string }): VideoProject | null {
   try {
-    return parseVideoProject(content);
+    return assertVideoProjectScope(parseVideoProject(content), scope);
   } catch {
     return null;
   }
@@ -49,7 +49,12 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
   }
 
   const current = entry.versions.at(-1)!;
-  const project = projectFrom(current.content);
+  const project = projectFrom(current.content, {
+    workspaceId: detail.campaign.workspaceId,
+    brandId,
+    campaignId,
+    assetId,
+  });
   const isReel = entry.asset.format.toLowerCase() === "reel";
   const studioHref = `/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}`;
 
