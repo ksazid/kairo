@@ -19,6 +19,8 @@
     "./review-service": "./src/review-service.ts",
     "./publishing": "./src/publishing.ts",
     "./publishing-service": "./src/publishing-service.ts",
+    "./channel-account-groups": "./src/channel-account-groups.ts",
+    "./channel-account-group-service": "./src/channel-account-group-service.ts",
     "./analytics": "./src/analytics.ts",
     "./analytics-service": "./src/analytics-service.ts",
     "./learning": "./src/learning.ts",
