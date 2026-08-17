@@ -45,10 +45,19 @@ describe("VS-32 calendar view model", () => {
     expect(month.days.find((day) => day.dateKey === "2026-08-31")?.entries.map((entry) => entry.id)).toEqual(["last"]);
   });
 
-  it("handles leap-year February boundaries", () => {
+  it.each([
+    ["2026-02-01T00:00:00.000Z", 28],
+    ["2028-02-01T00:00:00.000Z", 29],
+    ["2026-04-01T00:00:00.000Z", 30],
+    ["2026-08-01T00:00:00.000Z", 31],
+  ])("keeps the correct in-month day count for %s", (monthStart, expectedDays) => {
+    const month = buildCalendarMonth(new Date(monthStart), []);
+    expect(month.days.filter((day) => day.inMonth)).toHaveLength(expectedDays);
+  });
+
+  it("keeps leap day in the correct month", () => {
     const month = buildCalendarMonth(new Date("2028-02-01T00:00:00.000Z"), []);
     expect(month.days.some((day) => day.dateKey === "2028-02-29" && day.inMonth)).toBe(true);
-    expect(month.days.filter((day) => day.inMonth)).toHaveLength(29);
   });
 
   it("combines brand, campaign, channel and status filters without changing entries", () => {
