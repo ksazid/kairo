@@ -1,13 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { safeAppReturnTo, signInRecoveryView } from "./first-run-view-model";
+import { signInRecoveryView } from "./first-run-view-model";
+import { safeReturnTo } from "./oidc-session";
 
-test("safeAppReturnTo keeps only local absolute paths", () => {
-  assert.equal(safeAppReturnTo("/onboarding"), "/onboarding");
-  assert.equal(safeAppReturnTo("/brands/brand-1/brain?setup=1"), "/brands/brand-1/brain?setup=1");
-  assert.equal(safeAppReturnTo("//evil.example/path"), "/");
-  assert.equal(safeAppReturnTo("https://evil.example/path"), "/");
-  assert.equal(safeAppReturnTo(undefined), "/");
+test("canonical safeReturnTo keeps only local same-origin paths", () => {
+  assert.equal(safeReturnTo("/onboarding"), "/onboarding");
+  assert.equal(safeReturnTo("/brands/brand-1/brain?setup=1"), "/brands/brand-1/brain?setup=1");
+  assert.equal(safeReturnTo("//evil.example/path"), "/");
+  assert.equal(safeReturnTo("/\\evil.example/path"), "/");
+  assert.equal(safeReturnTo("https://evil.example/path"), "/");
+  assert.equal(safeReturnTo(undefined), "/");
 });
 
 test("sign-in without an error presents the normal secure continuation state", () => {

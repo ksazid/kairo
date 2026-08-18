@@ -5,10 +5,6 @@ const AUTH_ERRORS = new Map<string, string>([
   ["Authentication failed. Please try again.", "Sign-in could not be completed. Please try again."],
 ]);
 
-export function safeAppReturnTo(value: string | undefined) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/";
-}
-
 export function signInRecoveryView(error: string | undefined) {
   const normalized = error?.trim();
   if (!normalized) {

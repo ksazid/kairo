@@ -1,5 +1,6 @@
 import styles from "./sign-in.module.css";
-import { safeAppReturnTo, signInRecoveryView } from "../../src/lib/first-run-view-model";
+import { signInRecoveryView } from "../../src/lib/first-run-view-model";
+import { safeReturnTo } from "../../src/lib/oidc-session";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ type SearchParams = Promise<{ error?: string; returnTo?: string }>;
 
 export default async function SignInRecoveryPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const returnTo = safeAppReturnTo(params.returnTo);
+  const returnTo = safeReturnTo(params.returnTo);
   const view = signInRecoveryView(params.error);
   const retry = `/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
 
