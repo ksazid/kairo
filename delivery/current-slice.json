@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-55",
-  "title": "Universal Brand URL Reader",
+  "sliceId": "VS-56",
+  "title": "Brand Brain + Review & Control Design Remediation",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04"],
@@ -16,17 +16,14 @@
   "dependencies": ["VS-26"],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/src/brand-brain-bootstrap.ts",
-    "packages/domain/src/brand-brain-bootstrap.test.ts",
-    "apps/api/src/public-brand-reference.ts",
-    "apps/api/src/public-brand-reference.test.ts",
-    "apps/api/src/guided-brand-brain-routes.test.ts",
-    "apps/worker/src/brand-brain-builder.ts",
-    "apps/worker/src/brand-brain-builder.test.ts",
     "apps/web/app/brands/[brandId]/brain/page.tsx",
-    "apps/web/app/brands/[brandId]/brain/guided-actions.ts",
-    "docs/slices/VS-55.md",
-    "docs/plans/VS-55-*.md",
+    "apps/web/app/brands/[brandId]/brand-brain-control/page.tsx",
+    "apps/web/app/brands/[brandId]/brand-brain-control/actions.ts",
+    "apps/web/app/guided-brain.css",
+    "apps/web/src/lib/brand-brain-view-model.ts",
+    "apps/web/src/lib/brand-brain-view-model.test.ts",
+    "docs/slices/VS-56.md",
+    "docs/plans/VS-56-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -34,30 +31,31 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/api/migrations/**",
-    "apps/api/src/meta-instagram-oauth.ts",
-    "apps/api/src/instagram-connection.ts",
+    "apps/api/**",
+    "packages/domain/**",
+    "packages/contracts/**",
     "apps/web/app/brands/[brandId]/channels/instagram/**",
-    "Dockerfile.publisher"
+    "apps/web/vercel.json"
   ],
   "impact": {
-    "areas": ["frontend", "api", "customer-flow"],
+    "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Keeps guided onboarding at the existing lightweight Brand Brain setup flow.",
-      "Reads broad public HTTP(S) Brand references including HTML, plain text and text-based PDF URLs with bounded SSRF-safe fetching.",
-      "Uses public social/profile pages such as Instagram on a best-effort basis through publicly returned metadata/content; this slice does not change Meta OAuth or provider APIs.",
-      "Allows provisional Brand Brain suggestions from owner-confirmed context when no public reference can be read, while preserving inferred-versus-confirmed state and human review."
+      "Implements UI-05 from issue #94 using the approved Kairo design baseline and shared product shell.",
+      "Every inferred or stale Brand Brain field becomes explicit human review work; confirmed owner truth remains authoritative.",
+      "The advanced editor and Knowledge source management move to progressive disclosure without changing persistence or source contracts.",
+      "VS-55 Universal URL/PDF behaviour is preserved unchanged; no API, database, OAuth/provider, model, publishing or deployment changes are authorized.",
+      "Vercel Git-triggered deployment remains disabled and this slice has no deployment approval."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-55@1.0",
+      "version": "VS-56@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T02:13:00+02:00",
-      "rationale": "Owner approved the simplified scope: preserve the current 2-3 step onboarding, add a universal URL reader with PDF URL capability, and keep Content Asset Library/Drive connections separate."
+      "at": "2026-08-18T14:42:00+02:00",
+      "rationale": "Owner approved proceeding with UI-05 Brand Brain + Review & Control as the next bounded Kairo remediation slice."
     },
     {
       "type": "policy",
@@ -66,16 +64,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "FR-02, FR-03 and FR-04 already authorize lightweight Brand setup, reviewable inferred Brand Brain context, and URL/website/document knowledge sources."
+      "rationale": "This slice preserves approved FR-02/FR-03/FR-04 truth, inference, provenance and Knowledge-source contracts and makes no new policy decision."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-55@1.0",
+      "version": "VS-56@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T02:13:00+02:00",
-      "rationale": "Owner instructed Go and proceed to URL fix, authorizing bounded implementation, tests, security verification and PR preparation. Merge/release/production remain separate gates."
+      "at": "2026-08-18T14:42:00+02:00",
+      "rationale": "Owner instructed Go ahead, authorizing bounded UI implementation, deterministic tests, UI review and exact-head certification gates. Merge and deployment remain separate approvals."
     },
     {
       "type": "certification",
@@ -84,7 +82,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires deterministic tests, security review and repository CI on the exact candidate SHA."
+      "rationale": "Requires implementation-level UI Review plus Product Intake, Security baseline and CI on one frozen exact candidate SHA."
     },
     {
       "type": "release",
@@ -102,15 +100,15 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Separate exact-SHA production-enable approval is required."
+      "rationale": "Separate production-enable approval is required."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 20,
+    "implementation": 70,
+    "testing": 0,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -131,21 +129,20 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "A Brand owner can use an ordinary public page, social-profile URL, blog/article or text-based PDF as optional Brand evidence, and Kairo still produces reviewable provisional suggestions when public references are unavailable.",
+    "expectedOutcome": "Brand Brain reads as one calm profile and review workflow: owner truth, Kairo suggestions, review work and deeper Knowledge controls are understandable without duplicate navigation or dashboard-like card density.",
     "metrics": [
-      "Brand Brain bootstrap failures caused only by unreadable URLs",
-      "public-reference reader security regressions",
-      "PDF extraction success/failure truthfulness",
-      "proposal provenance validation regressions"
+      "inferred or stale fields omitted from human review count",
+      "Brand Brain pages bypassing shared Kairo navigation",
+      "Review & Control actions unexpectedly returning to guided Brand Brain",
+      "responsive or accessibility regressions in Brand Brain workflows"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-55.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/102",
+    "specification": "docs/slices/VS-56.md",
+    "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-55-implementation.md",
-      "apps/api/src/public-brand-reference.test.ts",
-      "apps/worker/src/brand-brain-builder.test.ts"
+      "docs/plans/VS-56-implementation.md",
+      "apps/web/src/lib/brand-brain-view-model.test.ts"
     ]
   },
   "maxAttempts": 3
