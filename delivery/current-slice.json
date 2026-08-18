@@ -3,7 +3,7 @@
   "sliceId": "VS-58",
   "title": "Onboarding + Kairo-owned Auth/Recovery + Final UI Consistency",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01", "FR-02"],
@@ -46,7 +46,7 @@
       "Implements UI-07 from issue #94 using the approved Kairo design baseline.",
       "First-run remains two conceptual steps: lightweight Brand setup followed by Brand Brain suggestion review.",
       "Kairo-owned sign-in/recovery surfaces are remediated without changing Auth0 Universal Login or OIDC/provider contracts.",
-      "Arbitrary authentication query errors are not reflected back to users; safe local return paths remain bounded.",
+      "Arbitrary authentication query errors are not reflected back to users; Kairo reuses the canonical safeReturnTo OIDC boundary.",
       "Vercel Git-triggered deployment remains disabled and this slice has no deployment approval."
     ]
   },
@@ -85,7 +85,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires implementation-level UI Review plus Product Intake, Security baseline and CI on one frozen exact candidate SHA."
+      "rationale": "Implementation-level UI Review passed and implementation head c3de7673e383c2d014909d625394d44ca518dbc9 passed Product Intake #593, Security #686 and CI #803. Final certification requires the same gates on the frozen post-governance candidate SHA."
     },
     {
       "type": "release",
@@ -110,16 +110,23 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 80,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "Implementation-level UI Review PASS against product/DESIGN.md, UI UX Pro Max and UI Review on implementation head c3de7673e383c2d014909d625394d44ca518dbc9.",
+      "First-run remains two conceptual steps with no source-classification wizard; Kairo-owned sign-in recovery is quiet/light-first and does not reflect arbitrary query errors.",
+      "Kairo reuses the canonical oidc-session safeReturnTo guard; no Auth0/OIDC/provider/backend contract path changed.",
+      "Product Intake #593 PASS on implementation head c3de7673e383c2d014909d625394d44ca518dbc9.",
+      "Security baseline #686 PASS on implementation head c3de7673e383c2d014909d625394d44ca518dbc9.",
+      "CI #803 PASS on implementation head c3de7673e383c2d014909d625394d44ca518dbc9 after aligning the new regression suite with the repository Vitest harness; final exact-candidate rerun required after this governance transition."
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -143,7 +150,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-58.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/105",
     "evidence": [
       "docs/plans/VS-58-implementation.md",
       "apps/web/src/lib/first-run-view-model.test.ts"
