@@ -40,12 +40,21 @@ export interface ContentAssetLibraryQuery {
   query?: string;
 }
 
+export interface ContentAssetProviderStateInput {
+  status: ContentAssetLibraryStatus;
+  externalRootRef?: string;
+  providerLabel?: string;
+  clearRoot?: boolean;
+}
+
 export interface ContentAssetLibraryRepository {
   saveLibrary(accountId: string, library: ContentAssetLibrary): Promise<ContentAssetLibrary>;
   listLibraries(accountId: string, brandId: string): Promise<ContentAssetLibrary[]>;
   getLibrary(accountId: string, brandId: string, libraryId: string): Promise<ContentAssetLibrary | null>;
   listAssets(accountId: string, brandId: string, query?: ContentAssetLibraryQuery): Promise<ContentLibraryAsset[]>;
   replaceIndexedAssets(accountId: string, library: ContentAssetLibrary, assets: ContentLibraryAsset[]): Promise<void>;
+  updateProviderState(accountId: string, brandId: string, libraryId: string, input: ContentAssetProviderStateInput): Promise<ContentAssetLibrary>;
+  clearIndexedAssets(accountId: string, brandId: string, libraryId: string): Promise<void>;
 }
 
 export interface ContentAssetConnectorAsset {

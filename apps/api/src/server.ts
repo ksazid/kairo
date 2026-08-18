@@ -17,6 +17,10 @@ import{PgChannelAccountGroupRepository}from"./channel-account-group-postgres-sto
 import{registerChannelAccountGroupRoutes}from"./channel-account-group-routes";
 import{PgContentAssetLibraryRepository}from"./content-asset-library-postgres-store";
 import{registerContentAssetLibraryRoutes}from"./content-asset-library-routes";
+import{GoogleDriveContentAssetService}from"./google-drive-content-assets";
+import{GoogleDriveOAuthClient}from"./google-drive-content-assets-client";
+import{PgEncryptedContentAssetCredentialVault,PgGoogleDriveConnectionRepository}from"./google-drive-content-assets-postgres";
+import{registerGoogleDriveContentAssetRoutes}from"./google-drive-content-assets-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
@@ -86,6 +90,20 @@ registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier})
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
+
+const googleDrive=googleDriveConfig();
+let googleDriveService:GoogleDriveContentAssetService|undefined;
+if(googleDrive){
+  googleDriveService=new GoogleDriveContentAssetService({
+    brands:coreStore,
+    libraries:contentAssetLibraryStore,
+    connections:new PgGoogleDriveConnectionRepository(pool),
+    vault:new PgEncryptedContentAssetCredentialVault(pool,googleDrive.encryptionKey),
+    oauth:new GoogleDriveOAuthClient(googleDrive.clientId,googleDrive.clientSecret,googleDrive.redirectUri),
+    picker:{developerKey:googleDrive.pickerApiKey,appId:googleDrive.pickerAppId},
+  });
+}
+registerGoogleDriveContentAssetRoutes(app,{coreStore,identityVerifier,...(googleDriveService?{service:googleDriveService}:{})});
 registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:async()=>{await pool.query("select 1")}});
 
 const meta=metaInstagramConfig();
@@ -185,4 +203,13 @@ function metaInstagramConfig(){
   const missing=names.filter(name=>!values[name]);
   if(missing.length)throw new Error(`Meta Instagram configuration is incomplete: ${missing.join(", ")}`);
   return{appId:values.META_APP_ID,appSecret:values.META_APP_SECRET,graphVersion:values.META_GRAPH_VERSION,redirectUri:values.META_OAUTH_REDIRECT_URI,encryptionKey:values.CHANNEL_CREDENTIAL_ENCRYPTION_KEY};
+}
+
+function googleDriveConfig(){
+  const names=["GOOGLE_DRIVE_CLIENT_ID","GOOGLE_DRIVE_CLIENT_SECRET","GOOGLE_DRIVE_OAUTH_REDIRECT_URI","GOOGLE_DRIVE_PICKER_API_KEY","GOOGLE_DRIVE_PICKER_APP_ID","CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY"] as const;
+  const values=Object.fromEntries(names.map(name=>[name,process.env[name]?.trim()??""])) as Record<(typeof names)[number],string>;
+  if(names.every(name=>!values[name]))return null;
+  const missing=names.filter(name=>!values[name]);
+  if(missing.length)throw new Error(`Google Drive Content Asset configuration is incomplete: ${missing.join(", ")}`);
+  return{clientId:values.GOOGLE_DRIVE_CLIENT_ID,clientSecret:values.GOOGLE_DRIVE_CLIENT_SECRET,redirectUri:values.GOOGLE_DRIVE_OAUTH_REDIRECT_URI,pickerApiKey:values.GOOGLE_DRIVE_PICKER_API_KEY,pickerAppId:values.GOOGLE_DRIVE_PICKER_APP_ID,encryptionKey:values.CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY};
 }
