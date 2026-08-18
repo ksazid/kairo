@@ -3,7 +3,7 @@
   "sliceId": "VS-61",
   "title": "Content Asset Selection in Content Studio",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-10", "FR-11", "FR-13"],
@@ -53,13 +53,23 @@
     {"type":"scope","status":"approved","version":"VS-61@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T23:24:00+02:00","rationale":"After approving the exact VS-60 merge, owner instructed go next. VS-61 is the bounded continuation that consumes the already-approved Content Asset Library inside existing FR-10/FR-11 Content Studio scope."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"This slice selects already-indexed Brand-scoped metadata only. It does not request new provider scopes, connect Google, download provider content, publish content, mutate Brand Brain, or change production settings."},
     {"type":"implementation","status":"approved","version":"VS-61@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T23:24:00+02:00","rationale":"Go authorizes bounded implementation, tests, UI review and exact-head certification gates. Merge, deployment and production enablement remain separate approvals."},
-    {"type":"certification","status":"pending","version":"VS-61@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires Product Intake, Security baseline, CI and implementation-level UI Review on one frozen exact candidate SHA."},
+    {"type":"certification","status":"pending","version":"VS-61@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5 passed Product Intake #641, Security #734, CI #854 and implementation-level UI Review. Final exact-candidate gates are running after this governance-only transition."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Separate exact-SHA release approval is required."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment, provider activation or production enablement is authorized by this slice approval."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
+  "certification": {
+    "status":"running",
+    "commitSha":null,
+    "evidence":[
+      "Product Intake #641 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5",
+      "Security baseline #734 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5",
+      "CI #854 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5 including PostgreSQL 18 migration 0021, dependency audit, governance/preflight, workspace type/tests/builds and dashboard artifact",
+      "Implementation-level UI Review PASS against product/DESIGN.md: Production assets remain contextual/secondary, selection state is explicit and keyboard-native, responsive layout is bounded, exact-version review/approval hierarchy is preserved, and no Brand Brain/provider-network action is introduced",
+      "Rendered browser evidence is not claimed because no exact-candidate deployment or production browser environment was authorized"
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
