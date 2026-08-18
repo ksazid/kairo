@@ -106,6 +106,7 @@ export class ContentAssetLibraryService {
   }
 
   async replaceFromConnector(accountId: string, brandId: string, libraryId: string, connector: ContentAssetConnector) {
+    await this.requireBrand(accountId, brandId);
     const library = await this.repository.getLibrary(accountId, brandId, libraryId);
     if (!library) throw new ResourceNotFoundError("Content Asset Library not found");
     if (library.provider !== connector.provider) throw new DomainValidationError("Connector does not match Content Asset Library provider");
