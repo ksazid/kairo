@@ -10,8 +10,15 @@ export async function createContentAssetLibraryAction(brandId:string,formData:Fo
   try{
     await createContentAssetLibrary(brandId,{name,provider});
   }catch(error){
-    const message=error instanceof Error?error.message:"Unable to create Content Asset Library";
-    redirect(`${base}?error=${encodeURIComponent(message)}`);
+    redirect(`${base}?error=${encodeURIComponent(safeCreateError(error))}`);
   }
   redirect(`${base}?created=1`);
+}
+
+function safeCreateError(error:unknown){
+  const message=error instanceof Error?error.message:"";
+  if(message==="Library name must be between 1 and 120 characters")return message;
+  if(message==="Unsupported Content Asset provider")return message;
+  if(message==="Authentication is required")return"Your session needs to be refreshed before creating a library.";
+  return"Unable to create the library right now. Try again.";
 }
