@@ -16,9 +16,12 @@ export async function buildBrandBrainAction(brandId: string, formData: FormData)
       ...(publicReferenceUrl ? { publicReferenceUrl } : {}),
       ...(ownerBoundary ? { ownerBoundary } : {}),
     });
+    const evidenceNote = result.sourceIds.length
+      ? ` ${result.sourceIds.length} public ${result.sourceIds.length === 1 ? "reference was" : "references were"} successfully read.`
+      : " Suggestions were generated from the Brand and owner-confirmed context available to Kairo; public links can be added later to improve them.";
     const notice = result.generatorStatus === "generated"
-      ? `Brand Brain built with ${result.proposedCount} suggestions. Review the items that need your confirmation.`
-      : "Your Brand goal was saved. Kairo could not generate source-backed suggestions yet; add or verify a public Brand reference and try again.";
+      ? `Brand Brain built with ${result.proposedCount} suggestions. Review the items that need your confirmation.${evidenceNote}`
+      : "Your Brand goal was saved. Kairo could not generate suggestions right now; your setup is safe and you can try again shortly.";
     destination = `/brands/${encodeURIComponent(brandId)}/brain?notice=${encodeURIComponent(notice)}`;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to build Brand Brain";
