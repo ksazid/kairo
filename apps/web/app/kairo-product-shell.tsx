@@ -9,7 +9,7 @@ import {
 type ProductShellProps = {
   brandId?: string | null;
   workspaceId?: string | null;
-  active: DesktopProductDestination;
+  active?: DesktopProductDestination | null;
   mobileActive?: MobileProductDestination;
   children: ReactNode;
 };
@@ -22,7 +22,7 @@ export function KairoProductShell({
   children,
 }: ProductShellProps) {
   const navigation = buildProductNavigation({ brandId, workspaceId });
-  const resolvedMobileActive = mobileActive ?? mobileDestinationFor(active);
+  const resolvedMobileActive = mobileActive ?? (active ? mobileDestinationFor(active) : "More");
 
   return (
     <div className="app-shell">

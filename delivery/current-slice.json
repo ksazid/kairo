@@ -1,29 +1,29 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-56",
-  "title": "Brand Brain + Review & Control Design Remediation",
+  "sliceId": "VS-57",
+  "title": "Operations + More / Secondary Management Design Remediation",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-02", "FR-03", "FR-04"],
+  "requirements": ["FR-20"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-26"],
+  "dependencies": ["VS-50"],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/app/brands/[brandId]/brain/page.tsx",
-    "apps/web/app/brands/[brandId]/brand-brain-control/page.tsx",
-    "apps/web/app/brands/[brandId]/brand-brain-control/actions.ts",
-    "apps/web/app/guided-brain.css",
-    "apps/web/src/lib/brand-brain-view-model.ts",
-    "apps/web/src/lib/brand-brain-view-model.test.ts",
-    "docs/slices/VS-56.md",
-    "docs/plans/VS-56-*.md",
+    "apps/web/app/kairo-product-shell.tsx",
+    "apps/web/app/brands/[brandId]/operations/page.tsx",
+    "apps/web/app/brands/[brandId]/more/page.tsx",
+    "apps/web/app/operations.css",
+    "apps/web/src/lib/operations-view-model.ts",
+    "apps/web/src/lib/operations-view-model.test.ts",
+    "docs/slices/VS-57.md",
+    "docs/plans/VS-57-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -34,16 +34,17 @@
     "apps/api/**",
     "packages/domain/**",
     "packages/contracts/**",
-    "apps/web/app/brands/[brandId]/channels/instagram/**",
+    "apps/web/src/lib/operations-api.ts",
+    "apps/web/app/brands/[brandId]/operations/actions.ts",
     "apps/web/vercel.json"
   ],
   "impact": {
     "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Implements UI-05 from issue #94 using the approved Kairo design baseline and shared product shell.",
-      "Every inferred or stale Brand Brain field becomes explicit human review work; confirmed owner truth remains authoritative.",
-      "The advanced editor and Knowledge source management move to progressive disclosure without changing persistence or source contracts.",
-      "VS-55 Universal URL/PDF behaviour is preserved unchanged; no API, database, OAuth/provider, model, publishing or deployment changes are authorized.",
+      "Implements UI-06 from issue #94 using the approved Kairo design baseline and shared product shell.",
+      "Operations becomes task-first: failures and operator judgment precede cost, automation and audit detail.",
+      "More becomes the coherent mobile/secondary-management hub without expanding Kairo primary navigation.",
+      "Existing retry, disable-automation, authorization, audit and redaction contracts remain unchanged.",
       "Vercel Git-triggered deployment remains disabled and this slice has no deployment approval."
     ]
   },
@@ -51,11 +52,11 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-56@1.0",
+      "version": "VS-57@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T14:42:00+02:00",
-      "rationale": "Owner approved proceeding with UI-05 Brand Brain + Review & Control as the next bounded Kairo remediation slice."
+      "at": "2026-08-18T18:13:00+02:00",
+      "rationale": "Owner instructed Go next, authorizing UI-06 Operations + More / secondary management as the next bounded Kairo remediation slice."
     },
     {
       "type": "policy",
@@ -64,16 +65,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "This slice preserves approved FR-02/FR-03/FR-04 truth, inference, provenance and Knowledge-source contracts and makes no new policy decision."
+      "rationale": "This slice preserves FR-20 control semantics and approved web/mobile IA without adding operator capabilities or policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-56@1.0",
+      "version": "VS-57@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T14:42:00+02:00",
-      "rationale": "Owner instructed Go ahead, authorizing bounded UI implementation, deterministic tests, UI review and exact-head certification gates. Merge and deployment remain separate approvals."
+      "at": "2026-08-18T18:13:00+02:00",
+      "rationale": "Go next authorizes bounded implementation, tests, UI review and exact-head certification gates. Merge and deployment remain separate approvals."
     },
     {
       "type": "certification",
@@ -82,7 +83,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Implementation-level UI Review passed and the initial implementation head passed Product Intake #585, Security #678 and CI #793. Final certification requires the same gates on the frozen post-governance candidate SHA."
+      "rationale": "Requires implementation-level UI Review plus Product Intake, Security baseline and CI on one frozen exact candidate SHA."
     },
     {
       "type": "release",
@@ -107,21 +108,16 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 50,
+    "implementation": 80,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
+    "status": "not-started",
     "commitSha": null,
-    "evidence": [
-      "Implementation-level UI Review PASS against product/DESIGN.md, UI UX Pro Max and UI Review on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3.",
-      "Product Intake #585 PASS on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3.",
-      "Security baseline #678 PASS on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3.",
-      "CI #793 PASS on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3; final exact-candidate rerun required after this governance transition."
-    ]
+    "evidence": []
   },
   "release": {
     "status": "not-authorized",
@@ -134,20 +130,21 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Brand Brain reads as one calm profile and review workflow: owner truth, Kairo suggestions, review work and deeper Knowledge controls are understandable without duplicate navigation or dashboard-like card density.",
+    "expectedOutcome": "Operators see exceptions before diagnostics, while users reach secondary Brand/management work from one calm More hierarchy.",
     "metrics": [
-      "inferred or stale fields omitted from human review count",
-      "Brand Brain pages bypassing shared Kairo navigation",
-      "Review & Control actions unexpectedly returning to guided Brand Brain",
-      "responsive or accessibility regressions in Brand Brain workflows"
+      "safe retry failures not prioritized in Operations",
+      "supporting diagnostics competing visually with operator attention",
+      "secondary routes falsely selected as desktop primary navigation",
+      "mobile secondary workflow routes unreachable from More",
+      "responsive or accessibility regressions"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-56.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/103",
+    "specification": "docs/slices/VS-57.md",
+    "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-56-implementation.md",
-      "apps/web/src/lib/brand-brain-view-model.test.ts"
+      "docs/plans/VS-57-implementation.md",
+      "apps/web/src/lib/operations-view-model.test.ts"
     ]
   },
   "maxAttempts": 3
