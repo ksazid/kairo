@@ -156,7 +156,7 @@ export function matchesContentAsset(asset: ContentLibraryAsset, query: ContentAs
 function toIndexedAsset(library: ContentAssetLibrary, asset: ContentAssetConnectorAsset, indexedAt: string): ContentLibraryAsset {
   if (!asset.externalId?.trim() || !asset.name?.trim() || !asset.mimeType?.trim()) throw new DomainValidationError("Connector returned invalid Content Asset metadata");
   return {
-    id: `${library.provider}:${asset.externalId}`,
+    id: `${library.id}:${asset.externalId}`,
     workspaceId: library.workspaceId,
     brandId: library.brandId,
     libraryId: library.id,
