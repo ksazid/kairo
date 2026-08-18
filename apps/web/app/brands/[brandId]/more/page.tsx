@@ -18,6 +18,7 @@ export default async function MorePage({ params }: { params: Params }) {
       description: "Continue deeper work that does not belong in the five-item mobile navigation.",
       items: [
         { title: "Campaigns & Content Studio", description: "Develop selected Angles, edit content, review versions and approve the final execution.", href: `${base}/campaigns` },
+        { title: "Content Assets", description: "Organize reusable photography, product media, campaign files and video references for this Brand.", href: `${base}/content-assets` },
         { title: "Performance", description: "Understand what happened, why it may have happened and what to try next.", href: `${base}/performance` },
       ],
     },

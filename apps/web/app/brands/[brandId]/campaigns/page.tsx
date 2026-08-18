@@ -44,6 +44,7 @@ export default async function CampaignsPage({ params, searchParams }: { params: 
               <h2 id="campaign-list-title">{campaigns.length ? `${campaigns.length} ${campaigns.length === 1 ? "Campaign" : "Campaigns"}` : "No Campaigns yet"}</h2>
               <p>Open a Campaign to edit channel content, review evidence and approve the exact version that may proceed.</p>
             </div>
+            <Link className="secondary-button" href={`${base}/content-assets`}>Content Assets</Link>
             <details className="campaign-create-disclosure">
               <summary className="secondary-button">New Campaign</summary>
               <div className="campaign-create-panel">
