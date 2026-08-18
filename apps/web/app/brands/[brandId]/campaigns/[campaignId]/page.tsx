@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { ContentLibraryAssetReference } from "@kairo/domain/campaign";
 import { reviewableVideoProjectContent } from "@kairo/domain/video-project";
 import { getBrand, getCampaignDetail, getChannelAccounts, getContentReviewStatus } from "../../../../../src/lib/kairo-api";
+import { getContentAssetLibraries, getContentLibraryAssets } from "../../../../../src/lib/content-asset-library-api";
 import { getChannelAccountGroups } from "../../../../../src/lib/channel-account-groups-api";
 import { KairoProductShell, KairoScopePicker } from "../../../../kairo-product-shell";
 import {
@@ -9,10 +11,12 @@ import {
   distributeGroupAction,
   generateVersionAction,
   reviewContentAction,
+  saveProductionAssetsAction,
   saveVersionAction,
   scheduleContentAction,
 } from "../actions";
 import { GroupDistributionForm } from "./group-distribution-form";
+import { ProductionAssetPicker } from "./production-asset-picker";
 import { ScheduleForm } from "./schedule-form";
 
 type Params = Promise<{ brandId: string; campaignId: string }>;
@@ -26,13 +30,28 @@ function readableContent(content: string, scope: { workspaceId: string; brandId:
   }
 }
 
+function productionRefs(value: unknown): ContentLibraryAssetReference[] {
+  const refs = (value as { libraryAssetRefs?: unknown } | null)?.libraryAssetRefs;
+  return Array.isArray(refs) ? refs as ContentLibraryAssetReference[] : [];
+}
+
+async function productionAssetData(brandId: string) {
+  try {
+    const [libraries, assets] = await Promise.all([getContentAssetLibraries(brandId), getContentLibraryAssets(brandId)]);
+    return { libraries, assets, unavailable: false };
+  } catch {
+    return { libraries: [], assets: [], unavailable: true };
+  }
+}
+
 export default async function Studio({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { brandId, campaignId } = await params;
-  const [brand, detail, channelAccounts, accountGroups, messages] = await Promise.all([
+  const [brand, detail, channelAccounts, accountGroups, productionAssets, messages] = await Promise.all([
     getBrand(brandId),
     getCampaignDetail(brandId, campaignId),
     getChannelAccounts(brandId),
     getChannelAccountGroups(brandId),
+    productionAssetData(brandId),
     searchParams,
   ]);
 
@@ -45,6 +64,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
       detail.assets.map(async ({ asset }) => [asset.id, await getContentReviewStatus(brand.id, asset.id)] as const),
     ),
   );
+  const contentAssetsHref = `/brands/${encodeURIComponent(brand.id)}/content-assets`;
 
   return (
     <KairoProductShell brandId={brand.id} active="Content Studio">
@@ -73,6 +93,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
           <div className="studio-assets">
             {detail.assets.map(({ asset, versions }) => {
               const current = versions.at(-1)!;
+              const currentProductionRefs = productionRefs(current);
               const isReel = asset.format.toLowerCase() === "reel";
               const contentScope = { workspaceId: detail.campaign.workspaceId, brandId: brand.id, campaignId, assetId: asset.id };
               const currentDisplay = isReel ? readableContent(current.content, contentScope) : current.content;
@@ -134,6 +155,24 @@ export default async function Studio({ params, searchParams }: { params: Params;
                   )}
 
                   <div className="studio-context-stack">
+                    <details className="studio-context-disclosure production-assets-disclosure">
+                      <summary>
+                        <span>
+                          <strong>Production assets</strong>
+                          <small>{currentProductionRefs.length} attached to version {current.version} · references only</small>
+                        </span>
+                        <span className="context-summary-action">Open</span>
+                      </summary>
+                      <ProductionAssetPicker
+                        libraries={productionAssets.libraries}
+                        assets={productionAssets.assets}
+                        current={currentProductionRefs}
+                        unavailable={productionAssets.unavailable}
+                        contentAssetsHref={contentAssetsHref}
+                        action={saveProductionAssetsAction.bind(null, brand.id, campaignId, asset.id, asset.currentVersion)}
+                      />
+                    </details>
+
                     <details className="studio-context-disclosure">
                       <summary>
                         <span>
@@ -165,13 +204,21 @@ export default async function Studio({ params, searchParams }: { params: Params;
                       <div className="studio-support-grid">
                         <div className="version-panel">
                           <h3>Version history</h3>
-                          {[...versions].reverse().map((version) => (
-                            <details key={version.id} open={version.id === current.id}>
-                              <summary>Version {version.version} · {version.action}</summary>
-                              <p>{isReel ? readableContent(version.content, contentScope) : version.content}</p>
-                              <small>{new Date(version.createdAt).toLocaleString()}</small>
-                            </details>
-                          ))}
+                          {[...versions].reverse().map((version) => {
+                            const refs = productionRefs(version);
+                            return (
+                              <details key={version.id} open={version.id === current.id}>
+                                <summary>Version {version.version} · {version.action} · {refs.length} production {refs.length === 1 ? "asset" : "assets"}</summary>
+                                <p>{isReel ? readableContent(version.content, contentScope) : version.content}</p>
+                                {refs.length ? (
+                                  <ul className="version-production-assets" aria-label={`Version ${version.version} production assets`}>
+                                    {refs.map((ref) => <li key={ref.libraryAssetId}><span>{ref.name}</span><small>{ref.libraryName} · {ref.provider === "google-drive" ? "Google Drive" : "Manual"}</small></li>)}
+                                  </ul>
+                                ) : <small>No production assets attached.</small>}
+                                <small>{new Date(version.createdAt).toLocaleString()}</small>
+                              </details>
+                            );
+                          })}
                         </div>
                         <aside className="evidence-access">
                           <strong>Evidence lineage</strong>

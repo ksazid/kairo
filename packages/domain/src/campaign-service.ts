@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { ConcurrencyConflictError, DomainValidationError, ResourceNotFoundError } from "./index";
 import type { ResearchRepository } from "./research-service";
-import { appendContentVersion, createCampaign, createContentAsset, createInitialContentVersion, type Campaign, type ContentAsset, type ContentChannel, type ContentVersion } from "./campaign";
+import { appendContentVersion, createCampaign, createContentAsset, createInitialContentVersion, normalizeLibraryAssetRefs, type Campaign, type ContentAsset, type ContentChannel, type ContentLibraryAssetReference, type ContentVersion } from "./campaign";
+import type { ContentAssetLibraryRepository } from "./content-asset-library";
 import { assertVideoProjectScope, parseVideoProject, type VideoProject } from "./video-project";
 
 export interface CampaignDetail { campaign: Campaign; assets: Array<{ asset: ContentAsset; versions: ContentVersion[] }> }
@@ -31,7 +32,7 @@ export class CampaignService {
     if (!detail) throw new ResourceNotFoundError("Campaign not found");
     if (videoProjectOrNull(input.content)) throw new DomainValidationError("Create the Reel Content Asset first, then initialize its Video Project in Video Studio");
     const asset = createContentAsset({ id: randomUUID(), campaign: detail.campaign, channel: input.channel, format: input.format, audience: input.audience, topic: input.topic, hookType: input.hookType, cta: input.cta, createdAt: this.now().toISOString() });
-    const version = createInitialContentVersion({ id: randomUUID(), asset, content: input.content, supportingClaimIds: detail.campaign.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString() });
+    const version = createInitialContentVersion({ id: randomUUID(), asset, content: input.content, supportingClaimIds: detail.campaign.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString(), libraryAssetRefs: [] });
     return this.campaigns.saveAssetWithVersion(accountId, { ...asset, currentVersion: 1 }, version);
   }
   appendManualEdit(accountId: string, brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; content: string }): Promise<CampaignDetail> {
@@ -55,9 +56,94 @@ export class CampaignService {
     const entry=detail.assets.find(item=>item.asset.id===assetId);if(!entry)throw new ResourceNotFoundError("Content Asset not found");if(entry.asset.currentVersion!==input.expectedVersion)throw new ConcurrencyConflictError("Content Version is stale");const parent=entry.versions.at(-1);if(!parent)throw new ResourceNotFoundError("Content Version not found");
     const parentProject=videoProjectOrNull(parent.content);if(parentProject){assertProjectForAsset(parentProject,entry.asset);throw new DomainValidationError("Structured Reel Video Projects must be edited through Video Studio; generic AI transformations are not timeline-aware")}
     const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset:entry.asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))});
-    return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,()=>generated);
+    const inherited={...generated,libraryAssetRefs:normalizeLibraryAssetRefs(parent.libraryAssetRefs??[])};
+    return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,()=>inherited);
   }
 }
 
+export class ContentAssetSelectionService {
+  constructor(
+    private readonly campaigns: CampaignRepository,
+    private readonly libraries: ContentAssetLibraryRepository,
+    private readonly now: () => Date = () => new Date(),
+    private readonly id: () => string = randomUUID,
+  ) {}
+
+  async select(accountId: string, brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; libraryAssetIds: string[] }): Promise<CampaignDetail> {
+    if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
+    const ids = selectionIds(input.libraryAssetIds);
+    const detail = await this.campaigns.getCampaign(accountId, brandId, campaignId);
+    if (!detail) throw new ResourceNotFoundError("Campaign not found");
+    const entry = detail.assets.find((item) => item.asset.id === assetId);
+    if (!entry) throw new ResourceNotFoundError("Content Asset not found");
+    if (entry.asset.currentVersion !== input.expectedVersion) throw new ConcurrencyConflictError("Content Version is stale");
+    const current = entry.versions.at(-1);
+    if (!current || current.version !== input.expectedVersion) throw new ResourceNotFoundError("Content Version not found");
+
+    const references = await this.resolveReferences(accountId, brandId, detail.campaign.workspaceId, ids, current.libraryAssetRefs ?? []);
+    if (JSON.stringify(current.libraryAssetRefs ?? []) === JSON.stringify(references)) throw new DomainValidationError("Selected production assets are unchanged");
+
+    return this.campaigns.appendVersion(accountId, brandId, campaignId, assetId, input.expectedVersion, (asset, parent) => appendContentVersion({
+      id: this.id(),
+      asset,
+      parent,
+      expectedVersion: input.expectedVersion,
+      content: parent.content,
+      supportingClaimIds: parent.supportingClaimIds,
+      actor: "user",
+      action: "asset-selection",
+      createdAt: this.now().toISOString(),
+      libraryAssetRefs: references,
+    }));
+  }
+
+  private async resolveReferences(accountId: string, brandId: string, workspaceId: string, ids: string[], currentRefs: ContentLibraryAssetReference[]): Promise<ContentLibraryAssetReference[]> {
+    if (!ids.length) return [];
+    const trustedCurrent = new Map(currentRefs.map((reference) => [reference.libraryAssetId, reference]));
+    const newIds = ids.filter((id) => !trustedCurrent.has(id));
+    if (!newIds.length) return normalizeLibraryAssetRefs(ids.map((id) => trustedCurrent.get(id)!));
+
+    const [assets, libraries] = await Promise.all([
+      this.libraries.getAssetsByIds ? this.libraries.getAssetsByIds(accountId, brandId, newIds) : this.libraries.listAssets(accountId, brandId),
+      this.libraries.listLibraries(accountId, brandId),
+    ]);
+    const assetMap = new Map(assets.filter((item) => newIds.includes(item.id)).map((item) => [item.id, item]));
+    const libraryMap = new Map(libraries.map((item) => [item.id, item]));
+    const resolved = new Map<string, ContentLibraryAssetReference>();
+    for (const id of newIds) {
+      const item = assetMap.get(id);
+      if (!item || item.brandId !== brandId || item.workspaceId !== workspaceId) throw new ResourceNotFoundError("Content Asset Library item not found");
+      const library = libraryMap.get(item.libraryId);
+      if (!library || library.brandId !== brandId || library.workspaceId !== workspaceId) throw new ResourceNotFoundError("Content Asset Library item not found");
+      resolved.set(id, {
+        libraryId: library.id,
+        libraryAssetId: item.id,
+        libraryName: library.name,
+        provider: library.provider,
+        externalId: item.externalId,
+        name: item.name,
+        kind: item.kind,
+        mimeType: item.mimeType,
+        ...(item.providerRef ? { providerRef: item.providerRef } : {}),
+        ...(item.previewRef ? { previewRef: item.previewRef } : {}),
+        indexedAt: item.indexedAt,
+      });
+    }
+    return normalizeLibraryAssetRefs(ids.map((id) => trustedCurrent.get(id) ?? resolved.get(id)!));
+  }
+}
+
+function selectionIds(value: unknown): string[] {
+  if (!Array.isArray(value)) throw new DomainValidationError("libraryAssetIds must be a list");
+  if (value.length > 12) throw new DomainValidationError("Select at most 12 production assets");
+  const ids = value.map((item) => {
+    if (typeof item !== "string" || !item.trim()) throw new DomainValidationError("libraryAssetIds contains an invalid asset id");
+    const normalized = item.trim();
+    if (normalized.length > 600) throw new DomainValidationError("libraryAssetIds contains an asset id that is too long");
+    return normalized;
+  });
+  if (new Set(ids).size !== ids.length) throw new DomainValidationError("libraryAssetIds must not contain duplicates");
+  return ids;
+}
 function videoProjectOrNull(content:string):VideoProject|null{try{return parseVideoProject(content)}catch{return null}}
 function assertProjectForAsset(project:VideoProject,asset:ContentAsset):VideoProject{if(asset.format.trim().toLowerCase()!=="reel")throw new DomainValidationError("Video Project content requires a Reel Content Asset");return assertVideoProjectScope(project,{workspaceId:asset.workspaceId,brandId:asset.brandId,campaignId:asset.campaignId,assetId:asset.id})}

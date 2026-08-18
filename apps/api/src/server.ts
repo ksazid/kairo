@@ -17,6 +17,7 @@ import{PgChannelAccountGroupRepository}from"./channel-account-group-postgres-sto
 import{registerChannelAccountGroupRoutes}from"./channel-account-group-routes";
 import{PgContentAssetLibraryRepository}from"./content-asset-library-postgres-store";
 import{registerContentAssetLibraryRoutes}from"./content-asset-library-routes";
+import{registerContentAssetSelectionRoutes}from"./content-asset-selection-routes";
 import{GoogleDriveContentAssetService}from"./google-drive-content-assets";
 import{GoogleDriveOAuthClient}from"./google-drive-content-assets-client";
 import{PgEncryptedContentAssetCredentialVault,PgGoogleDriveConnectionRepository}from"./google-drive-content-assets-postgres";
@@ -47,6 +48,7 @@ function requiredEnv(name: string): string {
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const coreStore=new PgKairoRepository(pool);
+const campaignStore=new PgCampaignRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
 const groupStore=new PgChannelAccountGroupRepository(pool);
 const contentAssetLibraryStore=new PgContentAssetLibraryRepository(pool);
@@ -76,7 +78,7 @@ const app = buildApp({
   store:coreStore,
   discoveryStore: new PgDiscoveryRepository(pool),
   researchStore: new PgResearchRepository(pool),
-  campaignStore: new PgCampaignRepository(pool),
+  campaignStore,
   reviewStore:new PgReviewRepository(pool),
   publishingStore,
   analyticsStore:new PgAnalyticsRepository(pool),
@@ -90,6 +92,7 @@ registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier})
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
+registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 
 const googleDrive=googleDriveConfig();
 let googleDriveService:GoogleDriveContentAssetService|undefined;
