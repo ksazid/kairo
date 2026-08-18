@@ -10,11 +10,10 @@ create table content_asset_libraries (
   external_root_ref text,
   provider_label text,
   created_at timestamptz not null,
-  updated_at timestamptz not null,
-  unique (workspace_id, brand_id, name)
+  updated_at timestamptz not null
 );
 
-create index content_asset_libraries_brand_idx on content_asset_libraries(workspace_id, brand_id, lower(name));
+create unique index content_asset_libraries_name_unique on content_asset_libraries(workspace_id, brand_id, lower(name));
 
 create table content_library_assets (
   id text primary key,
