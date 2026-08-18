@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createContentAssetLibrary, type ContentAssetProvider } from "../../../../../src/lib/content-asset-library-api";
+import { createContentAssetLibrary, type ContentAssetProvider } from "../../../../src/lib/content-asset-library-api";
 
 export async function createContentAssetLibraryAction(brandId:string,formData:FormData){
   const name=String(formData.get("name")??"").trim();
