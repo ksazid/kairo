@@ -1,37 +1,39 @@
 import styles from "./sign-in.module.css";
+import { signInRecoveryView } from "../../src/lib/first-run-view-model";
+import { safeReturnTo } from "../../src/lib/oidc-session";
 
 export const dynamic = "force-dynamic";
 
 type SearchParams = Promise<{ error?: string; returnTo?: string }>;
 
-function safeReturnTo(value: string | undefined) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/";
-}
-
 export default async function SignInRecoveryPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const returnTo = safeReturnTo(params.returnTo);
+  const view = signInRecoveryView(params.error);
   const retry = `/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
 
   return (
     <main className={styles.page}>
-      <section className={styles.card} aria-labelledby="auth-title">
-        <header className={styles.header}>
-          <div className="wordmark large"><span className="brandmark" aria-hidden="true" />Kairo</div>
-          <p className={styles.eyebrow}>Secure access</p>
-          <h1 id="auth-title">Continue to Kairo</h1>
-          <p className={styles.lede}>Authentication is handled by Kairo&apos;s Auth0 Universal Login. Your password is never entered into or processed by the Kairo application.</p>
-        </header>
+      <section className={styles.surface} aria-labelledby="auth-title">
+        <div className={styles.wordmarkRow}>
+          <div className="wordmark"><span className="brandmark" aria-hidden="true" />Kairo</div>
+          <span className={styles.context}>Secure access</span>
+        </div>
 
-        {params.error ? <p className={`notice error ${styles.notice}`} role="alert">{params.error}</p> : null}
+        <div className={styles.content}>
+          <p className={styles.eyebrow}>{view.eyebrow}</p>
+          <h1 id="auth-title">{view.title}</h1>
+          <p className={styles.lede}>{view.description}</p>
 
-        <div className={styles.form}>
-          <a className={styles.primaryButton} href={retry}>Try sign in again</a>
+          {view.errorMessage ? <p className={`notice error ${styles.notice}`} role="alert">{view.errorMessage}</p> : null}
+
+          <a className={styles.primaryButton} href={retry}>{view.actionLabel}</a>
+          <p className={styles.providerNote}>You&apos;ll continue in Kairo&apos;s secure identity-provider window, then return here automatically.</p>
         </div>
 
         <footer className={styles.securityNote}>
           <span className={styles.securityDot} aria-hidden="true" />
-          <p><strong>Your password stays with the identity provider.</strong> Kairo receives only the verified identity and keeps Workspace and Brand permissions under Kairo control.</p>
+          <p><strong>Kairo never receives your password.</strong> The identity provider verifies you; Kairo keeps Workspace and Brand permissions inside Kairo.</p>
         </footer>
       </section>
     </main>
