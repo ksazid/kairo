@@ -1,9 +1,9 @@
 begin;
 
 create table content_asset_libraries (
-  id uuid primary key,
-  workspace_id uuid not null references workspaces(id) on delete cascade,
-  brand_id uuid not null references brands(id) on delete cascade,
+  id text primary key,
+  workspace_id text not null references workspaces(id) on delete cascade,
+  brand_id text not null references brands(id) on delete cascade,
   name text not null check (char_length(trim(name)) between 1 and 120),
   provider text not null check (provider in ('google-drive','manual')),
   status text not null check (status in ('not-connected','connected','needs-attention')),
@@ -18,9 +18,9 @@ create index content_asset_libraries_brand_idx on content_asset_libraries(worksp
 
 create table content_library_assets (
   id text primary key,
-  workspace_id uuid not null references workspaces(id) on delete cascade,
-  brand_id uuid not null references brands(id) on delete cascade,
-  library_id uuid not null references content_asset_libraries(id) on delete cascade,
+  workspace_id text not null references workspaces(id) on delete cascade,
+  brand_id text not null references brands(id) on delete cascade,
+  library_id text not null references content_asset_libraries(id) on delete cascade,
   external_id text not null,
   name text not null,
   kind text not null check (kind in ('image','video','document','other')),
