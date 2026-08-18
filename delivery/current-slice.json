@@ -3,7 +3,7 @@
   "sliceId": "VS-56",
   "title": "Brand Brain + Review & Control Design Remediation",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04"],
@@ -82,7 +82,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires implementation-level UI Review plus Product Intake, Security baseline and CI on one frozen exact candidate SHA."
+      "rationale": "Implementation-level UI Review passed and the initial implementation head passed Product Intake #585, Security #678 and CI #793. Final certification requires the same gates on the frozen post-governance candidate SHA."
     },
     {
       "type": "release",
@@ -107,16 +107,21 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 70,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "Implementation-level UI Review PASS against product/DESIGN.md, UI UX Pro Max and UI Review on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3.",
+      "Product Intake #585 PASS on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3.",
+      "Security baseline #678 PASS on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3.",
+      "CI #793 PASS on implementation head c0176e3551f8396ad273697d7644703fbfcef6a3; final exact-candidate rerun required after this governance transition."
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -139,7 +144,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-56.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/103",
     "evidence": [
       "docs/plans/VS-56-implementation.md",
       "apps/web/src/lib/brand-brain-view-model.test.ts"
