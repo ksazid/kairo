@@ -1,29 +1,29 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-57",
-  "title": "Operations + More / Secondary Management Design Remediation",
+  "sliceId": "VS-58",
+  "title": "Onboarding + Kairo-owned Auth/Recovery + Final UI Consistency",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-20"],
+  "requirements": ["FR-01", "FR-02"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-50"],
+  "dependencies": ["VS-50", "VS-56", "VS-57"],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/app/kairo-product-shell.tsx",
-    "apps/web/app/brands/[brandId]/operations/page.tsx",
-    "apps/web/app/brands/[brandId]/more/page.tsx",
-    "apps/web/app/operations.css",
-    "apps/web/src/lib/operations-view-model.ts",
-    "apps/web/src/lib/operations-view-model.test.ts",
-    "docs/slices/VS-57.md",
-    "docs/plans/VS-57-*.md",
+    "apps/web/app/onboarding/page.tsx",
+    "apps/web/app/onboarding/onboarding.module.css",
+    "apps/web/app/sign-in/page.tsx",
+    "apps/web/app/sign-in/sign-in.module.css",
+    "apps/web/src/lib/first-run-view-model.ts",
+    "apps/web/src/lib/first-run-view-model.test.ts",
+    "docs/slices/VS-58.md",
+    "docs/plans/VS-58-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -34,17 +34,19 @@
     "apps/api/**",
     "packages/domain/**",
     "packages/contracts/**",
-    "apps/web/src/lib/operations-api.ts",
-    "apps/web/app/brands/[brandId]/operations/actions.ts",
+    "apps/web/app/actions.ts",
+    "apps/web/app/auth/**",
+    "apps/web/src/lib/oidc.ts",
+    "apps/web/src/lib/oidc-session.ts",
     "apps/web/vercel.json"
   ],
   "impact": {
     "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Implements UI-06 from issue #94 using the approved Kairo design baseline and shared product shell.",
-      "Operations becomes task-first: failures and operator judgment precede cost, automation and audit detail.",
-      "More becomes the coherent mobile/secondary-management hub without expanding Kairo primary navigation.",
-      "Existing retry, disable-automation, authorization, audit and redaction contracts remain unchanged.",
+      "Implements UI-07 from issue #94 using the approved Kairo design baseline.",
+      "First-run remains two conceptual steps: lightweight Brand setup followed by Brand Brain suggestion review.",
+      "Kairo-owned sign-in/recovery surfaces are remediated without changing Auth0 Universal Login or OIDC/provider contracts.",
+      "Arbitrary authentication query errors are not reflected back to users; safe local return paths remain bounded.",
       "Vercel Git-triggered deployment remains disabled and this slice has no deployment approval."
     ]
   },
@@ -52,11 +54,11 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-57@1.0",
+      "version": "VS-58@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T18:13:00+02:00",
-      "rationale": "Owner instructed Go next, authorizing UI-06 Operations + More / secondary management as the next bounded Kairo remediation slice."
+      "at": "2026-08-18T21:11:00+02:00",
+      "rationale": "Owner instructed Go next, authorizing UI-07 onboarding + Kairo-owned auth/recovery + final consistency as the next bounded Kairo remediation slice."
     },
     {
       "type": "policy",
@@ -65,15 +67,15 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "This slice preserves FR-20 control semantics and approved web/mobile IA without adding operator capabilities or policy."
+      "rationale": "The slice preserves approved Auth0/OIDC security policy and the existing Workspace/Brand creation contract; it changes only Kairo-owned presentation and bounded recovery copy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-57@1.0",
+      "version": "VS-58@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T18:13:00+02:00",
+      "at": "2026-08-18T21:11:00+02:00",
       "rationale": "Go next authorizes bounded implementation, tests, UI review and exact-head certification gates. Merge and deployment remain separate approvals."
     },
     {
@@ -83,7 +85,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Implementation-level UI Review passed and the implementation head passed Product Intake #589, Security #682 and CI #798. Final certification requires the same gates on the frozen post-governance candidate SHA."
+      "rationale": "Requires implementation-level UI Review plus Product Intake, Security baseline and CI on one frozen exact candidate SHA."
     },
     {
       "type": "release",
@@ -108,21 +110,16 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 50,
+    "implementation": 80,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
+    "status": "not-started",
     "commitSha": null,
-    "evidence": [
-      "Implementation-level UI Review PASS against product/DESIGN.md, UI UX Pro Max and UI Review on implementation head 88ea295999ccaaada698311d5e6cfde06c950865.",
-      "Product Intake #589 PASS on implementation head 88ea295999ccaaada698311d5e6cfde06c950865.",
-      "Security baseline #682 PASS on implementation head 88ea295999ccaaada698311d5e6cfde06c950865.",
-      "CI #798 PASS on implementation head 88ea295999ccaaada698311d5e6cfde06c950865; final exact-candidate rerun required after this governance transition."
-    ]
+    "evidence": []
   },
   "release": {
     "status": "not-authorized",
@@ -135,21 +132,21 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Operators see exceptions before diagnostics, while users reach secondary Brand/management work from one calm More hierarchy.",
+    "expectedOutcome": "A new user reaches Brand Brain through a simple two-step first-run flow, while Kairo-owned sign-in recovery is calm, safe and visually consistent with the rest of the product.",
     "metrics": [
-      "safe retry failures not prioritized in Operations",
-      "supporting diagnostics competing visually with operator attention",
-      "secondary routes falsely selected as desktop primary navigation",
-      "mobile secondary workflow routes unreachable from More",
-      "responsive or accessibility regressions"
+      "extra onboarding steps or source-classification friction introduced",
+      "arbitrary auth error query text echoed in recovery UI",
+      "external/protocol-relative return targets accepted",
+      "Auth0-owned credential UX duplicated inside Kairo",
+      "responsive/accessibility inconsistency on first-run surfaces"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-57.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/104",
+    "specification": "docs/slices/VS-58.md",
+    "implementationPr": null,
     "evidence": [
-      "docs/plans/VS-57-implementation.md",
-      "apps/web/src/lib/operations-view-model.test.ts"
+      "docs/plans/VS-58-implementation.md",
+      "apps/web/src/lib/first-run-view-model.test.ts"
     ]
   },
   "maxAttempts": 3
