@@ -1,6 +1,6 @@
 import type { Pool, PoolClient } from "pg";
 import { ResourceNotFoundError } from "@kairo/domain";
-import type { ContentAssetLibrary, ContentAssetLibraryQuery, ContentAssetLibraryRepository, ContentLibraryAsset } from "@kairo/domain/content-asset-library";
+import type { ContentAssetLibrary, ContentAssetLibraryQuery, ContentAssetLibraryRepository, ContentAssetProviderStateInput, ContentLibraryAsset } from "@kairo/domain/content-asset-library";
 
 export class PgContentAssetLibraryRepository implements ContentAssetLibraryRepository {
   constructor(private pool: Pool) {}
@@ -73,6 +73,35 @@ export class PgContentAssetLibraryRepository implements ContentAssetLibraryRepos
         }
         await client.query("commit");
       } catch (error) { await client.query("rollback"); throw error; }
+    } finally { client.release(); }
+  }
+
+  async updateProviderState(accountId: string, brandId: string, libraryId: string, input: ContentAssetProviderStateInput) {
+    const client = await this.pool.connect();
+    try {
+      const workspaceId = await scope(client, accountId, brandId);
+      const result = await client.query(
+        `update content_asset_libraries
+         set status=$4,
+             external_root_ref=case when $5 then null when $6::text is not null then $6 else external_root_ref end,
+             provider_label=case when $5 then null when $7::text is not null then $7 else provider_label end,
+             updated_at=$8
+         where workspace_id=$1 and brand_id=$2 and id=$3
+         returning *`,
+        [workspaceId,brandId,libraryId,input.status,input.clearRoot===true,input.externalRootRef??null,input.providerLabel??null,new Date().toISOString()],
+      );
+      if (!result.rows[0]) throw new ResourceNotFoundError("Content Asset Library not found");
+      return mapLibrary(result.rows[0]);
+    } finally { client.release(); }
+  }
+
+  async clearIndexedAssets(accountId: string, brandId: string, libraryId: string) {
+    const client = await this.pool.connect();
+    try {
+      const workspaceId = await scope(client, accountId, brandId);
+      const exists = await client.query(`select 1 from content_asset_libraries where workspace_id=$1 and brand_id=$2 and id=$3`, [workspaceId,brandId,libraryId]);
+      if (!exists.rowCount) throw new ResourceNotFoundError("Content Asset Library not found");
+      await client.query(`delete from content_library_assets where workspace_id=$1 and brand_id=$2 and library_id=$3`, [workspaceId,brandId,libraryId]);
     } finally { client.release(); }
   }
 }

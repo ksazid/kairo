@@ -4,7 +4,7 @@ import type { IdentityVerifier } from "./auth";
 import { buildApp } from "./app";
 import { MemoryKairoRepository } from "./store";
 import { registerContentAssetLibraryRoutes } from "./content-asset-library-routes";
-import { matchesContentAsset, type ContentAssetLibrary, type ContentAssetLibraryQuery, type ContentAssetLibraryRepository, type ContentLibraryAsset } from "@kairo/domain/content-asset-library";
+import { matchesContentAsset, type ContentAssetLibrary, type ContentAssetLibraryQuery, type ContentAssetLibraryRepository, type ContentAssetProviderStateInput, type ContentLibraryAsset } from "@kairo/domain/content-asset-library";
 
 class Verifier implements IdentityVerifier {
   async verify(value: string | undefined): Promise<ExternalIdentity | null> {
@@ -20,6 +20,8 @@ class MemoryLibraryStore implements ContentAssetLibraryRepository {
   async getLibrary(_accountId: string, brandId: string, libraryId: string) { return this.libraries.find((item) => item.brandId === brandId && item.id === libraryId) ?? null; }
   async listAssets(_accountId: string, brandId: string, query: ContentAssetLibraryQuery = {}) { return this.assets.filter((asset) => asset.brandId === brandId && matchesContentAsset(asset, query)); }
   async replaceIndexedAssets(_accountId: string, library: ContentAssetLibrary, assets: ContentLibraryAsset[]) { this.assets = [...this.assets.filter((asset) => asset.libraryId !== library.id), ...assets]; }
+  async updateProviderState(_accountId:string,brandId:string,libraryId:string,input:ContentAssetProviderStateInput){const library=this.libraries.find((item)=>item.brandId===brandId&&item.id===libraryId);if(!library)throw new Error("missing");const updated={...library,status:input.status,...(input.clearRoot?{externalRootRef:undefined,providerLabel:undefined}:{}),...(input.externalRootRef?{externalRootRef:input.externalRootRef}:{}),...(input.providerLabel?{providerLabel:input.providerLabel}:{})};this.libraries=this.libraries.map((item)=>item.id===libraryId?updated:item);return updated;}
+  async clearIndexedAssets(_accountId:string,brandId:string,libraryId:string){this.assets=this.assets.filter((asset)=>asset.brandId!==brandId||asset.libraryId!==libraryId);}
 }
 
 describe("VS-59 Content Asset Library API", () => {

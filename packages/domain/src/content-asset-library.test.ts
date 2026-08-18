@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ContentAssetLibraryService, matchesContentAsset, type ContentAssetLibrary, type ContentAssetLibraryRepository, type ContentLibraryAsset } from "./content-asset-library";
+import { ContentAssetLibraryService, matchesContentAsset, type ContentAssetLibrary, type ContentAssetLibraryRepository, type ContentAssetProviderStateInput, type ContentLibraryAsset } from "./content-asset-library";
 
 function core(accessBrandId = "brand-1") {
   return { getBrandForAccount: async (_accountId: string, brandId: string) => brandId === accessBrandId ? { id: brandId, workspaceId: "workspace-1", name: "Brand" } : null } as any;
@@ -13,6 +13,8 @@ class MemoryRepository implements ContentAssetLibraryRepository {
   async getLibrary(_accountId: string, brandId: string, libraryId: string) { return this.libraries.find((item) => item.brandId === brandId && item.id === libraryId) ?? null; }
   async listAssets(_accountId: string, brandId: string, query = {}) { return this.assets.filter((asset) => asset.brandId === brandId && matchesContentAsset(asset, query)); }
   async replaceIndexedAssets(_accountId: string, library: ContentAssetLibrary, assets: ContentLibraryAsset[]) { this.assets = [...this.assets.filter((asset) => asset.libraryId !== library.id), ...assets]; }
+  async updateProviderState(_accountId:string,brandId:string,libraryId:string,input:ContentAssetProviderStateInput){const library=this.libraries.find((item)=>item.brandId===brandId&&item.id===libraryId);if(!library)throw new Error("missing");const updated={...library,status:input.status,...(input.clearRoot?{externalRootRef:undefined,providerLabel:undefined}:{}),...(input.externalRootRef?{externalRootRef:input.externalRootRef}:{}),...(input.providerLabel?{providerLabel:input.providerLabel}:{})};this.libraries=this.libraries.map((item)=>item.id===libraryId?updated:item);return updated;}
+  async clearIndexedAssets(_accountId:string,brandId:string,libraryId:string){this.assets=this.assets.filter((asset)=>asset.brandId!==brandId||asset.libraryId!==libraryId);}
 }
 
 describe("Content Asset Library", () => {
