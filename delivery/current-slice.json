@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-59A",
+  "sliceId": "VS-59",
   "title": "Content Asset Library Foundation",
   "status": "active",
   "lifecycle": "implementing",
@@ -21,8 +21,8 @@
     "apps/web/app/brands/[brandId]/content-assets/**",
     "apps/web/app/brands/[brandId]/more/page.tsx",
     "apps/web/app/brands/[brandId]/campaigns/page.tsx",
-    "docs/slices/VS-59A.md",
-    "docs/plans/VS-59A-*.md",
+    "docs/slices/VS-59.md",
+    "docs/plans/VS-59-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -42,21 +42,21 @@
     "notes": [
       "Adds a Brand-scoped Content Asset Library as a secondary Kairo workspace surface.",
       "Persists library metadata and indexed asset metadata in Postgres with strict account/Brand scoping.",
-      "Introduces a provider connector contract and deterministic no-network foundation only; live Google Drive OAuth/network access is deferred to VS-59B.",
+      "Introduces a provider connector contract and deterministic no-network foundation only; live Google Drive OAuth/network access is deferred to VS-60.",
       "Content Assets remain separate from Brand Brain evidence and never become confirmed Brand truth automatically.",
       "Vercel Git-triggered deployment remains disabled and this slice has no deployment approval."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-59A@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T21:39:00+02:00","rationale":"Owner instructed Go after selecting VS-59A Content Asset Library foundation as the next Kairo capability."},
+    {"type":"scope","status":"approved","version":"VS-59@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T21:39:00+02:00","rationale":"Owner instructed Go after selecting Content Asset Library foundation as the next Kairo capability."},
     {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"This slice defines a connector boundary only and does not enable Google OAuth, provider credentials, external Drive calls, deployment, or production activation."},
-    {"type":"implementation","status":"approved","version":"VS-59A@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T21:39:00+02:00","rationale":"Go authorizes bounded implementation, tests, UI review and exact-head certification gates. Merge and deployment remain separate approvals."},
+    {"type":"implementation","status":"approved","version":"VS-59@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T21:39:00+02:00","rationale":"Go authorizes bounded implementation, tests, UI review and exact-head certification gates. Merge and deployment remain separate approvals."},
     {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Requires Product Intake, Security baseline, CI and implementation-level UI Review on one frozen exact candidate SHA."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Separate exact-SHA release approval is required."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Separate production-enable and provider-connection approval is required."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":20,"testing":20,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
@@ -66,6 +66,6 @@
     "expectedOutcome":"A Brand can organize multiple reusable content libraries and browse indexed asset metadata from a calm secondary workspace without granting Kairo provider access yet.",
     "metrics":["cross-Brand asset leakage","provider network calls before approval","assets silently promoted to Brand Brain truth","broken More/Content Studio entry points","responsive or keyboard regressions"]
   },
-  "links": {"specification":"docs/slices/VS-59A.md","implementationPr":null,"evidence":["docs/plans/VS-59A-implementation.md"]},
+  "links": {"specification":"docs/slices/VS-59.md","implementationPr":null,"evidence":["docs/plans/VS-59-implementation.md"]},
   "maxAttempts": 3
 }
