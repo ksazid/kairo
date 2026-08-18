@@ -52,4 +52,16 @@ describe("Content Asset Library", () => {
     expect(assets[0]?.providerRef).toBe("drive://file-9");
     expect(assets[0]?.brandId).toBe("brand-1");
   });
+
+  it("does not invoke a connector until Brand authorization succeeds", async () => {
+    const repository = new MemoryRepository();
+    repository.libraries.push({ id:"library-1",workspaceId:"workspace-1",brandId:"brand-2",name:"Foreign",provider:"google-drive",status:"connected",externalRootRef:"folder-foreign",createdAt:"2026-08-18T19:00:00Z",updatedAt:"2026-08-18T19:00:00Z" });
+    let calls = 0;
+    const service = new ContentAssetLibraryService(core("brand-1"), repository);
+    await expect(service.replaceFromConnector("account-1", "brand-2", "library-1", {
+      provider: "google-drive",
+      async listAssets() { calls++; return { assets: [] }; },
+    })).rejects.toMatchObject({ code: "resource_not_found" });
+    expect(calls).toBe(0);
+  });
 });
