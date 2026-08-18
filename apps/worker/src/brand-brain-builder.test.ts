@@ -52,6 +52,19 @@ describe("BrandBrainBuilder", () => {
     expect(JSON.stringify(runtime.request?.task.context)).toContain("Duke 390 ownership and riding content");
   });
 
+  it("accepts provisional proposals based only on owner context with no fabricated external provenance", async () => {
+    const runtime = new FakeRuntime({ proposals: [
+      { section: "positioning", fieldKey: "positioning.market-position", value: "A provisional rider-focused motorcycle content Brand.", sourceIds: [] },
+    ] });
+    const builder = new BrandBrainBuilder(runtime);
+
+    const result = await builder.propose({ ...input, references: [] });
+
+    expect(result).toEqual([{ section: "positioning", fieldKey: "positioning.market-position", value: "A provisional rider-focused motorcycle content Brand.", sourceIds: [] }]);
+    expect(runtime.request?.task.context).toMatchObject({ references: [] });
+    expect(JSON.stringify(runtime.request?.task.instruction)).toContain("sourceIds must be an empty array");
+  });
+
   it("rejects proposal keys outside the guided Brand Brain allow-list", async () => {
     const runtime = new FakeRuntime({ proposals: [
       { section: "goals", fieldKey: "goals.objectives", value: "Replace the owner's goal", sourceIds: ["source-1"] },
@@ -74,7 +87,7 @@ describe("BrandBrainBuilder", () => {
     const malformed = [
       { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "", sourceIds: ["source-1"] }] },
       { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "x".repeat(10001), sourceIds: ["source-1"] }] },
-      { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "Audience", sourceIds: [] }] },
+      { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "Audience" }] },
       { proposals: "not-an-array" },
     ];
     for (const output of malformed) {
