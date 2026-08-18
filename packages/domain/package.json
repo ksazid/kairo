@@ -21,6 +21,7 @@
     "./publishing-service": "./src/publishing-service.ts",
     "./channel-account-groups": "./src/channel-account-groups.ts",
     "./channel-account-group-service": "./src/channel-account-group-service.ts",
+    "./content-asset-library": "./src/content-asset-library.ts",
     "./analytics": "./src/analytics.ts",
     "./analytics-service": "./src/analytics-service.ts",
     "./learning": "./src/learning.ts",
