@@ -1,27 +1,32 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-53",
-  "title": "Performance + Learning + Channel Management Design Remediation",
+  "sliceId": "VS-55",
+  "title": "Universal Brand URL Reader",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-05", "FR-16", "FR-17", "FR-18", "FR-19"],
+  "requirements": ["FR-02", "FR-03", "FR-04"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": null,
     "security": null
   },
-  "dependencies": ["VS-52"],
+  "dependencies": ["VS-26"],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/app/brands/[brandId]/performance/**",
-    "apps/web/app/brands/[brandId]/channels/groups/**",
-    "apps/web/app/performance.css",
-    "apps/web/app/channels.css",
-    "docs/slices/VS-53.md",
-    "docs/plans/VS-53-*.md",
+    "packages/domain/src/brand-brain-bootstrap.ts",
+    "packages/domain/src/brand-brain-bootstrap.test.ts",
+    "apps/api/src/public-brand-reference.ts",
+    "apps/api/src/public-brand-reference.test.ts",
+    "apps/api/src/guided-brand-brain-routes.test.ts",
+    "apps/worker/src/brand-brain-builder.ts",
+    "apps/worker/src/brand-brain-builder.test.ts",
+    "apps/web/app/brands/[brandId]/brain/page.tsx",
+    "apps/web/app/brands/[brandId]/brain/guided-actions.ts",
+    "docs/slices/VS-55.md",
+    "docs/plans/VS-55-*.md",
     "delivery/**",
     ".engineering/STATE.json",
     "README.md"
@@ -29,30 +34,30 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/api/**",
-    "apps/worker/**",
-    "packages/domain/**",
-    "apps/web/app/brands/[brandId]/channels/instagram/connect/route.ts",
+    "apps/api/migrations/**",
+    "apps/api/src/meta-instagram-oauth.ts",
+    "apps/api/src/instagram-connection.ts",
+    "apps/web/app/brands/[brandId]/channels/instagram/**",
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["frontend", "customer-flow"],
+    "areas": ["frontend", "api", "customer-flow"],
     "notes": [
-      "Makes Performance narrative-first using What happened / Why might it have happened / What should we try next.",
-      "Keeps Brand Learning and Experiments distinct, evidence-visible and human-controlled.",
-      "Moves raw metrics/provenance into secondary inspection without removing unavailable-state truthfulness.",
-      "Remediates Instagram connection and Account Group presentation without modifying provider/OAuth/group actions or publishing authority."
+      "Keeps guided onboarding at the existing lightweight Brand Brain setup flow.",
+      "Reads broad public HTTP(S) Brand references including HTML, plain text and text-based PDF URLs with bounded SSRF-safe fetching.",
+      "Uses public social/profile pages such as Instagram on a best-effort basis through publicly returned metadata/content; this slice does not change Meta OAuth or provider APIs.",
+      "Allows provisional Brand Brain suggestions from owner-confirmed context when no public reference can be read, while preserving inferred-versus-confirmed state and human review."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-53@1.0",
+      "version": "VS-55@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T00:39:00+02:00",
-      "rationale": "Owner instructed Go next after VS-52 merged, authorizing the next bounded UI-remediation slice from Issue #94."
+      "at": "2026-08-18T02:13:00+02:00",
+      "rationale": "Owner approved the simplified scope: preserve the current 2-3 step onboarding, add a universal URL reader with PDF URL capability, and keep Content Asset Library/Drive connections separate."
     },
     {
       "type": "policy",
@@ -61,16 +66,16 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-53 changes presentation hierarchy only; FR-05, FR-16 through FR-19 and product/DESIGN.md remain authoritative."
+      "rationale": "FR-02, FR-03 and FR-04 already authorize lightweight Brand setup, reviewable inferred Brand Brain context, and URL/website/document knowledge sources."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-53@1.0",
+      "version": "VS-55@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-18T00:39:00+02:00",
-      "rationale": "Owner instruction authorizes implementation, tests/build checks, UI review and PR preparation; certification/merge/release/production remain separate gates."
+      "at": "2026-08-18T02:13:00+02:00",
+      "rationale": "Owner instructed Go and proceed to URL fix, authorizing bounded implementation, tests, security verification and PR preparation. Merge/release/production remain separate gates."
     },
     {
       "type": "certification",
@@ -79,7 +84,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires exact-head Product Intake, Security, CI and implementation-level UI Review evidence before explicit merge approval."
+      "rationale": "Requires deterministic tests, security review and repository CI on the exact candidate SHA."
     },
     {
       "type": "release",
@@ -126,25 +131,21 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users understand measured outcomes, cautious Brand Learning, the next Experiment and channel destination state without metric-dashboard or configuration clutter.",
+    "expectedOutcome": "A Brand owner can use an ordinary public page, social-profile URL, blog/article or text-based PDF as optional Brand evidence, and Kairo still produces reviewable provisional suggestions when public references are unavailable.",
     "metrics": [
-      "Performance navigation regressions",
-      "Learning accept/reject regressions",
-      "Experiment presentation regressions",
-      "channel connection regressions",
-      "Account Group create/update/delete regressions",
-      "responsive overflow regressions",
-      "UI review accessibility findings"
+      "Brand Brain bootstrap failures caused only by unreadable URLs",
+      "public-reference reader security regressions",
+      "PDF extraction success/failure truthfulness",
+      "proposal provenance validation regressions"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-53.md",
-    "implementationPr": null,
+    "specification": "docs/slices/VS-55.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/102",
     "evidence": [
-      "docs/plans/VS-53-ui-remediation.md",
-      "docs/plans/VS-53-ui-review.md",
-      "apps/web/app/brands/[brandId]/performance/page.tsx",
-      "apps/web/app/brands/[brandId]/channels/groups/page.tsx"
+      "docs/plans/VS-55-implementation.md",
+      "apps/api/src/public-brand-reference.test.ts",
+      "apps/worker/src/brand-brain-builder.test.ts"
     ]
   },
   "maxAttempts": 3

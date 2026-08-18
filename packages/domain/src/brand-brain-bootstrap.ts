@@ -13,6 +13,8 @@ export interface PublicBrandReference {
   summary?: string;
   excerpt: string;
   retrievedAt: string;
+  contentType?: string;
+  sizeBytes?: number;
 }
 
 export interface PublicBrandReferenceReader {
@@ -108,7 +110,7 @@ export class BrandBrainBootstrapService {
       optionalUrl(input.publicReferenceUrl),
     ]);
 
-    if (!this.generator || successfulReferences.length === 0) {
+    if (!this.generator) {
       return {
         brain: await this.repository.listBrandBrainFields(accountId, brandId),
         generatorStatus: "unavailable",
@@ -152,7 +154,7 @@ export class BrandBrainBootstrapService {
       const value = proposal.value.trim();
       if (!value || value.length > 10_000) throw new DomainValidationError("Brand Brain proposal value is invalid");
       const proposalSourceIds = [...new Set(proposal.sourceIds.map((sourceId) => sourceId.trim()).filter(Boolean))];
-      if (!proposalSourceIds.length || proposalSourceIds.some((sourceId) => !inspectedSources.has(sourceId))) {
+      if (proposalSourceIds.some((sourceId) => !inspectedSources.has(sourceId))) {
         throw new DomainValidationError("Brand Brain proposal provenance is invalid");
       }
       const existing = liveFields.get(proposal.fieldKey);
@@ -195,7 +197,7 @@ export class BrandBrainBootstrapService {
         const source = await this.ensureSource(accountId, brandId, reference, existingSources);
         result.push({ ...reference, sourceId: source.id });
       } catch {
-        // Public-reference failure is isolated. Guided setup remains usable and never claims the source was inspected.
+        // Public-reference failure is isolated. Owner-confirmed context can still bootstrap provisional suggestions.
       }
     }
     return result;
@@ -209,11 +211,14 @@ export class BrandBrainBootstrapService {
   ): Promise<KnowledgeSourceDto> {
     const existing = existingSources.find((source) => source.status === "active" && source.sourceUrl === reference.url);
     if (existing) return existing;
+    const isPdf = reference.contentType?.toLowerCase() === "application/pdf";
     const created = await this.repository.createKnowledgeSource(accountId, brandId, {
-      type: "url",
+      type: isPdf ? "document" : "url",
       status: "active",
-      title: reference.title ?? "Public Brand reference",
+      title: reference.title ?? (isPdf ? "Public Brand PDF" : "Public Brand reference"),
       sourceUrl: reference.url,
+      ...(reference.contentType ? { contentType: reference.contentType } : {}),
+      ...(reference.sizeBytes ? { sizeBytes: reference.sizeBytes } : {}),
     });
     existingSources.push(created);
     return created;
