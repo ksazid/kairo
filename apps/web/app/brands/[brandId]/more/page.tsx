@@ -26,7 +26,7 @@ export default async function MorePage({ params }: { params: Params }) {
       description: "Manage Brand context, connected destinations and reusable execution guidance.",
       items: [
         { title: "Brand Brain", description: "Review confirmed Brand context, Kairo suggestions, boundaries and Knowledge sources.", href: `${base}/brain` },
-        { title: "Channels", description: "Manage connected channel accounts and account groups without crowding Performance.", href: `${base}/channels` },
+        { title: "Channel account groups", description: "Manage connected destinations and reusable account groups without crowding Performance.", href: `${base}/channels/groups` },
         { title: "Format intelligence", description: "Compare approved content formats by channel fit, objective and production effort.", href: `${base}/formats` },
       ],
     },
