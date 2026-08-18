@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { getBrand } from "../../../../src/lib/kairo-api";
 import { getOperations, type OperationalFailureView, type OperationsBudgetView } from "../../../../src/lib/operations-api";
-import { budgetPercent, buildOperationsView, canRetryOperationalFailure } from "../../../../src/lib/operations-view-model";
+import {
+  budgetPercent,
+  buildOperationsView,
+  canRetryOperationalFailure,
+  operationalFailurePresentation,
+} from "../../../../src/lib/operations-view-model";
 import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
 import { disableAutomationAction, retryOperationalFailureAction } from "./actions";
 import "../../../operations.css";
@@ -75,7 +80,8 @@ export default async function OperationsPage({ params, searchParams }: { params:
 
 function FailureRow({ brandId, failure }: { brandId: string; failure: OperationalFailureView }) {
   const retry = canRetryOperationalFailure(failure);
-  return <article className="failure-row"><div className="failure-main"><div className="failure-meta"><span className={`operations-status ${failure.retryDisposition}`}>{retry ? "Safe retry" : label(failure.retryDisposition)}</span><span>{label(failure.stage)}</span><time dateTime={failure.occurredAt}>{formatTime(failure.occurredAt)}</time></div><h3>{failure.summary}</h3><p><code>{failure.diagnosticCode}</code> · attempt {failure.attempt} of {failure.maxAttempts}</p></div>{retry ? <form action={retryOperationalFailureAction.bind(null, brandId, failure.id)}><button className="primary-button" type="submit">Expedite retry</button></form> : <span className="failure-guidance">{failure.retryDisposition === "manual-review" ? "Review required" : "Automatic retry blocked"}</span>}</article>;
+  const presentation = operationalFailurePresentation(failure);
+  return <article className="failure-row"><div className="failure-main"><div className="failure-meta"><span className={`operations-status ${presentation.statusTone}`}>{presentation.statusLabel}</span><span>{label(failure.stage)}</span><time dateTime={failure.occurredAt}>{formatTime(failure.occurredAt)}</time></div><h3>{failure.summary}</h3><p><code>{failure.diagnosticCode}</code> · attempt {failure.attempt} of {failure.maxAttempts}</p></div>{retry ? <form action={retryOperationalFailureAction.bind(null, brandId, failure.id)}><button className="primary-button" type="submit">Expedite retry</button></form> : <span className="failure-guidance">{presentation.guidance}</span>}</article>;
 }
 
 function BudgetRow({ budget }: { budget: OperationsBudgetView }) {

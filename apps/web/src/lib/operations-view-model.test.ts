@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { OperationalFailureView, OperationsSummaryView } from "./operations-api";
-import { budgetPercent, buildOperationsView, canRetryOperationalFailure } from "./operations-view-model";
+import {
+  budgetPercent,
+  buildOperationsView,
+  canRetryOperationalFailure,
+  operationalFailurePresentation,
+} from "./operations-view-model";
 
 function failure(id: string, disposition: OperationalFailureView["retryDisposition"], attempt = 1, maxAttempts = 3, occurredAt = "2026-08-18T12:00:00.000Z"): OperationalFailureView {
   return {
@@ -52,7 +57,25 @@ describe("operations view model", () => {
   it("does not present an exhausted retry attempt as safe", () => {
     const exhausted = failure("safe-exhausted", "safe", 3, 3);
     expect(canRetryOperationalFailure(exhausted)).toBe(false);
+    expect(operationalFailurePresentation(exhausted)).toEqual({
+      statusLabel: "Retry limit reached",
+      statusTone: "blocked",
+      guidance: "Retry limit reached",
+    });
     expect(buildOperationsView(operations([exhausted])).safeRetryCount).toBe(0);
+  });
+
+  it("uses truthful text treatment for operator judgment states", () => {
+    expect(operationalFailurePresentation(failure("review", "manual-review"))).toEqual({
+      statusLabel: "Manual review",
+      statusTone: "manual-review",
+      guidance: "Review required",
+    });
+    expect(operationalFailurePresentation(failure("blocked", "blocked"))).toEqual({
+      statusLabel: "Blocked",
+      statusTone: "blocked",
+      guidance: "Automatic retry blocked",
+    });
   });
 
   it("summarises supporting operational state without turning it into the primary task", () => {

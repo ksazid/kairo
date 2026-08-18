@@ -4,6 +4,19 @@ export function canRetryOperationalFailure(failure: OperationalFailureView) {
   return failure.retryDisposition === "safe" && failure.attempt < failure.maxAttempts;
 }
 
+export function operationalFailurePresentation(failure: OperationalFailureView) {
+  if (canRetryOperationalFailure(failure)) {
+    return { statusLabel: "Safe retry", statusTone: "safe", guidance: null } as const;
+  }
+  if (failure.retryDisposition === "safe") {
+    return { statusLabel: "Retry limit reached", statusTone: "blocked", guidance: "Retry limit reached" } as const;
+  }
+  if (failure.retryDisposition === "manual-review") {
+    return { statusLabel: "Manual review", statusTone: "manual-review", guidance: "Review required" } as const;
+  }
+  return { statusLabel: "Blocked", statusTone: "blocked", guidance: "Automatic retry blocked" } as const;
+}
+
 export function buildOperationsView(operations: OperationsSummaryView) {
   const orderedFailures = [...operations.failures].sort((left, right) => {
     const priority = failurePriority(left) - failurePriority(right);
@@ -23,7 +36,7 @@ export function buildOperationsView(operations: OperationsSummaryView) {
     safeRetryCount,
     manualReviewCount,
     blockedCount,
-    attentionCount: safeRetryCount + manualReviewCount + blockedCount + exhaustedBudgetCount,
+    attentionCount: orderedFailures.length + exhaustedBudgetCount,
     spentMicros,
     limitMicros,
     exhaustedBudgetCount,
