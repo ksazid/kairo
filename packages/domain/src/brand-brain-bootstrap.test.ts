@@ -87,6 +87,8 @@ class FakeRepository implements KairoRepository {
       status: input.status,
       ...(input.title ? { title: input.title } : {}),
       ...(input.sourceUrl ? { sourceUrl: input.sourceUrl } : {}),
+      ...(input.contentType ? { contentType: input.contentType } : {}),
+      ...(input.sizeBytes ? { sizeBytes: input.sizeBytes } : {}),
       hasPrivateContent: Boolean(input.rawContent),
       createdAt: NOW,
       updatedAt: NOW,
@@ -150,6 +152,40 @@ describe("BrandBrainBootstrapService", () => {
     expect(audience?.sourceIds).toEqual(["source-1"]);
   });
 
+  it("generates provisional inferred suggestions from owner context when every public reference is unreadable", async () => {
+    const repository = new FakeRepository();
+    let generatorInput: Parameters<BrandBrainProposalGenerator["propose"]>[0] | undefined;
+    const reader: PublicBrandReferenceReader = { read: async () => { throw new Error("provider blocked public page"); } };
+    const generator: BrandBrainProposalGenerator = {
+      propose: async (input) => {
+        generatorInput = input;
+        return [{
+          section: "positioning",
+          fieldKey: "positioning.market-position",
+          value: "A provisional motorcycle content Brand oriented around the owner's audience-growth objective.",
+          sourceIds: [],
+        }];
+      },
+    };
+    const service = new BrandBrainBootstrapService(repository, generator, reader);
+
+    const result = await service.build("account-1", "brand-1", {
+      primaryObjective: "grow-audience",
+      ownerBoundary: "Never glorify dangerous public-road riding.",
+    });
+
+    expect(generatorInput?.references).toEqual([]);
+    expect(generatorInput?.existingConfirmed).toMatchObject({
+      "goals.objectives": "Grow audience",
+      "boundaries.owner-directive": "Never glorify dangerous public-road riding.",
+    });
+    expect(result).toMatchObject({ generatorStatus: "generated", proposedCount: 1, sourceIds: [] });
+    expect(repository.fields.find((field) => field.fieldKey === "positioning.market-position")).toMatchObject({
+      state: "inferred",
+      sourceIds: [],
+    });
+  });
+
   it("never replaces an existing confirmed field with an inferred proposal", async () => {
     const repository = new FakeRepository();
     repository.fields.push({
@@ -207,5 +243,28 @@ describe("BrandBrainBootstrapService", () => {
 
     expect(reader.calls).toEqual(["https://example.com/about"]);
     expect(repository.sources[0]?.sourceUrl).toBe("https://example.com/about");
+  });
+
+  it("tracks a successfully read public PDF as document evidence", async () => {
+    const repository = new FakeRepository();
+    repository.brand = { id: "brand-1", workspaceId: "workspace-1", name: "New Brand", publicSourceUrl: "https://example.com/brand.pdf" };
+    const reader: PublicBrandReferenceReader = {
+      read: async (url) => ({
+        url,
+        title: "Brand guide",
+        excerpt: "A text-based public Brand guide.",
+        retrievedAt: NOW,
+        contentType: "application/pdf",
+        sizeBytes: 2048,
+      }),
+    };
+    const generator: BrandBrainProposalGenerator = {
+      propose: async () => [{ section: "voice", fieldKey: "voice.tone", value: "Clear and practical.", sourceIds: ["source-1"] }],
+    };
+    const service = new BrandBrainBootstrapService(repository, generator, reader);
+
+    await service.build("account-1", "brand-1", { primaryObjective: "build-authority" });
+
+    expect(repository.sources[0]).toMatchObject({ type: "document", contentType: "application/pdf", sizeBytes: 2048 });
   });
 });
