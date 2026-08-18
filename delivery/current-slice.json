@@ -3,7 +3,7 @@
   "sliceId": "VS-55",
   "title": "Universal Brand URL Reader",
   "status": "active",
-  "lifecycle": "implementation",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04"],
@@ -41,7 +41,7 @@
     "Dockerfile.publisher"
   ],
   "impact": {
-    "areas": ["brand-brain", "knowledge", "external-source-ingestion", "frontend"],
+    "areas": ["frontend", "api", "customer-flow"],
     "notes": [
       "Keeps guided onboarding at the existing lightweight Brand Brain setup flow.",
       "Reads broad public HTTP(S) Brand references including HTML, plain text and text-based PDF URLs with bounded SSRF-safe fetching.",
@@ -109,8 +109,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 0,
-    "testing": 0,
+    "implementation": 100,
+    "testing": 20,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -141,7 +141,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-55.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/102",
     "evidence": [
       "docs/plans/VS-55-implementation.md",
       "apps/api/src/public-brand-reference.test.ts",
