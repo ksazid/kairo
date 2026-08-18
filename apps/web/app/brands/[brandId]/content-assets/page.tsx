@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { getBrand } from "../../../../../src/lib/kairo-api";
-import { getContentAssetLibraries, getContentLibraryAssets, type ContentAssetKind } from "../../../../../src/lib/content-asset-library-api";
-import { KairoProductShell, KairoScopePicker } from "../../../../kairo-product-shell";
+import { getBrand } from "../../../../src/lib/kairo-api";
+import { getContentAssetLibraries, getContentLibraryAssets, type ContentAssetKind } from "../../../../src/lib/content-asset-library-api";
+import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
 import { createContentAssetLibraryAction } from "./actions";
 import styles from "./content-assets.module.css";
 
@@ -15,9 +15,9 @@ export default async function ContentAssetsPage({params,searchParams}:{params:Pa
   if(!brand)return <main className="auth-page"><section className="auth-card"><h1>Brand not found.</h1><Link className="primary-button" href="/">Return to Today</Link></section></main>;
 
   const kind=isKind(query.kind)?query.kind:undefined;
-  let libraries=await getContentAssetLibraries(brand.id).catch(()=>[]);
+  const libraries=await getContentAssetLibraries(brand.id).catch(()=>[]);
   const selectedLibrary=query.libraryId&&libraries.some((library)=>library.id===query.libraryId)?query.libraryId:undefined;
-  let assets=await getContentLibraryAssets(brand.id,{...(selectedLibrary?{libraryId:selectedLibrary}:{}),...(kind?{kind}:{}),...(query.q?{q:query.q}:{})}).catch(()=>[]);
+  const assets=await getContentLibraryAssets(brand.id,{...(selectedLibrary?{libraryId:selectedLibrary}:{}),...(kind?{kind}:{}),...(query.q?{q:query.q}:{})}).catch(()=>[]);
   const create=createContentAssetLibraryAction.bind(null,brand.id);
 
   return <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active={null} mobileActive="More">
