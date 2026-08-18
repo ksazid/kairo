@@ -32,7 +32,7 @@ describe("Content Asset Library", () => {
   });
 
   it("filters indexed metadata deterministically without changing provenance", () => {
-    const asset: ContentLibraryAsset = { id:"google-drive:file-1",workspaceId:"workspace-1",brandId:"brand-1",libraryId:"library-1",externalId:"file-1",name:"Summer Product Hero.jpg",kind:"image",mimeType:"image/jpeg",providerRef:"drive://file-1",indexedAt:"2026-08-18T19:00:00Z" };
+    const asset: ContentLibraryAsset = { id:"library-1:file-1",workspaceId:"workspace-1",brandId:"brand-1",libraryId:"library-1",externalId:"file-1",name:"Summer Product Hero.jpg",kind:"image",mimeType:"image/jpeg",providerRef:"drive://file-1",indexedAt:"2026-08-18T19:00:00Z" };
     expect(matchesContentAsset(asset, { kind: "image", query: "product hero" })).toBe(true);
     expect(matchesContentAsset(asset, { kind: "video" })).toBe(false);
     expect(asset.providerRef).toBe("drive://file-1");
@@ -49,6 +49,7 @@ describe("Content Asset Library", () => {
       async listAssets() { calls++; return { assets: [{ externalId:"file-9",name:"Launch.mov",kind:"video",mimeType:"video/quicktime",providerRef:"drive://file-9" }] }; },
     });
     expect(calls).toBe(1);
+    expect(assets[0]?.id).toBe("library-1:file-9");
     expect(assets[0]?.providerRef).toBe("drive://file-9");
     expect(assets[0]?.brandId).toBe("brand-1");
   });
