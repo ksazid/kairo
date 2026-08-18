@@ -3,7 +3,7 @@
   "sliceId": "VS-60",
   "title": "Google Drive Content Asset Connector",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-04", "FR-11"],
@@ -36,8 +36,9 @@
   "impact": {
     "areas": ["frontend", "api", "customer-flow"],
     "notes": [
-      "Adds a least-privilege Google Drive connection path for Brand-scoped Content Asset Libraries using the non-sensitive drive.file scope.",
+      "Adds a least-privilege Google Drive connection path for Brand-scoped Content Asset Libraries using only the drive.file scope and explicitly disables incremental prior-scope carry-forward.",
       "Implements one-time OAuth intent/callback handling, encrypted provider credential storage, selected-root attachment and bounded metadata indexing behind explicit account/Brand/library authorization.",
+      "Reconnect finalization fails closed: an incomplete post-save transition revokes the new connection/credential, retires replaced local credentials and leaves the library in needs-attention rather than reporting success.",
       "Provider access is configuration-gated; no Google credentials, Cloud Console settings, production secrets, deployment or production connection are changed by this slice.",
       "Content Assets remain production inputs and never become Brand Brain truth automatically."
     ]
@@ -46,13 +47,24 @@
     {"type":"scope","status":"approved","version":"VS-60@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T22:26:00+02:00","rationale":"Owner approved VS-59 merge and instructed go next; VS-60 was the explicitly queued next governed slice."},
     {"type":"policy","status":"approved","version":"VS-60@1.0-implementation-only","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T22:26:00+02:00","rationale":"Implementation of the provider boundary and tests is authorized. Real Google credentials, OAuth console mutation, provider connection and production enablement remain separately gated."},
     {"type":"implementation","status":"approved","version":"VS-60@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T22:26:00+02:00","rationale":"Go authorizes bounded implementation, tests, UI review and exact-head certification gates."},
-    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Requires Product Intake, Security baseline, CI and implementation-level UI Review on one frozen exact candidate SHA."},
+    {"type":"certification","status":"pending","version":"VS-60@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation head passed Product Intake #635, Security #728, CI #847 and implementation-level UI Review. Final exact-candidate gates run after this governance-only transition."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Separate exact-SHA release approval is required."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Real Google OAuth client configuration, secrets, provider connection and production activation require explicit approval."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":70,"testing":30,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
+  "certification": {
+    "status":"running",
+    "commitSha":null,
+    "evidence":[
+      "Product Intake #635 PASS on implementation head 9ec3f4fff14981a2618442a524a64d88b0432e4a",
+      "Security baseline #728 PASS on implementation head 9ec3f4fff14981a2618442a524a64d88b0432e4a",
+      "CI #847 PASS on implementation head 9ec3f4fff14981a2618442a524a64d88b0432e4a including PostgreSQL 18 migration 0020, audit, governance, runtime/type/test verification and production builds",
+      "Implementation-level UI Review PASS; rendered browser evidence not claimed because no deployment or real provider configuration was authorized",
+      "Least-privilege OAuth review PASS: only drive.file is requested and incremental prior-scope carry-forward is disabled",
+      "Reconnect failure cleanup regression PASS: incomplete post-save finalization fails closed instead of leaving an apparently usable credential-backed connection"
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
