@@ -22,7 +22,7 @@ class MemoryLibraryStore implements ContentAssetLibraryRepository {
   async replaceIndexedAssets(_accountId: string, library: ContentAssetLibrary, assets: ContentLibraryAsset[]) { this.assets = [...this.assets.filter((asset) => asset.libraryId !== library.id), ...assets]; }
 }
 
-describe("VS-59A Content Asset Library API", () => {
+describe("VS-59 Content Asset Library API", () => {
   it("requires auth and enforces Brand membership before returning library data", async () => {
     const core = new MemoryKairoRepository();
     const store = new MemoryLibraryStore();
