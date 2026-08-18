@@ -63,7 +63,7 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
           <div>
             <p className="eyebrow">Brand Brain</p>
             <h1>{brand.name}</h1>
-            <p className="lede">Give Kairo the few decisions only you can make. Kairo will propose the rest from approved Brand evidence, and you stay in control.</p>
+            <p className="lede">Give Kairo the few decisions only you can make. Kairo will propose the rest from your Brand setup and any readable public evidence, and you stay in control.</p>
           </div>
           <div className="scope-picker" aria-label="Current Brand scope"><span className="scope-label">Brand</span><strong>{brand.name}</strong><span className="scope-meta">{workspace.name}</span></div>
         </header>
@@ -75,14 +75,14 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
           <div className="guided-setup-copy">
             <p className="eyebrow">Quick setup</p>
             <h2 id="guided-setup-heading">Build my Brand Brain</h2>
-            <p>Kairo will use your public Brand reference and your goal to suggest positioning, audience, voice, content strategy and sensible safeguards. Suggestions stay reviewable—they do not silently become owner-confirmed truth.</p>
+            <p>Kairo can start from your Brand and goal. An optional public website, social profile, article, blog or PDF gives Kairo more evidence for positioning, audience, voice and content-strategy suggestions. Suggestions stay reviewable—they do not silently become owner-confirmed truth.</p>
             {publicReference ? <div className="reference-chip"><span>Using</span><strong>{publicReference}</strong></div> : null}
           </div>
 
           <form action={buildBrandBrainAction.bind(null, brand.id)} className="guided-setup-form">
-            {!publicReference ? <label>Website or social profile
-              <span>Give Kairo one public place to understand the Brand.</span>
-              <input name="publicReferenceUrl" type="url" inputMode="url" required placeholder="https://instagram.com/yourbrand" />
+            {!publicReference ? <label>Public Brand reference <span>optional</span>
+              <span>Website, social profile, article, blog, product page or public PDF.</span>
+              <input name="publicReferenceUrl" type="url" inputMode="url" placeholder="https://yourbrand.com/about" />
             </label> : null}
             <label>What matters most right now?
               <span>This is an owner decision. Kairo will optimise suggestions around it.</span>
@@ -111,7 +111,7 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
             const field = firstField(fieldMap, summary.keys);
             return <article className="brain-summary-card" key={summary.title}>
               <div className="brain-summary-heading"><h3>{summary.title}</h3><FieldState field={field} /></div>
-              <p>{field?.value ?? "Kairo will suggest this after it has enough approved Brand evidence."}</p>
+              <p>{field?.value ?? "Kairo will suggest this from your Brand setup and any readable public evidence."}</p>
             </article>;
           })}
         </div>
