@@ -44,7 +44,7 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment or provider activation is authorized by implementation or merge approval."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":90,"testing":50,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
@@ -54,6 +54,6 @@
     "expectedOutcome":"Retryable Instagram provider failures without Retry-After still return a deterministic bounded pacing hint without any direct adapter retry.",
     "metrics":["retryable Instagram failures without retry hint","adapter-internal retry attempts","incorrect retry classification for auth/permission failures"]
   },
-  "links": {"specification":"docs/slices/VS-62.md","implementationPr":null,"evidence":["docs/plans/VS-62-implementation.md","GitHub issue #89"]},
+  "links": {"specification":"docs/slices/VS-62.md","implementationPr":"#109","evidence":["docs/plans/VS-62-implementation.md","GitHub issue #89"]},
   "maxAttempts": 3
 }
