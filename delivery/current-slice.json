@@ -1,30 +1,20 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-61",
-  "title": "Content Asset Selection in Content Studio",
+  "sliceId": "VS-62",
+  "title": "Instagram Retry-After correctness",
   "status": "active",
-  "lifecycle": "certification",
-  "riskLevel": "high",
+  "lifecycle": "implementing",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-10", "FR-11", "FR-13"],
+  "requirements": ["FR-15"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-52", "VS-59", "VS-60"],
+  "dependencies": ["VS-28", "VS-29"],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/package.json",
-    "packages/domain/src/campaign*.ts",
-    "packages/domain/src/content-asset-library*.ts",
-    "apps/api/migrations/0021_content_asset_selection.sql",
-    "apps/api/src/campaign*.ts",
-    "apps/api/src/content-asset-library*.ts",
-    "apps/api/src/content-asset-selection*.ts",
-    "apps/api/src/server.ts",
-    "apps/web/src/lib/kairo-api.ts",
-    "apps/web/src/lib/content-asset-library-api.ts",
-    "apps/web/app/brands/[brandId]/campaigns/**",
-    "apps/web/app/globals.css",
-    "docs/slices/VS-61.md",
-    "docs/plans/VS-61-*.md",
+    "apps/worker/src/publishing-adapters.ts",
+    "apps/worker/src/publishing-rich.test.ts",
+    "docs/slices/VS-62.md",
+    "docs/plans/VS-62-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
@@ -32,52 +22,38 @@
     "infrastructure/**",
     "apps/web/vercel.json",
     "apps/web/app/auth/**",
-    "apps/web/src/lib/oidc.ts",
-    "apps/web/src/lib/oidc-session.ts",
     "apps/api/src/meta-instagram-oauth.ts",
     "apps/api/src/instagram-connection*.ts",
     "apps/api/src/google-drive-content-assets*.ts"
   ],
   "impact": {
-    "areas": ["frontend", "api", "database", "customer-flow"],
+    "areas": ["operations-support"],
     "notes": [
-      "Makes the existing Brand-scoped Content Asset Library useful inside Content Studio by attaching selected indexed assets to an exact immutable Content Version.",
-      "Selections are server-authorized and snapshotted as non-secret provenance; client-supplied provider metadata is never trusted.",
-      "Changing production-asset selection creates a new Content Version so Truth Gate, Critic and human approval remain exact-version bound.",
-      "No Drive binary is downloaded, copied, transformed or published; no provider network call is required to select already-indexed metadata.",
-      "Content Asset references remain production inputs and do not mutate Brand Brain truth or Knowledge evidence.",
-      "VS-60 was owner-approved and merged at exact candidate 9d221453f19b1200be65071774173e83e4bedd0e as main merge b78b783e62b707cfecf6ddab211449ebd8494074; no deployment or provider activation followed."
+      "Closes issue #89 by supplying deterministic bounded retry pacing hints for retryable Instagram provider failures that omit Retry-After.",
+      "Valid provider Retry-After values remain authoritative over fallback timing.",
+      "The Instagram adapter remains single-attempt; the existing outer publishing planner is the only retry executor.",
+      "No OAuth/provider configuration, credential, permission, publishing policy, UI, database, deployment or production state changes are in scope."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-61@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T23:24:00+02:00","rationale":"After approving the exact VS-60 merge, owner instructed go next. VS-61 is the bounded continuation that consumes the already-approved Content Asset Library inside existing FR-10/FR-11 Content Studio scope."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"This slice selects already-indexed Brand-scoped metadata only. It does not request new provider scopes, connect Google, download provider content, publish content, mutate Brand Brain, or change production settings."},
-    {"type":"implementation","status":"approved","version":"VS-61@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T23:24:00+02:00","rationale":"Go authorizes bounded implementation, tests, UI review and exact-head certification gates. Merge, deployment and production enablement remain separate approvals."},
-    {"type":"certification","status":"pending","version":"VS-61@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5 passed Product Intake #641, Security #734, CI #854 and implementation-level UI Review. Final exact-candidate gates are running after this governance-only transition."},
+    {"type":"scope","status":"approved","version":"VS-62@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T09:15:00+02:00","rationale":"Owner instructed go next after merging VS-61. Repository authority identified issue #89 as the next unblocked FR-15 maintenance item rather than expanding into an unapproved product capability."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Retry classification and bounded pacing hints stay within existing FR-15 provider-resilience policy; no new provider scope, permissions or production setting is introduced."},
+    {"type":"implementation","status":"approved","version":"VS-62@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T09:15:00+02:00","rationale":"Go next authorizes bounded implementation, regression tests and exact-head certification gates. Merge, deployment, provider activation and release remain separately gated."},
+    {"type":"certification","status":"pending","version":"VS-62@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires Product Intake, Security baseline and CI on one frozen candidate SHA."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Separate exact-SHA release approval is required."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment, provider activation or production enablement is authorized by this slice approval."}
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment or provider activation is authorized by implementation or merge approval."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
-  "certification": {
-    "status":"running",
-    "commitSha":null,
-    "evidence":[
-      "Product Intake #641 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5",
-      "Security baseline #734 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5",
-      "CI #854 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5 including PostgreSQL 18 migration 0021, dependency audit, governance/preflight, workspace type/tests/builds and dashboard artifact",
-      "Implementation-level UI Review PASS against product/DESIGN.md: Production assets remain contextual/secondary, selection state is explicit and keyboard-native, responsive layout is bounded, exact-version review/approval hierarchy is preserved, and no Brand Brain/provider-network action is introduced",
-      "Rendered browser evidence is not claimed because no exact-candidate deployment or production browser environment was authorized"
-    ]
-  },
+  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
     "status":"not-started",
     "reviewAt":null,
-    "expectedOutcome":"A creator can deliberately attach up to 12 Brand-authorized indexed production assets to the current Content Version and preserve that exact selection through review/approval lineage.",
-    "metrics":["cross-Brand asset reference leakage","approval surviving a changed asset selection","client-forged provider metadata","provider network calls during selection","Drive binary downloads","Brand Brain mutation","responsive or keyboard regressions"]
+    "expectedOutcome":"Retryable Instagram provider failures without Retry-After still return a deterministic bounded pacing hint without any direct adapter retry.",
+    "metrics":["retryable Instagram failures without retry hint","adapter-internal retry attempts","incorrect retry classification for auth/permission failures"]
   },
-  "links": {"specification":"docs/slices/VS-61.md","implementationPr":"#108","evidence":["docs/plans/VS-61-implementation.md"]},
+  "links": {"specification":"docs/slices/VS-62.md","implementationPr":null,"evidence":["docs/plans/VS-62-implementation.md","GitHub issue #89"]},
   "maxAttempts": 3
 }
