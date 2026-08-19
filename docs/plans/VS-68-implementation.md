@@ -6,7 +6,7 @@ Recover from immutable Run C failure by eliminating known qualification-contract
 
 ## Changes
 
-1. For the four approved motorcycle qualification cases, derive the Groq strict carousel JSON Schema from the benchmark case embedded in the model request. The schema accepts only supplied Claim IDs and, because all fixture Claims are required, forces the top-level lineage to contain every supplied Claim exactly once.
+1. For the four approved motorcycle qualification cases, derive the Groq strict carousel JSON Schema from the benchmark case embedded in the model request. The provider schema accepts only supplied Claim IDs and bounds the top-level lineage to the required Claim count; Kairo's existing deterministic validator remains authoritative for required-Claim completeness.
 2. Preserve the existing generic carousel schema for non-qualification callers.
 3. Add bounded, non-sensitive evidence failure provenance: case, lane, execution stage, and stable underlying error code. Raw provider/error messages are not persisted.
 4. Keep deterministic pair checks separately classified for fingerprint, measured metadata, and runtime-route failures.
