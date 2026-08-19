@@ -1,7 +1,6 @@
 FROM node:24-bookworm-slim AS build
 WORKDIR /app
 COPY . .
-RUN npm install --package-lock-only --ignore-scripts --no-audit --no-fund
 RUN node scripts/verify-lock.mjs
 RUN npm ci --no-audit --no-fund
 RUN npm run build --workspace @kairo/api
