@@ -1,59 +1,55 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-64",
-  "title": "Marketing Lab One-Shot Benchmark Authorization Fence",
+  "sliceId": "VS-65",
+  "title": "Marketing Lab Truth and Five-Dimension Quality Evaluator",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "implementing",
   "riskLevel": "high",
-  "implementationMode": "runtime-enabled",
-  "requirements": ["FR-12", "FR-20"],
+  "implementationMode": "runtime-disabled",
+  "requirements": ["FR-12", "FR-17", "FR-20"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-23-prerequisites", "PR-84"],
+  "dependencies": ["VS-19", "VS-64"],
   "blockers": [],
   "allowedPaths": [
-    "apps/api/migrations/0022_marketing_shadow_evidence_authorizations.sql",
-    "apps/api/src/marketing-shadow-evidence-run.ts",
-    "apps/api/src/marketing-shadow-evidence-run.test.ts",
-    "apps/api/src/marketing-shadow-evidence-postgres.integration.test.ts",
-    "apps/api/src/server.ts",
-    "docs/slices/VS-64.md",
-    "docs/plans/VS-64-*.md",
+    "apps/worker/**",
+    "packages/domain/**",
+    "evaluation/marketing-lab/**",
+    "tests/**",
+    "docs/slices/VS-65.md",
+    "docs/plans/VS-65-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
+    "apps/api/**",
     "apps/web/**",
-    "apps/worker/src/agent-runtime.ts",
-    "apps/worker/src/model-gateway.ts",
-    "apps/worker/src/marketing-shadow-evidence-runner.ts",
-    "evaluation/marketing-lab/**"
+    "apps/api/migrations/**"
   ],
   "impact": {
-    "areas": ["api", "database", "sensitive-data", "deployment", "operations-support"],
+    "areas": ["architecture", "analytics", "operations-support"],
     "notes": [
-      "Refreshes the stale PR #79 authorization concept for the current DirectModelRuntime qualification path; Hermes remains dormant and is not reactivated.",
-      "A configured benchmark process performs only PostgreSQL authorization-state checks until an exact run ID/release SHA authorization exists.",
-      "The authorization is atomically consumed with creation of the durable started run record before any model lane can execute.",
-      "At most one benchmark authorization may be outstanding globally, and concurrent/overlapping processes cannot execute the same authorization twice.",
-      "Migration 0022 is code-only in this slice and is not applied to production by implementation or merge approval.",
-      "No deployment, DATABASE_URL mutation, provider/model/key/pricing change, benchmark execution, authorization insertion, customer data use, publishing, release or production enablement is in scope."
+      "Adds a Kairo-owned, candidate-identity-blind evaluator for already-collected synthetic/public-safe Marketing Lab paired evidence.",
+      "The evaluator uses the existing AgentRuntimePort critic role with zero tools and a fixed Kairo rubric; neither candidate can self-award benchmark evidence.",
+      "Truth must fail when visible candidate content asserts factual, technical, experiential, quantitative or capability details not entailed by the supplied benchmark Claims.",
+      "Quality evidence is bounded to the existing brandFit, hookQuality, originality, formatQuality and criticScore dimensions; benchmark thresholds and comparator policy are unchanged.",
+      "No human preference, edit-distance evidence, final verdict, VS-23/VS-24 activation, API wiring, migration, deployment or production enablement is in scope."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-64@1.0",
+      "version": "VS-65@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-19T16:52:00+02:00",
-      "rationale": "Owner approved PR #88 merge and said go next after the explicitly recommended next governed thread: refresh the Marketing Lab benchmark prerequisite authorization work."
+      "at": "2026-08-19T23:35:00+02:00",
+      "rationale": "Owner said Go after the VS-64 to VS-65 handoff and evaluator implementation were stated as the immediate next governed action; issue #116 records the exact evaluator scope and constraints."
     },
     {
       "type": "policy",
@@ -62,25 +58,25 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-64 adds a stricter one-shot execution control around the already-governed synthetic qualification benchmark; it does not change benchmark inputs, model/provider policy, scoring, Truth gates, budgets or production permissions."
+      "rationale": "VS-65 does not change benchmark thresholds, candidate eligibility, advancement policy, human-evidence requirements or production permissions; it implements the already-required Kairo-owned Truth and five-dimension evidence contract."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-64@1.0",
-      "commitSha": "a7b7f1fb7b24f1b1011e57c7796c5cc869033b86",
+      "version": "VS-65@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-19T16:52:00+02:00",
-      "rationale": "Go next authorized the bounded code refresh, migration artifact, deterministic regression coverage and exact-head certification gates. Implementation head passed Product Intake #648, Security #741 and CI #866. Merge, deployment, migration application and benchmark execution remain separate approvals."
+      "at": "2026-08-19T23:35:00+02:00",
+      "rationale": "Owner explicitly authorized continuing with the governed handoff and evaluator implementation. Work remains non-production and must pass normal deterministic, CI and security gates before any merge or execution."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-64@1.0",
+      "version": "VS-65@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Implementation head a7b7f1fb7b24f1b1011e57c7796c5cc869033b86 passed Product Intake #648, Security #741 and CI #866. Final certification requires the same gates on the frozen governance-only certification candidate."
+      "rationale": "Requires an immutable exact-head candidate with repository CI/security evidence."
     },
     {
       "type": "release",
@@ -89,7 +85,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "No release or deployment is authorized."
+      "rationale": "No release or deployment is authorized by VS-65 implementation approval."
     },
     {
       "type": "production-enable",
@@ -98,56 +94,42 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Applying migration 0022, configuring the production evidence flag, inserting an authorization and running the benchmark each require separate explicit production approval."
+      "rationale": "No production evaluator execution or production enablement is authorized."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 50,
+    "implementation": 10,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
+    "status": "not-started",
     "commitSha": null,
-    "evidence": [
-      "Implementation head a7b7f1fb7b24f1b1011e57c7796c5cc869033b86: Product Intake #648 PASS; Security #741 PASS; CI #866 PASS.",
-      "CI #866 passed pinned Hermes CI contracts/profile, migration 0022 on clean PostgreSQL 18, production dependency audit, governance/preflight, runtime typecheck/tests/builds and dashboard build.",
-      "Authorization regression coverage proves no authorization means no claim/model invocation, exact release binding, one outstanding authorization globally, atomic exactly-once concurrent consumption and idempotent settlement.",
-      "Implementation-level security/operations review PASS: current DirectModel qualification semantics remain unchanged, Hermes is not reactivated, and no production migration, deployment, authorization insertion, provider mutation or benchmark execution occurred."
-    ]
+    "evidence": []
   },
   "release": {
     "status": "not-authorized",
     "releaseId": null
   },
   "rollback": {
-    "status": "ready",
+    "status": "not-applicable",
     "rollbackId": null
   },
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "A stable flag-enabled DirectModel qualification deployment remains model-idle until one exact authorization is inserted, then exactly one process can consume it and execute the bounded paired benchmark.",
-    "metrics": [
-      "model invocations before authorization",
-      "duplicate authorization consumption",
-      "duplicate benchmark starts",
-      "release-SHA mismatch attempts",
-      "durable completed/failed evidence state"
-    ]
+    "expectedOutcome": null,
+    "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-64.md",
-    "implementationPr": "#79",
-    "evidence": [
-      "docs/plans/VS-64-implementation.md",
-      "GitHub issue #58"
-    ]
+    "specification": "docs/slices/VS-65.md",
+    "implementationPr": null,
+    "evidence": ["GitHub issue #116", "GitHub issue #58"]
   },
   "maxAttempts": 3
 }
