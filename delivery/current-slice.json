@@ -1,26 +1,30 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-60",
-  "title": "Google Drive Content Asset Connector",
+  "sliceId": "VS-61",
+  "title": "Content Asset Selection in Content Studio",
   "status": "active",
   "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-04", "FR-11"],
+  "requirements": ["FR-10", "FR-11", "FR-13"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-59"],
+  "dependencies": ["VS-52", "VS-59", "VS-60"],
   "blockers": [],
   "allowedPaths": [
+    "packages/domain/package.json",
+    "packages/domain/src/campaign*.ts",
     "packages/domain/src/content-asset-library*.ts",
-    "apps/api/migrations/0020_google_drive_content_assets.sql",
+    "apps/api/migrations/0021_content_asset_selection.sql",
+    "apps/api/src/campaign*.ts",
     "apps/api/src/content-asset-library*.ts",
-    "apps/api/src/google-drive-content-assets*.ts",
+    "apps/api/src/content-asset-selection*.ts",
     "apps/api/src/server.ts",
+    "apps/web/src/lib/kairo-api.ts",
     "apps/web/src/lib/content-asset-library-api.ts",
-    "apps/web/app/brands/[brandId]/content-assets/**",
-    "apps/web/app/content-assets/google/callback/route.ts",
-    "docs/slices/VS-60.md",
-    "docs/plans/VS-60-*.md",
+    "apps/web/app/brands/[brandId]/campaigns/**",
+    "apps/web/app/globals.css",
+    "docs/slices/VS-61.md",
+    "docs/plans/VS-61-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
@@ -31,25 +35,27 @@
     "apps/web/src/lib/oidc.ts",
     "apps/web/src/lib/oidc-session.ts",
     "apps/api/src/meta-instagram-oauth.ts",
-    "apps/api/src/instagram-connection*.ts"
+    "apps/api/src/instagram-connection*.ts",
+    "apps/api/src/google-drive-content-assets*.ts"
   ],
   "impact": {
-    "areas": ["frontend", "api", "customer-flow"],
+    "areas": ["frontend", "api", "database", "customer-flow"],
     "notes": [
-      "Adds a least-privilege Google Drive connection path for Brand-scoped Content Asset Libraries using only the drive.file scope and explicitly disables incremental prior-scope carry-forward.",
-      "Implements one-time OAuth intent/callback handling, encrypted provider credential storage, selected-root attachment and bounded metadata indexing behind explicit account/Brand/library authorization.",
-      "Reconnect finalization fails closed: an incomplete post-save transition revokes the new connection/credential, retires replaced local credentials and leaves the library in needs-attention rather than reporting success.",
-      "Provider access is configuration-gated; no Google credentials, Cloud Console settings, production secrets, deployment or production connection are changed by this slice.",
-      "Content Assets remain production inputs and never become Brand Brain truth automatically."
+      "Makes the existing Brand-scoped Content Asset Library useful inside Content Studio by attaching selected indexed assets to an exact immutable Content Version.",
+      "Selections are server-authorized and snapshotted as non-secret provenance; client-supplied provider metadata is never trusted.",
+      "Changing production-asset selection creates a new Content Version so Truth Gate, Critic and human approval remain exact-version bound.",
+      "No Drive binary is downloaded, copied, transformed or published; no provider network call is required to select already-indexed metadata.",
+      "Content Asset references remain production inputs and do not mutate Brand Brain truth or Knowledge evidence.",
+      "VS-60 was owner-approved and merged at exact candidate 9d221453f19b1200be65071774173e83e4bedd0e as main merge b78b783e62b707cfecf6ddab211449ebd8494074; no deployment or provider activation followed."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-60@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T22:26:00+02:00","rationale":"Owner approved VS-59 merge and instructed go next; VS-60 was the explicitly queued next governed slice."},
-    {"type":"policy","status":"approved","version":"VS-60@1.0-implementation-only","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T22:26:00+02:00","rationale":"Implementation of the provider boundary and tests is authorized. Real Google credentials, OAuth console mutation, provider connection and production enablement remain separately gated."},
-    {"type":"implementation","status":"approved","version":"VS-60@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T22:26:00+02:00","rationale":"Go authorizes bounded implementation, tests, UI review and exact-head certification gates."},
-    {"type":"certification","status":"pending","version":"VS-60@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation head passed Product Intake #635, Security #728, CI #847 and implementation-level UI Review. Final exact-candidate gates run after this governance-only transition."},
+    {"type":"scope","status":"approved","version":"VS-61@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T23:24:00+02:00","rationale":"After approving the exact VS-60 merge, owner instructed go next. VS-61 is the bounded continuation that consumes the already-approved Content Asset Library inside existing FR-10/FR-11 Content Studio scope."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"This slice selects already-indexed Brand-scoped metadata only. It does not request new provider scopes, connect Google, download provider content, publish content, mutate Brand Brain, or change production settings."},
+    {"type":"implementation","status":"approved","version":"VS-61@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-18T23:24:00+02:00","rationale":"Go authorizes bounded implementation, tests, UI review and exact-head certification gates. Merge, deployment and production enablement remain separate approvals."},
+    {"type":"certification","status":"pending","version":"VS-61@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5 passed Product Intake #641, Security #734, CI #854 and implementation-level UI Review. Final exact-candidate gates are running after this governance-only transition."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Separate exact-SHA release approval is required."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Real Google OAuth client configuration, secrets, provider connection and production activation require explicit approval."}
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment, provider activation or production enablement is authorized by this slice approval."}
   ],
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
@@ -57,12 +63,11 @@
     "status":"running",
     "commitSha":null,
     "evidence":[
-      "Product Intake #635 PASS on implementation head 9ec3f4fff14981a2618442a524a64d88b0432e4a",
-      "Security baseline #728 PASS on implementation head 9ec3f4fff14981a2618442a524a64d88b0432e4a",
-      "CI #847 PASS on implementation head 9ec3f4fff14981a2618442a524a64d88b0432e4a including PostgreSQL 18 migration 0020, audit, governance, runtime/type/test verification and production builds",
-      "Implementation-level UI Review PASS; rendered browser evidence not claimed because no deployment or real provider configuration was authorized",
-      "Least-privilege OAuth review PASS: only drive.file is requested and incremental prior-scope carry-forward is disabled",
-      "Reconnect failure cleanup regression PASS: incomplete post-save finalization fails closed instead of leaving an apparently usable credential-backed connection"
+      "Product Intake #641 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5",
+      "Security baseline #734 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5",
+      "CI #854 PASS on clean implementation head 90092bf329b23d043dbc11e39643279a07a2e3c5 including PostgreSQL 18 migration 0021, dependency audit, governance/preflight, workspace type/tests/builds and dashboard artifact",
+      "Implementation-level UI Review PASS against product/DESIGN.md: Production assets remain contextual/secondary, selection state is explicit and keyboard-native, responsive layout is bounded, exact-version review/approval hierarchy is preserved, and no Brand Brain/provider-network action is introduced",
+      "Rendered browser evidence is not claimed because no exact-candidate deployment or production browser environment was authorized"
     ]
   },
   "release": {"status":"not-authorized","releaseId":null},
@@ -70,9 +75,9 @@
   "postRelease": {
     "status":"not-started",
     "reviewAt":null,
-    "expectedOutcome":"A user can deliberately connect a Google Drive Content Asset Library, select an accessible Drive root, and index bounded file metadata without granting Kairo broad Drive access.",
-    "metrics":["cross-Brand provider leakage","OAuth state reuse","credential exposure","restricted-scope regression","unbounded Drive traversal","provider failures presented as success","Brand Brain mutation"]
+    "expectedOutcome":"A creator can deliberately attach up to 12 Brand-authorized indexed production assets to the current Content Version and preserve that exact selection through review/approval lineage.",
+    "metrics":["cross-Brand asset reference leakage","approval surviving a changed asset selection","client-forged provider metadata","provider network calls during selection","Drive binary downloads","Brand Brain mutation","responsive or keyboard regressions"]
   },
-  "links": {"specification":"docs/slices/VS-60.md","implementationPr":"#107","evidence":["docs/plans/VS-60-implementation.md"]},
+  "links": {"specification":"docs/slices/VS-61.md","implementationPr":"#108","evidence":["docs/plans/VS-61-implementation.md"]},
   "maxAttempts": 3
 }

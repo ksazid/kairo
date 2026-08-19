@@ -55,6 +55,19 @@ export class PgContentAssetLibraryRepository implements ContentAssetLibraryRepos
     } finally { client.release(); }
   }
 
+  async getAssetsByIds(accountId: string, brandId: string, assetIds: string[]) {
+    if (!assetIds.length) return [];
+    const client = await this.pool.connect();
+    try {
+      const workspaceId = await scope(client, accountId, brandId);
+      const result = await client.query(
+        `select * from content_library_assets where workspace_id=$1 and brand_id=$2 and id=any($3::text[])`,
+        [workspaceId, brandId, assetIds],
+      );
+      return result.rows.map(mapAsset);
+    } finally { client.release(); }
+  }
+
   async replaceIndexedAssets(accountId: string, library: ContentAssetLibrary, assets: ContentLibraryAsset[]) {
     const client = await this.pool.connect();
     try {
