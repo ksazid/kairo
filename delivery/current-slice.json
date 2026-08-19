@@ -5,7 +5,7 @@
   "status": "active",
   "lifecycle": "certification",
   "riskLevel": "high",
-  "implementationMode": "runtime-disabled",
+  "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
   "owners": {
     "product": "Product Owner",
@@ -16,10 +16,15 @@
   "dependencies": ["VS-19", "VS-64"],
   "blockers": [],
   "allowedPaths": [
-    "apps/worker/**",
-    "packages/domain/**",
+    "apps/api/src/marketing-shadow-quality-evaluation-run.ts",
+    "apps/api/src/marketing-shadow-quality-evaluation-run.test.ts",
+    "apps/api/src/marketing-shadow-quality-evaluation-postgres.integration.test.ts",
+    "apps/api/src/marketing-shadow-quality-evaluation-worker.ts",
+    "apps/api/package.json",
+    "scripts/authorize-marketing-shadow-quality-evaluation.mjs",
+    "scripts/start-api.mjs",
+    "Dockerfile",
     "evaluation/marketing-lab/**",
-    "tests/**",
     "docs/slices/VS-65.md",
     "docs/plans/VS-65-*.md",
     "delivery/**"
@@ -27,74 +32,76 @@
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/api/**",
     "apps/web/**",
-    "apps/api/migrations/**"
+    "apps/api/migrations/**",
+    "apps/worker/**",
+    "packages/domain/**"
   ],
   "impact": {
-    "areas": ["architecture", "analytics", "operations-support"],
+    "areas": ["architecture", "api", "database", "analytics", "deployment", "operations-support"],
     "notes": [
-      "Adds a Kairo-owned, candidate-identity-blind evaluator for already-collected synthetic/public-safe Marketing Lab paired evidence.",
-      "The evaluator uses the existing AgentRuntimePort critic role with zero tools and a fixed Kairo rubric; neither candidate can self-award benchmark evidence.",
-      "Truth must fail when visible candidate content asserts factual, technical, experiential, quantitative, causal, model-specific or capability details not entailed by the supplied benchmark Claims.",
-      "Quality evidence is bounded to the existing brandFit, hookQuality, originality, formatQuality and criticScore dimensions; benchmark thresholds and comparator policy are unchanged.",
-      "No human preference, edit-distance evidence, final verdict, VS-23/VS-24 activation, API wiring, migration, deployment or production enablement is in scope."
+      "VS-65@1.0 evaluator core is certified and merged; this bounded 1.1 execution extension does not change its rubric, Truth policy, output schema or provider/model pricing policy.",
+      "The one-shot execution is hard-bound to persisted Run-B source evidence vs23-qualification-20260819-b at release c3b881d3f8294da2114128439ae2f2eb0fe3c2da.",
+      "Execution reuses the existing 0016 run ledger and 0022 authorization table; no migration or source benchmark evidence mutation is permitted.",
+      "A unique run ID vs65-quality-evaluation-20260819-a must consume its exact release-bound authorization before any evaluator model call; concurrent or restarted processes cannot execute it twice.",
+      "The evaluator remains candidate-identity-blind, zero-tool, global-public synthetic only, and uses the existing fixed Truth + five-dimension rubric.",
+      "This approval does not include human preference scoring, edit-distance evidence, deterministic advancement verdict, VS-23/VS-24 activation, publishing or provider/model/key/pricing changes."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-65@1.0",
+      "version": "VS-65@1.1",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-19T23:35:00+02:00",
-      "rationale": "Owner said Go after the VS-64 to VS-65 handoff and evaluator implementation were stated as the immediate next governed action; issue #116 records the exact evaluator scope and constraints."
+      "at": "2026-08-19T23:58:00+02:00",
+      "rationale": "Owner said Go after the next gate was explicitly stated as running the certified evaluator against the existing Run-B evidence; scope is limited to one-shot execution orchestration and evidence capture."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": null,
+      "version": "VS-65@1.1",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-65 does not change benchmark thresholds, candidate eligibility, advancement policy, human-evidence requirements or production permissions; it implements the already-required Kairo-owned Truth and five-dimension evidence contract."
+      "rationale": "The execution extension does not alter evaluator rubric, Truth rules, benchmark thresholds, human-evidence requirements, candidate eligibility or advancement policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-65@1.0",
-      "commitSha": "b7f5d158ad79d472a4978b7cb9be18469bc20d19",
+      "version": "VS-65@1.1",
+      "commitSha": "4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6",
       "by": "Sazid Khan",
-      "at": "2026-08-19T23:35:00+02:00",
-      "rationale": "Implementation head b7f5d158ad79d472a4978b7cb9be18469bc20d19 passed Product Intake #651, Security #750 and CI #882 after the JsonValue contract correction. No production execution occurred."
+      "at": "2026-08-19T23:58:00+02:00",
+      "rationale": "Owner Go authorized the bounded one-shot execution wiring. Exact implementation head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6 passed Product Intake #654, Security #753 and CI #886 including clean PostgreSQL 18 migrations, governance/preflight, runtime verification, PostgreSQL one-shot integration coverage and API/worker build."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-65@1.0",
+      "version": "VS-65@1.1",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Certification candidate is frozen after the green implementation head; final exact-head Product Intake, Security and CI must pass before certification approval can be requested."
+      "rationale": "Certification is refreshing on the governance-only frozen candidate after implementation head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6 passed Product Intake #654, Security #753 and CI #886."
     },
     {
       "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "No release, merge or deployment is authorized by VS-65 implementation approval."
+      "status": "approved",
+      "version": "VS-65@1.1",
+      "commitSha": "4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6",
+      "by": "Sazid Khan",
+      "at": "2026-08-19T23:58:00+02:00",
+      "rationale": "Owner Go authorizes deployment only after the unchanged implementation represented by exact head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6 is frozen through the final governance-only certification candidate; release is solely for one-shot evaluator execution and immediate cleanup."
     },
     {
       "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "No production evaluator execution or production enablement is authorized."
+      "status": "approved",
+      "version": "VS-65@1.1",
+      "commitSha": "4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6",
+      "by": "Sazid Khan",
+      "at": "2026-08-19T23:58:00+02:00",
+      "rationale": "Owner Go authorizes exactly one release-bound authorization for vs65-quality-evaluation-20260819-a and exactly four blind evaluator calls over persisted synthetic Run-B pairs, followed by immediate trigger cleanup. No human scoring, final verdict or provider mutation is authorized."
     }
   ],
   "decisionIds": [],
@@ -103,7 +110,7 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 50,
+    "certification": 80,
     "release": 0,
     "validation": 0
   },
@@ -111,34 +118,37 @@
     "status": "running",
     "commitSha": null,
     "evidence": [
-      "Implementation head b7f5d158ad79d472a4978b7cb9be18469bc20d19: Product Intake #651 PASS; Security #750 PASS; CI #882 PASS.",
-      "CI #882 passed clean PostgreSQL 18 migrations through 0022, production dependency audit, governance/preflight, worker/API/web typecheck, runtime tests/builds and dashboard build.",
-      "Evaluator regression coverage proves candidate identity is absent from model context, zero tools/capabilities, fixed candidate-neutral rubric, bounded Truth/quality evidence, Claim-lineage prevalidation and fail-closed malformed output/provenance handling.",
-      "Groq GPT-OSS strict structured output now enforces the marketing-pair-quality-evaluation@1 response shape without changing benchmark thresholds or advancement policy."
+      "VS-65@1.0 certification candidate f5cd3b0fd73906c7fbb5c966beecc2ab1a5c2e27: Product Intake #652 PASS; Security #751 PASS; CI #883 PASS; zero review threads.",
+      "PR #117 merged as 6f8d5c675b34b0c3c18c3fbcd9326f4875a3c501 with no evaluator execution.",
+      "VS-65@1.1 implementation head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6: Product Intake #654 PASS; Security #753 PASS; CI #886 PASS.",
+      "CI #886 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime typecheck/tests/build, one-shot PostgreSQL integration coverage, API/quality-worker bundling and dashboard build.",
+      "Execution remains dormant until the exact release-bound authorization is staged; Run-B source evidence is read-only and no evaluator model work occurred during implementation/certification."
     ]
   },
   "release": {
-    "status": "not-authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
-    "status": "not-applicable",
+    "status": "ready",
     "rollbackId": null
   },
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Kairo can produce independently validated Truth and five-dimension quality evidence for each synthetic Marketing Lab pair without exposing candidate identity or granting tools/production authority.",
+    "expectedOutcome": "Exactly four blind quality evaluations are durably persisted for the four completed Run-B pairs, then all quality execution/authorization triggers return to dormant state.",
     "metrics": [
+      "quality evaluator model calls before authorization",
+      "duplicate quality authorization consumption",
+      "quality pair count",
+      "source Run-B fingerprint mismatches",
       "malformed evaluator outputs rejected",
-      "candidate identity fields exposed to evaluator",
-      "unsupported-detail Truth failures",
-      "quality-score schema violations"
+      "durable completed/failed quality run status"
     ]
   },
   "links": {
     "specification": "docs/slices/VS-65.md",
-    "implementationPr": "#117",
+    "implementationPr": "#118",
     "evidence": ["GitHub issue #116", "GitHub issue #58"]
   },
   "maxAttempts": 3
