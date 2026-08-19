@@ -20,6 +20,10 @@ const defaultProcessing: InstagramProcessingPolicy = {
   sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 };
 
+const INSTAGRAM_RATE_LIMIT_RETRY_SECONDS = 60;
+const INSTAGRAM_TRANSIENT_RETRY_SECONDS = 30;
+const INSTAGRAM_RATE_LIMIT_CODES = new Set([4, 17, 613]);
+
 export class LinkedInOrganizationAdapter implements PublishingAdapter {
   readonly channel = "linkedin" as const;
 
@@ -126,7 +130,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
     try {
       const item = media(job)[0];
       const create = await this.post(base, token, job.accountRef, "media", { image_url: item?.url, caption: job.content });
-      if (!create.ok) return failure(create);
+      if (!create.ok) return instagramFailure(create);
       container = (await create.json() as { id?: string }).id;
       if (!container) return { status: "unknown" };
       return this.publishContainer(base, token, job.accountRef, container);
@@ -145,7 +149,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
         caption: job.content,
         share_to_feed: job.options?.instagram?.shareToFeed ?? false,
       });
-      if (!create.ok) return failure(create);
+      if (!create.ok) return instagramFailure(create);
       container = (await create.json() as { id?: string }).id;
       if (!container) return { status: "unknown" };
 
@@ -154,7 +158,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
           `${base}/${container}?fields=${encodeURIComponent("status_code,status")}`,
           { headers: { authorization: `Bearer ${token}` } },
         );
-        if (!status.ok) return failure(status, container);
+        if (!status.ok) return instagramFailure(status, container);
         const data = await status.json() as { status_code?: string };
         if (data.status_code === "FINISHED") return this.publishContainer(base, token, job.accountRef, container);
         if (data.status_code === "ERROR") {
@@ -188,7 +192,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
           image_url: item.url,
           is_carousel_item: true,
         });
-        if (!create.ok) return failure(create);
+        if (!create.ok) return instagramFailure(create);
         const id = (await create.json() as { id?: string }).id;
         if (!id) return { status: "unknown" };
         children.push(id);
@@ -199,7 +203,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
         children: children.join(","),
         caption: job.content,
       });
-      if (!createParent.ok) return failure(createParent);
+      if (!createParent.ok) return instagramFailure(createParent);
       parent = (await createParent.json() as { id?: string }).id;
       if (!parent) return { status: "unknown" };
       return this.publishContainer(base, token, job.accountRef, parent);
@@ -223,7 +227,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
     container: string,
   ): Promise<ProviderPublishResult> {
     const publish = await this.post(base, token, accountRef, "media_publish", { creation_id: container });
-    if (!publish.ok) return failure(publish, container);
+    if (!publish.ok) return instagramFailure(publish, container);
     const id = (await publish.json() as { id?: string }).id;
     return id
       ? { status: "published", externalPostId: id, providerCorrelationId: container }
@@ -247,6 +251,48 @@ function failure(response: Response, correlation?: string): ProviderPublishResul
     ...(Number.isFinite(retry) && retry >= 0 ? { retryAfterSeconds: retry } : {}),
     ...(correlation ? { providerCorrelationId: correlation } : {}),
   };
+}
+
+async function instagramFailure(response: Response, correlation?: string): Promise<ProviderPublishResult> {
+  const providerError = await instagramProviderError(response);
+  const rateLimited = response.status === 429 || (providerError?.code !== undefined && INSTAGRAM_RATE_LIMIT_CODES.has(providerError.code));
+  const transient = rateLimited || response.status >= 500 || providerError?.is_transient === true;
+  const retryAfter = parseRetryAfter(response.headers.get("retry-after"));
+  const fallback = rateLimited
+    ? INSTAGRAM_RATE_LIMIT_RETRY_SECONDS
+    : transient
+      ? INSTAGRAM_TRANSIENT_RETRY_SECONDS
+      : undefined;
+
+  return {
+    status: "failed",
+    failureCode: `provider-http-${response.status}`,
+    retryable: transient,
+    ...(retryAfter !== undefined ? { retryAfterSeconds: retryAfter } : fallback !== undefined ? { retryAfterSeconds: fallback } : {}),
+    ...(correlation ? { providerCorrelationId: correlation } : {}),
+  };
+}
+
+async function instagramProviderError(response: Response): Promise<{ code?: number; is_transient?: boolean } | null> {
+  try {
+    const body = await response.clone().json() as { error?: { code?: unknown; is_transient?: unknown } };
+    if (!body?.error || typeof body.error !== "object") return null;
+    return {
+      ...(typeof body.error.code === "number" && Number.isFinite(body.error.code) ? { code: body.error.code } : {}),
+      ...(typeof body.error.is_transient === "boolean" ? { is_transient: body.error.is_transient } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function parseRetryAfter(value: string | null): number | undefined {
+  if (!value?.trim()) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds);
+  const date = Date.parse(value);
+  if (Number.isNaN(date)) return undefined;
+  return Math.max(0, Math.ceil((date - Date.now()) / 1000));
 }
 
 function requiredVersion(value: string) {
