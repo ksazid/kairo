@@ -3,7 +3,7 @@
   "sliceId": "VS-66",
   "title": "Closed-World Claim Generation Contract",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -76,12 +76,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-66@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Owner said Go to the explicitly presented VS-66 certification + merge gate. Certification is refreshing on this governance-only frozen candidate before exact-head merge."
+      "commitSha": "f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T01:09:00+02:00",
+      "rationale": "Owner said Go to the explicitly presented VS-66 certification + merge gate. Exact frozen candidate f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd passed Product Intake #658, Security #757 and CI #891 with zero review threads."
     },
     {
       "type": "release",
@@ -90,7 +90,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-66 merge does not authorize a production release or Run C execution."
+      "rationale": "VS-66 certification/merge does not authorize a production release or Run C execution."
     },
     {
       "type": "production-enable",
@@ -108,19 +108,19 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 80,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd",
     "evidence": [
       "Run B quality evaluation vs65-quality-evaluation-20260819-a persisted 4/4 pairs and found motorcycle-carousel-03 Truth failure for both lanes.",
       "VS-66 implementation head 205f69ea47044fcbce9fdeadb9e5923c3b97d8ae: Product Intake #657 PASS; Security #756 PASS; CI #890 PASS.",
-      "CI #890 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
-      "The PR diff contains only VS-66 worker tests/contract code, delivery governance and docs; benchmark fixtures and Corey pin remain unchanged.",
-      "No production deployment, authorization or Run C model execution occurred during implementation."
+      "VS-66 frozen certification candidate f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd: Product Intake #658 PASS; Security #757 PASS; CI #891 PASS; zero review threads.",
+      "CI #891 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
+      "Benchmark fixtures and Corey source pin remained unchanged; no production deployment, authorization or Run C model execution occurred."
     ]
   },
   "release": {
