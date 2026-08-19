@@ -61,7 +61,7 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
           { role: "user", content: request.input },
         ],
         max_tokens: request.policy.maxOutputTokens,
-        response_format: responseFormatForOutputSchema(this.provider, this.model, request.outputSchema),
+        response_format: responseFormatForOutputSchema(this.provider, this.model, request.outputSchema, request.input),
       }),
     });
     if (!response.ok) throw new ModelGatewayError(`Model provider returned ${response.status}`);
