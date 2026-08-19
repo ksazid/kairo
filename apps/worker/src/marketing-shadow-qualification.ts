@@ -1,13 +1,18 @@
 import { prepareAgentInvocation, type AgentInvocationMetadata, type AgentRuntimePort } from "@kairo/agent-contracts";
 import { validateCarouselPlan, type CarouselPlan } from "@kairo/domain/creative-formats";
 import type { MarketingBenchmarkObservation, MarketingQualityScores } from "@kairo/domain/marketing-benchmark";
-import { marketingShadowInputFingerprint, type MarketingShadowBenchmarkCase } from "./marketing-shadow";
+import {
+  MARKETING_CLOSED_WORLD_TRUTH_INSTRUCTION,
+  marketingShadowInputFingerprint,
+  type MarketingShadowBenchmarkCase,
+} from "./marketing-shadow";
 
 export const KAIRO_NATIVE_CAROUSEL_BASELINE = Object.freeze({ id: "kairo-native-carousel", version: "1" });
 
 export const MARKETING_NATIVE_BASELINE_INSTRUCTION = [
   "Kairo Marketing Lab native baseline evaluation.",
   "Use only the supplied benchmark Claims and evidence context; never invent facts, experience, evidence, approvals or results.",
+  MARKETING_CLOSED_WORLD_TRUTH_INSTRUCTION,
   "Do not use external marketing-skill reference material.",
   "Do not request tools, network access, credentials, publishing, policy changes or information outside the benchmark case.",
   "Return exactly one typed Claim-linked creative plan in the requested format.",

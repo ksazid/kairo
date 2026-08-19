@@ -9,7 +9,12 @@ import {
   toMotorcycleCarouselQualificationCase,
   type MotorcycleCarouselFixture,
 } from "./marketing-shadow-qualification";
-import { marketingShadowInputFingerprint } from "./marketing-shadow";
+import {
+  MARKETING_CLOSED_WORLD_TRUTH_CONTRACT_VERSION,
+  MARKETING_CLOSED_WORLD_TRUTH_INSTRUCTION,
+  MARKETING_SHADOW_INSTRUCTION,
+  marketingShadowInputFingerprint,
+} from "./marketing-shadow";
 
 const validOutput: CarouselPlan = {
   format: "carousel",
@@ -45,11 +50,15 @@ class CapturingRuntime implements AgentRuntimePort {
   }
 }
 
-function motorcycleFixture(): MotorcycleCarouselFixture {
+function fixtureById(id: string): MotorcycleCarouselFixture {
   const fixtureSet = JSON.parse(
     readFileSync(new URL("../../../evaluation/marketing-lab/benchmark-cases.json", import.meta.url), "utf8"),
   ) as { cases: MotorcycleCarouselFixture[] };
-  return fixtureSet.cases.find((item) => item.id === "motorcycle-carousel-01")!;
+  return fixtureSet.cases.find((item) => item.id === id)!;
+}
+
+function motorcycleFixture(): MotorcycleCarouselFixture {
+  return fixtureById("motorcycle-carousel-01");
 }
 
 describe("VS-23 qualification baseline harness", () => {
@@ -75,6 +84,25 @@ describe("VS-23 qualification baseline harness", () => {
     expect(runtime.requests[0]!.budget.maxToolCalls).toBe(0);
     expect(runtime.requests[0]!.budget.maxCostUsd).toBe(0.03);
     expect(runtime.requests[0]!.budget.timeoutMs).toBe(30_000);
+  });
+
+  it("applies the exact same closed-world Truth contract to Native and Corey lanes", () => {
+    expect(MARKETING_CLOSED_WORLD_TRUTH_CONTRACT_VERSION).toBe("closed-world-claims-v1");
+    expect(MARKETING_NATIVE_BASELINE_INSTRUCTION).toContain(MARKETING_CLOSED_WORLD_TRUTH_INSTRUCTION);
+    expect(MARKETING_SHADOW_INSTRUCTION).toContain(MARKETING_CLOSED_WORLD_TRUTH_INSTRUCTION);
+    expect(MARKETING_CLOSED_WORLD_TRUTH_INSTRUCTION).toContain("technical, mechanical, performance");
+    expect(MARKETING_CLOSED_WORLD_TRUTH_INSTRUCTION).toContain("question, comparison criterion, or thing to verify");
+  });
+
+  it("keeps case 03 fixture claims unchanged while applying the new shared fingerprint contract", () => {
+    const fixture = fixtureById("motorcycle-carousel-03");
+    expect(fixture.claims).toEqual([
+      { id: "mc3-c1", text: "Daily commuting can emphasize routine usability, comfort and carrying needs." },
+      { id: "mc3-c2", text: "Recreational riding can emphasize different preferences and trade-offs from daily commuting." },
+    ]);
+    const benchmarkCase = toMotorcycleCarouselQualificationCase(fixture);
+    const fingerprint = marketingShadowInputFingerprint(benchmarkCase);
+    expect(fingerprint).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("refuses to manufacture cost evidence when the runtime did not measure cost", async () => {
