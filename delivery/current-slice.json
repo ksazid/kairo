@@ -1,59 +1,58 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-62",
-  "title": "Instagram Retry-After correctness",
+  "sliceId": "VS-63",
+  "title": "Instagram Publishing E2E Coverage Refresh",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-15"],
+  "requirements": ["FR-15", "FR-20"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-28", "VS-29"],
+  "dependencies": ["VS-29", "VS-62"],
   "blockers": [],
   "allowedPaths": [
-    "apps/worker/src/publishing-adapters.ts",
-    "apps/worker/src/publishing-rich.test.ts",
-    "docs/slices/VS-62.md",
-    "docs/plans/VS-62-*.md",
+    "apps/api/src/publishing-worker-instagram-e2e.integration.test.ts",
+    "docs/slices/VS-63.md",
+    "docs/plans/VS-63-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
-    "infrastructure/**",
-    "apps/web/vercel.json",
-    "apps/web/app/auth/**",
+    "apps/api/migrations/**",
+    "apps/worker/src/publishing-adapters.ts",
     "apps/api/src/meta-instagram-oauth.ts",
     "apps/api/src/instagram-connection*.ts",
-    "apps/api/src/google-drive-content-assets*.ts"
+    "infrastructure/**",
+    "apps/web/**"
   ],
   "impact": {
     "areas": ["operations-support"],
     "notes": [
-      "Closes issue #89 by supplying deterministic bounded retry pacing hints for retryable Instagram provider failures that omit Retry-After.",
-      "Valid provider Retry-After values remain authoritative over fallback timing.",
-      "The Instagram adapter remains single-attempt; the existing outer publishing planner is the only retry executor.",
-      "No OAuth/provider configuration, credential, permission, publishing policy, UI, database, deployment or production state changes are in scope."
+      "Refreshes the legacy PR #88 test-only Instagram publishing end-to-end coverage onto current main after VS-62 corrected retry pacing semantics.",
+      "Exercises approved carousel -> PostgreSQL claim -> encrypted credential vault -> Instagram adapter -> settlement -> published_posts exactly once.",
+      "Pins the transient HTTP 500 retry expectation to the VS-62 30-second hint and verifies no published record is created on the failed attempt.",
+      "No runtime production code, OAuth/provider configuration, credential, migration, deployment, publication or production state changes are in scope."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-62@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T09:15:00+02:00","rationale":"Owner instructed go next after merging VS-61. Repository authority identified issue #89 as the next unblocked FR-15 maintenance item rather than expanding into an unapproved product capability."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Retry classification and bounded pacing hints stay within existing FR-15 provider-resilience policy; no new provider scope, permissions or production setting is introduced."},
-    {"type":"implementation","status":"approved","version":"VS-62@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T09:15:00+02:00","rationale":"Go next authorizes bounded implementation, regression tests and exact-head certification gates. Merge, deployment, provider activation and release remain separately gated."},
-    {"type":"certification","status":"pending","version":"VS-62@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation head 99285e30d5d835c22f2e87a9de1b2aa7dcbb6bc8 passed Product Intake #644, Security #737 and CI #860. Final certification requires the same gates on the frozen certification head."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Separate exact-SHA release approval is required."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment or provider activation is authorized by implementation or merge approval."}
+    {"type":"scope","status":"approved","version":"VS-63@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T13:10:00+02:00","rationale":"Owner said Go after the recommended next move to refresh and finish PR #88 on current main."},
+    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"This is deterministic test coverage of already-approved FR-15 publishing behavior and introduces no new provider or production policy."},
+    {"type":"implementation","status":"approved","version":"VS-63@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T13:10:00+02:00","rationale":"Go authorizes the bounded branch refresh, test correction and exact-head certification gates. Merge and deployment remain separately gated."},
+    {"type":"certification","status":"pending","version":"VS-63@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires Product Intake, Security and full CI on one frozen exact candidate after implementation verification."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No release is authorized."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment, provider activation or publication is authorized."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":90,"release":0,"validation":0},
-  "certification": {"status":"running","commitSha":null,"evidence":["Implementation head 99285e30d5d835c22f2e87a9de1b2aa7dcbb6bc8: Product Intake #644 PASS; Security #737 PASS; CI #860 PASS.","Focused worker regression suite passed 12/12 publishing-rich tests; complete worker suite passed 155 tests.","Full CI passed clean PostgreSQL 18 migrations, zero high production dependency vulnerabilities, governance/preflight, workspace typecheck/tests, API/web production builds and dashboard build.","Implementation-level contract/security review PASS: bounded hints only, provider header precedence, no adapter-internal retry, no OAuth/provider/deployment mutation."]},
+  "progress": {"discovery":100,"decisions":100,"implementation":90,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"ready","rollbackId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {
     "status":"not-started",
     "reviewAt":null,
-    "expectedOutcome":"Retryable Instagram provider failures without Retry-After still return a deterministic bounded pacing hint without any direct adapter retry.",
-    "metrics":["retryable Instagram failures without retry hint","adapter-internal retry attempts","incorrect retry classification for auth/permission failures"]
+    "expectedOutcome":"Instagram publishing execution remains exactly-once, credential-safe and deterministic for success and transient provider failure paths.",
+    "metrics":["duplicate publish execution","plaintext credential persistence","incorrect transient retry scheduling","published record on failed provider attempt"]
   },
-  "links": {"specification":"docs/slices/VS-62.md","implementationPr":"#109","evidence":["docs/plans/VS-62-implementation.md","GitHub issue #89"]},
+  "links": {"specification":"docs/slices/VS-63.md","implementationPr":"#88","evidence":["docs/plans/VS-63-implementation.md"]},
   "maxAttempts": 3
 }
