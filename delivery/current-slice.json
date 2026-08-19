@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-67",
-  "title": "Run C Qualification Authorization",
+  "sliceId": "VS-68",
+  "title": "Run D Qualification Hardening and Authorization",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -13,114 +13,119 @@
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-64", "VS-65", "VS-66"],
+  "dependencies": ["VS-64", "VS-65", "VS-66", "VS-67"],
   "blockers": [],
   "allowedPaths": [
+    "apps/worker/src/model-output-schemas.ts",
+    "apps/worker/src/model-gateway.ts",
+    "apps/worker/src/model-gateway-structured-output.test.ts",
+    "apps/worker/src/marketing-shadow-evidence-runner.ts",
+    "apps/worker/src/marketing-shadow-evidence-runner.test.ts",
+    "apps/api/src/marketing-shadow-evidence-run.ts",
+    "apps/api/src/marketing-shadow-evidence-run.test.ts",
     "scripts/authorize-marketing-shadow-evidence.mjs",
     "scripts/start-api.mjs",
-    "docs/slices/VS-67.md",
-    "docs/plans/VS-67-*.md",
+    "docs/slices/VS-68.md",
+    "docs/plans/VS-68-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/api/**",
     "apps/web/**",
-    "apps/worker/**",
-    "packages/**",
+    "apps/api/migrations/**",
     "evaluation/marketing-lab/**",
+    "packages/**",
     "scripts/export-marketing-shadow-evidence.mjs",
     "scripts/authorize-marketing-shadow-quality-evaluation.mjs"
   ],
   "impact": {
-    "areas": ["deployment", "operations-support", "analytics"],
+    "areas": ["architecture", "analytics", "deployment", "operations-support"],
     "notes": [
-      "Rotates the exact one-shot Marketing Lab authorization allowlist from immutable Run B to fresh Run C only.",
-      "Approved Run C ID is vs23-qualification-20260820-c and must bind to the exact deployed release SHA before authorization is staged.",
-      "VS-66 closed-world Claim generation contract, benchmark fixtures, Corey source pin, provider/model, pricing, pacing and evaluator policy remain unchanged.",
-      "Run B and its quality evidence remain immutable.",
-      "This slice authorizes no human scoring, edit-distance evidence, final advancement verdict, VS-23/VS-24 activation, publishing, provider/key mutation or Hermes reactivation."
+      "Run C remains immutable terminal evidence and is never retried or overwritten.",
+      "The approved four motorcycle fixtures, Corey source pin, DirectModel provider/model, pricing, 65-second pacing, Truth policy and qualification thresholds remain unchanged.",
+      "VS-68 removes the provider-schema gap that allowed arbitrary Claim IDs through strict JSON shape validation before Kairo lineage validation.",
+      "VS-68 adds bounded non-sensitive case/lane/stage failure provenance without persisting raw exception messages or model/provider bodies.",
+      "Reserved fresh run ID is vs23-qualification-20260820-d."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-67@1.0",
+      "version": "VS-68@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:16:00+02:00",
-      "rationale": "Owner said Go to the explicitly presented authorize + execute fresh Run C gate after VS-66 certification and merge."
+      "at": "2026-08-20T01:41:00+02:00",
+      "rationale": "Owner explicitly instructed Kairo to proactively fix all errors after Run C and then execute a fresh Run D qualification attempt."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-67@1.0",
+      "version": "VS-68@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-67 changes only the exact one-shot run allowlist; benchmark Truth policy and qualification thresholds are unchanged."
+      "rationale": "No Truth, quality, cost, latency, human-evidence, advancement or publishing policy changes are permitted in VS-68."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-67@1.0",
-      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
+      "version": "VS-68@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:16:00+02:00",
-      "rationale": "Owner Go authorized the minimal exact Run-C allowlist rotation. Implementation head f13b5ea0451e03324c6d48a496b82fc68e3beaf5 passed Product Intake #660, Security #759 and CI #894 including clean PostgreSQL 18 verification, governance/preflight and runtime verification."
+      "at": "2026-08-20T01:41:00+02:00",
+      "rationale": "Owner authorized proactive deterministic fixes required to make the fresh Run D attempt robust while preserving the existing qualification policy and runtime route."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-67@1.0",
-      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
-      "by": "Sazid Khan",
-      "at": "2026-08-20T01:22:00+02:00",
-      "rationale": "Owner Go included certification of the minimal Run-C authorization patch. Exact implementation head f13b5ea0451e03324c6d48a496b82fc68e3beaf5 passed Product Intake #660, Security #759 and CI #894 with zero review threads."
+      "status": "pending",
+      "version": "VS-68@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Pending Product Intake, Security and full CI on an exact implementation SHA."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-67@1.0",
-      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
+      "status": "pending",
+      "version": "VS-68@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:16:00+02:00",
-      "rationale": "Owner Go authorizes deploying the unchanged certified Run-C allowlist implementation after the final governance-only head is green and merged."
+      "at": "2026-08-20T01:41:00+02:00",
+      "rationale": "Owner authorized deployment for the fresh Run D attempt after exact-head certification and merge; approval will be bound to the green implementation SHA before release."
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-67@1.0",
-      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
+      "status": "pending",
+      "version": "VS-68@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:16:00+02:00",
-      "rationale": "Owner Go authorizes exactly one release-bound Run C evidence authorization and four paired Native/Corey executions, followed by immediate trigger cleanup. No human scoring, final verdict or provider mutation is authorized."
+      "at": "2026-08-20T01:41:00+02:00",
+      "rationale": "Owner authorized exactly one fresh Run D paired evidence execution after exact-head certification and dormant release verification."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "implementation": 10,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
+    "status": "not-started",
+    "commitSha": null,
     "evidence": [
-      "VS-66 merged to main as 864eb66f8371c85be7887f6fd5424401707c1a18 after exact-head certification.",
-      "VS-67 implementation head f13b5ea0451e03324c6d48a496b82fc68e3beaf5: Product Intake #660 PASS; Security #759 PASS; CI #894 PASS; zero review threads.",
-      "CI #894 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
-      "Only exact Run-C startup/authorization allowlists and VS-67 governance/spec changed; the evidence runner, fixtures, Corey pin, provider/model, pricing and pacing are unchanged."
+      "Run C terminal record: failed / marketing_shadow_execution_error at release f34d8ab83d72b99ca8c5279f4806ebf8c60c2aaf.",
+      "Run C cleanup deploy dep-da33r48ae00c73a26o5g is live with all Marketing Lab execution/startup actions disabled.",
+      "Code inspection found Groq strict carousel schema constrained shape and lengths but not dynamic benchmark Claim membership or required-Claim completeness."
     ]
   },
   "release": {
-    "status": "pending",
+    "status": "not-authorized-yet",
     "releaseId": null
   },
   "rollback": {
@@ -130,20 +135,22 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Exactly one fresh Run C paired evidence run completes with four Native/Corey pairs under closed-world-claims-v1, after which all evidence authorization/execution triggers are disabled.",
+    "expectedOutcome": "Exactly one fresh Run D completes or fails with bounded case/lane/stage provenance, followed immediately by cleanup with all execution triggers disabled.",
     "metrics": [
+      "strict benchmark Claim lineage",
       "authorization consumed once",
       "pair count",
       "runtime route stability",
       "cost ratio",
       "latency ratio",
-      "terminal durable run status",
+      "terminal durable status",
+      "bounded failure provenance",
       "trigger cleanup"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-67.md",
-    "implementationPr": "#120",
+    "specification": "docs/slices/VS-68.md",
+    "implementationPr": null,
     "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
