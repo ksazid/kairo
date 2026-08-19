@@ -76,9 +76,9 @@ try {
         const body = entry.source.replace(/^\s*begin;\s*/i, "").replace(/\s*commit;\s*$/i, "");
         await client.query(body);
         await client.query("insert into kairo_schema_migrations(filename,checksum) values($1,$2)", [filename, entry.checksum]);
-        console.log(`applied ${filename}`);
       }
       await client.query("commit");
+      for (const filename of missing) console.log(`applied ${filename}`);
       console.log(`applied range ${range}`);
     }
   } catch (error) {
