@@ -17,6 +17,12 @@ if (!RUN_ID_PATTERN.test(requestedRunId)) throw new Error("Approved Marketing La
 if (process.env.KAIRO_MARKETING_SHADOW_QUALITY_EVALUATION_RUN?.trim() !== "1") {
   throw new Error("KAIRO_MARKETING_SHADOW_QUALITY_EVALUATION_RUN must be 1 before staging quality authorization");
 }
+if (process.env.KAIRO_MARKETING_SHADOW_EVIDENCE_RUN?.trim() === "1") {
+  throw new Error("Benchmark evidence execution must be off during Marketing Lab quality authorization");
+}
+if (process.env.KAIRO_DIRECT_MODEL_PROVIDER_DIAGNOSTIC?.trim() === "1") {
+  throw new Error("DirectModel provider diagnostic must be off during Marketing Lab quality authorization");
+}
 const evaluationRunId = process.env.KAIRO_MARKETING_SHADOW_QUALITY_EVALUATION_RUN_ID?.trim() ?? "";
 if (evaluationRunId !== requestedRunId) {
   throw new Error("Startup quality authorization run ID must match KAIRO_MARKETING_SHADOW_QUALITY_EVALUATION_RUN_ID");
