@@ -3,7 +3,7 @@
   "sliceId": "VS-64",
   "title": "Marketing Lab One-Shot Benchmark Authorization Fence",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-20"],
@@ -68,10 +68,10 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-64@1.0",
-      "commitSha": null,
+      "commitSha": "a7b7f1fb7b24f1b1011e57c7796c5cc869033b86",
       "by": "Sazid Khan",
       "at": "2026-08-19T16:52:00+02:00",
-      "rationale": "Go next authorizes the bounded code refresh, migration artifact, deterministic regression coverage and exact-head certification gates. Merge, deployment, migration application and benchmark execution remain separate approvals."
+      "rationale": "Go next authorized the bounded code refresh, migration artifact, deterministic regression coverage and exact-head certification gates. Implementation head passed Product Intake #648, Security #741 and CI #866. Merge, deployment, migration application and benchmark execution remain separate approvals."
     },
     {
       "type": "certification",
@@ -80,7 +80,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires Product Intake, Security and full CI on one frozen exact candidate."
+      "rationale": "Implementation head a7b7f1fb7b24f1b1011e57c7796c5cc869033b86 passed Product Intake #648, Security #741 and CI #866. Final certification requires the same gates on the frozen governance-only certification candidate."
     },
     {
       "type": "release",
@@ -105,16 +105,21 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 80,
-    "testing": 20,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "Implementation head a7b7f1fb7b24f1b1011e57c7796c5cc869033b86: Product Intake #648 PASS; Security #741 PASS; CI #866 PASS.",
+      "CI #866 passed pinned Hermes CI contracts/profile, migration 0022 on clean PostgreSQL 18, production dependency audit, governance/preflight, runtime typecheck/tests/builds and dashboard build.",
+      "Authorization regression coverage proves no authorization means no claim/model invocation, exact release binding, one outstanding authorization globally, atomic exactly-once concurrent consumption and idempotent settlement.",
+      "Implementation-level security/operations review PASS: current DirectModel qualification semantics remain unchanged, Hermes is not reactivated, and no production migration, deployment, authorization insertion, provider mutation or benchmark execution occurred."
+    ]
   },
   "release": {
     "status": "not-authorized",
