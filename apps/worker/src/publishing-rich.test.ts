@@ -24,8 +24,22 @@ function job(overrides: Partial<PublishingJob> = {}): PublishingJob {
   };
 }
 
+function imageJob(): PublishingJob {
+  return job({
+    contentType: "image",
+    mediaItems: [{ kind: "image", url: "https://cdn.example.com/image.jpg" }],
+    options: {},
+  });
+}
+
 function json(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json" } });
+}
+
+function providerError(status: number, error: Record<string, unknown> = {}, retryAfter?: string) {
+  const headers = new Headers({ "content-type": "application/json" });
+  if (retryAfter !== undefined) headers.set("retry-after", retryAfter);
+  return new Response(JSON.stringify({ error }), { status, headers });
 }
 
 describe("VS-15 Instagram Reel publishing", () => {
@@ -137,5 +151,72 @@ describe("VS-15 Instagram image carousel publishing", () => {
   it("rejects private media before an outbound request", () => {
     const adapter = new InstagramProfessionalAdapter(secrets, "v24.0");
     expect(adapter.supports(job({ mediaItems: [{ kind: "video", url: "https://127.0.0.1/private.mp4" }] }))).toBe(false);
+  });
+});
+
+describe("VS-62 Instagram retry pacing hints", () => {
+  it("derives a bounded rate-limit hint for 429 without Retry-After and does not retry internally", async () => {
+    let calls = 0;
+    const adapter = new InstagramProfessionalAdapter(secrets, "v24.0", async () => {
+      calls += 1;
+      return providerError(429, { message: "Too many requests" });
+    });
+
+    expect(await adapter.publish(imageJob())).toEqual({
+      status: "failed",
+      failureCode: "provider-http-429",
+      retryable: true,
+      retryAfterSeconds: 60,
+    });
+    expect(calls).toBe(1);
+  });
+
+  it("derives a bounded transient hint for 5xx without Retry-After", async () => {
+    const adapter = new InstagramProfessionalAdapter(secrets, "v24.0", async () => providerError(503, { message: "Unavailable" }));
+    expect(await adapter.publish(imageJob())).toEqual({
+      status: "failed",
+      failureCode: "provider-http-503",
+      retryable: true,
+      retryAfterSeconds: 30,
+    });
+  });
+
+  it("recognizes Meta rate-limit codes even when the HTTP status is 4xx", async () => {
+    const adapter = new InstagramProfessionalAdapter(secrets, "v24.0", async () => providerError(400, { code: 4, message: "Application request limit reached" }));
+    expect(await adapter.publish(imageJob())).toEqual({
+      status: "failed",
+      failureCode: "provider-http-400",
+      retryable: true,
+      retryAfterSeconds: 60,
+    });
+  });
+
+  it("recognizes an explicit Meta transient envelope", async () => {
+    const adapter = new InstagramProfessionalAdapter(secrets, "v24.0", async () => providerError(400, { code: 2, is_transient: true }));
+    expect(await adapter.publish(imageJob())).toEqual({
+      status: "failed",
+      failureCode: "provider-http-400",
+      retryable: true,
+      retryAfterSeconds: 30,
+    });
+  });
+
+  it("keeps a valid provider Retry-After value authoritative over fallback timing", async () => {
+    const adapter = new InstagramProfessionalAdapter(secrets, "v24.0", async () => providerError(429, { code: 4 }, "7"));
+    expect(await adapter.publish(imageJob())).toEqual({
+      status: "failed",
+      failureCode: "provider-http-429",
+      retryable: true,
+      retryAfterSeconds: 7,
+    });
+  });
+
+  it("does not invent retry pacing for a non-transient authentication failure", async () => {
+    const adapter = new InstagramProfessionalAdapter(secrets, "v24.0", async () => providerError(400, { code: 190, message: "Invalid OAuth access token" }));
+    expect(await adapter.publish(imageJob())).toEqual({
+      status: "failed",
+      failureCode: "provider-http-400",
+      retryable: false,
+    });
   });
 });
