@@ -22,6 +22,7 @@ const CASE_IDS = new Set([
 
 const COREY_SOURCE_URL =
   "https://raw.githubusercontent.com/coreyhaines31/marketingskills/7868cb9251fad80a73d26e488a5ad5f6c4a9f335/skills/social/SKILL.md";
+const SAFE_CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_.:-]{0,63}$/;
 
 export const MARKETING_EVIDENCE_INTER_LANE_DELAY_MS = 65_000;
 export const MARKETING_EVIDENCE_HERMES_READY_DEADLINE_MS = 180_000;
@@ -75,6 +76,15 @@ export interface MarketingShadowEvidenceRun {
   pairs: MarketingShadowPairEvidence[];
 }
 
+class MarketingEvidenceStageError extends Error {
+  readonly code: string;
+  constructor(code: string) {
+    super("Marketing qualification evidence stage failed");
+    this.name = "MarketingEvidenceStageError";
+    this.code = code;
+  }
+}
+
 export async function runMarketingShadowPairedEvidence(
   runtime: AgentRuntimePort,
   fetchImpl: typeof fetch = fetch,
@@ -82,13 +92,18 @@ export async function runMarketingShadowPairedEvidence(
 ): Promise<MarketingShadowEvidenceRun> {
   const manifest = challengerData.manifest as unknown as MarketingSkillManifest;
   const source = manifest.source;
-  if (source.kind !== "github") throw new Error("Corey shadow challenger must use pinned GitHub source");
+  if (source.kind !== "github") throw evidenceFailure("run", "corey", "manifest", "invalid_source");
 
-  const response = await fetchImpl(COREY_SOURCE_URL, {
-    method: "GET",
-    headers: { accept: "text/plain" },
-  });
-  if (!response.ok) throw new Error(`Pinned Corey skill snapshot fetch failed with ${response.status}`);
+  let response: Response;
+  try {
+    response = await fetchImpl(COREY_SOURCE_URL, {
+      method: "GET",
+      headers: { accept: "text/plain" },
+    });
+  } catch (error) {
+    throw evidenceFailure("run", "corey", "snapshot", error);
+  }
+  if (!response.ok) throw evidenceFailure("run", "corey", "snapshot", `http_${response.status}`);
 
   const candidateSnapshot: MarketingSkillSnapshot = {
     repository: source.repository,
@@ -97,7 +112,12 @@ export async function runMarketingShadowPairedEvidence(
     blobSha: source.contentHash,
     content: await response.text(),
   };
-  const snapshot = verifyPinnedSkillSnapshot(manifest, candidateSnapshot);
+  let snapshot: MarketingSkillSnapshot;
+  try {
+    snapshot = verifyPinnedSkillSnapshot(manifest, candidateSnapshot);
+  } catch (error) {
+    throw evidenceFailure("run", "corey", "snapshot", error);
+  }
 
   const registry = createMarketingSkillRegistry([manifest]);
   const shadow = new MarketingShadowExecutionService(runtime, registry, {
@@ -111,33 +131,55 @@ export async function runMarketingShadowPairedEvidence(
     .filter((candidate) => CASE_IDS.has(candidate.id))
     .map((candidate) => candidate as MotorcycleCarouselFixture)
     .sort((a, b) => a.id.localeCompare(b.id));
-  if (fixtures.length !== 4) throw new Error("Exactly four approved motorcycle carousel fixtures are required");
+  if (fixtures.length !== 4) throw evidenceFailure("run", "pair", "fixtures", "invalid_count");
 
   const pacedInvoke = createMarketingEvidenceLanePacer(pause);
   const pairs: MarketingShadowPairEvidence[] = [];
   let expectedRoute: MarketingShadowRuntimeRoute | undefined;
   for (const fixture of fixtures) {
     const benchmarkCase = toMotorcycleCarouselQualificationCase(fixture);
-    const native = await pacedInvoke(() => executeKairoNativeCarouselBaseline(runtime, benchmarkCase));
-    const corey = await pacedInvoke(() => shadow.execute({
-      challenger: { id: manifest.id, version: manifest.version },
-      snapshot,
-      benchmarkCase,
-    }));
+    const native = await invokeEvidenceLane(fixture.id, "native", "execute", () =>
+      pacedInvoke(() => executeKairoNativeCarouselBaseline(runtime, benchmarkCase))
+    );
+    const corey = await invokeEvidenceLane(fixture.id, "corey", "execute", () =>
+      pacedInvoke(() => shadow.execute({
+        challenger: { id: manifest.id, version: manifest.version },
+        snapshot,
+        benchmarkCase,
+      }))
+    );
     if (native.inputFingerprint !== corey.inputFingerprint) {
-      throw new Error(`Paired input fingerprint mismatch for ${fixture.id}`);
+      throw evidenceFailure(fixture.id, "pair", "fingerprint", "mismatch");
     }
-    requireMeasuredMetadata(native.metadata, `${fixture.id}:native`);
-    requireMeasuredMetadata(corey.metadata, `${fixture.id}:corey`);
+    try {
+      requireMeasuredMetadata(native.metadata, `${fixture.id}:native`);
+    } catch (error) {
+      throw evidenceFailure(fixture.id, "native", "metadata", error);
+    }
+    try {
+      requireMeasuredMetadata(corey.metadata, `${fixture.id}:corey`);
+    } catch (error) {
+      throw evidenceFailure(fixture.id, "corey", "metadata", error);
+    }
 
-    const nativeRoute = marketingEvidenceRuntimeRoute(native.metadata, `${fixture.id}:native`);
-    const coreyRoute = marketingEvidenceRuntimeRoute(corey.metadata, `${fixture.id}:corey`);
+    let nativeRoute: MarketingShadowRuntimeRoute;
+    let coreyRoute: MarketingShadowRuntimeRoute;
+    try {
+      nativeRoute = marketingEvidenceRuntimeRoute(native.metadata, `${fixture.id}:native`);
+    } catch (error) {
+      throw evidenceFailure(fixture.id, "native", "route", error);
+    }
+    try {
+      coreyRoute = marketingEvidenceRuntimeRoute(corey.metadata, `${fixture.id}:corey`);
+    } catch (error) {
+      throw evidenceFailure(fixture.id, "corey", "route", error);
+    }
     if (runtimeRouteKey(nativeRoute) !== runtimeRouteKey(coreyRoute)) {
-      throw new Error(`Paired DirectModel provider/model route mismatch for ${fixture.id}`);
+      throw evidenceFailure(fixture.id, "pair", "route", "lane_mismatch");
     }
     if (!expectedRoute) expectedRoute = nativeRoute;
     else if (runtimeRouteKey(expectedRoute) !== runtimeRouteKey(nativeRoute)) {
-      throw new Error(`DirectModel provider/model route changed during the qualification run at ${fixture.id}`);
+      throw evidenceFailure(fixture.id, "pair", "route", "run_changed");
     }
 
     pairs.push({
@@ -148,7 +190,7 @@ export async function runMarketingShadowPairedEvidence(
     });
   }
 
-  if (!expectedRoute) throw new Error("Qualification evidence requires an explicit DirectModel runtime route");
+  if (!expectedRoute) throw evidenceFailure("run", "pair", "route", "missing");
   return {
     schemaVersion: 1,
     evidenceKind: "vs23-shadow-qualification-paired-execution",
@@ -222,6 +264,58 @@ export function createMarketingEvidenceLanePacer(
     invocationCount += 1;
     return invoke();
   };
+}
+
+export function marketingEvidenceFailureCode(
+  caseId: string,
+  lane: "native" | "corey" | "pair",
+  stage: "execute" | "fingerprint" | "metadata" | "route" | "fixtures" | "manifest" | "snapshot",
+  error: unknown,
+): string {
+  const caseCode = qualificationCaseCode(caseId);
+  const sourceCode = stableFailureCode(error);
+  const code = `${caseCode}.${lane}.${stage}.${sourceCode}`;
+  if (!SAFE_CODE_PATTERN.test(code)) return `${caseCode}.${lane}.${stage}.unknown`;
+  return code;
+}
+
+async function invokeEvidenceLane<T>(
+  caseId: string,
+  lane: "native" | "corey",
+  stage: "execute",
+  invoke: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await invoke();
+  } catch (error) {
+    throw evidenceFailure(caseId, lane, stage, error);
+  }
+}
+
+function evidenceFailure(
+  caseId: string,
+  lane: "native" | "corey" | "pair",
+  stage: "execute" | "fingerprint" | "metadata" | "route" | "fixtures" | "manifest" | "snapshot",
+  error: unknown,
+): MarketingEvidenceStageError {
+  return new MarketingEvidenceStageError(marketingEvidenceFailureCode(caseId, lane, stage, error));
+}
+
+function qualificationCaseCode(caseId: string): string {
+  if (caseId === "run") return "run";
+  const match = /^motorcycle-carousel-0([1-4])$/.exec(caseId);
+  return match ? `mc0${match[1]}` : "run";
+}
+
+function stableFailureCode(error: unknown): string {
+  let value = "unknown";
+  if (typeof error === "string") value = error;
+  else if (error && typeof error === "object" && "code" in error) {
+    value = String((error as { code?: unknown }).code ?? "unknown");
+  } else if (error instanceof Error) value = error.name;
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_.:-]+/g, "_").replace(/^_+|_+$/g, "");
+  if (!normalized || !/^[a-z]/.test(normalized)) return "unknown";
+  return normalized.slice(0, 32);
 }
 
 function defaultMarketingEvidencePause(ms: number): Promise<void> {
