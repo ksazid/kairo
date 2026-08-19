@@ -2,6 +2,7 @@ import {
   prepareAgentInvocation,
   type AgentInvocationMetadata,
   type AgentRuntimePort,
+  type JsonValue,
 } from "@kairo/agent-contracts";
 import {
   validateCarouselPlan,
@@ -95,8 +96,8 @@ export async function evaluateMarketingShadowPair(
           claims: input.benchmarkCase.claims.map((claim) => ({ id: claim.id, statement: claim.statement })),
           requiredClaimIds: [...input.benchmarkCase.requiredClaimIds],
         },
-        candidateA,
-        candidateB,
+        candidateA: candidateContext(candidateA),
+        candidateB: candidateContext(candidateB),
       },
     },
     outputSchema: { name: "marketing-pair-quality-evaluation", version: "1" },
@@ -180,6 +181,39 @@ function validateCandidate(
     throw new Error("Evaluator candidate omitted a required benchmark Claim");
   }
   return value;
+}
+
+function candidateContext(value: MarketingCreativePlan): JsonValue {
+  if (value.format === "carousel") {
+    return {
+      format: value.format,
+      coverHook: value.coverHook,
+      slides: value.slides.map((slide) => ({
+        headline: slide.headline,
+        body: slide.body,
+        supportingClaimIds: [...slide.supportingClaimIds],
+      })),
+      caption: value.caption,
+      cta: value.cta,
+      supportingClaimIds: [...value.supportingClaimIds],
+    };
+  }
+  return {
+    format: value.format,
+    hook: value.hook,
+    targetDurationSeconds: value.targetDurationSeconds,
+    scenes: value.scenes.map((scene) => ({
+      startSecond: scene.startSecond,
+      endSecond: scene.endSecond,
+      visual: scene.visual,
+      onScreenText: scene.onScreenText,
+      voiceover: scene.voiceover,
+      supportingClaimIds: [...scene.supportingClaimIds],
+    })),
+    caption: value.caption,
+    cta: value.cta,
+    supportingClaimIds: [...value.supportingClaimIds],
+  };
 }
 
 function evaluatorProvenance(metadata: AgentInvocationMetadata): MarketingShadowQualityEvaluatorProvenance {
