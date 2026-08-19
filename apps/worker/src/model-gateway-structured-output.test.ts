@@ -9,7 +9,7 @@ const pricing = {
 };
 
 describe("strict structured model output", () => {
-  it("sends Groq GPT-OSS carousel requests with strict JSON Schema", async () => {
+  it("sends Groq GPT-OSS carousel requests with the Kairo domain bounds encoded in strict JSON Schema", async () => {
     const fetchImpl = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body ?? "{}")) as {
         response_format?: {
@@ -22,6 +22,35 @@ describe("strict structured model output", () => {
       expect(body.response_format?.json_schema?.strict).toBe(true);
       expect(body.response_format?.json_schema?.schema).toMatchObject({
         type: "object",
+        properties: {
+          coverHook: { type: "string", minLength: 1, maxLength: 300 },
+          slides: {
+            type: "array",
+            minItems: 3,
+            maxItems: 20,
+            items: {
+              type: "object",
+              properties: {
+                headline: { type: "string", minLength: 1, maxLength: 240 },
+                body: { type: "string", minLength: 1, maxLength: 2_000 },
+                supportingClaimIds: {
+                  type: "array",
+                  minItems: 1,
+                  items: { type: "string", minLength: 1, maxLength: 200 },
+                },
+              },
+              required: ["headline", "body", "supportingClaimIds"],
+              additionalProperties: false,
+            },
+          },
+          caption: { type: "string", minLength: 1, maxLength: 5_000 },
+          cta: { type: "string", minLength: 1, maxLength: 500 },
+          supportingClaimIds: {
+            type: "array",
+            minItems: 1,
+            items: { type: "string", minLength: 1, maxLength: 200 },
+          },
+        },
         required: ["format", "coverHook", "slides", "caption", "cta", "supportingClaimIds"],
         additionalProperties: false,
       });
