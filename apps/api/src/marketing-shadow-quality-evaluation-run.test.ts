@@ -7,6 +7,12 @@ import type {
 } from "@kairo/agent-contracts";
 import type { MarketingShadowEvidenceRun } from "@kairo/worker/marketing-shadow-evidence-runner";
 import {
+  toMotorcycleCarouselQualificationCase,
+  type MotorcycleCarouselFixture,
+} from "@kairo/worker/marketing-shadow-qualification";
+import { marketingShadowInputFingerprint } from "@kairo/worker/marketing-shadow";
+import benchmarkData from "../../../evaluation/marketing-lab/benchmark-cases.json";
+import {
   executeMarketingShadowQualityEvaluationAttempt,
   MARKETING_SHADOW_QUALITY_EVALUATION_RUN_ID,
   MARKETING_SHADOW_QUALITY_INTER_PAIR_DELAY_MS,
@@ -20,6 +26,12 @@ import {
 
 const releaseSha = "a".repeat(40);
 const request = { runId: MARKETING_SHADOW_QUALITY_EVALUATION_RUN_ID, releaseSha };
+const qualityCaseIds = new Set([
+  "motorcycle-carousel-01",
+  "motorcycle-carousel-02",
+  "motorcycle-carousel-03",
+  "motorcycle-carousel-04",
+]);
 
 const evaluationEvidence: MarketingShadowQualityEvaluationEvidence = {
   schemaVersion: 1,
@@ -152,8 +164,8 @@ describe("VS-65 quality evaluation execution", () => {
     expect(runtime.requests).toHaveLength(4);
     expect(pause).toHaveBeenCalledTimes(3);
     expect(pause).toHaveBeenNthCalledWith(1, MARKETING_SHADOW_QUALITY_INTER_PAIR_DELAY_MS);
-    for (const request of runtime.requests) {
-      const serialized = JSON.stringify(request.task.context);
+    for (const invocation of runtime.requests) {
+      const serialized = JSON.stringify(invocation.task.context);
       expect(serialized).toContain("candidateA");
       expect(serialized).toContain("candidateB");
       expect(serialized).not.toContain("kairo-native-carousel");
@@ -194,12 +206,10 @@ class FixedEvaluatorRuntime implements AgentRuntimePort {
 }
 
 function sourceEvidence(): MarketingShadowEvidenceRun {
-  const configs = [
-    ["motorcycle-carousel-01", ["mc-c1", "mc-c2"]],
-    ["motorcycle-carousel-02", ["mc2-c1", "mc2-c2"]],
-    ["motorcycle-carousel-03", ["mc3-c1", "mc3-c2"]],
-    ["motorcycle-carousel-04", ["mc4-c1", "mc4-c2"]],
-  ] as const;
+  const fixtures = benchmarkData.cases
+    .filter((candidate) => qualityCaseIds.has(candidate.id))
+    .map((candidate) => candidate as MotorcycleCarouselFixture)
+    .sort((a, b) => a.id.localeCompare(b.id));
   return {
     schemaVersion: 1,
     evidenceKind: "vs23-shadow-qualification-paired-execution",
@@ -216,16 +226,20 @@ function sourceEvidence(): MarketingShadowEvidenceRun {
       model: "openai/gpt-oss-120b",
       pricingVersion: "test-pricing",
     },
-    pairs: configs.map(([caseId, ids]) => ({
-      caseId,
-      inputFingerprint: fingerprintFor(caseId),
-      native: { output: carousel(ids), metadata: { runtime: "direct-model", provider: "groq", model: "openai/gpt-oss-120b", costUsd: 0.001, pricingVersion: "test-pricing", latencyMs: 100 } },
-      corey: { output: carousel(ids), metadata: { runtime: "direct-model", provider: "groq", model: "openai/gpt-oss-120b", costUsd: 0.001, pricingVersion: "test-pricing", latencyMs: 100 } },
-    })),
+    pairs: fixtures.map((fixture) => {
+      const benchmarkCase = toMotorcycleCarouselQualificationCase(fixture);
+      const ids = fixture.claims.map((claim) => claim.id) as [string, string];
+      return {
+        caseId: fixture.id,
+        inputFingerprint: marketingShadowInputFingerprint(benchmarkCase),
+        native: { output: carousel(ids), metadata: { runtime: "direct-model", provider: "groq", model: "openai/gpt-oss-120b", costUsd: 0.001, pricingVersion: "test-pricing", latencyMs: 100 } },
+        corey: { output: carousel(ids), metadata: { runtime: "direct-model", provider: "groq", model: "openai/gpt-oss-120b", costUsd: 0.001, pricingVersion: "test-pricing", latencyMs: 100 } },
+      };
+    }),
   };
 }
 
-function carousel(ids: readonly [string, string]) {
+function carousel(ids: [string, string]) {
   return {
     format: "carousel" as const,
     coverHook: "Choose based on your priorities",
@@ -238,14 +252,4 @@ function carousel(ids: readonly [string, string]) {
     cta: "Save this comparison.",
     supportingClaimIds: [...ids],
   };
-}
-
-function fingerprintFor(caseId: string): string {
-  const byCase: Record<string, string> = {
-    "motorcycle-carousel-01": "placeholder-01",
-    "motorcycle-carousel-02": "placeholder-02",
-    "motorcycle-carousel-03": "placeholder-03",
-    "motorcycle-carousel-04": "placeholder-04",
-  };
-  return byCase[caseId]!;
 }
