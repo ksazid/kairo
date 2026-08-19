@@ -53,6 +53,45 @@ const CAROUSEL_PLAN_SCHEMA = Object.freeze({
   additionalProperties: false,
 });
 
+const qualityScoresSchema = Object.freeze({
+  type: "object",
+  properties: {
+    brandFit: { type: "number", minimum: 0, maximum: 100 },
+    hookQuality: { type: "number", minimum: 0, maximum: 100 },
+    originality: { type: "number", minimum: 0, maximum: 100 },
+    formatQuality: { type: "number", minimum: 0, maximum: 100 },
+    criticScore: { type: "number", minimum: 0, maximum: 100 },
+  },
+  required: ["brandFit", "hookQuality", "originality", "formatQuality", "criticScore"],
+  additionalProperties: false,
+});
+
+const candidateQualityEvaluationSchema = Object.freeze({
+  type: "object",
+  properties: {
+    truthPassed: { type: "boolean" },
+    scores: qualityScoresSchema,
+    reasons: {
+      type: "array",
+      minItems: 1,
+      maxItems: 6,
+      items: { type: "string", minLength: 1, maxLength: 500 },
+    },
+  },
+  required: ["truthPassed", "scores", "reasons"],
+  additionalProperties: false,
+});
+
+const MARKETING_PAIR_QUALITY_EVALUATION_SCHEMA = Object.freeze({
+  type: "object",
+  properties: {
+    candidateA: candidateQualityEvaluationSchema,
+    candidateB: candidateQualityEvaluationSchema,
+  },
+  required: ["candidateA", "candidateB"],
+  additionalProperties: false,
+});
+
 const GROQ_STRICT_MODELS = new Set(["openai/gpt-oss-20b", "openai/gpt-oss-120b"]);
 
 export function responseFormatForOutputSchema(
@@ -60,20 +99,27 @@ export function responseFormatForOutputSchema(
   model: string,
   outputSchema: OutputSchemaRef,
 ): OpenAICompatibleResponseFormat {
-  if (
-    provider === "groq"
-    && GROQ_STRICT_MODELS.has(model)
-    && outputSchema.name === "marketing-carousel-plan"
-    && outputSchema.version === "1"
-  ) {
-    return {
-      type: "json_schema",
-      json_schema: {
-        name: "marketing_carousel_plan_1",
-        strict: true,
-        schema: CAROUSEL_PLAN_SCHEMA,
-      },
-    };
+  if (provider === "groq" && GROQ_STRICT_MODELS.has(model)) {
+    if (outputSchema.name === "marketing-carousel-plan" && outputSchema.version === "1") {
+      return {
+        type: "json_schema",
+        json_schema: {
+          name: "marketing_carousel_plan_1",
+          strict: true,
+          schema: CAROUSEL_PLAN_SCHEMA,
+        },
+      };
+    }
+    if (outputSchema.name === "marketing-pair-quality-evaluation" && outputSchema.version === "1") {
+      return {
+        type: "json_schema",
+        json_schema: {
+          name: "marketing_pair_quality_evaluation_1",
+          strict: true,
+          schema: MARKETING_PAIR_QUALITY_EVALUATION_SCHEMA,
+        },
+      };
+    }
   }
   return { type: "json_object" };
 }
