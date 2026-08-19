@@ -97,8 +97,8 @@ describe("VS-23 qualification baseline harness", () => {
   it("keeps case 03 fixture claims unchanged while applying the new shared fingerprint contract", () => {
     const fixture = fixtureById("motorcycle-carousel-03");
     expect(fixture.claims).toEqual([
-      { id: "mc-c5", text: "Urban commuting and weekend riding can prioritize different motorcycle characteristics." },
-      { id: "mc-c6", text: "A useful comparison separates daily usability from performance preferences." },
+      { id: "mc3-c1", text: "Daily commuting can emphasize routine usability, comfort and carrying needs." },
+      { id: "mc3-c2", text: "Recreational riding can emphasize different preferences and trade-offs from daily commuting." },
     ]);
     const benchmarkCase = toMotorcycleCarouselQualificationCase(fixture);
     const fingerprint = marketingShadowInputFingerprint(benchmarkCase);
