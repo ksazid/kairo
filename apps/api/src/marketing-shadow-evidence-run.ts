@@ -12,13 +12,18 @@ export interface MarketingShadowEvidenceRequest {
 }
 
 export type MarketingShadowEvidenceRunStatus = "started" | "completed" | "failed";
+export type MarketingShadowEvidenceAttemptStatus =
+  | "authorized"
+  | MarketingShadowEvidenceRunStatus
+  | "not-authorized";
 
 export interface MarketingShadowEvidenceClaim {
   claimed: boolean;
-  status: MarketingShadowEvidenceRunStatus;
+  status: MarketingShadowEvidenceAttemptStatus;
 }
 
 export interface MarketingShadowEvidenceRunStore {
+  status(runId: string, releaseSha: string): Promise<MarketingShadowEvidenceAttemptStatus>;
   claim(runId: string, releaseSha: string): Promise<MarketingShadowEvidenceClaim>;
   complete(runId: string, evidence: MarketingShadowEvidenceRun): Promise<void>;
   fail(runId: string, failureKind: string): Promise<void>;
@@ -27,26 +32,89 @@ export interface MarketingShadowEvidenceRunStore {
 export class PgMarketingShadowEvidenceRunStore implements MarketingShadowEvidenceRunStore {
   constructor(private readonly pool: Pool) {}
 
-  async claim(runId: string, releaseSha: string): Promise<MarketingShadowEvidenceClaim> {
-    const inserted = await this.pool.query<{ status: MarketingShadowEvidenceRunStatus }>(
-      `insert into marketing_shadow_evidence_runs(run_id,release_sha,status)
-       values($1,$2,'started')
-       on conflict(run_id) do nothing
-       returning status`,
-      [runId, releaseSha],
-    );
-    if (inserted.rows[0]) return { claimed: true, status: inserted.rows[0].status };
-
+  async status(runId: string, releaseSha: string): Promise<MarketingShadowEvidenceAttemptStatus> {
     const existing = await this.pool.query<{ release_sha: string; status: MarketingShadowEvidenceRunStatus }>(
       `select release_sha,status from marketing_shadow_evidence_runs where run_id=$1`,
       [runId],
     );
     const prior = existing.rows[0];
-    if (!prior) throw new Error("Marketing shadow evidence claim conflict could not be resolved");
-    if (prior.release_sha !== releaseSha) {
-      throw new Error("Marketing shadow evidence run ID is already bound to a different release SHA");
+    if (prior) {
+      if (prior.release_sha !== releaseSha) {
+        throw new Error("Marketing shadow evidence run ID is already bound to a different release SHA");
+      }
+      return prior.status;
     }
-    return { claimed: false, status: prior.status };
+
+    const authorization = await this.pool.query<{ release_sha: string }>(
+      `select release_sha from marketing_shadow_evidence_authorizations where run_id=$1`,
+      [runId],
+    );
+    const approved = authorization.rows[0];
+    if (!approved) return "not-authorized";
+    if (approved.release_sha !== releaseSha) {
+      throw new Error("Marketing shadow evidence authorization is bound to a different release SHA");
+    }
+    return "authorized";
+  }
+
+  async claim(runId: string, releaseSha: string): Promise<MarketingShadowEvidenceClaim> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("begin");
+
+      const existing = await client.query<{ release_sha: string; status: MarketingShadowEvidenceRunStatus }>(
+        `select release_sha,status from marketing_shadow_evidence_runs where run_id=$1`,
+        [runId],
+      );
+      const prior = existing.rows[0];
+      if (prior) {
+        if (prior.release_sha !== releaseSha) {
+          throw new Error("Marketing shadow evidence run ID is already bound to a different release SHA");
+        }
+        await client.query("commit");
+        return { claimed: false, status: prior.status };
+      }
+
+      const consumed = await client.query(
+        `delete from marketing_shadow_evidence_authorizations
+         where run_id=$1 and release_sha=$2
+         returning run_id`,
+        [runId, releaseSha],
+      );
+      if (consumed.rowCount !== 1) {
+        const authorization = await client.query<{ release_sha: string }>(
+          `select release_sha from marketing_shadow_evidence_authorizations where run_id=$1`,
+          [runId],
+        );
+        if (authorization.rows[0] && authorization.rows[0].release_sha !== releaseSha) {
+          throw new Error("Marketing shadow evidence authorization is bound to a different release SHA");
+        }
+
+        const raced = await client.query<{ release_sha: string; status: MarketingShadowEvidenceRunStatus }>(
+          `select release_sha,status from marketing_shadow_evidence_runs where run_id=$1`,
+          [runId],
+        );
+        const racedPrior = raced.rows[0];
+        if (racedPrior && racedPrior.release_sha !== releaseSha) {
+          throw new Error("Marketing shadow evidence run ID is already bound to a different release SHA");
+        }
+        await client.query("commit");
+        return { claimed: false, status: racedPrior?.status ?? "not-authorized" };
+      }
+
+      await client.query(
+        `insert into marketing_shadow_evidence_runs(run_id,release_sha,status)
+         values($1,$2,'started')`,
+        [runId, releaseSha],
+      );
+      await client.query("commit");
+      return { claimed: true, status: "started" };
+    } catch (error) {
+      await client.query("rollback").catch(() => undefined);
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async complete(runId: string, evidence: MarketingShadowEvidenceRun): Promise<void> {
@@ -56,7 +124,14 @@ export class PgMarketingShadowEvidenceRunStore implements MarketingShadowEvidenc
        where run_id=$1 and status='started'`,
       [runId, JSON.stringify(evidence)],
     );
-    if (result.rowCount !== 1) throw new Error("Marketing shadow evidence run is not in a completable state");
+    if (result.rowCount === 1) return;
+
+    const prior = await this.pool.query<{ status: MarketingShadowEvidenceRunStatus }>(
+      `select status from marketing_shadow_evidence_runs where run_id=$1`,
+      [runId],
+    );
+    if (prior.rows[0]?.status === "completed") return;
+    throw new Error("Marketing shadow evidence run is not in a completable state");
   }
 
   async fail(runId: string, failureKind: string): Promise<void> {
@@ -66,7 +141,14 @@ export class PgMarketingShadowEvidenceRunStore implements MarketingShadowEvidenc
        where run_id=$1 and status='started'`,
       [runId, failureKind],
     );
-    if (result.rowCount !== 1) throw new Error("Marketing shadow evidence run is not in a failable state");
+    if (result.rowCount === 1) return;
+
+    const prior = await this.pool.query<{ status: MarketingShadowEvidenceRunStatus }>(
+      `select status from marketing_shadow_evidence_runs where run_id=$1`,
+      [runId],
+    );
+    if (prior.rows[0]?.status === "failed") return;
+    throw new Error("Marketing shadow evidence run is not in a failable state");
   }
 }
 
@@ -96,7 +178,7 @@ export function marketingShadowEvidenceRequestFromEnv(
 
 export type MarketingShadowEvidenceAttemptResult =
   | { kind: "completed"; evidence: MarketingShadowEvidenceRun }
-  | { kind: "skipped"; priorStatus: MarketingShadowEvidenceRunStatus };
+  | { kind: "skipped"; priorStatus: Exclude<MarketingShadowEvidenceAttemptStatus, "authorized"> };
 
 export async function executeMarketingShadowEvidenceAttempt(
   store: MarketingShadowEvidenceRunStore,
@@ -104,8 +186,16 @@ export async function executeMarketingShadowEvidenceAttempt(
   request: MarketingShadowEvidenceRequest,
   run: typeof runMarketingShadowPairedEvidence = runMarketingShadowPairedEvidence,
 ): Promise<MarketingShadowEvidenceAttemptResult> {
+  const initialStatus = await store.status(request.runId, request.releaseSha);
+  if (initialStatus !== "authorized") return { kind: "skipped", priorStatus: initialStatus };
+
   const claim = await store.claim(request.runId, request.releaseSha);
-  if (!claim.claimed) return { kind: "skipped", priorStatus: claim.status };
+  if (!claim.claimed) {
+    return {
+      kind: "skipped",
+      priorStatus: claim.status === "authorized" ? "not-authorized" : claim.status,
+    };
+  }
 
   let evidence: MarketingShadowEvidenceRun;
   try {
@@ -120,6 +210,10 @@ export async function executeMarketingShadowEvidenceAttempt(
 }
 
 export function safeFailureKind(error: unknown): string {
+  if (error && typeof error === "object" && "code" in error) {
+    const code = String((error as { code?: unknown }).code ?? "").trim();
+    if (FAILURE_KIND_PATTERN.test(code)) return code;
+  }
   if (error instanceof Error) {
     const candidate = error.name.trim();
     if (FAILURE_KIND_PATTERN.test(candidate)) return candidate;
