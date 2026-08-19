@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Client } from "pg";
 
-const APPROVED_RUN_ID = "vs23-qualification-20260819-a";
+const APPROVED_RUN_ID = "vs23-qualification-20260819-b";
 const AUTHORIZATION_MIGRATION = "0022_marketing_shadow_evidence_authorizations.sql";
 const RUN_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const SHA_PATTERN = /^[0-9a-f]{40}$/;
