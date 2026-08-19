@@ -3,7 +3,7 @@
   "sliceId": "VS-65",
   "title": "Marketing Lab Truth and Five-Dimension Quality Evaluator",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-disabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -36,7 +36,7 @@
     "notes": [
       "Adds a Kairo-owned, candidate-identity-blind evaluator for already-collected synthetic/public-safe Marketing Lab paired evidence.",
       "The evaluator uses the existing AgentRuntimePort critic role with zero tools and a fixed Kairo rubric; neither candidate can self-award benchmark evidence.",
-      "Truth must fail when visible candidate content asserts factual, technical, experiential, quantitative or capability details not entailed by the supplied benchmark Claims.",
+      "Truth must fail when visible candidate content asserts factual, technical, experiential, quantitative, causal, model-specific or capability details not entailed by the supplied benchmark Claims.",
       "Quality evidence is bounded to the existing brandFit, hookQuality, originality, formatQuality and criticScore dimensions; benchmark thresholds and comparator policy are unchanged.",
       "No human preference, edit-distance evidence, final verdict, VS-23/VS-24 activation, API wiring, migration, deployment or production enablement is in scope."
     ]
@@ -64,10 +64,10 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-65@1.0",
-      "commitSha": null,
+      "commitSha": "b7f5d158ad79d472a4978b7cb9be18469bc20d19",
       "by": "Sazid Khan",
       "at": "2026-08-19T23:35:00+02:00",
-      "rationale": "Owner explicitly authorized continuing with the governed handoff and evaluator implementation. Work remains non-production and must pass normal deterministic, CI and security gates before any merge or execution."
+      "rationale": "Implementation head b7f5d158ad79d472a4978b7cb9be18469bc20d19 passed Product Intake #651, Security #750 and CI #882 after the JsonValue contract correction. No production execution occurred."
     },
     {
       "type": "certification",
@@ -76,7 +76,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Requires an immutable exact-head candidate with repository CI/security evidence."
+      "rationale": "Certification candidate is frozen after the green implementation head; final exact-head Product Intake, Security and CI must pass before certification approval can be requested."
     },
     {
       "type": "release",
@@ -85,7 +85,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "No release or deployment is authorized by VS-65 implementation approval."
+      "rationale": "No release, merge or deployment is authorized by VS-65 implementation approval."
     },
     {
       "type": "production-enable",
@@ -101,16 +101,21 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
-    "evidence": []
+    "evidence": [
+      "Implementation head b7f5d158ad79d472a4978b7cb9be18469bc20d19: Product Intake #651 PASS; Security #750 PASS; CI #882 PASS.",
+      "CI #882 passed clean PostgreSQL 18 migrations through 0022, production dependency audit, governance/preflight, worker/API/web typecheck, runtime tests/builds and dashboard build.",
+      "Evaluator regression coverage proves candidate identity is absent from model context, zero tools/capabilities, fixed candidate-neutral rubric, bounded Truth/quality evidence, Claim-lineage prevalidation and fail-closed malformed output/provenance handling.",
+      "Groq GPT-OSS strict structured output now enforces the marketing-pair-quality-evaluation@1 response shape without changing benchmark thresholds or advancement policy."
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -123,12 +128,17 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
+    "expectedOutcome": "Kairo can produce independently validated Truth and five-dimension quality evidence for each synthetic Marketing Lab pair without exposing candidate identity or granting tools/production authority.",
+    "metrics": [
+      "malformed evaluator outputs rejected",
+      "candidate identity fields exposed to evaluator",
+      "unsupported-detail Truth failures",
+      "quality-score schema violations"
+    ]
   },
   "links": {
     "specification": "docs/slices/VS-65.md",
-    "implementationPr": null,
+    "implementationPr": "#117",
     "evidence": ["GitHub issue #116", "GitHub issue #58"]
   },
   "maxAttempts": 3
