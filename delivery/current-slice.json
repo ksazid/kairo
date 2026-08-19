@@ -125,7 +125,7 @@
     ]
   },
   "release": {
-    "status": "not-authorized-yet",
+    "status": "not-authorized",
     "releaseId": null
   },
   "rollback": {
