@@ -3,7 +3,7 @@
   "sliceId": "VS-67",
   "title": "Run C Qualification Authorization",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -66,59 +66,61 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-67@1.0",
-      "commitSha": null,
+      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
       "by": "Sazid Khan",
       "at": "2026-08-20T01:16:00+02:00",
-      "rationale": "Owner Go authorizes the minimal allowlist rotation needed to execute vs23-qualification-20260820-c under the existing release-bound one-shot fence."
+      "rationale": "Owner Go authorized the minimal exact Run-C allowlist rotation. Implementation head f13b5ea0451e03324c6d48a496b82fc68e3beaf5 passed Product Intake #660, Security #759 and CI #894 including clean PostgreSQL 18 verification, governance/preflight and runtime verification."
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-67@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Pending Product Intake, Security and full CI on an exact candidate SHA."
+      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T01:22:00+02:00",
+      "rationale": "Owner Go included certification of the minimal Run-C authorization patch. Exact implementation head f13b5ea0451e03324c6d48a496b82fc68e3beaf5 passed Product Intake #660, Security #759 and CI #894 with zero review threads."
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-67@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Will be bound to the exact green implementation head before final certification."
+      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T01:16:00+02:00",
+      "rationale": "Owner Go authorizes deploying the unchanged certified Run-C allowlist implementation after the final governance-only head is green and merged."
     },
     {
       "type": "production-enable",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-67@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Will authorize exactly one Run C evidence execution after exact-head certification and merge."
+      "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T01:16:00+02:00",
+      "rationale": "Owner Go authorizes exactly one release-bound Run C evidence authorization and four paired Native/Corey executions, followed by immediate trigger cleanup. No human scoring, final verdict or provider mutation is authorized."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 20,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "f13b5ea0451e03324c6d48a496b82fc68e3beaf5",
     "evidence": [
       "VS-66 merged to main as 864eb66f8371c85be7887f6fd5424401707c1a18 after exact-head certification.",
-      "Existing evidence runner remains authorization-claim protected and release-SHA bound."
+      "VS-67 implementation head f13b5ea0451e03324c6d48a496b82fc68e3beaf5: Product Intake #660 PASS; Security #759 PASS; CI #894 PASS; zero review threads.",
+      "CI #894 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
+      "Only exact Run-C startup/authorization allowlists and VS-67 governance/spec changed; the evidence runner, fixtures, Corey pin, provider/model, pricing and pacing are unchanged."
     ]
   },
   "release": {
-    "status": "not-authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
@@ -141,7 +143,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-67.md",
-    "implementationPr": null,
+    "implementationPr": "#120",
     "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
