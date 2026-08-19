@@ -126,7 +126,7 @@
     ]
   },
   "release": {
-    "status": "authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
