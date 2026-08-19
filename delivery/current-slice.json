@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-66",
-  "title": "Closed-World Claim Generation Contract",
+  "sliceId": "VS-67",
+  "title": "Run C Qualification Authorization",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -13,15 +13,13 @@
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-19", "VS-64", "VS-65"],
+  "dependencies": ["VS-64", "VS-65", "VS-66"],
   "blockers": [],
   "allowedPaths": [
-    "apps/worker/src/marketing-shadow.ts",
-    "apps/worker/src/marketing-shadow.test.ts",
-    "apps/worker/src/marketing-shadow-qualification.ts",
-    "apps/worker/src/marketing-shadow-qualification.test.ts",
-    "docs/slices/VS-66.md",
-    "docs/plans/VS-66-*.md",
+    "scripts/authorize-marketing-shadow-evidence.mjs",
+    "scripts/start-api.mjs",
+    "docs/slices/VS-67.md",
+    "docs/plans/VS-67-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
@@ -29,98 +27,94 @@
     "infrastructure/**",
     "apps/api/**",
     "apps/web/**",
-    "apps/worker/src/model-output-schemas.ts",
-    "packages/domain/**",
-    "evaluation/marketing-lab/benchmark-cases.json",
-    "evaluation/marketing-lab/corey-social-shadow.json",
-    "scripts/authorize-marketing-shadow-evidence.mjs",
-    "scripts/start-api.mjs"
+    "apps/worker/**",
+    "packages/**",
+    "evaluation/marketing-lab/**",
+    "scripts/export-marketing-shadow-evidence.mjs",
+    "scripts/authorize-marketing-shadow-quality-evaluation.mjs"
   ],
   "impact": {
-    "areas": ["architecture", "analytics", "product-policy", "operations-support"],
+    "areas": ["deployment", "operations-support", "analytics"],
     "notes": [
-      "Run B is immutable evidence and is not edited, rescored or overwritten by VS-66.",
-      "Run B case motorcycle-carousel-03 failed Truth for both Native and Corey because both generation lanes could add plausible unsupported technical detail despite valid Claim IDs.",
-      "VS-66 introduces one lane-symmetric closed-world factual support contract for Native and Corey; it does not change benchmark fixtures, Corey source pin, evaluator rubric, thresholds, provider/model, pricing or pacing.",
-      "The closed-world contract version and exact rules are included in the shared benchmark input fingerprint so fresh Run C evidence cannot be confused with Run B.",
-      "Reserved fresh qualification ID after certification: vs23-qualification-20260820-c. VS-66 does not authorize or execute that production run."
+      "Rotates the exact one-shot Marketing Lab authorization allowlist from immutable Run B to fresh Run C only.",
+      "Approved Run C ID is vs23-qualification-20260820-c and must bind to the exact deployed release SHA before authorization is staged.",
+      "VS-66 closed-world Claim generation contract, benchmark fixtures, Corey source pin, provider/model, pricing, pacing and evaluator policy remain unchanged.",
+      "Run B and its quality evidence remain immutable.",
+      "This slice authorizes no human scoring, edit-distance evidence, final advancement verdict, VS-23/VS-24 activation, publishing, provider/key mutation or Hermes reactivation."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-66@1.0",
+      "version": "VS-67@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T00:56:00+02:00",
-      "rationale": "Owner selected option 2 after Run B failed the Truth gate and approved correcting the problematic generation/benchmark path while preserving Run B as immutable evidence."
+      "at": "2026-08-20T01:16:00+02:00",
+      "rationale": "Owner said Go to the explicitly presented authorize + execute fresh Run C gate after VS-66 certification and merge."
     },
     {
       "type": "policy",
-      "status": "approved",
-      "version": "VS-66@1.0",
+      "status": "not-required",
+      "version": "VS-67@1.0",
       "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-20T00:56:00+02:00",
-      "rationale": "Owner approved the explicitly described lane-symmetric closed-world Claim rule: concrete factual or technical assertions must be directly supported by supplied Claims; unsupported details must be framed as questions or verification criteria rather than facts."
+      "by": null,
+      "at": null,
+      "rationale": "VS-67 changes only the exact one-shot run allowlist; benchmark Truth policy and qualification thresholds are unchanged."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-66@1.0",
-      "commitSha": "205f69ea47044fcbce9fdeadb9e5923c3b97d8ae",
+      "version": "VS-67@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T00:56:00+02:00",
-      "rationale": "Owner authorized VS-66 implementation. Exact implementation head 205f69ea47044fcbce9fdeadb9e5923c3b97d8ae passed Product Intake #657, Security #756 and CI #890 including governance/preflight, clean PostgreSQL 18 verification, runtime verification and dashboard build."
+      "at": "2026-08-20T01:16:00+02:00",
+      "rationale": "Owner Go authorizes the minimal allowlist rotation needed to execute vs23-qualification-20260820-c under the existing release-bound one-shot fence."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-66@1.0",
-      "commitSha": "f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd",
-      "by": "Sazid Khan",
-      "at": "2026-08-20T01:09:00+02:00",
-      "rationale": "Owner said Go to the explicitly presented VS-66 certification + merge gate. Exact frozen candidate f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd passed Product Intake #658, Security #757 and CI #891 with zero review threads."
+      "status": "pending",
+      "version": "VS-67@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Pending Product Intake, Security and full CI on an exact candidate SHA."
     },
     {
       "type": "release",
       "status": "pending",
-      "version": "VS-66@1.0",
+      "version": "VS-67@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-66 certification/merge does not authorize a production release or Run C execution."
+      "rationale": "Will be bound to the exact green implementation head before final certification."
     },
     {
       "type": "production-enable",
       "status": "pending",
-      "version": "VS-66@1.0",
+      "version": "VS-67@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Fresh Run C production execution requires a separate exact-release gate after VS-66 merge."
+      "rationale": "Will authorize exactly one Run C evidence execution after exact-head certification and merge."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "implementation": 20,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd",
+    "status": "not-started",
+    "commitSha": null,
     "evidence": [
-      "Run B quality evaluation vs65-quality-evaluation-20260819-a persisted 4/4 pairs and found motorcycle-carousel-03 Truth failure for both lanes.",
-      "VS-66 implementation head 205f69ea47044fcbce9fdeadb9e5923c3b97d8ae: Product Intake #657 PASS; Security #756 PASS; CI #890 PASS.",
-      "VS-66 frozen certification candidate f64cf6fc2a8c3055870ccc59b3c90e17e60dcdbd: Product Intake #658 PASS; Security #757 PASS; CI #891 PASS; zero review threads.",
-      "CI #891 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
-      "Benchmark fixtures and Corey source pin remained unchanged; no production deployment, authorization or Run C model execution occurred."
+      "VS-66 merged to main as 864eb66f8371c85be7887f6fd5424401707c1a18 after exact-head certification.",
+      "Existing evidence runner remains authorization-claim protected and release-SHA bound."
     ]
   },
   "release": {
@@ -134,17 +128,20 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Both qualification lanes receive one identical closed-world Truth contract and fresh Run C inputs have fingerprints distinct from Run B without changing the benchmark fixtures.",
+    "expectedOutcome": "Exactly one fresh Run C paired evidence run completes with four Native/Corey pairs under closed-world-claims-v1, after which all evidence authorization/execution triggers are disabled.",
     "metrics": [
-      "Native/Corey Truth-contract symmetry",
-      "case-03 fixture mutation count",
-      "Run-C fingerprint distinctness",
-      "unsupported technical assertion Truth failures"
+      "authorization consumed once",
+      "pair count",
+      "runtime route stability",
+      "cost ratio",
+      "latency ratio",
+      "terminal durable run status",
+      "trigger cleanup"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-66.md",
-    "implementationPr": "#119",
+    "specification": "docs/slices/VS-67.md",
+    "implementationPr": null,
     "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
