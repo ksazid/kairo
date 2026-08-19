@@ -6,6 +6,7 @@ import {
   MARKETING_EVIDENCE_HERMES_READY_DEADLINE_MS,
   MARKETING_EVIDENCE_HERMES_READY_POLL_DELAY_MS,
   MARKETING_EVIDENCE_INTER_LANE_DELAY_MS,
+  marketingEvidenceFailureCode,
   marketingEvidenceRuntimeRoute,
   runMarketingShadowPairedEvidence,
   waitForMarketingEvidenceHermesReady,
@@ -49,18 +50,30 @@ const runtime: AgentRuntimePort = {
 };
 
 describe("VS-23 paired shadow evidence runner", () => {
-  it("fails closed on a tampered Corey snapshot before any paced model lane", async () => {
+  it("fails closed on a tampered Corey snapshot before any paced model lane with bounded provenance", async () => {
     runtimeCalls = 0;
     const pauses: number[] = [];
     const fakeFetch: typeof fetch = async () => new Response("tampered skill", { status: 200 });
-    await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch, async (ms) => { pauses.push(ms); })).rejects.toThrow(/blob hash/i);
+    const failure = await runMarketingShadowPairedEvidence(runtime, fakeFetch, async (ms) => { pauses.push(ms); })
+      .then(() => undefined, (error) => error as { code?: string });
+    expect(failure?.code).toBe("run.corey.snapshot.marketing_shadow_execution_error");
     expect(runtimeCalls).toBe(0);
     expect(pauses).toEqual([]);
   });
 
-  it("fails closed when the pinned Corey source cannot be fetched", async () => {
+  it("fails closed when the pinned Corey source cannot be fetched and records only the HTTP class", async () => {
     const fakeFetch: typeof fetch = async () => new Response("missing", { status: 503 });
-    await expect(runMarketingShadowPairedEvidence(runtime, fakeFetch)).rejects.toThrow(/503/);
+    const failure = await runMarketingShadowPairedEvidence(runtime, fakeFetch)
+      .then(() => undefined, (error) => error as { code?: string });
+    expect(failure?.code).toBe("run.corey.snapshot.http_503");
+  });
+
+  it("produces bounded case/lane/stage codes without raw exception messages", () => {
+    const error = Object.assign(new Error("provider body must never be persisted"), { code: "marketing_shadow_execution_error" });
+    expect(marketingEvidenceFailureCode("motorcycle-carousel-02", "corey", "execute", error))
+      .toBe("mc02.corey.execute.marketing_shadow_execution_error");
+    expect(marketingEvidenceFailureCode("motorcycle-carousel-04", "native", "metadata", new Error("sensitive detail")))
+      .toBe("mc04.native.metadata.error");
   });
 
   it("keeps probing dormant Hermes readiness utility until a cold runtime becomes ready inside the deadline", async () => {
