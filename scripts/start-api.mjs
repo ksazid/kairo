@@ -45,6 +45,18 @@ async function runStartupScript(scriptUrl, label) {
   if (exitCode !== 0) throw new Error(`${label} failed with exit code ${exitCode}`);
 }
 
+function runBackgroundScript(scriptUrl, label) {
+  const scriptPath = fileURLToPath(scriptUrl);
+  const child = spawn(process.execPath, [scriptPath], { stdio: "inherit", env: process.env });
+  child.once("error", (error) => {
+    console.error(`${label} failed to start: ${error instanceof Error ? error.name : "unknown-error"}`);
+  });
+  child.once("exit", (code, signal) => {
+    if (signal) console.error(`${label} terminated by signal ${signal}`);
+    else if ((code ?? 1) !== 0) console.error(`${label} failed with exit code ${code ?? 1}`);
+  });
+}
+
 if (requestedMigration) {
   if (requestedMigration !== approvedMigration) throw new Error(`Startup migration is not approved: ${requestedMigration}`);
   await runStartupScript(new URL("./migrate-exact.mjs", import.meta.url), `exact migration ${requestedMigration}`);
@@ -74,6 +86,10 @@ if (requestedMigration) {
   await runStartupScript(
     new URL("./authorize-marketing-shadow-quality-evaluation.mjs", import.meta.url),
     `Marketing Lab quality authorization ${requestedMarketingQualityAuthorization}`,
+  );
+  runBackgroundScript(
+    new URL("../apps/api/dist/marketing-shadow-quality-evaluation-worker.js", import.meta.url),
+    `Marketing Lab quality evaluation ${requestedMarketingQualityAuthorization}`,
   );
 }
 
