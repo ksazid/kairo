@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-65",
-  "title": "Marketing Lab Truth and Five-Dimension Quality Evaluator",
+  "sliceId": "VS-66",
+  "title": "Closed-World Claim Generation Contract",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -13,120 +13,115 @@
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-19", "VS-64"],
+  "dependencies": ["VS-19", "VS-64", "VS-65"],
   "blockers": [],
   "allowedPaths": [
-    "apps/api/src/marketing-shadow-quality-evaluation-run.ts",
-    "apps/api/src/marketing-shadow-quality-evaluation-run.test.ts",
-    "apps/api/src/marketing-shadow-quality-evaluation-postgres.integration.test.ts",
-    "apps/api/src/marketing-shadow-quality-evaluation-worker.ts",
-    "apps/api/package.json",
-    "scripts/authorize-marketing-shadow-quality-evaluation.mjs",
-    "scripts/start-api.mjs",
-    "Dockerfile",
-    "evaluation/marketing-lab/**",
-    "docs/slices/VS-65.md",
-    "docs/plans/VS-65-*.md",
+    "apps/worker/src/marketing-shadow.ts",
+    "apps/worker/src/marketing-shadow.test.ts",
+    "apps/worker/src/marketing-shadow-qualification.ts",
+    "apps/worker/src/marketing-shadow-qualification.test.ts",
+    "docs/slices/VS-66.md",
+    "docs/plans/VS-66-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
+    "apps/api/**",
     "apps/web/**",
-    "apps/api/migrations/**",
-    "apps/worker/**",
-    "packages/domain/**"
+    "apps/worker/src/model-output-schemas.ts",
+    "packages/domain/**",
+    "evaluation/marketing-lab/benchmark-cases.json",
+    "evaluation/marketing-lab/corey-social-shadow.json",
+    "scripts/authorize-marketing-shadow-evidence.mjs",
+    "scripts/start-api.mjs"
   ],
   "impact": {
-    "areas": ["architecture", "api", "database", "analytics", "deployment", "operations-support"],
+    "areas": ["architecture", "analytics", "product-policy", "operations-support"],
     "notes": [
-      "VS-65@1.0 evaluator core is certified and merged; this bounded 1.1 execution extension does not change its rubric, Truth policy, output schema or provider/model pricing policy.",
-      "The one-shot execution is hard-bound to persisted Run-B source evidence vs23-qualification-20260819-b at release c3b881d3f8294da2114128439ae2f2eb0fe3c2da.",
-      "Execution reuses the existing 0016 run ledger and 0022 authorization table; no migration or source benchmark evidence mutation is permitted.",
-      "A unique run ID vs65-quality-evaluation-20260819-a must consume its exact release-bound authorization before any evaluator model call; concurrent or restarted processes cannot execute it twice.",
-      "The evaluator remains candidate-identity-blind, zero-tool, global-public synthetic only, and uses the existing fixed Truth + five-dimension rubric.",
-      "This approval does not include human preference scoring, edit-distance evidence, deterministic advancement verdict, VS-23/VS-24 activation, publishing or provider/model/key/pricing changes."
+      "Run B is immutable evidence and is not edited, rescored or overwritten by VS-66.",
+      "Run B case motorcycle-carousel-03 failed Truth for both Native and Corey because both generation lanes could add plausible unsupported technical detail despite valid Claim IDs.",
+      "VS-66 introduces one lane-symmetric closed-world factual support contract for Native and Corey; it does not change benchmark fixtures, Corey source pin, evaluator rubric, thresholds, provider/model, pricing or pacing.",
+      "The closed-world contract version and exact rules are included in the shared benchmark input fingerprint so fresh Run C evidence cannot be confused with Run B.",
+      "Reserved fresh qualification ID after certification: vs23-qualification-20260820-c. VS-66 does not authorize or execute that production run."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-65@1.1",
+      "version": "VS-66@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-19T23:58:00+02:00",
-      "rationale": "Owner said Go after the next gate was explicitly stated as running the certified evaluator against the existing Run-B evidence; scope is limited to one-shot execution orchestration and evidence capture."
+      "at": "2026-08-20T00:56:00+02:00",
+      "rationale": "Owner selected option 2 after Run B failed the Truth gate and approved correcting the problematic generation/benchmark path while preserving Run B as immutable evidence."
     },
     {
       "type": "policy",
-      "status": "not-required",
-      "version": "VS-65@1.1",
+      "status": "approved",
+      "version": "VS-66@1.0",
       "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "The execution extension does not alter evaluator rubric, Truth rules, benchmark thresholds, human-evidence requirements, candidate eligibility or advancement policy."
+      "by": "Sazid Khan",
+      "at": "2026-08-20T00:56:00+02:00",
+      "rationale": "Owner approved the explicitly described lane-symmetric closed-world Claim rule: concrete factual or technical assertions must be directly supported by supplied Claims; unsupported details must be framed as questions or verification criteria rather than facts."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-65@1.1",
-      "commitSha": "4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6",
+      "version": "VS-66@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-19T23:58:00+02:00",
-      "rationale": "Owner Go authorized the bounded one-shot execution wiring. Exact implementation head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6 passed Product Intake #654, Security #753 and CI #886 including clean PostgreSQL 18 migrations, governance/preflight, runtime verification, PostgreSQL one-shot integration coverage and API/worker build."
+      "at": "2026-08-20T00:56:00+02:00",
+      "rationale": "Owner explicitly authorized creation of agent/vs66-closed-world-claim-contract, staging only VS-66 files, committing, pushing and opening one draft PR."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-65@1.1",
+      "version": "VS-66@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Certification is refreshing on the governance-only frozen candidate after implementation head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6 passed Product Intake #654, Security #753 and CI #886."
+      "rationale": "Pending Product Intake, Security and full CI on an exact candidate SHA."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-65@1.1",
-      "commitSha": "4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6",
-      "by": "Sazid Khan",
-      "at": "2026-08-19T23:58:00+02:00",
-      "rationale": "Owner Go authorizes deployment only after the unchanged implementation represented by exact head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6 is frozen through the final governance-only certification candidate; release is solely for one-shot evaluator execution and immediate cleanup."
+      "status": "pending",
+      "version": "VS-66@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "No release is authorized by the VS-66 publication approval."
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-65@1.1",
-      "commitSha": "4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6",
-      "by": "Sazid Khan",
-      "at": "2026-08-19T23:58:00+02:00",
-      "rationale": "Owner Go authorizes exactly one release-bound authorization for vs65-quality-evaluation-20260819-a and exactly four blind evaluator calls over persisted synthetic Run-B pairs, followed by immediate trigger cleanup. No human scoring, final verdict or provider mutation is authorized."
+      "status": "pending",
+      "version": "VS-66@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Fresh Run C production execution requires a separate exact-release gate after VS-66 certification."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 80,
+    "implementation": 80,
+    "testing": 20,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
+    "status": "not-started",
     "commitSha": null,
     "evidence": [
-      "VS-65@1.0 certification candidate f5cd3b0fd73906c7fbb5c966beecc2ab1a5c2e27: Product Intake #652 PASS; Security #751 PASS; CI #883 PASS; zero review threads.",
-      "PR #117 merged as 6f8d5c675b34b0c3c18c3fbcd9326f4875a3c501 with no evaluator execution.",
-      "VS-65@1.1 implementation head 4e29dedcfb26179dbfa63eeff76f8bb8e6ff6fc6: Product Intake #654 PASS; Security #753 PASS; CI #886 PASS.",
-      "CI #886 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime typecheck/tests/build, one-shot PostgreSQL integration coverage, API/quality-worker bundling and dashboard build.",
-      "Execution remains dormant until the exact release-bound authorization is staged; Run-B source evidence is read-only and no evaluator model work occurred during implementation/certification."
+      "Run B quality evaluation vs65-quality-evaluation-20260819-a persisted 4/4 pairs and found motorcycle-carousel-03 Truth failure for both lanes.",
+      "GitHub issue #58 and #116 preserve the Run B machine evidence and evaluator audit trail."
     ]
   },
   "release": {
-    "status": "pending",
+    "status": "not-authorized",
     "releaseId": null
   },
   "rollback": {
@@ -136,20 +131,18 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Exactly four blind quality evaluations are durably persisted for the four completed Run-B pairs, then all quality execution/authorization triggers return to dormant state.",
+    "expectedOutcome": "Both qualification lanes receive one identical closed-world Truth contract and fresh Run C inputs have fingerprints distinct from Run B without changing the benchmark fixtures.",
     "metrics": [
-      "quality evaluator model calls before authorization",
-      "duplicate quality authorization consumption",
-      "quality pair count",
-      "source Run-B fingerprint mismatches",
-      "malformed evaluator outputs rejected",
-      "durable completed/failed quality run status"
+      "Native/Corey Truth-contract symmetry",
+      "case-03 fixture mutation count",
+      "Run-C fingerprint distinctness",
+      "unsupported technical assertion Truth failures"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-65.md",
-    "implementationPr": "#118",
-    "evidence": ["GitHub issue #116", "GitHub issue #58"]
+    "specification": "docs/slices/VS-66.md",
+    "implementationPr": null,
+    "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
 }
