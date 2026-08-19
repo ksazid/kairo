@@ -11,27 +11,36 @@ export type OpenAICompatibleResponseFormat =
       };
     };
 
+const claimIdSchema = Object.freeze({ type: "string", minLength: 1, maxLength: 200 });
+const claimIdsSchema = Object.freeze({
+  type: "array",
+  minItems: 1,
+  items: claimIdSchema,
+});
+
 const CAROUSEL_PLAN_SCHEMA = Object.freeze({
   type: "object",
   properties: {
     format: { type: "string", enum: ["carousel"] },
-    coverHook: { type: "string" },
+    coverHook: { type: "string", minLength: 1, maxLength: 300 },
     slides: {
       type: "array",
+      minItems: 3,
+      maxItems: 20,
       items: {
         type: "object",
         properties: {
-          headline: { type: "string" },
-          body: { type: "string" },
-          supportingClaimIds: { type: "array", items: { type: "string" } },
+          headline: { type: "string", minLength: 1, maxLength: 240 },
+          body: { type: "string", minLength: 1, maxLength: 2_000 },
+          supportingClaimIds: claimIdsSchema,
         },
         required: ["headline", "body", "supportingClaimIds"],
         additionalProperties: false,
       },
     },
-    caption: { type: "string" },
-    cta: { type: "string" },
-    supportingClaimIds: { type: "array", items: { type: "string" } },
+    caption: { type: "string", minLength: 1, maxLength: 5_000 },
+    cta: { type: "string", minLength: 1, maxLength: 500 },
+    supportingClaimIds: claimIdsSchema,
   },
   required: ["format", "coverHook", "slides", "caption", "cta", "supportingClaimIds"],
   additionalProperties: false,
