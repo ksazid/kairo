@@ -87,21 +87,21 @@
     },
     {
       "type": "release",
-      "status": "approved",
+      "status": "pending",
       "version": "VS-65@1.1",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-19T23:58:00+02:00",
-      "rationale": "Go authorizes deploying the exact certified execution candidate solely to run and capture the one-shot evaluator, with cleanup back to dormant settings immediately afterward."
+      "rationale": "Owner intent to deploy the bounded evaluator was recorded by Go, but governance requires release approval to bind an exact certified commit SHA. This remains pending until the implementation head passes Product Intake, Security and CI."
     },
     {
       "type": "production-enable",
-      "status": "approved",
+      "status": "pending",
       "version": "VS-65@1.1",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-19T23:58:00+02:00",
-      "rationale": "Production enablement is bounded to one authorization for vs65-quality-evaluation-20260819-a, four evaluator calls over persisted synthetic Run-B pairs, durable quality evidence, and immediate trigger cleanup."
+      "rationale": "Owner intent is bounded to one authorization for vs65-quality-evaluation-20260819-a and four evaluator calls over persisted synthetic Run-B pairs, but production-enable approval will bind the exact certified execution commit before any Render mutation."
     }
   ],
   "decisionIds": [],
@@ -146,7 +146,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-65.md",
-    "implementationPr": "#117",
+    "implementationPr": "#118",
     "evidence": ["GitHub issue #116", "GitHub issue #58"]
   },
   "maxAttempts": 3
