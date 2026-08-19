@@ -1,58 +1,153 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-63",
-  "title": "Instagram Publishing E2E Coverage Refresh",
+  "sliceId": "VS-64",
+  "title": "Marketing Lab One-Shot Benchmark Authorization Fence",
   "status": "active",
   "lifecycle": "certification",
-  "riskLevel": "medium",
+  "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-15", "FR-20"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-29", "VS-62"],
+  "requirements": ["FR-12", "FR-20"],
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": "Operations Owner",
+    "security": "Security Owner"
+  },
+  "dependencies": ["VS-23-prerequisites", "PR-84"],
   "blockers": [],
   "allowedPaths": [
-    "apps/api/src/publishing-worker-instagram-e2e.integration.test.ts",
-    "docs/slices/VS-63.md",
-    "docs/plans/VS-63-*.md",
+    "apps/api/migrations/0022_marketing_shadow_evidence_authorizations.sql",
+    "apps/api/src/marketing-shadow-evidence-run.ts",
+    "apps/api/src/marketing-shadow-evidence-run.test.ts",
+    "apps/api/src/marketing-shadow-evidence-postgres.integration.test.ts",
+    "apps/api/src/server.ts",
+    "docs/slices/VS-64.md",
+    "docs/plans/VS-64-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
-    "apps/api/migrations/**",
-    "apps/worker/src/publishing-adapters.ts",
-    "apps/api/src/meta-instagram-oauth.ts",
-    "apps/api/src/instagram-connection*.ts",
     "infrastructure/**",
-    "apps/web/**"
+    "apps/web/**",
+    "apps/worker/src/agent-runtime.ts",
+    "apps/worker/src/model-gateway.ts",
+    "apps/worker/src/marketing-shadow-evidence-runner.ts",
+    "evaluation/marketing-lab/**"
   ],
   "impact": {
-    "areas": ["operations-support"],
+    "areas": ["api", "database", "sensitive-data", "deployment", "operations-support"],
     "notes": [
-      "Refreshes the legacy PR #88 test-only Instagram publishing end-to-end coverage onto current main after VS-62 corrected retry pacing semantics.",
-      "Exercises approved carousel -> PostgreSQL claim -> encrypted credential vault -> Instagram adapter -> settlement -> published_posts exactly once.",
-      "Pins the transient HTTP 500 retry expectation to the VS-62 30-second hint and verifies no published record is created on the failed attempt.",
-      "No runtime production code, OAuth/provider configuration, credential, migration, deployment, publication or production state changes are in scope."
+      "Refreshes the stale PR #79 authorization concept for the current DirectModelRuntime qualification path; Hermes remains dormant and is not reactivated.",
+      "A configured benchmark process performs only PostgreSQL authorization-state checks until an exact run ID/release SHA authorization exists.",
+      "The authorization is atomically consumed with creation of the durable started run record before any model lane can execute.",
+      "At most one benchmark authorization may be outstanding globally, and concurrent/overlapping processes cannot execute the same authorization twice.",
+      "Migration 0022 is code-only in this slice and is not applied to production by implementation or merge approval.",
+      "No deployment, DATABASE_URL mutation, provider/model/key/pricing change, benchmark execution, authorization insertion, customer data use, publishing, release or production enablement is in scope."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-63@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T13:10:00+02:00","rationale":"Owner said Go after the recommended next move to refresh and finish PR #88 on current main."},
-    {"type":"policy","status":"not-required","version":null,"commitSha":null,"by":null,"at":null,"rationale":"This is deterministic test coverage of already-approved FR-15 publishing behavior and introduces no new provider or production policy."},
-    {"type":"implementation","status":"approved","version":"VS-63@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-19T13:10:00+02:00","rationale":"Go authorizes the bounded branch refresh, test correction and exact-head certification gates. Merge and deployment remain separately gated."},
-    {"type":"certification","status":"pending","version":"VS-63@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation head fe2c8488ac821c2c9b651ed2fec346b06b47a694 passed Product Intake #646, Security #739 and CI #863. Final certification requires the same gates on the frozen certification head."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No release is authorized."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"No deployment, provider activation or publication is authorized."}
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-64@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-19T16:52:00+02:00",
+      "rationale": "Owner approved PR #88 merge and said go next after the explicitly recommended next governed thread: refresh the Marketing Lab benchmark prerequisite authorization work."
+    },
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "VS-64 adds a stricter one-shot execution control around the already-governed synthetic qualification benchmark; it does not change benchmark inputs, model/provider policy, scoring, Truth gates, budgets or production permissions."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-64@1.0",
+      "commitSha": "a7b7f1fb7b24f1b1011e57c7796c5cc869033b86",
+      "by": "Sazid Khan",
+      "at": "2026-08-19T16:52:00+02:00",
+      "rationale": "Go next authorized the bounded code refresh, migration artifact, deterministic regression coverage and exact-head certification gates. Implementation head passed Product Intake #648, Security #741 and CI #866. Merge, deployment, migration application and benchmark execution remain separate approvals."
+    },
+    {
+      "type": "certification",
+      "status": "pending",
+      "version": "VS-64@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Implementation head a7b7f1fb7b24f1b1011e57c7796c5cc869033b86 passed Product Intake #648, Security #741 and CI #866. Final certification requires the same gates on the frozen governance-only certification candidate."
+    },
+    {
+      "type": "release",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "No release or deployment is authorized."
+    },
+    {
+      "type": "production-enable",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Applying migration 0022, configuring the production evidence flag, inserting an authorization and running the benchmark each require separate explicit production approval."
+    }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":50,"release":0,"validation":0},
-  "certification": {"status":"running","commitSha":null,"evidence":["Implementation head fe2c8488ac821c2c9b651ed2fec346b06b47a694: Product Intake #646 PASS; Security #739 PASS; CI #863 PASS.","Full CI passed Hermes runtime contracts, pinned Hermes package/zero-tool profile, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification, workspace tests/builds and dashboard build.","Test-only contract review PASS: Meta calls remain stubbed; plaintext test token is not persisted; success is exactly once; HTTP 500 schedules the VS-62 30-second transient retry and creates no published post."]},
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
-  "postRelease": {
-    "status":"not-started",
-    "reviewAt":null,
-    "expectedOutcome":"Instagram publishing execution remains exactly-once, credential-safe and deterministic for success and transient provider failure paths.",
-    "metrics":["duplicate publish execution","plaintext credential persistence","incorrect transient retry scheduling","published record on failed provider attempt"]
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 50,
+    "release": 0,
+    "validation": 0
   },
-  "links": {"specification":"docs/slices/VS-63.md","implementationPr":"#88","evidence":["docs/plans/VS-63-implementation.md"]},
+  "certification": {
+    "status": "running",
+    "commitSha": null,
+    "evidence": [
+      "Implementation head a7b7f1fb7b24f1b1011e57c7796c5cc869033b86: Product Intake #648 PASS; Security #741 PASS; CI #866 PASS.",
+      "CI #866 passed pinned Hermes CI contracts/profile, migration 0022 on clean PostgreSQL 18, production dependency audit, governance/preflight, runtime typecheck/tests/builds and dashboard build.",
+      "Authorization regression coverage proves no authorization means no claim/model invocation, exact release binding, one outstanding authorization globally, atomic exactly-once concurrent consumption and idempotent settlement.",
+      "Implementation-level security/operations review PASS: current DirectModel qualification semantics remain unchanged, Hermes is not reactivated, and no production migration, deployment, authorization insertion, provider mutation or benchmark execution occurred."
+    ]
+  },
+  "release": {
+    "status": "not-authorized",
+    "releaseId": null
+  },
+  "rollback": {
+    "status": "ready",
+    "rollbackId": null
+  },
+  "postRelease": {
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": "A stable flag-enabled DirectModel qualification deployment remains model-idle until one exact authorization is inserted, then exactly one process can consume it and execute the bounded paired benchmark.",
+    "metrics": [
+      "model invocations before authorization",
+      "duplicate authorization consumption",
+      "duplicate benchmark starts",
+      "release-SHA mismatch attempts",
+      "durable completed/failed evidence state"
+    ]
+  },
+  "links": {
+    "specification": "docs/slices/VS-64.md",
+    "implementationPr": "#79",
+    "evidence": [
+      "docs/plans/VS-64-implementation.md",
+      "GitHub issue #58"
+    ]
+  },
   "maxAttempts": 3
 }

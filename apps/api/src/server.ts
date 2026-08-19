@@ -37,6 +37,7 @@ import{
   executeMarketingShadowEvidenceAttempt,
   marketingShadowEvidenceRequestFromEnv,
   PgMarketingShadowEvidenceRunStore,
+  safeFailureKind,
 }from"./marketing-shadow-evidence-run";
 import{directModelProviderDiagnosticRequested,runDirectModelProviderDiagnostic}from"./direct-model-diagnostic";
 
@@ -61,6 +62,7 @@ const agentOutputValidators={
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
 };
 const evidenceRequest=marketingShadowEvidenceRequestFromEnv();
+const evidenceStore=evidenceRequest?new PgMarketingShadowEvidenceRunStore(pool):undefined;
 const directModelDiagnosticRequested=directModelProviderDiagnosticRequested();
 const gateway=openAICompatibleGatewayFromEnv();
 const directRuntime=gateway?new DirectModelRuntime({gateway,policy:request=>({qualityTier:"balanced",privacyClass:"brand-private",maxCostUsd:request.budget.maxCostUsd,maxOutputTokens:request.budget.maxOutputTokens,allowedProviders:[]}),validators:agentOutputValidators}):null;
@@ -134,6 +136,9 @@ const port = Number(process.env.PORT ?? "4000");
 const host = process.env.HOST ?? "0.0.0.0";
 let metricTimer:NodeJS.Timeout|undefined;
 let metricTickRunning=false;
+let evidenceTimer:NodeJS.Timeout|undefined;
+let evidenceTickRunning=false;
+let evidenceTerminal=false;
 
 try {
   await app.listen({ port, host });
@@ -153,24 +158,12 @@ try {
   }
   if(evidenceRequest){
     if(!directRuntime){
+      evidenceTerminal=true;
       app.log.error({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED: DirectModelRuntime is not configured");
     }else{
-      const evidenceStore=new PgMarketingShadowEvidenceRunStore(pool);
-      void executeMarketingShadowEvidenceAttempt(evidenceStore,directRuntime,evidenceRequest)
-        .then(result=>{
-          if(result.kind==="skipped"){
-            app.log.warn({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha,priorStatus:result.priorStatus},"KAIRO_MARKETING_SHADOW_EVIDENCE_SKIPPED_ALREADY_CLAIMED");
-            return;
-          }
-          app.log.info({
-            runId:evidenceRequest.runId,
-            releaseSha:evidenceRequest.releaseSha,
-            persisted:true,
-            pairCount:result.evidence.pairs.length,
-            runtimeRoute:result.evidence.runtimeRoute,
-          },"KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE");
-        })
-        .catch(error=>app.log.error({err:error,runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED"));
+      void collectEvidenceTick();
+      evidenceTimer=setInterval(()=>void collectEvidenceTick(),5_000);
+      evidenceTimer.unref();
     }
   }
 } catch (error) {
@@ -190,8 +183,50 @@ async function collectMetricTick(){
   }catch(error){app.log.error({err:error},"Instagram maintenance tick failed")}finally{metricTickRunning=false}
 }
 
+async function collectEvidenceTick(){
+  if(evidenceTickRunning||evidenceTerminal||!evidenceRequest||!directRuntime||!evidenceStore)return;
+  evidenceTickRunning=true;
+  try{
+    const result=await executeMarketingShadowEvidenceAttempt(evidenceStore,directRuntime,evidenceRequest);
+    if(result.kind==="skipped"){
+      if(result.priorStatus==="not-authorized")return;
+      evidenceTerminal=true;
+      stopEvidenceTimer();
+      app.log.warn({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha,priorStatus:result.priorStatus},"KAIRO_MARKETING_SHADOW_EVIDENCE_SKIPPED_ALREADY_CONSUMED");
+      return;
+    }
+    evidenceTerminal=true;
+    stopEvidenceTimer();
+    app.log.info({
+      runId:evidenceRequest.runId,
+      releaseSha:evidenceRequest.releaseSha,
+      persisted:true,
+      pairCount:result.evidence.pairs.length,
+      runtimeRoute:result.evidence.runtimeRoute,
+    },"KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE");
+  }catch(error){
+    const failureKind=safeFailureKind(error);
+    let status:Awaited<ReturnType<PgMarketingShadowEvidenceRunStore["status"]>>|undefined;
+    try{status=await evidenceStore.status(evidenceRequest.runId,evidenceRequest.releaseSha)}catch{}
+    if(status==="authorized"){
+      app.log.warn({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha,failureKind},"KAIRO_MARKETING_SHADOW_EVIDENCE_CONTROL_RETRY");
+      return;
+    }
+    if(status===undefined){
+      app.log.error({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha,failureKind},"KAIRO_MARKETING_SHADOW_EVIDENCE_CONTROL_CHECK_FAILED");
+      return;
+    }
+    evidenceTerminal=true;
+    stopEvidenceTimer();
+    app.log.error({runId:evidenceRequest.runId,releaseSha:evidenceRequest.releaseSha,status,failureKind},"KAIRO_MARKETING_SHADOW_EVIDENCE_FAILED");
+  }finally{evidenceTickRunning=false}
+}
+
+function stopEvidenceTimer(){if(evidenceTimer){clearInterval(evidenceTimer);evidenceTimer=undefined}}
+
 async function shutdown(): Promise<void> {
   if(metricTimer)clearInterval(metricTimer);
+  stopEvidenceTimer();
   await app.close();
   await pool.end();
 }
