@@ -3,7 +3,7 @@
   "sliceId": "VS-66",
   "title": "Closed-World Claim Generation Contract",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -69,10 +69,10 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-66@1.0",
-      "commitSha": null,
+      "commitSha": "205f69ea47044fcbce9fdeadb9e5923c3b97d8ae",
       "by": "Sazid Khan",
       "at": "2026-08-20T00:56:00+02:00",
-      "rationale": "Owner explicitly authorized creation of agent/vs66-closed-world-claim-contract, staging only VS-66 files, committing, pushing and opening one draft PR."
+      "rationale": "Owner authorized VS-66 implementation. Exact implementation head 205f69ea47044fcbce9fdeadb9e5923c3b97d8ae passed Product Intake #657, Security #756 and CI #890 including governance/preflight, clean PostgreSQL 18 verification, runtime verification and dashboard build."
     },
     {
       "type": "certification",
@@ -81,7 +81,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Pending Product Intake, Security and full CI on an exact candidate SHA."
+      "rationale": "Owner said Go to the explicitly presented VS-66 certification + merge gate. Certification is refreshing on this governance-only frozen candidate before exact-head merge."
     },
     {
       "type": "release",
@@ -90,7 +90,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "No release is authorized by the VS-66 publication approval."
+      "rationale": "VS-66 merge does not authorize a production release or Run C execution."
     },
     {
       "type": "production-enable",
@@ -99,25 +99,28 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Fresh Run C production execution requires a separate exact-release gate after VS-66 certification."
+      "rationale": "Fresh Run C production execution requires a separate exact-release gate after VS-66 merge."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 80,
-    "testing": 20,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 80,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
+    "status": "running",
     "commitSha": null,
     "evidence": [
       "Run B quality evaluation vs65-quality-evaluation-20260819-a persisted 4/4 pairs and found motorcycle-carousel-03 Truth failure for both lanes.",
-      "GitHub issue #58 and #116 preserve the Run B machine evidence and evaluator audit trail."
+      "VS-66 implementation head 205f69ea47044fcbce9fdeadb9e5923c3b97d8ae: Product Intake #657 PASS; Security #756 PASS; CI #890 PASS.",
+      "CI #890 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
+      "The PR diff contains only VS-66 worker tests/contract code, delivery governance and docs; benchmark fixtures and Corey pin remain unchanged.",
+      "No production deployment, authorization or Run C model execution occurred during implementation."
     ]
   },
   "release": {
@@ -141,7 +144,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-66.md",
-    "implementationPr": null,
+    "implementationPr": "#119",
     "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
