@@ -1,31 +1,34 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-70",
-  "title": "Publish Now",
+  "sliceId": "VS-71",
+  "title": "Research Start Flow Repair",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-13", "FR-14", "FR-15"],
+  "requirements": ["FR-08", "FR-09", "FR-10"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-07", "VS-15"],
+  "dependencies": ["VS-04", "VS-70"],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/src/publishing-service.ts",
-    "packages/domain/src/publishing-service.test.ts",
-    "apps/web/src/lib/publishing-api.ts",
-    "apps/web/app/brands/[brandId]/campaigns/actions.ts",
-    "apps/web/app/brands/[brandId]/campaigns/[campaignId]/schedule-form.tsx",
-    "docs/slices/VS-70.md",
-    "docs/plans/VS-70-implementation.md",
+    "apps/api/src/app.ts",
+    "apps/api/src/server.ts",
+    "apps/api/src/research-api.test.ts",
+    "apps/web/src/lib/kairo-api.ts",
+    "apps/web/app/brands/[brandId]/ideas/actions.ts",
+    "apps/web/app/brands/[brandId]/ideas/[ideaId]/page.tsx",
+    "apps/worker/package.json",
+    "packages/domain/src/research-service.ts",
+    "packages/domain/src/research-service.test.ts",
+    "docs/slices/VS-71.md",
+    "docs/plans/VS-71-implementation.md",
     "delivery/current-slice.json",
-    "delivery/context/VS-69-closeout.md",
-    "delivery/context/VS-70.md"
+    "delivery/context/VS-71.md"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
@@ -33,54 +36,54 @@
     "apps/api/migrations/**",
     "apps/api/src/publishing-execution-postgres-store.ts",
     "apps/api/src/publishing-worker-server.ts",
-    "apps/worker/**",
-    "evaluation/**"
+    "apps/worker/src/publishing*",
+    "packages/domain/src/publishing*"
   ],
   "impact": {
-    "areas": ["frontend", "api", "customer-flow", "operations-support"],
+    "areas": ["frontend", "api", "architecture", "customer-flow", "operations-support"],
     "notes": [
-      "Adds a primary Publish now interaction without expanding publication authority or bypassing exact-version human approval.",
-      "Immediate publication is represented as a due publishing command and remains subject to the existing worker, adapter, retry, idempotency and reconciliation controls.",
-      "Scheduled publishing remains available as a secondary action under FR-14.",
-      "VS-70 does not add Instagram media transport; immediate UI exposure is limited to the currently complete LinkedIn text payload."
+      "Repairs the missing FR-08/FR-09 production command path from a new Idea into the already-implemented Researcher and Strategist pipeline.",
+      "Public evidence remains bounded and untrusted; persisted Research and Angles continue through existing domain validation, tenant isolation and runtime provenance controls.",
+      "No publishing authority, scheduling behavior, database schema or release infrastructure is changed.",
+      "FR-10 is included only to verify that the repaired lineage makes the existing Campaign creation flow reachable."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-70@1.0",
+      "version": "VS-71@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T03:50:00+02:00",
-      "rationale": "Owner said Go to the explicitly bounded next gate: reconcile VS-69 closeout and implement the VS-70 Publish now path while preserving scheduled publishing."
+      "at": "2026-08-20T10:31:00+02:00",
+      "rationale": "Owner explicitly said 'Fix it' after the missing production Research-start path was identified as the blocker preventing the TheDukeMan Idea from reaching Angles, Campaign and the VS-70 Publish now smoke. Scope is limited to restoring already-approved FR-08/FR-09 behavior and regression-verifying FR-10."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-70@1.0",
+      "version": "VS-71@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "No new publishing authority or autonomous-publication policy is introduced; destination-specific human approval remains mandatory."
+      "rationale": "No new evidence, agent, privacy, publishing or human-control policy is introduced; approved PRD/TRD and VS-04 controls remain authoritative."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-70@1.0",
-      "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
+      "version": "VS-71@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T03:50:00+02:00",
-      "rationale": "Owner explicitly authorized the bounded VS-69 closeout plus VS-70 Publish now implementation and the branch/stage/commit/push/draft-PR publication actions. Exact implementation head 346c3586b1f8e569250c566e296a877614c47648 passed Product Intake #668, Security #767 and CI #907."
+      "at": "2026-08-20T10:31:00+02:00",
+      "rationale": "Owner explicitly instructed implementation of the diagnosed repair. This grants only bounded runtime implementation and deterministic verification on a branch; it does not grant certification, merge, release, deployment or production enablement."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-70@1.0",
-      "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
-      "by": "Sazid Khan",
-      "at": "2026-08-20T05:35:00+02:00",
-      "rationale": "Owner said Go to the explicitly presented certification-only gate. Exact implementation head 346c3586b1f8e569250c566e296a877614c47648 passed Product Intake #668, Security #767 and CI #907 including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build, with zero review threads."
+      "status": "pending",
+      "version": "VS-71@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Requires exact-SHA evidence after tests and CI pass."
     },
     {
       "type": "release",
@@ -105,23 +108,16 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "implementation": 10,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
-    "evidence": [
-      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: Product Intake #668 PASS.",
-      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: Security #767 PASS including gitleaks.",
-      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: CI #907 PASS.",
-      "CI #907 passed clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification and dashboard build.",
-      "PR #123 had zero unresolved review threads and was mergeable before certification freeze.",
-      "Publish now preserves destination-specific approval, current-version checks, idempotency, durable worker dispatch, retry/reconciliation and provider-confirmed success semantics; scheduled publishing remains available."
-    ]
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
   },
   "release": {
     "status": "not-authorized",
@@ -134,19 +130,19 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Users can queue an approved publish-ready version immediately without losing Kairo's approval, deterministic publishing, failure or scheduling guarantees.",
+    "expectedOutcome": "A new Idea can progress through real evidence-backed Research and candidate Angles from the product UI, making the existing Campaign and governed Publish now flow reachable without seed-only helpers.",
     "metrics": [
-      "publish-now command creation success",
-      "duplicate command prevention",
-      "provider-confirmed publication status",
-      "publishing failure visibility",
-      "scheduled publishing regression"
+      "research start command success",
+      "evidence-backed dossier persistence",
+      "candidate Angle creation",
+      "repeat request duplicate prevention",
+      "Idea-to-Campaign reachability"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-70.md",
-    "implementationPr": "#123",
-    "evidence": ["delivery/context/VS-69-closeout.md", "delivery/context/VS-70.md"]
+    "specification": "docs/slices/VS-71.md",
+    "implementationPr": null,
+    "evidence": ["delivery/context/VS-71.md"]
   },
   "maxAttempts": 3
 }
