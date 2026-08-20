@@ -39,8 +39,8 @@
     "areas": ["api", "architecture", "customer-flow", "operations-support"],
     "notes": [
       "Repairs a production-observed FR-08 evidence relevance defect where ambiguous Idea wording caused OpenAlex/Crossref results from unrelated management/government domains to enter the Research dossier.",
-      "Adds deterministic Idea/evidence relevance gating before model synthesis so agents cannot convert clearly off-topic retrieval into authoritative Research.",
-      "Adds a focused public research query derived from the already-approved public research query boundary; private Brand context is not newly exposed to retrieval providers.",
+      "Adds deterministic research-query/evidence relevance gating before model synthesis so agents cannot convert clearly off-topic retrieval into authoritative Research.",
+      "Focused retrieval is derived from the already-approved public research query boundary; private Brand context is not newly exposed to retrieval providers.",
       "Research fails safely without persistence when too little relevant evidence remains.",
       "No new provider, agent authority, publishing authority, database schema, infrastructure or release workflow is introduced."
     ]
@@ -68,10 +68,10 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-72@1.0",
-      "commitSha": null,
+      "commitSha": "8497f9d965f6460d869974909492a330135b3116",
       "by": "Sazid Khan",
       "at": "2026-08-20T20:58:00+02:00",
-      "rationale": "Owner explicitly instructed the diagnosed research-quality defect to be fixed. This authorises bounded branch implementation, tests and verification only; it does not authorise certification, merge, release, production enablement or deployment."
+      "rationale": "Owner instructed the production research-quality defect to be fixed. Exact implementation candidate 8497f9d965f6460d869974909492a330135b3116 passed Product Intake #683, Security baseline #783 and CI #926 after preserving the existing public-query enrichment boundary; CI passed governance/preflight, clean PostgreSQL 18 migrations, dependency audit, runtime typecheck, all runtime tests including VS-72 relevance regressions, runtime builds and dashboard build. This authorises implementation only; certification, merge, release, production enablement and deployment remain separate gates."
     },
     {
       "type": "certification",
@@ -105,8 +105,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 40,
-    "testing": 20,
+    "implementation": 100,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
