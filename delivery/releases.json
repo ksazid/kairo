@@ -52,6 +52,35 @@
         "status": "not-started",
         "evidence": []
       }
+    },
+    {
+      "id": "REL-002",
+      "sliceIds": ["VS-72"],
+      "status": "approved",
+      "commitSha": "5ec2ab1108ee1db79b818de121db0101e0f293f3",
+      "migrations": [],
+      "configurationChanges": [
+        "Set KAIRO_RELEASE_SHA to 5ec2ab1108ee1db79b818de121db0101e0f293f3 on the Kairo API during release execution; no database, provider, credential or web configuration change is required."
+      ],
+      "featureFlags": [
+        "No new feature flag is introduced by VS-72; existing capability gates, human approval controls and publishing safeguards remain unchanged."
+      ],
+      "smokeTests": [
+        "Exact merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 is tree-identical to checked PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd, which passed Product Intake #685, Security #785 and CI #928.",
+        "After API deployment, /health/live, /health/ready and /version must pass and /version must report releaseSha 5ec2ab1108ee1db79b818de121db0101e0f293f3.",
+        "Authenticated TheDukeMan research smoke must no longer admit clearly off-topic firm-innovation or state-owned-enterprise evidence for the motorcycle-mod Idea.",
+        "Research must either persist at least two materially relevant evidence items and grounded candidate Angles or fail safely before model persistence when the minimum relevance threshold is not met.",
+        "No Vercel rollout is required for VS-72 because this slice changes API/worker research relevance logic and no apps/web file."
+      ],
+      "rollbackStrategy": {
+        "summary": "If the VS-72 API deployment, health/version checks or authenticated Research smoke fails, stop the release, preserve Research/audit state, and redeploy the previously live Kairo API runtime (VS-71 lineage) without any database rollback because VS-72 contains no migrations. Restore the prior release SHA provenance and verify health plus the existing Idea-to-Research path before resuming traffic."
+      },
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-20T23:46:00+02:00",
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": []
+      }
     }
   ]
 }
