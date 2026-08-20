@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 const approvedMigration = "0022_marketing_shadow_evidence_authorizations.sql";
 const approvedRange = "0017_multichannel_approvals.sql..0022_marketing_shadow_evidence_authorizations.sql";
-const approvedMarketingAuthorization = "vs23-qualification-20260820-c";
+const approvedMarketingAuthorization = "vs23-qualification-20260820-d";
 const approvedMarketingEvidenceExport = "vs23-qualification-20260819-b";
 const approvedMarketingQualityAuthorization = "vs65-quality-evaluation-20260819-a";
 const requestedMigration = process.env.KAIRO_STARTUP_MIGRATION?.trim();
