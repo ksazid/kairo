@@ -3,7 +3,7 @@
   "sliceId": "VS-69",
   "title": "Run D Evidence Export and Quality Evaluation",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -73,34 +73,34 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-69@1.0",
-      "commitSha": null,
+      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
       "by": "Sazid Khan",
       "at": "2026-08-20T02:21:00+02:00",
-      "rationale": "Owner authorized the bounded Run-D export/source-pin rotation and fresh one-shot evaluator execution needed to complete this gate."
+      "rationale": "Owner authorized the bounded Run-D export/source-pin rotation and fresh one-shot evaluator execution. Exact implementation head 55e929af1a44f93e179937f6ecc3ce07bbbbe5fe passed Product Intake #666, Security #765 and CI #904 including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-69@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Pending exact-head Product Intake, Security and full CI."
+      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T02:30:47+02:00",
+      "rationale": "Owner's Go covered the complete explicitly presented Run-D export + governed evaluator gate. Exact implementation head 55e929af1a44f93e179937f6ecc3ce07bbbbe5fe passed Product Intake #666, Security #765 and CI #904."
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-69@1.0",
-      "commitSha": null,
+      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
       "by": "Sazid Khan",
       "at": "2026-08-20T02:21:00+02:00",
-      "rationale": "Owner authorized deployment after exact-head certification and merge; release will be bound to the green implementation SHA."
+      "rationale": "Owner authorized deployment of the green Run-D export/evaluator-source rotation after the final governance-only head passes same-head gates and is merged."
     },
     {
       "type": "production-enable",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-69@1.0",
-      "commitSha": null,
+      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
       "by": "Sazid Khan",
       "at": "2026-08-20T02:21:00+02:00",
       "rationale": "Owner authorized one SELECT-only Run-D export and one fresh four-pair quality-evaluation execution after dormant exact-SHA deployment verification, followed by immediate trigger cleanup."
@@ -110,23 +110,25 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
     "evidence": [
       "Run D terminal marker KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE recorded four persisted pairs at exact source release 5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2.",
       "Run D cleanup deploy dep-da34dtabkg8c73fmjop0 is live with all Marketing Lab execution/startup actions disabled.",
-      "Existing exporter and quality-evaluation runner remain hard-pinned to Run B and require an explicit governed rotation before Run D can be read/evaluated."
+      "VS-69 implementation head 55e929af1a44f93e179937f6ecc3ce07bbbbe5fe: Product Intake #666 PASS; Security #765 PASS; CI #904 PASS.",
+      "CI #904 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
+      "The worker evaluator implementation, evaluator rubric/instructions, benchmark fixtures, provider/model/pricing, 65-second pacing and qualification thresholds were not changed."
     ]
   },
   "release": {
-    "status": "not-authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
@@ -155,7 +157,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-69.md",
-    "implementationPr": null,
+    "implementationPr": "#122",
     "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
