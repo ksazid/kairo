@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-68",
-  "title": "Run D Qualification Hardening and Authorization",
+  "sliceId": "VS-69",
+  "title": "Run D Evidence Export and Quality Evaluation",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -13,20 +13,17 @@
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-64", "VS-65", "VS-66", "VS-67"],
+  "dependencies": ["VS-65", "VS-68"],
   "blockers": [],
   "allowedPaths": [
-    "apps/worker/src/model-output-schemas.ts",
-    "apps/worker/src/model-gateway.ts",
-    "apps/worker/src/model-gateway-structured-output.test.ts",
-    "apps/worker/src/marketing-shadow-evidence-runner.ts",
-    "apps/worker/src/marketing-shadow-evidence-runner.test.ts",
-    "apps/api/src/marketing-shadow-evidence-run.ts",
-    "apps/api/src/marketing-shadow-evidence-run.test.ts",
-    "scripts/authorize-marketing-shadow-evidence.mjs",
+    "apps/api/src/marketing-shadow-quality-evaluation-run.ts",
+    "apps/api/src/marketing-shadow-quality-evaluation-run.test.ts",
+    "apps/api/src/marketing-shadow-quality-evaluation-postgres.integration.test.ts",
+    "scripts/export-marketing-shadow-evidence.mjs",
+    "scripts/authorize-marketing-shadow-quality-evaluation.mjs",
     "scripts/start-api.mjs",
-    "docs/slices/VS-68.md",
-    "docs/plans/VS-68-*.md",
+    "docs/slices/VS-69.md",
+    "docs/plans/VS-69-*.md",
     "delivery/**"
   ],
   "protectedPaths": [
@@ -34,101 +31,102 @@
     "infrastructure/**",
     "apps/web/**",
     "apps/api/migrations/**",
+    "apps/worker/src/marketing-shadow-quality-evaluator.ts",
+    "apps/worker/src/model-output-schemas.ts",
+    "apps/worker/src/model-gateway.ts",
+    "apps/worker/src/marketing-shadow-evidence-runner.ts",
     "evaluation/marketing-lab/**",
     "packages/**",
-    "scripts/export-marketing-shadow-evidence.mjs",
-    "scripts/authorize-marketing-shadow-quality-evaluation.mjs"
+    "scripts/authorize-marketing-shadow-evidence.mjs"
   ],
   "impact": {
-    "areas": ["architecture", "analytics", "deployment", "operations-support"],
+    "areas": ["analytics", "deployment", "operations-support"],
     "notes": [
-      "Run C remains immutable terminal evidence and is never retried or overwritten.",
-      "The approved four motorcycle fixtures, Corey source pin, DirectModel provider/model, pricing, 65-second pacing, Truth policy and qualification thresholds remain unchanged.",
-      "VS-68 constrains qualification structured output Claim IDs to the supplied benchmark lineage before provider generation and preserves Kairo's deterministic required-Claim completeness validator.",
-      "VS-68 adds bounded non-sensitive case/lane/stage failure provenance without persisting raw exception messages or model/provider bodies.",
-      "Reserved fresh run ID is vs23-qualification-20260820-d."
+      "Run D is immutable completed machine evidence and is the sole source for VS-69.",
+      "Source run is vs23-qualification-20260820-d at exact evidence release 5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2.",
+      "The SELECT-only exporter is rotated from Run B to Run D.",
+      "The already-certified VS-65 evaluator implementation and rubric remain unchanged; only the source run pin and fresh one-shot evaluator run ID change.",
+      "Fresh evaluator run ID is vs65-quality-evaluation-20260820-b.",
+      "No benchmark rerun, human evidence, comparator verdict, publishing, Hermes, provider/model/pricing or threshold change is authorized."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-68@1.0",
+      "version": "VS-69@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:41:00+02:00",
-      "rationale": "Owner explicitly instructed Kairo to proactively fix all errors after Run C and then execute a fresh Run D qualification attempt."
+      "at": "2026-08-20T02:21:00+02:00",
+      "rationale": "Owner said Go to the explicitly presented next gate: export persisted Run-D evidence, calculate measured cost/latency, and run the governed Truth + five-dimension evaluator."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-68@1.0",
+      "version": "VS-69@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "No Truth, quality, cost, latency, human-evidence, advancement or publishing policy changes are permitted in VS-68."
+      "rationale": "VS-69 changes no evaluator rubric, Truth rule, qualification threshold, human-evidence requirement, provider/model policy, publishing authority or advancement policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-68@1.0",
-      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
+      "version": "VS-69@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:41:00+02:00",
-      "rationale": "Owner authorized proactive deterministic fixes. Exact implementation head a89896fc76140e8737db6a3e74a4c2a0e3b7042d passed Product Intake #663, Security #762 and CI #900 including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."
+      "at": "2026-08-20T02:21:00+02:00",
+      "rationale": "Owner authorized the bounded Run-D export/source-pin rotation and fresh one-shot evaluator execution needed to complete this gate."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-68@1.0",
-      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
-      "by": "Sazid Khan",
-      "at": "2026-08-20T01:59:49+02:00",
-      "rationale": "Owner's explicit instruction covered the complete fix-and-Run-D recovery cycle. Exact implementation head a89896fc76140e8737db6a3e74a4c2a0e3b7042d passed Product Intake #663, Security #762 and CI #900 with zero review threads; subsequent change ef65984086921230c5913285560379bcf74a035e corrected documentation wording only."
+      "status": "pending",
+      "version": "VS-69@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Pending exact-head Product Intake, Security and full CI."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-68@1.0",
-      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
+      "status": "pending",
+      "version": "VS-69@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:41:00+02:00",
-      "rationale": "Owner explicitly authorized deploying the certified Run-D recovery implementation after the final governance-only candidate passes same-head gates and is merged."
+      "at": "2026-08-20T02:21:00+02:00",
+      "rationale": "Owner authorized deployment after exact-head certification and merge; release will be bound to the green implementation SHA."
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-68@1.0",
-      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
+      "status": "pending",
+      "version": "VS-69@1.0",
+      "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T01:41:00+02:00",
-      "rationale": "Owner authorized exactly one fresh release-bound Run D paired evidence execution after dormant exact-SHA deployment verification, followed by immediate trigger cleanup."
+      "at": "2026-08-20T02:21:00+02:00",
+      "rationale": "Owner authorized one SELECT-only Run-D export and one fresh four-pair quality-evaluation execution after dormant exact-SHA deployment verification, followed by immediate trigger cleanup."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "implementation": 10,
+    "testing": 0,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
+    "status": "not-started",
+    "commitSha": null,
     "evidence": [
-      "Run C terminal record is immutable: failed / marketing_shadow_execution_error at release f34d8ab83d72b99ca8c5279f4806ebf8c60c2aaf.",
-      "Run C cleanup deploy dep-da33r48ae00c73a26o5g is live with all Marketing Lab execution/startup actions disabled.",
-      "Code inspection found the prior Groq strict carousel schema constrained structural shape and lengths but not benchmark-specific Claim membership; VS-68 now derives exact Claim enums from the approved qualification context.",
-      "VS-68 implementation head a89896fc76140e8737db6a3e74a4c2a0e3b7042d: Product Intake #663 PASS; Security #762 PASS; CI #900 PASS; zero review threads.",
-      "CI #900 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
-      "No benchmark fixture, Corey pin, DirectModel provider/model, pricing, pacing, Truth policy or qualification threshold changed."
+      "Run D terminal marker KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE recorded four persisted pairs at exact source release 5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2.",
+      "Run D cleanup deploy dep-da34dtabkg8c73fmjop0 is live with all Marketing Lab execution/startup actions disabled.",
+      "Existing exporter and quality-evaluation runner remain hard-pinned to Run B and require an explicit governed rotation before Run D can be read/evaluated."
     ]
   },
   "release": {
-    "status": "pending",
+    "status": "not-authorized",
     "releaseId": null
   },
   "rollback": {
@@ -138,22 +136,26 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Exactly one fresh Run D completes or fails with bounded case/lane/stage provenance, followed immediately by cleanup with all execution triggers disabled.",
+    "expectedOutcome": "Run D export yields exactly four immutable pairs, measured cost/latency aggregates are computed from persisted metadata, and a fresh four-pair blind quality evaluation completes or fails durably before all triggers are disabled.",
     "metrics": [
-      "strict benchmark Claim lineage",
-      "authorization consumed once",
-      "pair count",
-      "runtime route stability",
+      "Run D source release integrity",
+      "export pair count",
+      "Native mean and total cost",
+      "Corey mean and total cost",
       "cost ratio",
+      "Native mean latency",
+      "Corey mean latency",
       "latency ratio",
-      "terminal durable status",
-      "bounded failure provenance",
+      "quality evaluator pair count",
+      "Truth pass/fail per candidate",
+      "five quality dimensions per candidate",
+      "evaluator provenance",
       "trigger cleanup"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-68.md",
-    "implementationPr": "#121",
+    "specification": "docs/slices/VS-69.md",
+    "implementationPr": null,
     "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
