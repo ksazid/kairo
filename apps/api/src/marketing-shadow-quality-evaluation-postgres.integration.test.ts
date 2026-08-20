@@ -3,6 +3,8 @@ import { Pool } from "pg";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   MARKETING_SHADOW_QUALITY_EVALUATION_RUN_ID,
+  MARKETING_SHADOW_QUALITY_SOURCE_RELEASE_SHA,
+  MARKETING_SHADOW_QUALITY_SOURCE_RUN_ID,
   PgMarketingShadowQualityEvaluationRunStore,
   type MarketingShadowQualityEvaluationEvidence,
 } from "./marketing-shadow-quality-evaluation-run";
@@ -64,8 +66,8 @@ suite("PostgreSQL Marketing Lab quality evaluation store", () => {
     const evidence: MarketingShadowQualityEvaluationEvidence = {
       schemaVersion: 1,
       evidenceKind: "vs65-marketing-quality-evaluation",
-      sourceRunId: "vs23-qualification-20260819-b",
-      sourceReleaseSha: "c3b881d3f8294da2114128439ae2f2eb0fe3c2da",
+      sourceRunId: MARKETING_SHADOW_QUALITY_SOURCE_RUN_ID,
+      sourceReleaseSha: MARKETING_SHADOW_QUALITY_SOURCE_RELEASE_SHA,
       evaluatorReleaseSha: releaseSha,
       datasetId: "marketing-lab-cross-sector-synthetic-fixtures",
       candidateMapping: {
