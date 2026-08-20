@@ -57,7 +57,7 @@ function storeMock(overrides: Partial<MarketingShadowQualityEvaluationRunStore> 
   };
 }
 
-describe("VS-65 quality evaluation execution", () => {
+describe("VS-69 Run-D quality evaluation execution", () => {
   it("is dormant unless the exact one-shot quality run is enabled", () => {
     expect(marketingShadowQualityEvaluationRequestFromEnv({})).toBeNull();
     expect(marketingShadowQualityEvaluationRequestFromEnv({
@@ -138,7 +138,7 @@ describe("VS-65 quality evaluation execution", () => {
     expect(store.fail).toHaveBeenCalledWith(request.runId, "agent_runtime_error");
   });
 
-  it("evaluates exactly the four persisted Run-B pairs with fixed pacing and blind A/B labels", async () => {
+  it("evaluates exactly the four persisted Run-D pairs with fixed pacing and blind A/B labels", async () => {
     const source = sourceEvidence();
     const pool = {
       query: vi.fn().mockResolvedValue({
@@ -154,6 +154,8 @@ describe("VS-65 quality evaluation execution", () => {
     const pause = vi.fn().mockResolvedValue(undefined);
 
     const evidence = await runMarketingShadowQualityEvaluation(pool, runtime, releaseSha, pause);
+    expect(evidence.sourceRunId).toBe("vs23-qualification-20260820-d");
+    expect(evidence.sourceReleaseSha).toBe("5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2");
     expect(evidence.pairs).toHaveLength(4);
     expect(evidence.pairs.map((pair) => pair.caseId)).toEqual([
       "motorcycle-carousel-01",
