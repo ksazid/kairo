@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { oidcClientId, oidcConfiguration } from "../../../src/lib/oidc";
-import { KAIRO_ACCESS_TOKEN_COOKIE, OIDC_TRANSACTION_COOKIE } from "../../../src/lib/oidc-session";
+import { accessTokenCookieNames, OIDC_TRANSACTION_COOKIE } from "../../../src/lib/oidc-session";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(destination);
-  response.cookies.delete(KAIRO_ACCESS_TOKEN_COOKIE);
+  const secure = request.nextUrl.protocol === "https:";
+  for (const name of accessTokenCookieNames()) {
+    response.cookies.set(name, "", { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 0 });
+  }
   response.cookies.set(OIDC_TRANSACTION_COOKIE, "", { httpOnly: true, sameSite: "lax", path: "/auth", maxAge: 0 });
   return response;
 }

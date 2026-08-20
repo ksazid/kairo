@@ -2,7 +2,10 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const OIDC_TRANSACTION_COOKIE = "kairo_oidc_tx";
 export const KAIRO_ACCESS_TOKEN_COOKIE = "kairo_access_token";
+export const KAIRO_ACCESS_TOKEN_PARTS_COOKIE = "kairo_access_token_parts";
 export const OIDC_TRANSACTION_MAX_AGE_SECONDS = 600;
+export const KAIRO_ACCESS_TOKEN_COOKIE_CHUNK_SIZE = 3000;
+export const KAIRO_ACCESS_TOKEN_MAX_PARTS = 8;
 
 const TRANSACTION_SIGNATURE_CONTEXT = "kairo-oidc-tx-v1";
 
@@ -23,6 +26,52 @@ export function safeReturnTo(value: string | null | undefined): string {
   } catch {
     return "/";
   }
+}
+
+export function accessTokenPartCookieName(index: number): string {
+  if (!Number.isInteger(index) || index < 0 || index >= KAIRO_ACCESS_TOKEN_MAX_PARTS) {
+    throw new RangeError("Access-token cookie part index is out of range");
+  }
+  return `${KAIRO_ACCESS_TOKEN_COOKIE}.${index}`;
+}
+
+export function accessTokenCookieNames(): string[] {
+  return [
+    KAIRO_ACCESS_TOKEN_COOKIE,
+    KAIRO_ACCESS_TOKEN_PARTS_COOKIE,
+    ...Array.from({ length: KAIRO_ACCESS_TOKEN_MAX_PARTS }, (_, index) => accessTokenPartCookieName(index)),
+  ];
+}
+
+export function splitAccessTokenCookie(token: string): string[] {
+  if (!token) throw new Error("Access token is required");
+  const parts: string[] = [];
+  for (let offset = 0; offset < token.length; offset += KAIRO_ACCESS_TOKEN_COOKIE_CHUNK_SIZE) {
+    parts.push(token.slice(offset, offset + KAIRO_ACCESS_TOKEN_COOKIE_CHUNK_SIZE));
+  }
+  if (parts.length > KAIRO_ACCESS_TOKEN_MAX_PARTS) {
+    throw new Error("Access token exceeds the bounded browser-session cookie budget");
+  }
+  return parts;
+}
+
+export function readAccessTokenCookie(getCookie: (name: string) => string | undefined): string | null {
+  const legacy = getCookie(KAIRO_ACCESS_TOKEN_COOKIE);
+  const rawPartCount = getCookie(KAIRO_ACCESS_TOKEN_PARTS_COOKIE);
+  if (!rawPartCount) return legacy ?? null;
+
+  const partCount = Number(rawPartCount);
+  if (!Number.isInteger(partCount) || partCount < 2 || partCount > KAIRO_ACCESS_TOKEN_MAX_PARTS) {
+    return legacy ?? null;
+  }
+
+  const parts: string[] = [];
+  for (let index = 0; index < partCount; index += 1) {
+    const part = getCookie(accessTokenPartCookieName(index));
+    if (!part) return null;
+    parts.push(part);
+  }
+  return parts.join("") || null;
 }
 
 function transactionSignature(payload: string, secret: string): string {
