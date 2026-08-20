@@ -23,3 +23,4 @@ jobs:
           KAIRO_RELEASE_SHA: 5ec2ab1108ee1db79b818de121db0101e0f293f3
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
         run: node scripts/prod-smoke-readonly.mjs
+# rerun after release SHA env correction
