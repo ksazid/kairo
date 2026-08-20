@@ -40,7 +40,7 @@ class Repo implements PublishingRepository {
 }
 
 describe("PublishingService", () => {
-  it("keeps identical retries idempotent, rejects conflicting retries, and records successful dispatch", async () => {
+  it("queues publish-now at one captured server timestamp, keeps retries idempotent, and records successful dispatch", async () => {
     const repo = new Repo();
     const core = { getBrandForAccount: async () => ({ id: "brand-1", workspaceId: "ws-1", name: "Kairo", createdAt: "2026-08-13T00:00:00Z" }) } as unknown as KairoRepository;
     const campaigns = {
@@ -55,6 +55,22 @@ describe("PublishingService", () => {
     const reviews = { getApproval: async () => approval, getApprovalForDestination: async () => approval, listApprovals: async () => [approval] } as unknown as ReviewRepository;
     const service = new PublishingService(core, campaigns, reviews, repo, () => new Date("2026-08-14T10:00:00Z"));
     const account = await service.connect("human-1", "brand-1", { channel: "linkedin", accountRef: "page-1", displayName: "Kairo", credentialRef: "vault://1", capabilities: ["publish-text"] });
+
+    const immediate = await service.schedule("human-1", "brand-1", "campaign-1", "asset-1", {
+      channelAccountId: account.id,
+      contentType: "text",
+    });
+    expect(immediate).toMatchObject({
+      status: "scheduled",
+      scheduledFor: "2026-08-14T10:00:00.000Z",
+      createdAt: "2026-08-14T10:00:00.000Z",
+    });
+    const immediateDuplicate = await service.schedule("human-1", "brand-1", "campaign-1", "asset-1", {
+      channelAccountId: account.id,
+      contentType: "text",
+    });
+    expect(immediateDuplicate.id).toBe(immediate.id);
+
     const request = { channelAccountId: account.id, contentType: "text" as const, scheduledFor: "2026-08-14T10:00:00Z" };
     const command = await service.schedule("human-1", "brand-1", "campaign-1", "asset-1", request);
     const duplicate = await service.schedule("human-1", "brand-1", "campaign-1", "asset-1", request);
