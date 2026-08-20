@@ -25,6 +25,10 @@ import{registerGoogleDriveContentAssetRoutes}from"./google-drive-content-assets-
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
+import{ResearcherOrchestrator,isResearcherOutput}from"@kairo/worker/researcher";
+import{StrategistOrchestrator,isStrategistOutput}from"@kairo/worker/strategist";
+import{SourceRoutingToolGateway}from"@kairo/worker/discovery-provider";
+import{CrossrefResearchEvidenceProvider,OpenAlexResearchEvidenceProvider}from"@kairo/worker/research-evidence-adapters";
 import{validateCarouselPlan}from"@kairo/domain/creative-formats";
 import{PerformanceCollectionWorker}from"@kairo/worker/performance";
 import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
@@ -49,6 +53,7 @@ function requiredEnv(name: string): string {
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const coreStore=new PgKairoRepository(pool);
+const researchStore=new PgResearchRepository(pool);
 const campaignStore=new PgCampaignRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
 const groupStore=new PgChannelAccountGroupRepository(pool);
@@ -59,6 +64,8 @@ const agentOutputValidators={
   "content-draft@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),
   "critic-review@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
+  "research-dossier@1":isResearcherOutput,
+  "strategist-angles@1":isStrategistOutput,
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
 };
 const evidenceRequest=marketingShadowEvidenceRequestFromEnv();
@@ -71,6 +78,38 @@ const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
 const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRuntime,directRuntime):(hermesRuntime??directRuntime??undefined);
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
+const researchTools=createResearchToolGateway();
+const researcher=runtime?new ResearcherOrchestrator(researchTools,runtime,researchStore):undefined;
+const strategist=runtime?new StrategistOrchestrator(runtime,researchStore):undefined;
+const ideaDeveloper=researcher&&strategist?{
+  async develop(input:{accountId:string;workspaceId:string;brandId:string;brandContextVersion:string;idea:{id:string;title:string;premise:string}}){
+    let bundle=await researchStore.getIdeaBundle(input.accountId,input.brandId,input.idea.id);
+    if(!bundle)throw new Error("Idea not found");
+    if(!bundle.research){
+      await researcher.run({
+        accountId:input.accountId,
+        workspaceId:input.workspaceId,
+        brandId:input.brandId,
+        brandContextVersion:input.brandContextVersion,
+        idea:input.idea,
+        query:researchQuery(input.idea),
+        maxEvidence:8,
+      });
+      bundle=await researchStore.getIdeaBundle(input.accountId,input.brandId,input.idea.id);
+    }
+    if(!bundle?.research)throw new Error("Research development did not persist a dossier");
+    if(bundle.angles.length<2){
+      await strategist.run({
+        accountId:input.accountId,
+        workspaceId:input.workspaceId,
+        brandId:input.brandId,
+        brandContextVersion:input.brandContextVersion,
+        idea:input.idea,
+        research:bundle.research,
+      });
+    }
+  },
+}:undefined;
 const identityVerifier=new OidcJwtVerifier({
   issuer:requiredEnv("OIDC_ISSUER"),
   audience:requiredEnv("OIDC_AUDIENCE"),
@@ -79,7 +118,8 @@ const identityVerifier=new OidcJwtVerifier({
 const app = buildApp({
   store:coreStore,
   discoveryStore: new PgDiscoveryRepository(pool),
-  researchStore: new PgResearchRepository(pool),
+  researchStore,
+  ...(ideaDeveloper?{ideaDeveloper}:{}),
   campaignStore,
   reviewStore:new PgReviewRepository(pool),
   publishingStore,
@@ -233,6 +273,27 @@ async function shutdown(): Promise<void> {
 
 process.once("SIGTERM", () => void shutdown());
 process.once("SIGINT", () => void shutdown());
+
+function createResearchToolGateway(){
+  const openAlex=new OpenAlexResearchEvidenceProvider({apiKey:process.env.OPENALEX_API_KEY});
+  const crossref=new CrossrefResearchEvidenceProvider({contactEmail:process.env.CROSSREF_CONTACT_EMAIL,userAgent:"Kairo/0.1"});
+  const fallback={
+    async discover(request:Parameters<OpenAlexResearchEvidenceProvider["discover"]>[0]){
+      const settled=await Promise.allSettled([openAlex.discover(request),crossref.discover(request)]);
+      const evidence=settled.flatMap(result=>result.status==="fulfilled"?result.value:[]);
+      const unique=[...new Map(evidence.map(item=>[item.sourceUrl,item])).values()].slice(0,request.maxResults);
+      if(unique.length)return unique;
+      const failed=settled.find(result=>result.status==="rejected");
+      if(failed?.status==="rejected")throw failed.reason;
+      return [];
+    },
+  };
+  return new SourceRoutingToolGateway(fallback,{openalex:openAlex,crossref});
+}
+
+function researchQuery(idea:{title:string;premise:string}){
+  return `${idea.title}. ${idea.premise}`.replace(/\s+/g," ").trim().slice(0,1_000);
+}
 
 function metaInstagramConfig(){
   const names=["META_APP_ID","META_APP_SECRET","META_GRAPH_VERSION","META_OAUTH_REDIRECT_URI","CHANNEL_CREDENTIAL_ENCRYPTION_KEY"] as const;

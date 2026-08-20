@@ -8,7 +8,9 @@ version = "0.1.0"
 description = "Kairo-owned zero-tool bridge around a pinned Hermes Agent runtime"
 requires-python = ">=3.11,<3.14"
 dependencies = [
-  "hermes-agent @ git+https://github.com/NousResearch/hermes-agent.git@9de9c25f620ff7f1ce0fd5457d596052d5159596",
+  # PyPI 0.18.2 was published with Trusted Publishing from the same upstream
+  # commit previously fetched via VCS: 9de9c25f620ff7f1ce0fd5457d596052d5159596.
+  "hermes-agent==0.18.2",
   "fastapi==0.133.1",
   "uvicorn[standard]==0.41.0",
 ]

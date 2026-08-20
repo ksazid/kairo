@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getBrand, getIdea } from "../../../../../src/lib/kairo-api";
 import { KairoProductShell, KairoScopePicker } from "../../../../kairo-product-shell";
-import { editAngleAction, selectAngleAction } from "../actions";
+import { editAngleAction, selectAngleAction, startResearchAction } from "../actions";
 
 type Params = Promise<{ brandId: string; ideaId: string }>;
 type SearchParams = Promise<{ notice?: string; error?: string }>;
@@ -39,6 +39,10 @@ export default async function IdeaPage({ params, searchParams }: { params: Param
             <p className="eyebrow">Research</p>
             <h2>Evidence gathering has not started.</h2>
             <p>Kairo keeps the Idea intact until evidence-backed Research is available. Final content generation remains outside this step.</p>
+            <form action={startResearchAction.bind(null, brand.id, idea.id)}>
+              <button className="primary-button" type="submit">Start research</button>
+            </form>
+            <small>Kairo will search bounded public research sources using this Idea, validate Claims, and prepare candidate Angles for your review.</small>
           </section>
         ) : (
           <>

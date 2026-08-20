@@ -6,6 +6,7 @@
   "exports": {
     "./hunter": "./src/hunter.ts",
     "./researcher": "./src/researcher.ts",
+    "./strategist": "./src/strategist.ts",
     "./discovery-provider": "./src/discovery-provider.ts",
     "./public-discovery-adapters": "./src/public-discovery-adapters.ts",
     "./research-evidence-adapters": "./src/research-evidence-adapters.ts",
