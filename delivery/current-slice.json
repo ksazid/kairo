@@ -111,8 +111,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 45,
-    "testing": 0,
+    "implementation": 70,
+    "testing": 10,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -144,7 +144,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-71.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/124",
     "evidence": ["delivery/context/VS-71.md"]
   },
   "maxAttempts": 3
