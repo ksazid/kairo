@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Client } from "pg";
 
-const APPROVED_RUN_ID = "vs65-quality-evaluation-20260819-a";
-const SOURCE_RUN_ID = "vs23-qualification-20260819-b";
-const SOURCE_RELEASE_SHA = "c3b881d3f8294da2114128439ae2f2eb0fe3c2da";
+const APPROVED_RUN_ID = "vs65-quality-evaluation-20260820-b";
+const SOURCE_RUN_ID = "vs23-qualification-20260820-d";
+const SOURCE_RELEASE_SHA = "5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2";
 const AUTHORIZATION_MIGRATION = "0022_marketing_shadow_evidence_authorizations.sql";
 const RUN_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const SHA_PATTERN = /^[0-9a-f]{40}$/;
@@ -66,12 +66,12 @@ try {
       [SOURCE_RUN_ID],
     );
     const sourceRow = source.rows[0];
-    if (!sourceRow) throw new Error("Run-B source evidence is missing");
+    if (!sourceRow) throw new Error("Approved source evidence is missing");
     if (sourceRow.release_sha !== SOURCE_RELEASE_SHA || sourceRow.status !== "completed" || sourceRow.failure_kind) {
-      throw new Error("Run-B source evidence is not the approved completed evidence");
+      throw new Error("Approved source evidence is not the exact completed evidence");
     }
     if (!sourceRow.evidence || sourceRow.evidence.schemaVersion !== 1 || sourceRow.evidence.evidenceKind !== "vs23-shadow-qualification-paired-execution" || !Array.isArray(sourceRow.evidence.pairs) || sourceRow.evidence.pairs.length !== 4) {
-      throw new Error("Run-B source evidence has an unexpected schema or pair count");
+      throw new Error("Approved source evidence has an unexpected schema or pair count");
     }
 
     const priorRun = await client.query(
