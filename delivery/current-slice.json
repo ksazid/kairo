@@ -77,10 +77,10 @@
       "type": "certification",
       "status": "approved",
       "version": "VS-72@1.0",
-      "commitSha": "13e53c2941163f7233a81a4db511327e20f8bbc3",
+      "commitSha": "5ec2ab1108ee1db79b818de121db0101e0f293f3",
       "by": "Sazid Khan",
-      "at": "2026-08-20T21:21:00+02:00",
-      "rationale": "Owner said 'Go' immediately after the exact current PR head 13e53c2941163f7233a81a4db511327e20f8bbc3 was reported as implementation-complete with Product Intake #684, Security baseline #784 and CI #927 passing and zero unresolved review threads. This approval is certification only; it does not authorise merge, release, production enablement or deployment."
+      "at": "2026-08-20T23:39:00+02:00",
+      "rationale": "Owner explicitly said 'Certify' after the release gate identified exact main merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 as requiring certification. Git comparison proves the merge commit is tree-identical to exact checked PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd with zero changed files; that head passed Product Intake #685, Security baseline #785 and CI #928. This certifies the exact merge SHA only and does not authorize release, production enablement or deployment."
     },
     {
       "type": "release",
@@ -113,12 +113,13 @@
   },
   "certification": {
     "status": "passed",
-    "commitSha": "13e53c2941163f7233a81a4db511327e20f8bbc3",
+    "commitSha": "5ec2ab1108ee1db79b818de121db0101e0f293f3",
     "evidence": [
-      "Product Intake #684 passed for exact SHA 13e53c2941163f7233a81a4db511327e20f8bbc3 (run 32407831164).",
-      "Security baseline #784 passed for exact SHA 13e53c2941163f7233a81a4db511327e20f8bbc3 (run 32407831166).",
-      "CI #927 passed for exact SHA 13e53c2941163f7233a81a4db511327e20f8bbc3 (run 32407831128), including Hermes zero-tool verification, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime typecheck, all runtime tests, runtime builds, dashboard build and artifact upload.",
-      "PR #127 had zero unresolved inline review threads at certification."
+      "Exact merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 is tree-identical to checked PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd; Git compare reported zero changed files.",
+      "Product Intake #685 passed on tree-identical exact PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd (run 32408325129).",
+      "Security baseline #785 passed on tree-identical exact PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd (run 32408325162).",
+      "CI #928 passed on tree-identical exact PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd (run 32408325112), including Hermes zero-tool verification, clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime typecheck, all runtime tests, runtime builds, dashboard build and artifact upload.",
+      "PR #127 merged to main as 5ec2ab1108ee1db79b818de121db0101e0f293f3 with no code or file-content delta from a1f1f88200b3baf1bebae3c3570435e5a53caafd."
     ]
   },
   "release": {
