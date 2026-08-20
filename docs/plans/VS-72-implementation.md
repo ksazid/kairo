@@ -11,14 +11,14 @@ Use deterministic retrieval hygiene before model judgment. The Researcher should
 3. Add deterministic evidence relevance filtering using title + summary against title anchors and premise terms.
 4. Require at least two relevant evidence items (bounded by requested max) before invoking the Researcher or persisting Research.
 5. Tighten the Researcher instruction to reject off-topic synthesis and make direct Idea relevance explicit.
-6. Wire the focused scholarly query from the API runtime while preserving the existing general query and source-specific OpenAlex/Crossref routing.
+6. Use the focused query for the Researcher's primary bounded public-content-search request while preserving the existing optional source-specific OpenAlex/Crossref routing.
 7. Run CI/security/preflight/runtime verification and inspect review threads.
 8. Stop at certification gate; do not merge or deploy without a separate user approval.
 
 ## Design constraints
 
 - No new dependency.
-- No private Brand Brain data enters global-public scholarly search.
+- No private Brand Brain data enters global-public scholarly search beyond the existing user-Idea research request boundary.
 - No changes to database schema or publishing controls.
 - Deterministic filtering must be explainable and testable; no embedding/model call is added merely to decide whether evidence is relevant.
 - Failure with insufficient relevant evidence is preferable to persisting unrelated Claims.
