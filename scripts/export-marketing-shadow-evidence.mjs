@@ -1,7 +1,7 @@
 import { Client } from "pg";
 
-const APPROVED_RUN_ID = "vs23-qualification-20260819-b";
-const APPROVED_EVIDENCE_RELEASE_SHA = "c3b881d3f8294da2114128439ae2f2eb0fe3c2da";
+const APPROVED_RUN_ID = "vs23-qualification-20260820-d";
+const APPROVED_EVIDENCE_RELEASE_SHA = "5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2";
 const RUN_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 
 const requestedRunId = process.env.KAIRO_STARTUP_MARKETING_SHADOW_EVIDENCE_EXPORT?.trim() ?? "";
