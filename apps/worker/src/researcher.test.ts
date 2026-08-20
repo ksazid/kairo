@@ -56,6 +56,13 @@ describe("VS-04 Researcher orchestration", () => {
     expect(sink.saved).toHaveLength(1);
   });
 
+  it("rejects an empty Claim set before authoritative persistence", async () => {
+    const sink = new FakeSink();
+    const researcher = new ResearcherOrchestrator(new FakeTools(), new FakeRuntime(output({ claims: [] })), sink);
+    await expect(researcher.run(input)).rejects.toThrow(/schema validation/i);
+    expect(sink.saved).toHaveLength(0);
+  });
+
   it("rejects fabricated evidence references before authoritative persistence", async () => {
     const sink = new FakeSink();
     const researcher = new ResearcherOrchestrator(new FakeTools(), new FakeRuntime(output({ claims: [{ ...output().claims[0]!, evidenceIds: ["fabricated-evidence"] }] })), sink);
