@@ -27,10 +27,21 @@ import type { MetricName } from "@kairo/domain/analytics";
 import { LearningService, type LearningRepository } from "@kairo/domain/learning-service";
 import type { IdentityVerifier } from "./auth";
 
+export interface IdeaDevelopmentPort {
+  develop(input: {
+    accountId: string;
+    workspaceId: string;
+    brandId: string;
+    brandContextVersion: string;
+    idea: { id: string; title: string; premise: string };
+  }): Promise<void>;
+}
+
 export interface BuildAppOptions {
   store: KairoRepository;
   discoveryStore?: DiscoveryRepository;
   researchStore?: ResearchRepository;
+  ideaDeveloper?: IdeaDevelopmentPort;
   campaignStore?: CampaignRepository;
   contentGenerator?: ContentGenerationPort;
   reviewStore?: ReviewRepository;
@@ -183,6 +194,26 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
       const bundle = await research.getIdea(account.id, request.params.brandId, request.params.ideaId);
       if (!bundle) throw new ResourceNotFoundError("Idea not found");
       return bundle;
+    });
+
+    app.post<{ Params: { brandId: string; ideaId: string } }>("/api/v1/brands/:brandId/ideas/:ideaId/research", async (request, reply) => {
+      const account = await authenticate(request, reply, service, options.identityVerifier);
+      if (!account) return;
+      const bundle = await research.getIdea(account.id, request.params.brandId, request.params.ideaId);
+      if (!bundle) throw new ResourceNotFoundError("Idea not found");
+      if (bundle.research && bundle.angles.length >= 2) return bundle;
+      if (!options.ideaDeveloper) throw new DomainValidationError("Research generation is not configured");
+      const brand = await service.getBrand(account.id, request.params.brandId);
+      await options.ideaDeveloper.develop({
+        accountId: account.id,
+        workspaceId: brand.workspaceId,
+        brandId: brand.id,
+        brandContextVersion: `${brand.id}@current`,
+        idea: { id: bundle.idea.id, title: bundle.idea.title, premise: bundle.idea.premise },
+      });
+      const developed = await research.getIdea(account.id, request.params.brandId, request.params.ideaId);
+      if (!developed?.research || developed.angles.length < 2) throw new DomainValidationError("Research development did not produce usable candidate Angles");
+      return developed;
     });
 
     app.post<{ Params: { brandId: string; ideaId: string; angleId: string }; Body: { expectedVersion: number } }>(
