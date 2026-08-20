@@ -41,7 +41,7 @@ export class StrategistOrchestrator {
       approvedContextVersion: input.brandContextVersion,
       capabilities: [],
       task: {
-        instruction: "Generate multiple distinct candidate Angles from validated Research. Cite only supplied Claim IDs. Do not draft final content or invent evidence, results, or first-person experience.",
+        instruction: "Generate 2 to 5 distinct candidate Angles from validated Research. Cite only supplied Claim IDs. Do not draft final content or invent evidence, results, or first-person experience. Return exactly one JSON object with a candidates array. Every candidate must contain non-empty title, framing, audience, objective, hookDirection, expectedValue, recommendedFormat and recommendedChannel; effort must be low, medium or high; supportingClaimIds must be a non-empty array containing only Claim IDs supplied in context. Make the candidates meaningfully different from one another so a human can choose a direction.",
         context: {
           idea: input.idea,
           research: {
