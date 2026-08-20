@@ -3,7 +3,7 @@
   "sliceId": "VS-72",
   "title": "Research Evidence Relevance Repair",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "release-pending",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-08", "FR-09"],
@@ -84,12 +84,12 @@
     },
     {
       "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "REL-002",
+      "commitSha": "5ec2ab1108ee1db79b818de121db0101e0f293f3",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T23:46:00+02:00",
+      "rationale": "Owner said 'Go' immediately after VS-72 exact merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 was certified and the next gate was explicitly identified as release. This authorizes REL-002 for that exact certified SHA only. Deployment and production verification remain execution steps; production-enable remains a separate gate if required."
     },
     {
       "type": "production-enable",
@@ -108,7 +108,7 @@
     "implementation": 100,
     "testing": 100,
     "certification": 100,
-    "release": 0,
+    "release": 50,
     "validation": 0
   },
   "certification": {
@@ -123,8 +123,8 @@
     ]
   },
   "release": {
-    "status": "not-authorized",
-    "releaseId": null
+    "status": "approved",
+    "releaseId": "REL-002"
   },
   "rollback": {
     "status": "ready",
