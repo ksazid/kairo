@@ -20,6 +20,7 @@
     "apps/api/src/research-api.test.ts",
     "apps/worker/src/researcher.ts",
     "apps/worker/src/researcher.test.ts",
+    "apps/worker/src/researcher-enrichment.test.ts",
     "docs/slices/VS-72.md",
     "docs/plans/VS-72-implementation.md",
     "delivery/current-slice.json",
@@ -39,7 +40,7 @@
     "notes": [
       "Repairs a production-observed FR-08 evidence relevance defect where ambiguous Idea wording caused OpenAlex/Crossref results from unrelated management/government domains to enter the Research dossier.",
       "Adds deterministic Idea/evidence relevance gating before model synthesis so agents cannot convert clearly off-topic retrieval into authoritative Research.",
-      "Adds a focused scholarly query derived only from the user Idea; Brand Brain/private Brand context is not sent into global-public scholarly search.",
+      "Adds a focused public research query derived from the already-approved public research query boundary; private Brand context is not newly exposed to retrieval providers.",
       "Research fails safely without persistence when too little relevant evidence remains.",
       "No new provider, agent authority, publishing authority, database schema, infrastructure or release workflow is introduced."
     ]
@@ -104,8 +105,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
+    "implementation": 40,
+    "testing": 20,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -137,7 +138,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-72.md",
-    "implementationPr": null,
+    "implementationPr": "#127",
     "evidence": ["delivery/context/VS-72.md"]
   },
   "maxAttempts": 3
