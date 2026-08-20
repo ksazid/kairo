@@ -4,8 +4,8 @@ import type { ResearchDossier } from "@kairo/domain/research";
 import { ResearcherOrchestrator, type ResearcherOutput } from "./researcher";
 
 const baseEvidence: DiscoveryEvidence = {
-  title: "General evidence",
-  summary: "General public evidence",
+  title: "Public web topic evidence",
+  summary: "General public evidence about the public web topic.",
   sourceUrl: "https://example.com/general",
   platform: "web",
   retrievedAt: "2026-08-15T16:00:00.000Z",
@@ -13,8 +13,8 @@ const baseEvidence: DiscoveryEvidence = {
 };
 
 const openAlexEvidence: DiscoveryEvidence = {
-  title: "Scholarly evidence",
-  summary: "Peer reviewed evidence",
+  title: "AI agent evaluation scholarly evidence",
+  summary: "Peer reviewed evidence about AI agent evaluation.",
   sourceUrl: "https://doi.org/10.1234/shared",
   platform: "research",
   publishedAt: "2026-07-01T00:00:00.000Z",
@@ -25,7 +25,7 @@ const openAlexEvidence: DiscoveryEvidence = {
 
 const crossrefDuplicate: DiscoveryEvidence = {
   ...openAlexEvidence,
-  title: "Same DOI from Crossref",
+  title: "Same AI agent evaluation DOI from Crossref",
   sourceUrl: "https://doi.org/10.1234/SHARED?utm_source=test",
   provider: "crossref",
   providerVersion: "rest-v1",
@@ -122,7 +122,7 @@ describe("VS-22 Researcher evidence enrichment", () => {
     const researcher = new ResearcherOrchestrator(tools, runtime, sink);
 
     const { publicResearchQuery: _omitted, ...withoutPublicResearch } = input;
-    const result = await researcher.run(withoutPublicResearch);
+    const result = await researcher.run({ ...withoutPublicResearch, maxEvidence: 1 });
 
     expect(tools.requests).toHaveLength(1);
     expect(tools.requests[0]?.input.source).toBeUndefined();
