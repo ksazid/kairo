@@ -24,6 +24,7 @@
     "apps/web/app/brands/[brandId]/ideas/[ideaId]/page.tsx",
     "apps/worker/package.json",
     "apps/worker/src/researcher.ts",
+    "apps/worker/src/researcher.test.ts",
     "apps/worker/src/strategist.ts",
     "packages/domain/src/research-service.ts",
     "packages/domain/src/research-service.test.ts",
@@ -111,8 +112,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 70,
-    "testing": 10,
+    "implementation": 72,
+    "testing": 15,
     "certification": 0,
     "release": 0,
     "validation": 0
