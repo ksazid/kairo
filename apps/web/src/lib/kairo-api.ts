@@ -126,6 +126,10 @@ export async function getIdea(brandId: string, ideaId: string): Promise<IdeaBund
   return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}`), "Unable to load Idea");
 }
 
+export async function startIdeaResearch(brandId: string, ideaId: string): Promise<IdeaBundleView> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}/research`, { method: "POST" }), "Unable to start Research");
+}
+
 export async function selectIdeaAngle(brandId: string, ideaId: string, angleId: string, expectedVersion: number): Promise<AngleView[]> {
   return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/ideas/${encodeURIComponent(ideaId)}/angles/${encodeURIComponent(angleId)}/select`, { method: "POST", body: JSON.stringify({ expectedVersion }) }), "Unable to select Angle");
 }
