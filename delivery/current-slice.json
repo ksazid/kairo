@@ -35,7 +35,7 @@
     "packages/domain/src/publishing*"
   ],
   "impact": {
-    "areas": ["api", "architecture", "ai-quality", "customer-flow", "operations-support"],
+    "areas": ["api", "architecture", "customer-flow", "operations-support"],
     "notes": [
       "Repairs a production-observed FR-08 evidence relevance defect where ambiguous Idea wording caused OpenAlex/Crossref results from unrelated management/government domains to enter the Research dossier.",
       "Adds deterministic Idea/evidence relevance gating before model synthesis so agents cannot convert clearly off-topic retrieval into authoritative Research.",
