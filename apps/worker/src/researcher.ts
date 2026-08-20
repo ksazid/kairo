@@ -54,13 +54,14 @@ export class ResearcherOrchestrator {
   async run(input: ResearcherRunInput): Promise<ResearcherRunResult> {
     const query = input.query.trim();
     if (!query) throw new Error("Research query is required");
+    const focusedQuery = buildFocusedResearchQuery(input.idea);
     const publicResearchQuery = normalizePublicResearchQuery(input.publicResearchQuery);
     const maxEvidence = Math.min(Math.max(input.maxEvidence ?? 8, 1), 12);
 
     const generalRequest = prepareToolRequest({
       capability: "public-content-search",
       scope: { visibility: "global-public" },
-      input: { query, maxResults: maxEvidence },
+      input: { query: focusedQuery, maxResults: maxEvidence },
       timeoutMs: 30_000,
     });
     const general = await this.tools.invoke<DiscoveryEvidence[]>(generalRequest);
