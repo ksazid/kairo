@@ -13,16 +13,28 @@ class TestIdentityVerifier implements IdentityVerifier {
   }
 }
 
-async function setup() {
+async function setup(options: { developmentEnabled?: boolean } = {}) {
   const store = new MemoryKairoRepository();
   const researchStore = new MemoryResearchRepository(store);
-  const app = buildApp({ store, researchStore, identityVerifier: new TestIdentityVerifier() });
+  let developCalls = 0;
+  const ideaDeveloper = options.developmentEnabled === false ? undefined : {
+    develop: async (input: { idea: { id: string } }) => {
+      developCalls += 1;
+      await researchStore.seedReadyBundle(input.idea.id);
+    },
+  };
+  const app = buildApp({
+    store,
+    researchStore,
+    ...(ideaDeveloper ? { ideaDeveloper } : {}),
+    identityVerifier: new TestIdentityVerifier(),
+  });
   const auth = { authorization: "Bearer test:alice" };
   const created = await app.inject({ method: "POST", url: "/api/v1/workspaces", headers: auth, payload: { workspaceName: "Studio", brandName: "Kairo" } });
-  return { app, auth, brandId: created.json().brand.id as string, researchStore };
+  return { app, auth, brandId: created.json().brand.id as string, researchStore, developCalls: () => developCalls };
 }
 
-describe("VS-04 Research and Angle API", () => {
+describe("VS-04/VS-71 Research and Angle API", () => {
   it("creates and lists a user-originated Idea with truthful lineage", async () => {
     const context = await setup();
     const created = await context.app.inject({
@@ -43,6 +55,45 @@ describe("VS-04 Research and Angle API", () => {
     const response = await context.app.inject({ method: "GET", url: `/api/v1/brands/${context.brandId}/ideas`, headers: { authorization: "Bearer test:bob" } });
     expect(response.statusCode).toBe(404);
     expect(response.json().code).toBe("resource_not_found");
+
+    const created = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas`, headers: context.auth, payload: { title: "Private Idea", premise: "Keep Brand scope" } });
+    const develop = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas/${created.json().id}/research`, headers: { authorization: "Bearer test:bob" } });
+    expect(develop.statusCode).toBe(404);
+    expect(develop.json().code).toBe("resource_not_found");
+    await context.app.close();
+  });
+
+  it("starts Research and candidate Angles through the authenticated product operation and is repeat-safe", async () => {
+    const context = await setup();
+    const created = await context.app.inject({
+      method: "POST", url: `/api/v1/brands/${context.brandId}/ideas`, headers: context.auth,
+      payload: { title: "External mods to improve performance", premise: "Research evidence for motorcycle performance modifications" },
+    });
+    const ideaId = created.json().id as string;
+
+    const developed = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas/${ideaId}/research`, headers: context.auth });
+    expect(developed.statusCode).toBe(200);
+    expect(developed.json().research.claims[0]).toMatchObject({ verificationState: "supported" });
+    expect(developed.json().angles).toHaveLength(2);
+    expect(context.developCalls()).toBe(1);
+
+    const repeated = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas/${ideaId}/research`, headers: context.auth });
+    expect(repeated.statusCode).toBe(200);
+    expect(repeated.json().research.id).toBe(developed.json().research.id);
+    expect(repeated.json().angles).toHaveLength(2);
+    expect(context.developCalls()).toBe(1);
+    await context.app.close();
+  });
+
+  it("fails clearly when Research generation runtime is unavailable", async () => {
+    const context = await setup({ developmentEnabled: false });
+    const created = await context.app.inject({
+      method: "POST", url: `/api/v1/brands/${context.brandId}/ideas`, headers: context.auth,
+      payload: { title: "Research me", premise: "Need public evidence" },
+    });
+    const response = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas/${created.json().id}/research`, headers: context.auth });
+    expect(response.statusCode).toBe(400);
+    expect(response.json().detail).toBe("Research generation is not configured");
     await context.app.close();
   });
 
@@ -50,7 +101,8 @@ describe("VS-04 Research and Angle API", () => {
     const context = await setup();
     const created = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas`, headers: context.auth, payload: { title: "Evidence", premise: "Use supported facts" } });
     const ideaId = created.json().id as string;
-    await context.researchStore.seedReadyBundle(ideaId);
+    const developed = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas/${ideaId}/research`, headers: context.auth });
+    expect(developed.statusCode).toBe(200);
 
     const detail = await context.app.inject({ method: "GET", url: `/api/v1/brands/${context.brandId}/ideas/${ideaId}`, headers: context.auth });
     expect(detail.statusCode).toBe(200);
