@@ -44,7 +44,7 @@ async function authorizedFetch(path: string, init?: RequestInit): Promise<Respon
   return fetch(`${apiBase()}${path}`, {
     ...init,
     cache: "no-store",
-    headers: { authorization: `Bearer ${token}`, "content-type": "application/json", ...(init?.headers ?? {}) },
+    headers: { authorization: `Bearer ${token}`, ...(init?.body != null ? { "content-type": "application/json" } : {}), ...(init?.headers ?? {}) },
   });
 }
 
