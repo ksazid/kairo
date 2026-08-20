@@ -3,7 +3,7 @@
   "sliceId": "VS-68",
   "title": "Run D Qualification Hardening and Authorization",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-12", "FR-17", "FR-20"],
@@ -44,7 +44,7 @@
     "notes": [
       "Run C remains immutable terminal evidence and is never retried or overwritten.",
       "The approved four motorcycle fixtures, Corey source pin, DirectModel provider/model, pricing, 65-second pacing, Truth policy and qualification thresholds remain unchanged.",
-      "VS-68 removes the provider-schema gap that allowed arbitrary Claim IDs through strict JSON shape validation before Kairo lineage validation.",
+      "VS-68 constrains qualification structured output Claim IDs to the supplied benchmark lineage before provider generation and preserves Kairo's deterministic required-Claim completeness validator.",
       "VS-68 adds bounded non-sensitive case/lane/stage failure provenance without persisting raw exception messages or model/provider bodies.",
       "Reserved fresh run ID is vs23-qualification-20260820-d."
     ]
@@ -72,60 +72,63 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-68@1.0",
-      "commitSha": null,
+      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
       "by": "Sazid Khan",
       "at": "2026-08-20T01:41:00+02:00",
-      "rationale": "Owner authorized proactive deterministic fixes required to make the fresh Run D attempt robust while preserving the existing qualification policy and runtime route."
+      "rationale": "Owner authorized proactive deterministic fixes. Exact implementation head a89896fc76140e8737db6a3e74a4c2a0e3b7042d passed Product Intake #663, Security #762 and CI #900 including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-68@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Pending Product Intake, Security and full CI on an exact implementation SHA."
+      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T01:59:49+02:00",
+      "rationale": "Owner's explicit instruction covered the complete fix-and-Run-D recovery cycle. Exact implementation head a89896fc76140e8737db6a3e74a4c2a0e3b7042d passed Product Intake #663, Security #762 and CI #900 with zero review threads; subsequent change ef65984086921230c5913285560379bcf74a035e corrected documentation wording only."
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-68@1.0",
-      "commitSha": null,
+      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
       "by": "Sazid Khan",
       "at": "2026-08-20T01:41:00+02:00",
-      "rationale": "Owner authorized deployment for the fresh Run D attempt after exact-head certification and merge; approval will be bound to the green implementation SHA before release."
+      "rationale": "Owner explicitly authorized deploying the certified Run-D recovery implementation after the final governance-only candidate passes same-head gates and is merged."
     },
     {
       "type": "production-enable",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-68@1.0",
-      "commitSha": null,
+      "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
       "by": "Sazid Khan",
       "at": "2026-08-20T01:41:00+02:00",
-      "rationale": "Owner authorized exactly one fresh Run D paired evidence execution after exact-head certification and dormant release verification."
+      "rationale": "Owner authorized exactly one fresh release-bound Run D paired evidence execution after dormant exact-SHA deployment verification, followed by immediate trigger cleanup."
     }
   ],
   "decisionIds": [],
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "a89896fc76140e8737db6a3e74a4c2a0e3b7042d",
     "evidence": [
-      "Run C terminal record: failed / marketing_shadow_execution_error at release f34d8ab83d72b99ca8c5279f4806ebf8c60c2aaf.",
+      "Run C terminal record is immutable: failed / marketing_shadow_execution_error at release f34d8ab83d72b99ca8c5279f4806ebf8c60c2aaf.",
       "Run C cleanup deploy dep-da33r48ae00c73a26o5g is live with all Marketing Lab execution/startup actions disabled.",
-      "Code inspection found Groq strict carousel schema constrained shape and lengths but not dynamic benchmark Claim membership or required-Claim completeness."
+      "Code inspection found the prior Groq strict carousel schema constrained structural shape and lengths but not benchmark-specific Claim membership; VS-68 now derives exact Claim enums from the approved qualification context.",
+      "VS-68 implementation head a89896fc76140e8737db6a3e74a4c2a0e3b7042d: Product Intake #663 PASS; Security #762 PASS; CI #900 PASS; zero review threads.",
+      "CI #900 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
+      "No benchmark fixture, Corey pin, DirectModel provider/model, pricing, pacing, Truth policy or qualification threshold changed."
     ]
   },
   "release": {
-    "status": "not-authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
@@ -150,7 +153,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-68.md",
-    "implementationPr": null,
+    "implementationPr": "#121",
     "evidence": ["GitHub issue #58", "GitHub issue #116"]
   },
   "maxAttempts": 3
