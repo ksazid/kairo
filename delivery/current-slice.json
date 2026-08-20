@@ -3,7 +3,7 @@
   "sliceId": "VS-70",
   "title": "Publish Now",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-13", "FR-14", "FR-15"],
@@ -68,19 +68,19 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-70@1.0",
-      "commitSha": null,
+      "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
       "by": "Sazid Khan",
       "at": "2026-08-20T03:50:00+02:00",
-      "rationale": "Owner explicitly authorized the bounded VS-69 closeout plus VS-70 Publish now implementation and the branch/stage/commit/push/draft-PR publication actions."
+      "rationale": "Owner explicitly authorized the bounded VS-69 closeout plus VS-70 Publish now implementation and the branch/stage/commit/push/draft-PR publication actions. Exact implementation head 346c3586b1f8e569250c566e296a877614c47648 passed Product Intake #668, Security #767 and CI #907."
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-70@1.0",
+      "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T05:35:00+02:00",
+      "rationale": "Owner said Go to the explicitly presented certification-only gate. Exact implementation head 346c3586b1f8e569250c566e296a877614c47648 passed Product Intake #668, Security #767 and CI #907 including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build, with zero review threads."
     },
     {
       "type": "release",
@@ -105,16 +105,23 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 80,
-    "testing": 0,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
+    "evidence": [
+      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: Product Intake #668 PASS.",
+      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: Security #767 PASS including gitleaks.",
+      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: CI #907 PASS.",
+      "CI #907 passed clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification and dashboard build.",
+      "PR #123 had zero unresolved review threads and was mergeable before certification freeze.",
+      "Publish now preserves destination-specific approval, current-version checks, idempotency, durable worker dispatch, retry/reconciliation and provider-confirmed success semantics; scheduled publishing remains available."
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -138,7 +145,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-70.md",
-    "implementationPr": null,
+    "implementationPr": "#123",
     "evidence": ["delivery/context/VS-69-closeout.md", "delivery/context/VS-70.md"]
   },
   "maxAttempts": 3
