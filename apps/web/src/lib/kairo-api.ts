@@ -11,6 +11,7 @@ import type {
   PutBrandBrainFieldRequest,
   SessionResponse,
 } from "@kairo/contracts";
+import { readAccessTokenCookie } from "./oidc-session";
 
 export class KairoApiError extends Error {
   constructor(message: string, readonly status: number) { super(message); }
@@ -36,7 +37,10 @@ export interface LearningView{id:string;workspaceId:string;brandId:string;statem
 export interface ExperimentView{id:string;workspaceId:string;brandId:string;hypothesis:string;variants:Array<{id:string;description:string}>;primaryMetric:string;status:"draft"|"completed";createdAt:string;winnerVariantId?:string;resultSummary?:string}
 
 function apiBase(): string { return (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, ""); }
-async function accessToken(): Promise<string | null> { return (await cookies()).get("kairo_access_token")?.value ?? null; }
+async function accessToken(): Promise<string | null> {
+  const store = await cookies();
+  return readAccessTokenCookie((name) => store.get(name)?.value);
+}
 
 async function authorizedFetch(path: string, init?: RequestInit): Promise<Response | null> {
   const token = await accessToken();
