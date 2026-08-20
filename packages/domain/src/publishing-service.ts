@@ -75,7 +75,7 @@ export class PublishingService {
     brandId: string,
     campaignId: string,
     assetId: string,
-    input: { channelAccountId: string; contentType: PublishContentType; mediaItems?: PublishMediaItem[]; options?: PublishOptions; scheduledFor: string },
+    input: { channelAccountId: string; contentType: PublishContentType; mediaItems?: PublishMediaItem[]; options?: PublishOptions; scheduledFor?: string },
   ) {
     const detail = await this.campaigns.getCampaign(accountId, brandId, campaignId);
     if (!detail) throw new ResourceNotFoundError("Campaign not found");
@@ -89,9 +89,16 @@ export class PublishingService {
       accountRef: channel.accountRef,
     });
     if (!approval) throw new ResourceNotFoundError("Content Approval not found for destination");
+
+    const createdAt = this.now().toISOString();
+    const immediate = input.scheduledFor === undefined;
+    const request = { ...input, scheduledFor: input.scheduledFor ?? createdAt };
     const existing = await this.publishing.getCommandByApproval(accountId, brandId, approval.id);
     if (existing) {
-      if (!sameScheduleRequest(existing, input)) throw new ConcurrencyConflictError("Destination already has a different publish command");
+      const comparable = immediate && Date.parse(existing.scheduledFor) === Date.parse(existing.createdAt)
+        ? { ...request, scheduledFor: existing.scheduledFor }
+        : request;
+      if (!sameScheduleRequest(existing, comparable)) throw new ConcurrencyConflictError("Destination already has a different publish command");
       return existing;
     }
     return this.publishing.saveCommand(
@@ -101,11 +108,11 @@ export class PublishingService {
         approval,
         currentVersionId: version.id,
         channelAccount: channel,
-        contentType: input.contentType,
-        mediaItems: input.mediaItems,
-        options: input.options,
-        scheduledFor: input.scheduledFor,
-        createdAt: this.now().toISOString(),
+        contentType: request.contentType,
+        mediaItems: request.mediaItems,
+        options: request.options,
+        scheduledFor: request.scheduledFor,
+        createdAt,
       }),
     );
   }

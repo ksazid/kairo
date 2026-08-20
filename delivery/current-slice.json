@@ -1,109 +1,104 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-69",
-  "title": "Run D Evidence Export and Quality Evaluation",
+  "sliceId": "VS-70",
+  "title": "Publish Now",
   "status": "active",
   "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-12", "FR-17", "FR-20"],
+  "requirements": ["FR-13", "FR-14", "FR-15"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": ["VS-65", "VS-68"],
+  "dependencies": ["VS-07", "VS-15"],
   "blockers": [],
   "allowedPaths": [
-    "apps/api/src/marketing-shadow-quality-evaluation-run.ts",
-    "apps/api/src/marketing-shadow-quality-evaluation-run.test.ts",
-    "apps/api/src/marketing-shadow-quality-evaluation-postgres.integration.test.ts",
-    "scripts/export-marketing-shadow-evidence.mjs",
-    "scripts/authorize-marketing-shadow-quality-evaluation.mjs",
-    "scripts/start-api.mjs",
-    "docs/slices/VS-69.md",
-    "docs/plans/VS-69-*.md",
-    "delivery/**"
+    "packages/domain/src/publishing-service.ts",
+    "packages/domain/src/publishing-service.test.ts",
+    "apps/web/src/lib/publishing-api.ts",
+    "apps/web/app/brands/[brandId]/campaigns/actions.ts",
+    "apps/web/app/brands/[brandId]/campaigns/[campaignId]/schedule-form.tsx",
+    "docs/slices/VS-70.md",
+    "docs/plans/VS-70-implementation.md",
+    "delivery/current-slice.json",
+    "delivery/context/VS-69-closeout.md",
+    "delivery/context/VS-70.md"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/web/**",
     "apps/api/migrations/**",
-    "apps/worker/src/marketing-shadow-quality-evaluator.ts",
-    "apps/worker/src/model-output-schemas.ts",
-    "apps/worker/src/model-gateway.ts",
-    "apps/worker/src/marketing-shadow-evidence-runner.ts",
-    "evaluation/marketing-lab/**",
-    "packages/**",
-    "scripts/authorize-marketing-shadow-evidence.mjs"
+    "apps/api/src/publishing-execution-postgres-store.ts",
+    "apps/api/src/publishing-worker-server.ts",
+    "apps/worker/**",
+    "evaluation/**"
   ],
   "impact": {
-    "areas": ["analytics", "deployment", "operations-support"],
+    "areas": ["frontend", "api", "customer-flow", "operations-support"],
     "notes": [
-      "Run D is immutable completed machine evidence and is the sole source for VS-69.",
-      "Source run is vs23-qualification-20260820-d at exact evidence release 5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2.",
-      "The SELECT-only exporter is rotated from Run B to Run D.",
-      "The already-certified VS-65 evaluator implementation and rubric remain unchanged; only the source run pin and fresh one-shot evaluator run ID change.",
-      "Fresh evaluator run ID is vs65-quality-evaluation-20260820-b.",
-      "No benchmark rerun, human evidence, comparator verdict, publishing, Hermes, provider/model/pricing or threshold change is authorized."
+      "Adds a primary Publish now interaction without expanding publication authority or bypassing exact-version human approval.",
+      "Immediate publication is represented as a due publishing command and remains subject to the existing worker, adapter, retry, idempotency and reconciliation controls.",
+      "Scheduled publishing remains available as a secondary action under FR-14.",
+      "VS-70 does not add Instagram media transport; immediate UI exposure is limited to the currently complete LinkedIn text payload."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-69@1.0",
+      "version": "VS-70@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-20T02:21:00+02:00",
-      "rationale": "Owner said Go to the explicitly presented next gate: export persisted Run-D evidence, calculate measured cost/latency, and run the governed Truth + five-dimension evaluator."
+      "at": "2026-08-20T03:50:00+02:00",
+      "rationale": "Owner said Go to the explicitly bounded next gate: reconcile VS-69 closeout and implement the VS-70 Publish now path while preserving scheduled publishing."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-69@1.0",
+      "version": "VS-70@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-69 changes no evaluator rubric, Truth rule, qualification threshold, human-evidence requirement, provider/model policy, publishing authority or advancement policy."
+      "rationale": "No new publishing authority or autonomous-publication policy is introduced; destination-specific human approval remains mandatory."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-69@1.0",
-      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
+      "version": "VS-70@1.0",
+      "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
       "by": "Sazid Khan",
-      "at": "2026-08-20T02:21:00+02:00",
-      "rationale": "Owner authorized the bounded Run-D export/source-pin rotation and fresh one-shot evaluator execution. Exact implementation head 55e929af1a44f93e179937f6ecc3ce07bbbbe5fe passed Product Intake #666, Security #765 and CI #904 including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."
+      "at": "2026-08-20T03:50:00+02:00",
+      "rationale": "Owner explicitly authorized the bounded VS-69 closeout plus VS-70 Publish now implementation and the branch/stage/commit/push/draft-PR publication actions. Exact implementation head 346c3586b1f8e569250c566e296a877614c47648 passed Product Intake #668, Security #767 and CI #907."
     },
     {
       "type": "certification",
       "status": "approved",
-      "version": "VS-69@1.0",
-      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
+      "version": "VS-70@1.0",
+      "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
       "by": "Sazid Khan",
-      "at": "2026-08-20T02:30:47+02:00",
-      "rationale": "Owner's Go covered the complete explicitly presented Run-D export + governed evaluator gate. Exact implementation head 55e929af1a44f93e179937f6ecc3ce07bbbbe5fe passed Product Intake #666, Security #765 and CI #904."
+      "at": "2026-08-20T05:35:00+02:00",
+      "rationale": "Owner said Go to the explicitly presented certification-only gate. Exact implementation head 346c3586b1f8e569250c566e296a877614c47648 passed Product Intake #668, Security #767 and CI #907 including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build, with zero review threads."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-69@1.0",
-      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
-      "by": "Sazid Khan",
-      "at": "2026-08-20T02:21:00+02:00",
-      "rationale": "Owner authorized deployment of the green Run-D export/evaluator-source rotation after the final governance-only head passes same-head gates and is merged."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-69@1.0",
-      "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
-      "by": "Sazid Khan",
-      "at": "2026-08-20T02:21:00+02:00",
-      "rationale": "Owner authorized one SELECT-only Run-D export and one fresh four-pair quality-evaluation execution after dormant exact-SHA deployment verification, followed by immediate trigger cleanup."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     }
   ],
   "decisionIds": [],
@@ -118,17 +113,18 @@
   },
   "certification": {
     "status": "passed",
-    "commitSha": "55e929af1a44f93e179937f6ecc3ce07bbbbe5fe",
+    "commitSha": "346c3586b1f8e569250c566e296a877614c47648",
     "evidence": [
-      "Run D terminal marker KAIRO_MARKETING_SHADOW_EVIDENCE_COMPLETE recorded four persisted pairs at exact source release 5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2.",
-      "Run D cleanup deploy dep-da34dtabkg8c73fmjop0 is live with all Marketing Lab execution/startup actions disabled.",
-      "VS-69 implementation head 55e929af1a44f93e179937f6ecc3ce07bbbbe5fe: Product Intake #666 PASS; Security #765 PASS; CI #904 PASS.",
-      "CI #904 passed clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build.",
-      "The worker evaluator implementation, evaluator rubric/instructions, benchmark fixtures, provider/model/pricing, 65-second pacing and qualification thresholds were not changed."
+      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: Product Intake #668 PASS.",
+      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: Security #767 PASS including gitleaks.",
+      "PR #123 implementation head 346c3586b1f8e569250c566e296a877614c47648: CI #907 PASS.",
+      "CI #907 passed clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification and dashboard build.",
+      "PR #123 had zero unresolved review threads and was mergeable before certification freeze.",
+      "Publish now preserves destination-specific approval, current-version checks, idempotency, durable worker dispatch, retry/reconciliation and provider-confirmed success semantics; scheduled publishing remains available."
     ]
   },
   "release": {
-    "status": "pending",
+    "status": "not-authorized",
     "releaseId": null
   },
   "rollback": {
@@ -138,27 +134,19 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": "Run D export yields exactly four immutable pairs, measured cost/latency aggregates are computed from persisted metadata, and a fresh four-pair blind quality evaluation completes or fails durably before all triggers are disabled.",
+    "expectedOutcome": "Users can queue an approved publish-ready version immediately without losing Kairo's approval, deterministic publishing, failure or scheduling guarantees.",
     "metrics": [
-      "Run D source release integrity",
-      "export pair count",
-      "Native mean and total cost",
-      "Corey mean and total cost",
-      "cost ratio",
-      "Native mean latency",
-      "Corey mean latency",
-      "latency ratio",
-      "quality evaluator pair count",
-      "Truth pass/fail per candidate",
-      "five quality dimensions per candidate",
-      "evaluator provenance",
-      "trigger cleanup"
+      "publish-now command creation success",
+      "duplicate command prevention",
+      "provider-confirmed publication status",
+      "publishing failure visibility",
+      "scheduled publishing regression"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-69.md",
-    "implementationPr": "#122",
-    "evidence": ["GitHub issue #58", "GitHub issue #116"]
+    "specification": "docs/slices/VS-70.md",
+    "implementationPr": "#123",
+    "evidence": ["delivery/context/VS-69-closeout.md", "delivery/context/VS-70.md"]
   },
   "maxAttempts": 3
 }
