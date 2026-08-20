@@ -3,7 +3,7 @@
   "sliceId": "VS-71",
   "title": "Research Start Flow Repair",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-08", "FR-09", "FR-10"],
@@ -84,12 +84,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-71@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Requires exact-SHA evidence after tests and CI pass."
+      "commitSha": "44260ccca65a72cbf6f7d3b0298cd820f0d5124f",
+      "by": "Sazid Khan",
+      "at": "2026-08-20T16:27:00+02:00",
+      "rationale": "Owner said 'Go' immediately after the exact VS-71 candidate SHA 44260ccca65a72cbf6f7d3b0298cd820f0d5124f was reported with Product Intake #675, Security #774 and CI #915 all passing. This accepts the certification evidence for that exact candidate only; it does not authorize merge, release, deployment or production enablement."
     },
     {
       "type": "release",
@@ -114,16 +114,21 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 78,
-    "testing": 20,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "44260ccca65a72cbf6f7d3b0298cd820f0d5124f",
+    "evidence": [
+      "Product Intake #675 passed for exact SHA 44260ccca65a72cbf6f7d3b0298cd820f0d5124f (run 32352010990)",
+      "Security baseline #774 passed for exact SHA 44260ccca65a72cbf6f7d3b0298cd820f0d5124f (run 32352010981)",
+      "CI #915 passed for exact SHA 44260ccca65a72cbf6f7d3b0298cd820f0d5124f, including Hermes zero-tool verification, PostgreSQL 18 migrations, dependency audit, preflight, runtime verification, dashboard build and artifact upload (run 32352010994)",
+      "PR #124 had zero unresolved inline review threads at certification"
+    ]
   },
   "release": {
     "status": "not-authorized",
