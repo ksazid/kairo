@@ -23,6 +23,8 @@
     "apps/web/app/brands/[brandId]/ideas/actions.ts",
     "apps/web/app/brands/[brandId]/ideas/[ideaId]/page.tsx",
     "apps/worker/package.json",
+    "apps/worker/src/researcher.ts",
+    "apps/worker/src/strategist.ts",
     "packages/domain/src/research-service.ts",
     "packages/domain/src/research-service.test.ts",
     "docs/slices/VS-71.md",
@@ -44,6 +46,7 @@
     "notes": [
       "Repairs the missing FR-08/FR-09 production command path from a new Idea into the already-implemented Researcher and Strategist pipeline.",
       "Public evidence remains bounded and untrusted; persisted Research and Angles continue through existing domain validation, tenant isolation and runtime provenance controls.",
+      "Researcher and Strategist prompts may be hardened only to make their already-defined validator contracts explicit to the configured runtime; no new agent authority is added.",
       "No publishing authority, scheduling behavior, database schema or release infrastructure is changed.",
       "FR-10 is included only to verify that the repaired lineage makes the existing Campaign creation flow reachable."
     ]
@@ -108,7 +111,7 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 10,
+    "implementation": 45,
     "testing": 0,
     "certification": 0,
     "release": 0,
