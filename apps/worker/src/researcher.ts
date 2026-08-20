@@ -54,7 +54,7 @@ export class ResearcherOrchestrator {
   async run(input: ResearcherRunInput): Promise<ResearcherRunResult> {
     const query = input.query.trim();
     if (!query) throw new Error("Research query is required");
-    const focusedQuery = buildFocusedResearchQuery(input.idea);
+    const focusedQuery = buildFocusedResearchQuery(query);
     const publicResearchQuery = normalizePublicResearchQuery(input.publicResearchQuery);
     const maxEvidence = Math.min(Math.max(input.maxEvidence ?? 8, 1), 12);
 
@@ -88,7 +88,7 @@ export class ResearcherOrchestrator {
     }
 
     const candidateEvidence = balancedUniqueEvidence(groups, maxEvidence);
-    const relevantEvidence = candidateEvidence.filter((item) => isEvidenceRelevantToIdea(item, input.idea));
+    const relevantEvidence = candidateEvidence.filter((item) => isEvidenceRelevantToResearch(item, [query, ...(publicResearchQuery ? [publicResearchQuery] : [])]));
     const minimumRelevantEvidence = Math.min(2, maxEvidence);
     if (relevantEvidence.length < minimumRelevantEvidence) {
       throw new Error(`Research has insufficient relevant evidence: ${relevantEvidence.length}/${minimumRelevantEvidence}`);
@@ -150,12 +150,12 @@ export class ResearcherOrchestrator {
   }
 }
 
-export function buildFocusedResearchQuery(idea: { title: string; premise: string }): string {
-  const raw = `${idea.title}. ${idea.premise}`.replace(/\s+/g, " ").trim().slice(0, 1_000);
-  const titleTerms = distinctiveTerms(idea.title);
-  const premiseTerms = distinctiveTerms(idea.premise);
-  const outcomes = tokenise(`${idea.title} ${idea.premise}`).filter((term) => OUTCOME_TERMS.has(term));
-  const focused = uniqueTerms([...titleTerms, ...premiseTerms, ...outcomes]).slice(0, 14);
+export function buildFocusedResearchQuery(subject: string | { title: string; premise: string }): string {
+  const raw = (typeof subject === "string" ? subject : `${subject.title}. ${subject.premise}`)
+    .replace(/\s+/g, " ").trim().slice(0, 1_000);
+  const distinctive = distinctiveTerms(raw);
+  const outcomes = tokenise(raw).filter((term) => OUTCOME_TERMS.has(term));
+  const focused = uniqueTerms([...distinctive.filter((term) => !OUTCOME_TERMS.has(term)), ...outcomes]).slice(0, 14);
   return focused.length >= 2 ? focused.join(" ") : raw;
 }
 
@@ -198,17 +198,13 @@ function balancedUniqueEvidence(groups: DiscoveryEvidence[][], maxEvidence: numb
   return result;
 }
 
-function isEvidenceRelevantToIdea(evidence: DiscoveryEvidence, idea: { title: string; premise: string }): boolean {
+function isEvidenceRelevantToResearch(evidence: DiscoveryEvidence, queries: string[]): boolean {
   const evidenceTerms = new Set(tokenise(`${evidence.title} ${evidence.summary ?? ""}`));
   if (!evidenceTerms.size) return false;
-  const titleAnchors = distinctiveTerms(idea.title).filter((term) => !OUTCOME_TERMS.has(term));
-  const premiseAnchors = distinctiveTerms(idea.premise).filter((term) => !OUTCOME_TERMS.has(term));
-  const titleOverlap = relevantOverlap(titleAnchors, evidenceTerms);
-  const premiseOverlap = relevantOverlap(premiseAnchors, evidenceTerms);
-
-  if (titleAnchors.length > 0 && titleOverlap >= 1) return true;
-  if (premiseAnchors.length <= 2) return premiseOverlap >= 1;
-  return premiseOverlap >= 2;
+  const anchors = uniqueTerms(queries.flatMap((query) => distinctiveTerms(query).filter((term) => !OUTCOME_TERMS.has(term))));
+  if (!anchors.length) return false;
+  const overlap = relevantOverlap(anchors, evidenceTerms);
+  return anchors.length <= 2 ? overlap >= 1 : overlap >= 2;
 }
 
 function relevantOverlap(terms: string[], evidenceTerms: ReadonlySet<string>): number {
