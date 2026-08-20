@@ -14,9 +14,9 @@ import { marketingShadowInputFingerprint } from "@kairo/worker/marketing-shadow"
 import benchmarkData from "../../../evaluation/marketing-lab/benchmark-cases.json";
 import { safeFailureKind } from "./marketing-shadow-evidence-run";
 
-export const MARKETING_SHADOW_QUALITY_EVALUATION_RUN_ID = "vs65-quality-evaluation-20260819-a";
-export const MARKETING_SHADOW_QUALITY_SOURCE_RUN_ID = "vs23-qualification-20260819-b";
-export const MARKETING_SHADOW_QUALITY_SOURCE_RELEASE_SHA = "c3b881d3f8294da2114128439ae2f2eb0fe3c2da";
+export const MARKETING_SHADOW_QUALITY_EVALUATION_RUN_ID = "vs65-quality-evaluation-20260820-b";
+export const MARKETING_SHADOW_QUALITY_SOURCE_RUN_ID = "vs23-qualification-20260820-d";
+export const MARKETING_SHADOW_QUALITY_SOURCE_RELEASE_SHA = "5492f8ffc9273317ddd4e6b3e8f4a30f4a8df5e2";
 export const MARKETING_SHADOW_QUALITY_INTER_PAIR_DELAY_MS = 65_000;
 
 const RELEASE_SHA_PATTERN = /^[0-9a-f]{40}$/;
@@ -243,19 +243,19 @@ export async function runMarketingShadowQualityEvaluation(
     .map((candidate) => candidate as MotorcycleCarouselFixture);
   if (fixtures.length !== 4) throw new Error("Exactly four approved motorcycle carousel fixtures are required for quality evaluation");
   const fixtureById = new Map(fixtures.map((fixture) => [fixture.id, fixture]));
-  if (source.pairs.length !== 4) throw new Error("Run-B source evidence must contain exactly four pairs");
+  if (source.pairs.length !== 4) throw new Error("Approved source evidence must contain exactly four pairs");
 
   const seen = new Set<string>();
   const pairs: MarketingShadowQualityEvaluationEvidencePair[] = [];
   for (let index = 0; index < source.pairs.length; index += 1) {
     const pair = source.pairs[index]!;
-    if (!CASE_IDS.has(pair.caseId) || seen.has(pair.caseId)) throw new Error("Run-B source evidence contains an unexpected or duplicate case");
+    if (!CASE_IDS.has(pair.caseId) || seen.has(pair.caseId)) throw new Error("Approved source evidence contains an unexpected or duplicate case");
     seen.add(pair.caseId);
     const fixture = fixtureById.get(pair.caseId);
     if (!fixture) throw new Error(`Approved fixture is missing for ${pair.caseId}`);
     const benchmarkCase = toMotorcycleCarouselQualificationCase(fixture);
     const expectedFingerprint = marketingShadowInputFingerprint(benchmarkCase);
-    if (pair.inputFingerprint !== expectedFingerprint) throw new Error(`Run-B input fingerprint mismatch for ${pair.caseId}`);
+    if (pair.inputFingerprint !== expectedFingerprint) throw new Error(`Approved source input fingerprint mismatch for ${pair.caseId}`);
     if (index > 0) await pause(MARKETING_SHADOW_QUALITY_INTER_PAIR_DELAY_MS);
     const evaluation = await evaluateMarketingShadowPair(runtime, {
       benchmarkCase,
@@ -298,14 +298,14 @@ async function loadSourceEvidence(pool: Pool): Promise<MarketingShadowEvidenceRu
     [MARKETING_SHADOW_QUALITY_SOURCE_RUN_ID],
   );
   const row = result.rows[0];
-  if (!row) throw new Error("Run-B source evidence was not found");
-  if (row.release_sha !== MARKETING_SHADOW_QUALITY_SOURCE_RELEASE_SHA) throw new Error("Run-B source evidence is bound to an unexpected release SHA");
-  if (row.status !== "completed" || row.failure_kind) throw new Error("Run-B source evidence is not in a completed clean state");
+  if (!row) throw new Error("Approved source evidence was not found");
+  if (row.release_sha !== MARKETING_SHADOW_QUALITY_SOURCE_RELEASE_SHA) throw new Error("Approved source evidence is bound to an unexpected release SHA");
+  if (row.status !== "completed" || row.failure_kind) throw new Error("Approved source evidence is not in a completed clean state");
   const evidence = row.evidence;
   if (!evidence || evidence.schemaVersion !== 1 || evidence.evidenceKind !== "vs23-shadow-qualification-paired-execution") {
-    throw new Error("Run-B source evidence has an unexpected schema or evidence kind");
+    throw new Error("Approved source evidence has an unexpected schema or evidence kind");
   }
-  if (evidence.datasetId !== "marketing-lab-cross-sector-synthetic-fixtures") throw new Error("Run-B source evidence dataset is not approved");
+  if (evidence.datasetId !== "marketing-lab-cross-sector-synthetic-fixtures") throw new Error("Approved source evidence dataset is not approved");
   return evidence;
 }
 
