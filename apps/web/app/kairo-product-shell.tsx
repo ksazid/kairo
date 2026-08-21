@@ -90,6 +90,7 @@ export function KairoScopePicker({
       <span className="scope-label">Brand</span>
       <strong>{brandName}</strong>
       <span className="scope-meta">{workspaceName ?? meta ?? "Private Brand context"}</span>
+      <Link className="context-summary-action" href="/brands/new">Add Brand</Link>
     </div>
   );
 }
