@@ -27,7 +27,7 @@ import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import{PgBrandCreator}from"./brand-creator";
 import{registerBrandRoutes}from"./brand-routes";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
-import{ResearcherOrchestrator,isResearcherOutput}from"@kairo/worker/researcher";
+import{ResearcherOrchestrator,extractResearchUrls,isResearcherOutput}from"@kairo/worker/researcher";
 import{StrategistOrchestrator,isStrategistOutput}from"@kairo/worker/strategist";
 import{SourceRoutingToolGateway}from"@kairo/worker/discovery-provider";
 import{CrossrefResearchEvidenceProvider,OpenAlexResearchEvidenceProvider}from"@kairo/worker/research-evidence-adapters";
@@ -47,6 +47,7 @@ import{
   safeFailureKind,
 }from"./marketing-shadow-evidence-run";
 import{directModelProviderDiagnosticRequested,runDirectModelProviderDiagnostic}from"./direct-model-diagnostic";
+import{PublicBrandReferenceHttpReader}from"./public-brand-reference";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -83,6 +84,7 @@ const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRunt
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
 const researchTools=createResearchToolGateway();
+const publicReferenceReader=new PublicBrandReferenceHttpReader({timeoutMs:10_000,maxBytes:2_000_000,maxRedirects:2});
 const researcher=runtime?new ResearcherOrchestrator(researchTools,runtime,researchStore):undefined;
 const strategist=runtime?new StrategistOrchestrator(runtime,researchStore):undefined;
 const ideaDeveloper=researcher&&strategist?{
@@ -90,6 +92,7 @@ const ideaDeveloper=researcher&&strategist?{
     let bundle=await researchStore.getIdeaBundle(input.accountId,input.brandId,input.idea.id);
     if(!bundle)throw new Error("Idea not found");
     if(!bundle.research){
+      const pinnedEvidence=await loadExplicitResearchEvidence(input.idea);
       await researcher.run({
         accountId:input.accountId,
         workspaceId:input.workspaceId,
@@ -97,6 +100,7 @@ const ideaDeveloper=researcher&&strategist?{
         brandContextVersion:input.brandContextVersion,
         idea:input.idea,
         query:researchQuery(input.idea),
+        ...(pinnedEvidence.length?{pinnedEvidence}:{}),
         maxEvidence:8,
       });
       bundle=await researchStore.getIdeaBundle(input.accountId,input.brandId,input.idea.id);
@@ -296,6 +300,26 @@ function createResearchToolGateway(){
     },
   };
   return new SourceRoutingToolGateway(fallback,{openalex:openAlex,crossref});
+}
+
+async function loadExplicitResearchEvidence(idea:{title:string;premise:string}){
+  const urls=extractResearchUrls(idea);
+  if(!urls.length)return[];
+  const references=await Promise.all(urls.map(url=>publicReferenceReader.read(url)));
+  return references.map(reference=>{
+    const publisher=new URL(reference.url).hostname.toLowerCase();
+    const summary=[reference.summary,reference.excerpt].filter((value):value is string=>typeof value==="string"&&value.trim().length>0).join("\n").slice(0,8_000);
+    return{
+      title:reference.title?.trim()||publisher,
+      ...(summary?{summary}:{}),
+      sourceUrl:reference.url,
+      platform:"web",
+      publisher,
+      retrievedAt:reference.retrievedAt,
+      provider:"explicit-url",
+      providerVersion:"public-brand-reference@2",
+    };
+  });
 }
 
 function researchQuery(idea:{title:string;premise:string}){

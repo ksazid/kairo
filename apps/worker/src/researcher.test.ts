@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AgentInvocationRequest, AgentRuntimePort, AgentRuntimeResult, DiscoveryEvidence, ToolGatewayPort, ToolRequest, ToolResult } from "@kairo/agent-contracts";
 import type { ResearchDossier } from "@kairo/domain/research";
-import { buildFocusedResearchQuery, ResearcherOrchestrator, type ResearcherOutput } from "./researcher";
+import { buildFocusedResearchQuery, extractResearchUrls, ResearcherOrchestrator, type ResearcherOutput } from "./researcher";
 
 const evidence: DiscoveryEvidence[] = [
   {
@@ -193,5 +193,65 @@ describe("VS-72 Research evidence relevance", () => {
     ]);
     expect(sink.saved).toHaveLength(1);
     expect(sink.saved[0]?.evidence).toHaveLength(2);
+  });
+});
+
+describe("VS-73 explicit public Research grounding", () => {
+  it("extracts distinct credential-free HTTP(S) URLs from an Idea", () => {
+    const urls = extractResearchUrls({
+      title: "2026 KTM 390 Duke",
+      premise: "Use https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke.html and https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke/technical-specifications.html. Repeat https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke.html",
+    });
+    expect(urls).toEqual([
+      "https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke.html",
+      "https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke/technical-specifications.html",
+    ]);
+  });
+
+  it("uses two relevant pinned public sources without calling scholarly discovery", async () => {
+    const pinned: DiscoveryEvidence[] = [
+      {
+        title: "2026 KTM 390 Duke - THE CORNER ROCKET",
+        summary: "The KTM 390 Duke uses the latest LC4c engine and includes TRACK Mode, Launch Control and a 5 inch TFT display.",
+        sourceUrl: "https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke.html",
+        platform: "web",
+        publisher: "ktm.com",
+        retrievedAt: "2026-08-22T00:00:00.000Z",
+        provider: "explicit-url",
+      },
+      {
+        title: "Technical Specifications | 2026 KTM 390 Duke",
+        summary: "2026 KTM 390 Duke: displacement 398.7 cm3, power 45 PS, torque 39 Nm and 6-speed transmission.",
+        sourceUrl: "https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke/technical-specifications.html",
+        platform: "web",
+        publisher: "ktm.com",
+        retrievedAt: "2026-08-22T00:00:00.000Z",
+        provider: "explicit-url",
+      },
+    ];
+    const tools = new FakeTools(productionStyleEvidence());
+    const runtime = new FakeRuntime(output({
+      summary: "Official KTM pages describe the 2026 KTM 390 Duke.",
+      claims: [{
+        text: "The 2026 KTM 390 Duke is listed at 398.7 cm3, 45 PS and 39 Nm.",
+        classification: "fact", confidence: 0.99, evidenceStrength: "strong", verificationState: "supported", freshness: "fresh",
+        evidenceIds: ["evidence-1", "evidence-2"], firstPersonAuthorization: "not-applicable",
+      }],
+    }));
+    const sink = new FakeSink();
+    const researcher = new ResearcherOrchestrator(tools, runtime, sink);
+    const idea = {
+      id: "idea-ktm",
+      title: "2026 KTM 390 Duke official specifications",
+      premise: "Use official KTM evidence for displacement, power and torque",
+    };
+
+    const result = await researcher.run({ ...input, idea, query: `${idea.title}. ${idea.premise}`, pinnedEvidence: pinned });
+    const context = runtime.lastRequest?.task.context as { evidence?: Array<{ sourceUrl: string }> } | undefined;
+
+    expect(result.evidenceCount).toBe(2);
+    expect(tools.requests).toHaveLength(0);
+    expect(context?.evidence?.map((item) => item.sourceUrl)).toEqual(pinned.map((item) => item.sourceUrl));
+    expect(sink.saved[0]?.evidence.map((item) => item.sourceUrl)).toEqual(pinned.map((item) => item.sourceUrl));
   });
 });
