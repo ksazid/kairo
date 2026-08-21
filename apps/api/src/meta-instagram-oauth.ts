@@ -11,6 +11,7 @@ const REQUIRED_SCOPES = [
   "instagram_manage_insights",
 ] as const;
 const MIN_INSIGHTS_TOKEN_LIFETIME_SECONDS = 8 * 24 * 60 * 60;
+const CONSERVATIVE_EXTENDED_TOKEN_LIFETIME_SECONDS = 60 * 24 * 60 * 60;
 
 export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
   constructor(
@@ -92,7 +93,7 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
     if (!response.ok) throw providerError("long-lived-token-exchange", response.status);
     const payload = await json(response) as { access_token?: unknown; expires_in?: unknown };
     const accessToken = typeof payload.access_token === "string" ? payload.access_token.trim() : "";
-    const expiresInSeconds = typeof payload.expires_in === "number" ? Math.floor(payload.expires_in) : Number.NaN;
+    const expiresInSeconds = extendedTokenLifetime(payload.expires_in);
     if (!accessToken || !Number.isFinite(expiresInSeconds) || expiresInSeconds < MIN_INSIGHTS_TOKEN_LIFETIME_SECONDS) {
       throw new Error("Meta did not return a sufficiently durable Facebook User access token");
     }
@@ -137,6 +138,11 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
 
 export function metaInstagramRequestedScopes(): readonly string[] { return REQUIRED_SCOPES; }
 
+function extendedTokenLifetime(value: unknown): number {
+  if (value === undefined || value === null) return CONSERVATIVE_EXTENDED_TOKEN_LIFETIME_SECONDS;
+  const numeric = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : Number.NaN;
+  return Number.isFinite(numeric) ? Math.floor(numeric) : Number.NaN;
+}
 function providerError(operation: string, status: number): Error { return new Error(`Meta provider ${operation} failed with HTTP ${status}`); }
 async function json(response: Response): Promise<unknown> { try { return await response.json(); } catch { throw new Error("Meta provider returned invalid JSON"); } }
 function graph(value: string) { if (!/^v\d+\.\d+$/.test(value)) throw new Error("META_GRAPH_VERSION is invalid"); return value; }
