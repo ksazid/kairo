@@ -56,7 +56,7 @@ jobs:
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
-          KAIRO_RELEASE_SHA: fe5920bc3d93233df1b5dd2e5cb9c11a6f90eb9c
+          KAIRO_RELEASE_SHA: 05f7442014f6deb0d8d53f434b3dd99cb554b4a6
         run: |
           node --input-type=module <<'NODE'
           const base=process.env.KAIRO_API_URL.replace(/\/$/,"");
@@ -110,7 +110,7 @@ jobs:
       - name: Run provider-confirmed Instagram production smoke
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
-          KAIRO_RELEASE_SHA: fe5920bc3d93233df1b5dd2e5cb9c11a6f90eb9c
+          KAIRO_RELEASE_SHA: 05f7442014f6deb0d8d53f434b3dd99cb554b4a6
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
           KAIRO_INSTAGRAM_SMOKE_IMAGE_URL: https://dummyimage.com/1080x1080/111827/ffffff.png&text=Kairo+VS-73+Live+Publish
         run: node scripts/prod-smoke-readonly.mjs
