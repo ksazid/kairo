@@ -14,6 +14,37 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Diagnose configured Instagram OAuth redirect
+        env:
+          KAIRO_API_URL: https://kairo-api-kebs.onrender.com
+          KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
+        run: |
+          node --input-type=module <<'NODE'
+          const base=process.env.KAIRO_API_URL.replace(/\/$/,"");
+          const auth={authorization:`Bearer ${process.env.KAIRO_SMOKE_TOKEN}`};
+          const sessionResponse=await fetch(`${base}/api/v1/session`,{headers:auth});
+          const session=await sessionResponse.json();
+          if(!sessionResponse.ok||!session?.workspaces?.[0]?.id)throw new Error("session unavailable");
+          const workspaceId=session.workspaces[0].id;
+          const brandsResponse=await fetch(`${base}/api/v1/workspaces/${encodeURIComponent(workspaceId)}/brands`,{headers:auth});
+          const brands=await brandsResponse.json();
+          if(!brandsResponse.ok||!Array.isArray(brands)||!brands.length)throw new Error("brands unavailable");
+          let diagnostic=null;
+          for(const brand of brands){
+            const response=await fetch(`${base}/api/v1/brands/${encodeURIComponent(brand.id)}/channels/instagram/connect`,{method:"POST",headers:auth});
+            if(!response.ok)continue;
+            const payload=await response.json();
+            if(!payload?.authorizationUrl)continue;
+            const authorizationUrl=new URL(payload.authorizationUrl);
+            const redirect=authorizationUrl.searchParams.get("redirect_uri");
+            if(!redirect)throw new Error("authorization URL has no redirect_uri");
+            const redirectUrl=new URL(redirect);
+            diagnostic={brandId:brand.id,redirectOrigin:redirectUrl.origin,redirectPath:redirectUrl.pathname};
+            break;
+          }
+          if(!diagnostic)throw new Error("no Instagram connect intent could be created");
+          console.log(`INSTAGRAM_REDIRECT_DIAGNOSTIC=${JSON.stringify(diagnostic)}`);
+          NODE
       - name: Run provider-confirmed Instagram production smoke
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
