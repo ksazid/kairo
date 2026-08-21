@@ -93,6 +93,14 @@ export class PgResearchRepository implements ResearchRepository {
       if (workspaceId !== dossier.workspaceId) throw new ResourceNotFoundError("Brand not found");
       const idea = await client.query(`select id from ideas where workspace_id=$1 and brand_id=$2 and id=$3 for update`, [workspaceId, dossier.brandId, dossier.ideaId]);
       if (!idea.rows[0]) throw new ResourceNotFoundError("Idea not found");
+      const existing = await client.query<{ id: string }>(
+        `select id from research_dossiers where workspace_id=$1 and brand_id=$2 and idea_id=$3`,
+        [workspaceId, dossier.brandId, dossier.ideaId],
+      );
+      if (existing.rows[0]) {
+        await client.query("commit");
+        return;
+      }
       await client.query(
         `insert into research_dossiers (id,workspace_id,brand_id,idea_id,summary,unresolved_uncertainties,runtime_provenance,status,created_at)
          values ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8,$9)`,
@@ -132,6 +140,14 @@ export class PgResearchRepository implements ResearchRepository {
       }
       const idea = await client.query(`select id from ideas where workspace_id=$1 and brand_id=$2 and id=$3 for update`, [workspaceId, first.brandId, first.ideaId]);
       if (!idea.rows[0]) throw new ResourceNotFoundError("Idea not found");
+      const existingAngles = await client.query<{ count: number }>(
+        `select count(*)::int as count from angles where workspace_id=$1 and brand_id=$2 and idea_id=$3`,
+        [workspaceId, first.brandId, first.ideaId],
+      );
+      if (Number(existingAngles.rows[0]?.count ?? 0) >= 2) {
+        await client.query("commit");
+        return;
+      }
       const claimIds = [...new Set(angles.flatMap((angle) => angle.supportingClaimIds))];
       const claims = await client.query<{ id: string }>(
         `select c.id from claims c join research_dossiers r on r.id=c.research_id
