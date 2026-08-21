@@ -121,6 +121,9 @@ export class ResearcherOrchestrator {
     if (!isResearcherOutput(judgment.output)) throw new Error("Researcher output failed schema validation");
 
     const researchId = randomUUID();
+    const persistedEvidenceIds = new Map(
+      evidence.map((item, index) => [item.id, `${researchId}:evidence-${index + 1}`] as const),
+    );
     const dossier = createResearchDossier({
       id: researchId,
       workspaceId: input.workspaceId,
@@ -128,13 +131,17 @@ export class ResearcherOrchestrator {
       ideaId: input.idea.id,
       summary: judgment.output.summary,
       evidence: evidence.map((item) => ({
-        id: item.id,
+        id: persistedEvidenceIds.get(item.id)!,
         sourceUrl: item.sourceUrl,
         sourceTitle: item.title,
         ...(item.publishedAt ? { publishedAt: item.publishedAt } : {}),
         retrievedAt: item.retrievedAt,
       })),
-      claims: judgment.output.claims.map((claim, index) => ({ ...claim, id: `claim-${index + 1}` })),
+      claims: judgment.output.claims.map((claim, index) => ({
+        ...claim,
+        id: `${researchId}:claim-${index + 1}`,
+        evidenceIds: claim.evidenceIds.map((id) => persistedEvidenceIds.get(id) ?? id),
+      })),
       unresolvedUncertainties: judgment.output.unresolvedUncertainties,
       createdAt: new Date().toISOString(),
       runtimeProvenance: {
