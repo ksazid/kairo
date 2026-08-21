@@ -20,7 +20,7 @@ jobs:
       - name: Run public and authenticated multi-brand smoke
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
-          KAIRO_RELEASE_SHA: 5ec2ab1108ee1db79b818de121db0101e0f293f3
+          KAIRO_RELEASE_SHA: 7900c1123553bccdb8a98565234e7752e0352854
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
         run: node scripts/prod-smoke-readonly.mjs
-# rerun after release SHA env correction
+# rerun for VS-73 final production release
