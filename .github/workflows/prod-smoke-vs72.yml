@@ -39,11 +39,18 @@ jobs:
             const redirect=authorizationUrl.searchParams.get("redirect_uri");
             if(!redirect)throw new Error("authorization URL has no redirect_uri");
             const redirectUrl=new URL(redirect);
-            diagnostic={brandId:brand.id,redirectOrigin:redirectUrl.origin,redirectPath:redirectUrl.pathname};
+            diagnostic={
+              brandId:brand.id,
+              appId:authorizationUrl.searchParams.get("client_id"),
+              scopes:(authorizationUrl.searchParams.get("scope")??"").split(",").filter(Boolean),
+              responseType:authorizationUrl.searchParams.get("response_type"),
+              redirectOrigin:redirectUrl.origin,
+              redirectPath:redirectUrl.pathname,
+            };
             break;
           }
           if(!diagnostic)throw new Error("no Instagram connect intent could be created");
-          console.log(`INSTAGRAM_REDIRECT_DIAGNOSTIC=${JSON.stringify(diagnostic)}`);
+          console.log(`INSTAGRAM_OAUTH_DIAGNOSTIC=${JSON.stringify(diagnostic)}`);
           NODE
       - name: Run provider-confirmed Instagram production smoke
         env:
