@@ -7,6 +7,7 @@ const brandIdRaw = "f00f0ec6-53bb-40da-ac20-f4c2ecb381d7";
 const campaignIdRaw = "d576f91a-63e3-422d-929e-e029466b3dbd";
 const brandId = encodeURIComponent(brandIdRaw);
 const campaignId = encodeURIComponent(campaignIdRaw);
+const topic = "2026 KTM 390 Duke official specs Reel";
 const caption = `2026 KTM 390 Duke — three official KTM numbers worth knowing:\n\n398.7 cm³ displacement\n45 PS power\n39 Nm torque\n\nWhich one matters most to you on the road?\n\n#KTM390Duke #Duke390 #KTM #Motorcycles #TheDukeMan`;
 
 for (const [path, expected] of [["/health/live", {status:"ok"}], ["/health/ready", {status:"ready"}], ["/version", {releaseSha: expectedSha}]]) {
@@ -31,13 +32,20 @@ const signature = new TextDecoder().decode(new Uint8Array(bytes, 4, 4));
 if (signature !== "ftyp") throw new Error(`Reel media is not an MP4-family file (signature=${signature})`);
 console.log(`REEL_MEDIA_PREFLIGHT=PASS:${mediaType || "unknown"}:${bytes.byteLength}:ftyp`);
 
-const created = await json(`/api/v1/brands/${brandId}/campaigns/${campaignId}/assets`, {
-  method:"POST",
-  body:{channel:"instagram",format:"reel",audience:"KTM 390 Duke riders and motorcycle enthusiasts",topic:"2026 KTM 390 Duke official specs Reel",hookType:"verified-spec",cta:"Which one matters most to you on the road?",content:caption}
-});
-if (created.response.status !== 201 || !Array.isArray(created.body?.assets)) throw new Error(`Reel asset creation failed: ${created.response.status}`);
-const entry = created.body.assets.find(x => x?.asset?.topic === "2026 KTM 390 Duke official specs Reel" && x?.versions?.at(-1)?.content === caption);
-if (!entry?.asset?.id || entry.asset.currentVersion !== 1) throw new Error("Could not identify Reel asset");
+let entry = null;
+const campaign = await json(`/api/v1/brands/${brandId}/campaigns/${campaignId}`);
+if (campaign.response.status === 200 && Array.isArray(campaign.body?.assets)) {
+  entry = campaign.body.assets.find(x => x?.asset?.topic === topic && x?.versions?.at(-1)?.content === caption && x?.asset?.currentVersion === 1) ?? null;
+}
+if (!entry) {
+  const created = await json(`/api/v1/brands/${brandId}/campaigns/${campaignId}/assets`, {
+    method:"POST",
+    body:{channel:"instagram",format:"reel",audience:"KTM 390 Duke riders and motorcycle enthusiasts",topic,hookType:"verified-spec",cta:"Which one matters most to you on the road?",content:caption}
+  });
+  if (created.response.status !== 201 || !Array.isArray(created.body?.assets)) throw new Error(`Reel asset creation failed: ${created.response.status}`);
+  entry = created.body.assets.find(x => x?.asset?.topic === topic && x?.versions?.at(-1)?.content === caption && x?.asset?.currentVersion === 1) ?? null;
+}
+if (!entry?.asset?.id) throw new Error("Could not identify Reel asset");
 const assetId = encodeURIComponent(entry.asset.id);
 console.log(`REEL_ASSET=PASS:${entry.asset.id}`);
 
@@ -50,7 +58,10 @@ for (let attempt = 0; attempt < 4; attempt += 1) {
   if (r.response.status === 201) {
     review = r.body;
     if (review?.status === "passed") break;
-    if (review?.status && review.status !== "passed") throw new Error(`Reel review did not pass: ${review.status}`);
+    if (review?.status && review.status !== "passed") {
+      console.log(`REEL_REVIEW_FEEDBACK=${JSON.stringify(review)}`);
+      throw new Error(`Reel review did not pass: ${review.status}`);
+    }
   }
   if (attempt < 3) await sleep((attempt + 1) * 6000);
 }
