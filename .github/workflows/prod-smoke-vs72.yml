@@ -7,10 +7,19 @@ permissions:
   contents: read
 jobs:
   smoke:
-    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Disabled while fixing real-data Research grounding
-        run: echo "Live Instagram publish disabled"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run provider-confirmed real-data Instagram publish
+        env:
+          KAIRO_API_URL: https://kairo-api-kebs.onrender.com
+          KAIRO_RELEASE_SHA: bb901c2e04549ffcf1d621e33567ce488839d4c1
+          KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
+          KAIRO_INSTAGRAM_IMAGE_URL: https://azwecdnepstoragewebsiteuploads.azureedge.net/PHO_BIKE_90_RE_KTM-2026-naked-bikes-390-duke-black-right-side-view_%23SALL_%23AEPI_%23V1.png
+          KAIRO_REAL_DATA_SOURCE_URL: https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke/technical-specifications.html
+          KAIRO_REAL_DATA_SECONDARY_SOURCE_URL: https://www.ktm.com/en-us/models/naked-bike/2026-ktm-390-duke.html
+        run: node scripts/prod-instagram-real-data.mjs
