@@ -1,3 +1,4 @@
+// VS-73 release marker: keep production web deployment bound to an affected app path.
 export const dynamic = "force-dynamic";
 
 export function GET(): Response {
