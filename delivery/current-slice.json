@@ -27,6 +27,7 @@
     "apps/worker/package.json",
     "apps/worker/src/model-gateway.ts",
     "apps/worker/src/model-gateway.test.ts",
+    "apps/worker/src/model-gateway-structured-output.test.ts",
     "apps/worker/src/model-output-schemas.ts",
     "apps/worker/src/researcher.ts",
     "apps/worker/src/researcher.test.ts",
