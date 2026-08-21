@@ -39,12 +39,15 @@
     "services/hermes-runtime/tests/test_schema_contracts.py",
     "apps/web/package.json",
     "apps/web/scripts/write-release-sha.mjs",
+    "apps/web/src/auth-entry.test.ts",
     "apps/web/src/lib/generated-release-sha.ts",
     "apps/web/src/lib/kairo-api.ts",
     "apps/web/src/lib/brand-api.ts",
+    "apps/web/src/lib/instagram-api.ts",
     "apps/web/app/actions.ts",
     "apps/web/app/brands/new/page.tsx",
     "apps/web/app/brands/[brandId]/ideas/[ideaId]/page.tsx",
+    "apps/web/app/channels/instagram/callback/route.ts",
     "apps/web/app/kairo-product-shell.tsx",
     "apps/web/app/api/version/route.ts",
     "scripts/start-api.mjs",
@@ -66,28 +69,29 @@
       "Production smoke exposed a Hermes Researcher output-contract gap: factual Claims with empty evidenceIds reached domain validation. Reopen VS-73 testing to fail closed at the runtime boundary and provide explicit Researcher/Strategist Hermes contracts.",
       "Concurrent production smoke requests exposed duplicate Research persistence for the same Idea; make Research and candidate-Angle persistence idempotent after the existing per-Idea database lock.",
       "Final production smoke exposed malformed direct-model Drafter JSON under generic json_object mode; bind content-draft and critic-review to strict provider-side JSON schemas before runtime validation.",
-      "Production deployment exposed that the existing Instagram publishing worker was built but never started by the API container; launch that existing worker only when explicitly production-enabled so approved publish commands can reach Meta without changing approval authority."
+      "Production deployment exposed that the existing Instagram publishing worker was built but never started by the API container; launch that existing worker only when explicitly production-enabled so approved publish commands can reach Meta without changing approval authority.",
+      "Live OAuth diagnostics proved the Instagram callback route already exists, but when the Kairo access-token cookie has expired it redirects to the root error path; root then starts Auth0 with returnTo=/ and discards Meta code/state. Preserve the complete local callback path and query through the signed Auth0 transaction so OAuth resumes after sign-in."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-73@1.3","commitSha":null,"by":"Sazid Khan","at":"2026-08-21T21:30:00+02:00","rationale":"Owner explicitly prioritized fixing real publishing before the remaining concurrent Research verification and authorized use of the already-linked Instagram page for live publication of validation content."},
-    {"type":"policy","status":"not-required","version":"VS-73@1.3","commitSha":null,"by":null,"at":null,"rationale":"The repair activates the already-implemented deterministic publisher for human-approved commands; it does not add autonomous approval authority, new provider scopes, or credential exposure."},
-    {"type":"implementation","status":"approved","version":"VS-73@1.3","commitSha":"1c38b4a0b6fa624c08e76c110ebff4f246beea46","by":"Sazid Khan","at":"2026-08-21T21:30:00+02:00","rationale":"Owner explicitly instructed execution to fix Publish first and granted live Instagram validation authority; exact candidate verification is still required before release."},
-    {"type":"certification","status":"approved","version":"VS-73@1.3","commitSha":"1c38b4a0b6fa624c08e76c110ebff4f246beea46","by":"Sazid Khan","at":"2026-08-21T11:05:00+02:00","rationale":"Prior certification is retained as historical evidence but is stale for newly discovered runtime repairs; a fresh exact-SHA certification will replace it before release."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized release; exact merge SHA will be bound after fresh certification and merge."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner explicitly authorized live Instagram validation; exact release SHA and publisher enablement will be bound after fresh candidate verification and merge."}
+    {"type":"scope","status":"approved","version":"VS-73@1.4","commitSha":null,"by":"Sazid Khan","at":"2026-08-21T21:30:00+02:00","rationale":"Owner explicitly prioritized fixing real publishing before concurrent Research and authorized use of the existing Instagram page for live validation; callback repair is required to make that connection real."},
+    {"type":"policy","status":"not-required","version":"VS-73@1.4","commitSha":null,"by":null,"at":null,"rationale":"The callback invokes the already-approved OAuth service and existing candidate selection rules; no new permissions, autonomous approval authority, token exposure, or publishing bypass is introduced."},
+    {"type":"implementation","status":"approved","version":"VS-73@1.4","commitSha":null,"by":"Sazid Khan","at":"2026-08-21T21:30:00+02:00","rationale":"Owner instructed execution to fix Publish first and granted live Instagram validation authority."},
+    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Fresh exact-SHA verification is required after the OAuth callback repair."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Exact merge SHA will be bound after CI and merge."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Instagram publisher is already enabled on the current API; the repaired web callback must be deployed to the exact Meta redirect alias before live OAuth/publish validation can proceed."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":97,"testing":90,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"stale","commitSha":"1c38b4a0b6fa624c08e76c110ebff4f246beea46","evidence":["Prior VS-73 certification evidence remains historical only. Final production E2E smoke on 2026-08-21 exposed malformed direct-model Drafter output after multi-Brand, Research/Angles, tenant isolation, Campaign, and concurrent Research idempotency checks passed."]},
+  "progress": {"discovery":100,"decisions":100,"implementation":98,"testing":90,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"stale","commitSha":"1c38b4a0b6fa624c08e76c110ebff4f246beea46","evidence":["Prior certification is historical only. Production verification subsequently exposed publisher startup and OAuth callback defects; both require fresh exact-SHA verification."]},
   "release": {"status":"pending","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
     "status":"not-started",
     "reviewAt":null,
     "expectedOutcome":"Authenticated users can create multiple isolated Brands and reliably progress Brand → Idea → Research → Angles → Campaign → Content → Review → Approval → provider-confirmed Instagram publish under transient provider failures, with exact deployed-SHA provenance.",
-    "metrics":["provider retry recovery","Research-to-Angle recovery","multi-Brand creation","tenant isolation","concurrent Research idempotency","structured content output","provider-confirmed Instagram publish","exact deployed SHA","authenticated smoke"]
+    "metrics":["provider retry recovery","Research-to-Angle recovery","multi-Brand creation","tenant isolation","concurrent Research idempotency","structured content output","Instagram OAuth completion","provider-confirmed Instagram publish","exact deployed SHA","authenticated smoke"]
   },
-  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#131","evidence":["delivery/context/VS-73.md"]},
+  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#137","evidence":["delivery/context/VS-73.md"]},
   "maxAttempts": 3
 }
