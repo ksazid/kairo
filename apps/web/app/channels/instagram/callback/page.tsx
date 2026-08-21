@@ -3,6 +3,7 @@ import {
   completeInstagramConnection,
   selectInstagramCandidate,
   type InstagramCandidateView,
+  type InstagramCompleteResult,
 } from "../../../../src/lib/instagram-api";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -18,19 +19,21 @@ export default async function InstagramCallbackPage({ searchParams }: { searchPa
     return <ConnectionMessage title="Instagram connection could not continue" detail="Meta did not return the required authorization response." />;
   }
 
+  let result: InstagramCompleteResult;
   try {
-    const result = await completeInstagramConnection(code, state);
-    if (result.status === "connected") {
-      redirect(`/brands/${encodeURIComponent(result.brandId)}/brain?instagram=connected`);
-    }
-    if (result.status === "no-eligible-account") {
-      return <ConnectionMessage title="No eligible Instagram account found" detail="Meta did not return an Instagram professional account connected to a Facebook Page with the required permissions." />;
-    }
-    return <CandidateSelection brandId={result.brandId} intentId={result.intentId} candidates={result.candidates} />;
+    result = await completeInstagramConnection(code, state);
   } catch (error) {
     const detail = error instanceof Error ? error.message : "Instagram connection failed.";
     return <ConnectionMessage title="Instagram connection failed" detail={detail} />;
   }
+
+  if (result.status === "connected") {
+    redirect(`/brands/${encodeURIComponent(result.brandId)}/brain?instagram=connected`);
+  }
+  if (result.status === "no-eligible-account") {
+    return <ConnectionMessage title="No eligible Instagram account found" detail="Meta did not return an Instagram professional account connected to a Facebook Page with the required permissions." />;
+  }
+  return <CandidateSelection brandId={result.brandId} intentId={result.intentId} candidates={result.candidates} />;
 }
 
 function CandidateSelection({ brandId, intentId, candidates }: { brandId: string; intentId: string; candidates: InstagramCandidateView[] }) {
