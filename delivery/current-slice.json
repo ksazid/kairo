@@ -22,6 +22,7 @@
     "apps/api/src/brand-routes.ts",
     "apps/api/src/brand-routes.test.ts",
     "apps/api/src/research-store.ts",
+    "apps/api/src/research-postgres-store.ts",
     "apps/api/src/research-api.test.ts",
     "apps/worker/package.json",
     "apps/worker/src/model-gateway.ts",
@@ -59,7 +60,8 @@
       "Restores FR-02 multi-Brand creation inside an existing authenticated Workspace.",
       "Strengthens tenant-isolation regressions and authenticated multi-Brand smoke coverage.",
       "Adds exact web/API release-SHA provenance; empty Vercel Git metadata no longer masks the build-generated exact SHA fallback.",
-      "Production smoke exposed a Hermes Researcher output-contract gap: factual Claims with empty evidenceIds reached domain validation. Reopen VS-73 testing to fail closed at the runtime boundary and provide explicit Researcher/Strategist Hermes contracts."
+      "Production smoke exposed a Hermes Researcher output-contract gap: factual Claims with empty evidenceIds reached domain validation. Reopen VS-73 testing to fail closed at the runtime boundary and provide explicit Researcher/Strategist Hermes contracts.",
+      "Concurrent production smoke requests exposed duplicate Research persistence for the same Idea; make Research and candidate-Angle persistence idempotent after the existing per-Idea database lock."
     ]
   },
   "approvals": [
