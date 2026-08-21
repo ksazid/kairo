@@ -17,6 +17,6 @@ jobs:
       - name: Run final authenticated production smoke
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
-          KAIRO_RELEASE_SHA: 7f60ec25f26205fdf863cee34f6c5987b2ecdc25
+          KAIRO_RELEASE_SHA: 3eac7f7d6b2af38672e91fd053e5301de4a1af5a
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
         run: node scripts/prod-smoke-readonly.mjs
