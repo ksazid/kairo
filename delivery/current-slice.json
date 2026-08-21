@@ -3,7 +3,7 @@
   "sliceId": "VS-73",
   "title": "End-to-End Production Reliability Repair",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-08", "FR-09", "FR-20"],
@@ -60,14 +60,14 @@
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-73@1.1","commitSha":null,"by":"Sazid Khan","at":"2026-08-21T05:27:00+02:00","rationale":"Owner explicitly granted full approval to fix all identified production reliability bugs and instructed execution to continue through completion."},
     {"type":"policy","status":"not-required","version":"VS-73@1.1","commitSha":null,"by":null,"at":null,"rationale":"The repair preserves authentication, tenant isolation, provider/privacy boundaries and publishing authority; release-provenance generation adds no external authority or data exposure."},
-    {"type":"implementation","status":"approved","version":"VS-73@1.1","commitSha":"283136d71d0aaeb5bd9c0e02171fbc4cad1bfc90","by":"Sazid Khan","at":"2026-08-21T10:13:00+02:00","rationale":"Owner's blanket approval covers the bounded post-merge Vercel provenance repair. Candidate 283136d71d0aaeb5bd9c0e02171fbc4cad1bfc90 keeps /api/version dynamic but bundles a build-generated exact Git SHA fallback, avoiding reliance on unavailable Vercel runtime Git metadata."},
-    {"type":"certification","status":"pending","version":"VS-73@1.1","commitSha":null,"by":null,"at":null,"rationale":"Pending exact-head Product Intake, Security and CI verification after the Vercel provenance repair."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized release; exact merge SHA will be bound after certification and merge."},
+    {"type":"implementation","status":"approved","version":"VS-73@1.1","commitSha":"d43f159eb7955899a52c1b8f8f96d1a7488bb8a6","by":"Sazid Khan","at":"2026-08-21T10:41:00+02:00","rationale":"Exact VS-73 Vercel provenance candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6 passed Product Intake #692, Security baseline #801 and CI #949 after the certification-state validation defect was corrected."},
+    {"type":"certification","status":"approved","version":"VS-73@1.1","commitSha":"d43f159eb7955899a52c1b8f8f96d1a7488bb8a6","by":"Sazid Khan","at":"2026-08-21T10:41:00+02:00","rationale":"Owner explicitly authorized production deployment and continuation. Exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6 passed Product Intake #692, Security baseline #801 and CI #949, including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized release; exact merge SHA will be bound after merge."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized production enablement/deployment; exact release SHA will be bound after merge."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":90,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "certification": {"status":"passed","commitSha":"d43f159eb7955899a52c1b8f8f96d1a7488bb8a6","evidence":["Product Intake #692 passed on exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6.","Security baseline #801 passed on exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6.","CI #949 passed on exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6, including clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification and dashboard build."]},
   "release": {"status":"pending","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
