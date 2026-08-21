@@ -112,5 +112,5 @@ jobs:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
           KAIRO_RELEASE_SHA: 05f7442014f6deb0d8d53f434b3dd99cb554b4a6
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
-          KAIRO_INSTAGRAM_SMOKE_IMAGE_URL: https://dummyimage.com/1080x1080/111827/ffffff.png&text=Kairo+VS-73+Live+Publish
+          KAIRO_INSTAGRAM_SMOKE_IMAGE_URL: https://azwecdnepstoragewebsiteuploads.azureedge.net/PHO_BIKE_90_RE_KTM-2026-naked-bikes-390-duke-black-right-side-view_%23SALL_%23AEPI_%23V1.png
         run: node scripts/prod-smoke-readonly.mjs
