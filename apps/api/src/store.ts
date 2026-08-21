@@ -61,6 +61,13 @@ export class MemoryKairoRepository implements KairoRepository {
     return { workspace: { ...workspace, role: "owner" }, brand };
   }
 
+  async createBrandForAccount(accountId: string, workspaceId: string, input: { brandName: string }): Promise<BrandDto> {
+    if (!(await this.hasWorkspaceAccess(accountId, workspaceId))) throw new ResourceNotFoundError("Workspace not found");
+    const brand: BrandDto = { id: randomUUID(), workspaceId, name: input.brandName };
+    this.brands.set(brand.id, brand);
+    return { ...brand };
+  }
+
   async listWorkspacesForAccount(accountId: string): Promise<WorkspaceDto[]> {
     return this.memberships.filter((membership) => membership.accountId === accountId && membership.active).map((membership) => {
       const workspace = this.workspaces.get(membership.workspaceId);

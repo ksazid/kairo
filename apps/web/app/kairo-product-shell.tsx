@@ -23,6 +23,7 @@ export function KairoProductShell({
 }: ProductShellProps) {
   const navigation = buildProductNavigation({ brandId, workspaceId });
   const resolvedMobileActive = mobileActive ?? (active ? mobileDestinationFor(active) : "More");
+  const addBrandHref = workspaceId ? `/brands/new?workspace=${encodeURIComponent(workspaceId)}` : "/brands/new";
 
   return (
     <div className="app-shell">
@@ -49,6 +50,7 @@ export function KairoProductShell({
           ))}
         </nav>
         <div className="sidebar-footer">
+          <Link className="nav-item" href={addBrandHref}>Add Brand</Link>
           <span className="nav-item disabled" aria-disabled="true">Settings<small>Later</small></span>
           <a className="nav-item" href="/auth/logout">Sign out</a>
         </div>
@@ -88,6 +90,7 @@ export function KairoScopePicker({
       <span className="scope-label">Brand</span>
       <strong>{brandName}</strong>
       <span className="scope-meta">{workspaceName ?? meta ?? "Private Brand context"}</span>
+      <Link className="context-summary-action" href="/brands/new">Add Brand</Link>
     </div>
   );
 }

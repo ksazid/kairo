@@ -13,9 +13,10 @@ export default async function IdeaPage({ params, searchParams }: { params: Param
 
   const { idea, research, angles } = bundle;
   const ideasHref = `/brands/${encodeURIComponent(brand.id)}/ideas`;
+  const continueResearch = startResearchAction.bind(null, brand.id, idea.id);
 
   return (
-    <KairoProductShell brandId={brand.id} active="Ideas">
+    <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Ideas">
       <main id="kairo-main-content" tabIndex={-1} className="workspace-main research-main">
         <Link className="back-link" href={ideasHref}>← All Ideas</Link>
 
@@ -39,7 +40,7 @@ export default async function IdeaPage({ params, searchParams }: { params: Param
             <p className="eyebrow">Research</p>
             <h2>Evidence gathering has not started.</h2>
             <p>Kairo keeps the Idea intact until evidence-backed Research is available. Final content generation remains outside this step.</p>
-            <form action={startResearchAction.bind(null, brand.id, idea.id)}>
+            <form action={continueResearch}>
               <button className="primary-button" type="submit">Start research</button>
             </form>
             <small>Kairo will search bounded public research sources using this Idea, validate Claims, and prepare candidate Angles for your review.</small>
@@ -118,6 +119,16 @@ export default async function IdeaPage({ params, searchParams }: { params: Param
                 <span className="angle-count">{angles.length} {angles.length === 1 ? "Angle" : "Angles"}</span>
               </div>
 
+              {angles.length < 2 ? (
+                <div className="ideas-empty" role="status">
+                  <h3>Research is saved. Candidate Angles are incomplete.</h3>
+                  <p>Continue from the persisted Research dossier. Kairo will retry Angle generation without gathering the Research again.</p>
+                  <form action={continueResearch}>
+                    <button className="primary-button" type="submit">Continue to candidate Angles</button>
+                  </form>
+                </div>
+              ) : null}
+
               {angles.length ? (
                 <div className="angle-list">
                   {angles.map((angle) => {
@@ -165,12 +176,7 @@ export default async function IdeaPage({ params, searchParams }: { params: Param
                     );
                   })}
                 </div>
-              ) : (
-                <div className="ideas-empty">
-                  <h3>No candidate Angles yet.</h3>
-                  <p>Kairo waits for validated Research before proposing multiple useful framings.</p>
-                </div>
-              )}
+              ) : null}
             </section>
           </>
         )}

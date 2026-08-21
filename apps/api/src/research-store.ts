@@ -52,7 +52,7 @@ export class MemoryResearchRepository implements ResearchRepository {
     return structuredClone(edited);
   }
 
-  async seedReadyBundle(ideaId: string): Promise<void> {
+  async seedResearchOnly(ideaId: string): Promise<ResearchDossier> {
     const idea = this.ideas.get(ideaId);
     if (!idea) throw new ResourceNotFoundError("Idea not found");
     const dossier = createResearchDossier({
@@ -62,11 +62,23 @@ export class MemoryResearchRepository implements ResearchRepository {
       unresolvedUncertainties: ["Long-term impact is unknown."], createdAt: "2026-08-13T08:05:00.000Z",
     });
     this.research.set(ideaId, dossier);
+    return structuredClone(dossier);
+  }
+
+  async seedAngles(ideaId: string): Promise<void> {
+    const idea = this.ideas.get(ideaId);
+    if (!idea) throw new ResourceNotFoundError("Idea not found");
+    if (!this.research.has(ideaId)) throw new ResourceNotFoundError("Research not found");
     const common = { workspaceId: idea.workspaceId, brandId: idea.brandId, ideaId, audience: "Founders", objective: "Education", hookDirection: "Lead with evidence", expectedValue: "Clarity", effort: "low" as const, recommendedFormat: "text", recommendedChannel: "linkedin", supportingClaimIds: ["claim-1"], status: "candidate" as const, version: 1 };
     this.angles.set(ideaId, [
       { ...common, id: "angle-1", title: "Evidence first", framing: "Explain the finding" },
       { ...common, id: "angle-2", title: "Uncertainty first", framing: "Explain what remains unknown" },
     ]);
+  }
+
+  async seedReadyBundle(ideaId: string): Promise<void> {
+    await this.seedResearchOnly(ideaId);
+    await this.seedAngles(ideaId);
   }
 
   private async requireBrand(accountId: string, brandId: string) {
