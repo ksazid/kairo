@@ -11,6 +11,7 @@ const requestedRange = process.env.KAIRO_STARTUP_MIGRATION_RANGE?.trim();
 const requestedMarketingAuthorization = process.env.KAIRO_STARTUP_MARKETING_SHADOW_AUTHORIZATION?.trim();
 const requestedMarketingEvidenceExport = process.env.KAIRO_STARTUP_MARKETING_SHADOW_EVIDENCE_EXPORT?.trim();
 const requestedMarketingQualityAuthorization = process.env.KAIRO_STARTUP_MARKETING_SHADOW_QUALITY_AUTHORIZATION?.trim();
+const instagramPublisherEnabled = process.env.KAIRO_INSTAGRAM_PUBLISHER_ENABLED?.trim() === "true";
 
 const startupActionCount = [
   requestedMigration,
@@ -90,6 +91,13 @@ if (requestedMigration) {
   runBackgroundScript(
     new URL("../apps/api/dist/marketing-shadow-quality-evaluation-worker.js", import.meta.url),
     `Marketing Lab quality evaluation ${requestedMarketingQualityAuthorization}`,
+  );
+}
+
+if (instagramPublisherEnabled) {
+  runBackgroundScript(
+    new URL("../apps/api/dist/publishing-worker-server.js", import.meta.url),
+    "Instagram publisher",
   );
 }
 
