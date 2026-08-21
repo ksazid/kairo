@@ -180,4 +180,37 @@ describe("OpenAICompatibleModelGateway", () => {
       KAIRO_LLM_PRICING_VERSION: "provider-pricing-2026-08-15",
     })).not.toBeNull();
   });
+
+  it.each([
+    ["content-draft", { content: "Draft", supportingClaimIds: [] }, "content_draft_1"],
+    ["critic-review", { passed: true, score: 90, findings: [] }, "critic_review_1"],
+  ])("uses strict Groq JSON schema for %s", async (schemaName, output, responseName) => {
+    const fetchImpl = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+      const payload = JSON.parse(String(init?.body ?? "{}"));
+      expect(payload.response_format).toMatchObject({
+        type: "json_schema",
+        json_schema: { name: responseName, strict: true },
+      });
+      expect(payload.response_format.json_schema.schema.additionalProperties).toBe(false);
+      return new Response(JSON.stringify({
+        model: "openai/gpt-oss-120b",
+        choices: [{ message: { content: JSON.stringify(output) } }],
+        usage: { prompt_tokens: 10, completion_tokens: 10 },
+      }), { status: 200, headers: { "content-type": "application/json" } });
+    });
+    const gateway = new OpenAICompatibleModelGateway({
+      provider: "groq",
+      baseUrl: "https://api.groq.com/openai/v1",
+      apiKey: "secret",
+      model: "openai/gpt-oss-120b",
+      pricing,
+      fetchImpl,
+    });
+    await expect(gateway.generate({
+      ...request,
+      role: schemaName === "content-draft" ? "drafter" : "critic",
+      policy: { ...request.policy, allowedProviders: ["groq"] },
+      outputSchema: { name: schemaName, version: "1" },
+    })).resolves.toMatchObject({ output });
+  });
 });

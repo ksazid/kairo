@@ -158,12 +158,20 @@ describe("strict structured model output", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("keeps JSON object mode for unrelated schemas", () => {
-    expect(responseFormatForOutputSchema("groq", "openai/gpt-oss-120b", { name: "content-draft", version: "1" })).toEqual({ type: "json_object" });
+  it("uses certified strict schemas for content generation and review", () => {
+    expect(responseFormatForOutputSchema("groq", "openai/gpt-oss-120b", { name: "content-draft", version: "1" })).toMatchObject({
+      type: "json_schema",
+      json_schema: { name: "content_draft_1", strict: true },
+    });
+    expect(responseFormatForOutputSchema("groq", "openai/gpt-oss-120b", { name: "critic-review", version: "1" })).toMatchObject({
+      type: "json_schema",
+      json_schema: { name: "critic_review_1", strict: true },
+    });
   });
 
   it("keeps JSON object mode for providers or models without the certified Groq strict route", () => {
     expect(responseFormatForOutputSchema("openai", "openai/gpt-oss-120b", { name: "marketing-carousel-plan", version: "1" })).toEqual({ type: "json_object" });
     expect(responseFormatForOutputSchema("groq", "other-model", { name: "marketing-carousel-plan", version: "1" })).toEqual({ type: "json_object" });
+    expect(responseFormatForOutputSchema("groq", "openai/gpt-oss-120b", { name: "hunter-ranking", version: "1" })).toEqual({ type: "json_object" });
   });
 });
