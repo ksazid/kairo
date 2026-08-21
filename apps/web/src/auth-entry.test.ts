@@ -34,6 +34,13 @@ describe("VS-28 Kairo auth entry contract", () => {
     expect(login).not.toContain('parameters.connection = "google-oauth2"');
   });
 
+  it("preserves the full Instagram OAuth callback across an expired Kairo session", () => {
+    const callback = source("../app/channels/instagram/callback/route.ts");
+    expect(callback).toContain('error instanceof InstagramApiError && error.status === 401');
+    expect(callback).toContain('return `${request.nextUrl.pathname}${request.nextUrl.search}`;');
+    expect(callback).toContain('target.searchParams.set("returnTo", callbackReturnTo(request));');
+  });
+
   it("ships a stable Kairo application logo asset for Auth0 branding", () => {
     const logo = source("../public/kairo-auth-logo.svg");
     expect(logo).toContain("<title id=\"title\">Kairo</title>");
