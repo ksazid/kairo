@@ -21,6 +21,14 @@ const pricing = {
   version: "provider-pricing-2026-08-15",
 };
 
+function successResponse() {
+  return new Response(JSON.stringify({
+    model: "test-model-2026-08-01",
+    choices: [{ message: { content: JSON.stringify({ accepted: true }) } }],
+    usage: { prompt_tokens: 1_000, completion_tokens: 500 },
+  }), { status: 200, headers: { "content-type": "application/json" } });
+}
+
 describe("OpenAICompatibleModelGateway", () => {
   it("keeps the API key in the transport header only and records configured token cost", async () => {
     const apiKey = "test-secret-key";
@@ -29,11 +37,7 @@ describe("OpenAICompatibleModelGateway", () => {
       expect(serializedBody).not.toContain(apiKey);
       expect(JSON.stringify(request)).not.toContain(apiKey);
       expect(new Headers(init?.headers).get("authorization")).toBe(`Bearer ${apiKey}`);
-      return new Response(JSON.stringify({
-        model: "test-model-2026-08-01",
-        choices: [{ message: { content: JSON.stringify({ accepted: true }) } }],
-        usage: { prompt_tokens: 1_000, completion_tokens: 500 },
-      }), { status: 200, headers: { "content-type": "application/json" } });
+      return successResponse();
     });
 
     const gateway = new OpenAICompatibleModelGateway({
@@ -56,6 +60,48 @@ describe("OpenAICompatibleModelGateway", () => {
       pricingVersion: "provider-pricing-2026-08-15",
     });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a provider 429 and honors Retry-After within the bounded delay", async () => {
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce(new Response("rate limited", { status: 429, headers: { "retry-after": "1" } }))
+      .mockResolvedValueOnce(successResponse());
+    const sleep = vi.fn(async (_ms: number) => undefined);
+    const gateway = new OpenAICompatibleModelGateway({
+      provider: "openai", baseUrl: "https://models.example.test/v1", apiKey: "secret", model: "test-model", pricing,
+      fetchImpl, sleep, maxAttempts: 3, maxRetryDelayMs: 5_000,
+    });
+
+    await expect(gateway.generate(request)).resolves.toMatchObject({ output: { accepted: true } });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledTimes(1);
+    expect(sleep).toHaveBeenCalledWith(1_000);
+  });
+
+  it("stops retrying after the configured bound", async () => {
+    const fetchImpl = vi.fn(async () => new Response("rate limited", { status: 429 }));
+    const sleep = vi.fn(async (_ms: number) => undefined);
+    const gateway = new OpenAICompatibleModelGateway({
+      provider: "openai", baseUrl: "https://models.example.test/v1", apiKey: "secret", model: "test-model", pricing,
+      fetchImpl, sleep, maxAttempts: 3,
+    });
+
+    await expect(gateway.generate(request)).rejects.toThrow(/returned 429/);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(sleep).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry non-transient provider 4xx responses", async () => {
+    const fetchImpl = vi.fn(async () => new Response("bad request", { status: 400 }));
+    const sleep = vi.fn(async (_ms: number) => undefined);
+    const gateway = new OpenAICompatibleModelGateway({
+      provider: "openai", baseUrl: "https://models.example.test/v1", apiKey: "secret", model: "test-model", pricing,
+      fetchImpl, sleep,
+    });
+
+    await expect(gateway.generate(request)).rejects.toThrow(/returned 400/);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
   });
 
   it("records a defensible zero cost when configured rates are zero", async () => {
