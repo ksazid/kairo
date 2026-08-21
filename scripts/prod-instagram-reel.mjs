@@ -25,10 +25,11 @@ console.log(`REEL_TARGET=PASS:${target.displayName}:${target.accountRef}`);
 const media = await fetch(videoUrl, {redirect:"follow"});
 if (!media.ok) throw new Error(`Reel media returned ${media.status}`);
 const mediaType = media.headers.get("content-type") ?? "";
-if (!mediaType.toLowerCase().includes("video")) throw new Error(`Reel media content-type is ${mediaType}`);
 const bytes = await media.arrayBuffer();
 if (bytes.byteLength < 1000) throw new Error("Reel media is unexpectedly small");
-console.log(`REEL_MEDIA_PREFLIGHT=PASS:${mediaType}:${bytes.byteLength}`);
+const signature = new TextDecoder().decode(new Uint8Array(bytes, 4, 4));
+if (signature !== "ftyp") throw new Error(`Reel media is not an MP4-family file (signature=${signature})`);
+console.log(`REEL_MEDIA_PREFLIGHT=PASS:${mediaType || "unknown"}:${bytes.byteLength}:ftyp`);
 
 const created = await json(`/api/v1/brands/${brandId}/campaigns/${campaignId}/assets`, {
   method:"POST",
