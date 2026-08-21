@@ -109,12 +109,20 @@ describe("VS-04 Researcher orchestration", () => {
     expect(runtime.lastRequest?.capabilities).toEqual(["public-content-search"]);
     expect(runtime.lastRequest?.budget).toMatchObject({ maxToolCalls: 0, maxOutputTokens: 4000 });
     expect(runtime.lastRequest?.task.instruction).toMatch(/untrusted data/i);
+    expect(runtime.lastRequest?.task.instruction).toMatch(/cite at least one supplied evidence ID/i);
     expect(sink.saved).toHaveLength(1);
   });
 
   it("rejects an empty Claim set before authoritative persistence", async () => {
     const sink = new FakeSink();
     const researcher = new ResearcherOrchestrator(new FakeTools(), new FakeRuntime(output({ claims: [] })), sink);
+    await expect(researcher.run(input)).rejects.toThrow(/schema validation/i);
+    expect(sink.saved).toHaveLength(0);
+  });
+
+  it("rejects a Claim with empty evidence lineage before authoritative persistence", async () => {
+    const sink = new FakeSink();
+    const researcher = new ResearcherOrchestrator(new FakeTools(), new FakeRuntime(output({ claims: [{ ...output().claims[0]!, evidenceIds: [] }] })), sink);
     await expect(researcher.run(input)).rejects.toThrow(/schema validation/i);
     expect(sink.saved).toHaveLength(0);
   });
@@ -128,7 +136,7 @@ describe("VS-04 Researcher orchestration", () => {
 
   it("rejects fabricated first-person experience before persistence", async () => {
     const sink = new FakeSink();
-    const researcher = new ResearcherOrchestrator(new FakeTools(), new FakeRuntime(output({ claims: [{ ...output().claims[0]!, text: "We achieved this result.", classification: "brand-opinion", evidenceIds: [], verificationState: "unresolved", firstPersonAuthorization: "not-authorized" }] })), sink);
+    const researcher = new ResearcherOrchestrator(new FakeTools(), new FakeRuntime(output({ claims: [{ ...output().claims[0]!, text: "We achieved this result.", classification: "brand-opinion", evidenceIds: ["evidence-1"], verificationState: "unresolved", firstPersonAuthorization: "not-authorized" }] })), sink);
     await expect(researcher.run(input)).rejects.toThrow(/first-person claim/i);
     expect(sink.saved).toHaveLength(0);
   });
