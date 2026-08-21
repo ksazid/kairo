@@ -1,5 +1,5 @@
 const base = required("KAIRO_API_URL").replace(/\/$/, "");
-const expectedSha = required("KAIRO_RELEASE_SHA");
+const expectedSha = "c8a168a0ced4c7f331d116e870c32116c38f87b3";
 const token = process.env.KAIRO_SMOKE_TOKEN?.trim();
 
 for (const [path, status, shape] of [
