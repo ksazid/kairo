@@ -7,12 +7,7 @@
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-08", "FR-09", "FR-20"],
-  "owners": {
-    "product": "Product Owner",
-    "engineering": "Engineering Owner",
-    "operations": "Operations Owner",
-    "security": "Security Owner"
-  },
+  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
   "dependencies": ["VS-72"],
   "blockers": [],
   "allowedPaths": [
@@ -35,6 +30,9 @@
     "apps/worker/src/research-evidence-adapters.test.ts",
     "apps/worker/src/retrying-discovery-provider.ts",
     "apps/worker/src/retrying-discovery-provider.test.ts",
+    "apps/web/package.json",
+    "apps/web/scripts/write-release-sha.mjs",
+    "apps/web/src/lib/generated-release-sha.ts",
     "apps/web/src/lib/kairo-api.ts",
     "apps/web/src/lib/brand-api.ts",
     "apps/web/app/actions.ts",
@@ -48,76 +46,28 @@
     "delivery/current-slice.json",
     "delivery/context/VS-73.md"
   ],
-  "protectedPaths": [
-    ".github/workflows/release.yml",
-    "infrastructure/**",
-    "apps/api/migrations/**",
-    "apps/api/src/publishing-execution-postgres-store.ts",
-    "apps/api/src/publishing-worker-server.ts",
-    "apps/worker/src/publishing*",
-    "packages/domain/src/publishing*"
-  ],
+  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**","apps/api/src/publishing-execution-postgres-store.ts","apps/api/src/publishing-worker-server.ts","apps/worker/src/publishing*","packages/domain/src/publishing*"],
   "impact": {
-    "areas": ["frontend", "api", "architecture", "authorization", "customer-flow", "deployment", "operations-support"],
+    "areas": ["frontend","api","architecture","authorization","customer-flow","deployment","operations-support"],
     "notes": [
       "Repairs bounded provider retry/backoff for rate limits and transient upstream failures.",
       "Makes persisted Research recoverable when Angle generation fails, without duplicating Research.",
       "Restores FR-02 multi-Brand creation inside an existing authenticated Workspace.",
       "Strengthens tenant-isolation regressions and authenticated multi-Brand smoke coverage.",
-      "Adds explicit web/API release-SHA provenance and production verification without weakening authentication or publishing real external content."
+      "Adds exact web/API release-SHA provenance; the web build now stamps its exact Git source SHA so direct Vercel releases remain verifiable even when Git deployment metadata is unavailable."
     ]
   },
   "approvals": [
-    {
-      "type": "scope",
-      "status": "approved",
-      "version": "VS-73@1.0",
-      "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-21T05:27:00+02:00",
-      "rationale": "Owner explicitly granted full approval to fix all identified production reliability bugs in one pass and instructed execution to continue through completion."
-    },
-    {
-      "type": "policy",
-      "status": "not-required",
-      "version": "VS-73@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "The repair preserves authentication, tenant isolation, provider/privacy boundaries and existing publishing authority; automated smoke must not publish externally."
-    },
-    {
-      "type": "implementation",
-      "status": "approved",
-      "version": "VS-73@1.0",
-      "commitSha": "b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6",
-      "by": "Sazid Khan",
-      "at": "2026-08-21T09:38:00+02:00",
-      "rationale": "Exact implementation candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6 passed Product Intake #689, Security baseline #792 and CI #939 after the governance-only REL-003 reference defect was removed."
-    },
-    {
-      "type": "certification",
-      "status": "approved",
-      "version": "VS-73@1.0",
-      "commitSha": "b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6",
-      "by": "Sazid Khan",
-      "at": "2026-08-21T09:38:00+02:00",
-      "rationale": "Owner granted full approval through certification. Exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6 passed Product Intake #689, Security #792 and CI #939, including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."
-    },
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized release; exact merge SHA will be bound after the certified PR is merged."},
+    {"type":"scope","status":"approved","version":"VS-73@1.1","commitSha":null,"by":"Sazid Khan","at":"2026-08-21T05:27:00+02:00","rationale":"Owner explicitly granted full approval to fix all identified production reliability bugs and instructed execution to continue through completion."},
+    {"type":"policy","status":"not-required","version":"VS-73@1.1","commitSha":null,"by":null,"at":null,"rationale":"The repair preserves authentication, tenant isolation, provider/privacy boundaries and publishing authority; release-provenance generation adds no external authority or data exposure."},
+    {"type":"implementation","status":"approved","version":"VS-73@1.1","commitSha":"d43f159eb7955899a52c1b8f8f96d1a7488bb8a6","by":"Sazid Khan","at":"2026-08-21T10:41:00+02:00","rationale":"Exact VS-73 Vercel provenance candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6 passed Product Intake #692, Security baseline #801 and CI #949 after the certification-state validation defect was corrected."},
+    {"type":"certification","status":"approved","version":"VS-73@1.1","commitSha":"d43f159eb7955899a52c1b8f8f96d1a7488bb8a6","by":"Sazid Khan","at":"2026-08-21T10:41:00+02:00","rationale":"Owner explicitly authorized production deployment and continuation. Exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6 passed Product Intake #692, Security baseline #801 and CI #949, including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized release; exact merge SHA will be bound after merge."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized production enablement/deployment; exact release SHA will be bound after merge."}
   ],
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
-  "certification": {
-    "status":"passed",
-    "commitSha":"b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6",
-    "evidence":[
-      "Product Intake #689 passed on exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6.",
-      "Security baseline #792 passed on exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6.",
-      "CI #939 passed on exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6, including clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification and dashboard build."
-    ]
-  },
+  "certification": {"status":"passed","commitSha":"d43f159eb7955899a52c1b8f8f96d1a7488bb8a6","evidence":["Product Intake #692 passed on exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6.","Security baseline #801 passed on exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6.","CI #949 passed on exact candidate d43f159eb7955899a52c1b8f8f96d1a7488bb8a6, including clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification and dashboard build."]},
   "release": {"status":"pending","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
@@ -126,6 +76,6 @@
     "expectedOutcome":"Authenticated users can create multiple isolated Brands and reliably progress Brand → Idea → Research → Angles → Campaign/content gates under transient provider failures, with exact deployed-SHA provenance.",
     "metrics":["provider retry recovery","Research-to-Angle recovery","multi-Brand creation","tenant isolation","exact deployed SHA","authenticated smoke"]
   },
-  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#129","evidence":["delivery/context/VS-73.md"]},
+  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#130","evidence":["delivery/context/VS-73.md"]},
   "maxAttempts": 3
 }
