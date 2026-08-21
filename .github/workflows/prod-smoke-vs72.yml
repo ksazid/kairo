@@ -55,7 +55,7 @@ jobs:
       - name: Run provider-confirmed Instagram production smoke
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
-          KAIRO_RELEASE_SHA: b522052794e472ef6d2ba9b3f266dc7679254c75
+          KAIRO_RELEASE_SHA: fe5920bc3d93233df1b5dd2e5cb9c11a6f90eb9c
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
           KAIRO_INSTAGRAM_SMOKE_IMAGE_URL: https://dummyimage.com/1080x1080/111827/ffffff.png&text=Kairo+VS-73+Live+Publish
         run: node scripts/prod-smoke-readonly.mjs
