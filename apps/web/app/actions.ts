@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createWorkspaceWithBrand } from "../src/lib/kairo-api";
+import { createBrand } from "../src/lib/brand-api";
 
 const PROFILE_HOSTS = new Set([
   "instagram.com", "www.instagram.com",
@@ -33,4 +34,15 @@ export async function createWorkspaceAction(formData: FormData): Promise<void> {
     ...(publicProfileUrl ? { publicProfileUrl } : {}),
   });
   redirect(`/brands/${encodeURIComponent(created.brand.id)}/brain?setup=1`);
+}
+
+export async function createBrandAction(workspaceId: string, formData: FormData): Promise<void> {
+  const brandName = String(formData.get("brandName") ?? "");
+  try {
+    const brand = await createBrand(workspaceId, brandName);
+    redirect(`/brands/${encodeURIComponent(brand.id)}/brain?setup=1`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to create Brand";
+    redirect(`/brands/new?workspace=${encodeURIComponent(workspaceId)}&error=${encodeURIComponent(message.slice(0, 180))}`);
+  }
 }
