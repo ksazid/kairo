@@ -65,4 +65,54 @@ describe("VS-17 Meta Instagram OAuth adapter", () => {
     expect(oauthBodies.every((body) => body.includes("client_secret=top-secret"))).toBe(true);
     expect(calls.filter((call) => call.url.includes("/me/")).every((call) => new Headers(call.init?.headers).get("authorization") === "Bearer long-user-token")).toBe(true);
   });
+
+  it("accepts Meta extended tokens that omit expires_in using a conservative 60-day operational horizon", async () => {
+    const client = new MetaInstagramOAuthClient(
+      "app-1",
+      "top-secret",
+      "v99.0",
+      "https://kairo.example/channels/instagram/callback",
+      async (input, init) => {
+        const url = String(input);
+        if (url.endsWith("/oauth/access_token")) {
+          const body = String(init?.body ?? "");
+          if (body.includes("grant_type=fb_exchange_token")) {
+            return new Response(JSON.stringify({ access_token: "long-user-token", token_type: "bearer" }), { status: 200 });
+          }
+          return new Response(JSON.stringify({ access_token: "short-user-token" }), { status: 200 });
+        }
+        if (url.endsWith("/me/permissions")) {
+          return new Response(JSON.stringify({ data: metaInstagramRequestedScopes().map((permission) => ({ permission, status: "granted" })) }), { status: 200 });
+        }
+        if (url.includes("/me/accounts")) return new Response(JSON.stringify({ data: [] }), { status: 200 });
+        throw new Error(`unexpected ${url}`);
+      },
+    );
+
+    const result = await client.exchangeAndDiscover("auth-code");
+    expect(result.userAccessToken).toBe("long-user-token");
+    expect(result.userAccessTokenExpiresInSeconds).toBe(60 * 24 * 60 * 60);
+  });
+
+  it("still rejects an explicitly short-lived extended token", async () => {
+    const client = new MetaInstagramOAuthClient(
+      "app-1",
+      "top-secret",
+      "v99.0",
+      "https://kairo.example/channels/instagram/callback",
+      async (input, init) => {
+        const url = String(input);
+        if (url.endsWith("/oauth/access_token")) {
+          const body = String(init?.body ?? "");
+          if (body.includes("grant_type=fb_exchange_token")) {
+            return new Response(JSON.stringify({ access_token: "too-short", expires_in: 3_600 }), { status: 200 });
+          }
+          return new Response(JSON.stringify({ access_token: "short-user-token" }), { status: 200 });
+        }
+        throw new Error(`unexpected ${url}`);
+      },
+    );
+
+    await expect(client.exchangeAndDiscover("auth-code")).rejects.toThrow("sufficiently durable Facebook User access token");
+  });
 });
