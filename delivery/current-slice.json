@@ -3,7 +3,7 @@
   "sliceId": "VS-73",
   "title": "End-to-End Production Reliability Repair",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-08", "FR-09", "FR-20"],
@@ -90,18 +90,34 @@
       "type": "implementation",
       "status": "approved",
       "version": "VS-73@1.0",
-      "commitSha": null,
+      "commitSha": "b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6",
       "by": "Sazid Khan",
-      "at": "2026-08-21T05:27:00+02:00",
-      "rationale": "Owner explicitly approved implementation, testing and corrective work for all identified bugs. Exact candidate SHA will be bound after implementation verification."
+      "at": "2026-08-21T09:38:00+02:00",
+      "rationale": "Exact implementation candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6 passed Product Intake #689, Security baseline #792 and CI #939 after the governance-only REL-003 reference defect was removed."
     },
-    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized release; exact certified SHA remains to be bound."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized production enablement/deployment; exact certified SHA remains to be bound."}
+    {
+      "type": "certification",
+      "status": "approved",
+      "version": "VS-73@1.0",
+      "commitSha": "b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6",
+      "by": "Sazid Khan",
+      "at": "2026-08-21T09:38:00+02:00",
+      "rationale": "Owner granted full approval through certification. Exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6 passed Product Intake #689, Security #792 and CI #939, including clean PostgreSQL 18 migrations, dependency audit, governance/preflight, runtime verification and dashboard build."
+    },
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized release; exact merge SHA will be bound after the certified PR is merged."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized production enablement/deployment; exact release SHA will be bound after merge."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":90,"testing":30,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "certification": {
+    "status":"passed",
+    "commitSha":"b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6",
+    "evidence":[
+      "Product Intake #689 passed on exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6.",
+      "Security baseline #792 passed on exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6.",
+      "CI #939 passed on exact candidate b1399614e3f2d17b32a2216a0a5ee6d333b7b7e6, including clean PostgreSQL 18 migrations, production dependency audit, governance/preflight, runtime verification and dashboard build."
+    ]
+  },
   "release": {"status":"pending","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
@@ -110,6 +126,6 @@
     "expectedOutcome":"Authenticated users can create multiple isolated Brands and reliably progress Brand → Idea → Research → Angles → Campaign/content gates under transient provider failures, with exact deployed-SHA provenance.",
     "metrics":["provider retry recovery","Research-to-Angle recovery","multi-Brand creation","tenant isolation","exact deployed SHA","authenticated smoke"]
   },
-  "links": {"specification":"docs/slices/VS-73.md","implementationPr":null,"evidence":["delivery/context/VS-73.md"]},
+  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#129","evidence":["delivery/context/VS-73.md"]},
   "maxAttempts": 3
 }
