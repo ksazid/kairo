@@ -23,6 +23,12 @@ export interface ResearcherRunInput {
    * Callers must derive this only from public evidence, never from Brand-private context.
    */
   publicResearchQuery?: string;
+  /**
+   * Explicit public evidence already fetched by a trusted boundary. When enough relevant
+   * pinned evidence is supplied, scholarly discovery is intentionally skipped so a
+   * user-selected authoritative source cannot be diluted by unrelated search results.
+   */
+  pinnedEvidence?: DiscoveryEvidence[];
   maxEvidence?: number;
 }
 
@@ -57,39 +63,48 @@ export class ResearcherOrchestrator {
     const focusedQuery = buildFocusedResearchQuery(query);
     const publicResearchQuery = normalizePublicResearchQuery(input.publicResearchQuery);
     const maxEvidence = Math.min(Math.max(input.maxEvidence ?? 8, 1), 12);
+    const minimumRelevantEvidence = Math.min(2, maxEvidence);
+    const pinnedEvidence = normalizePinnedEvidence(input.pinnedEvidence, maxEvidence);
+    const relevantPinnedEvidence = pinnedEvidence.filter((item) => isEvidenceRelevantToResearch(item, [query, ...(publicResearchQuery ? [publicResearchQuery] : [])]));
+    if (pinnedEvidence.length && relevantPinnedEvidence.length < Math.min(pinnedEvidence.length, minimumRelevantEvidence)) {
+      throw new Error(`Explicit Research evidence is not sufficiently relevant: ${relevantPinnedEvidence.length}/${Math.min(pinnedEvidence.length, minimumRelevantEvidence)}`);
+    }
 
-    const generalRequest = prepareToolRequest({
-      capability: "public-content-search",
-      scope: { visibility: "global-public" },
-      input: { query: focusedQuery, maxResults: maxEvidence },
-      timeoutMs: 30_000,
-    });
-    const general = await this.tools.invoke<DiscoveryEvidence[]>(generalRequest);
-    const groups: DiscoveryEvidence[][] = [general.output];
+    const groups: DiscoveryEvidence[][] = relevantPinnedEvidence.length ? [relevantPinnedEvidence] : [];
     const degradedSources = new Set<string>();
 
-    if (publicResearchQuery) {
-      const perSourceMax = Math.max(1, Math.min(6, Math.ceil(maxEvidence / (RESEARCH_EVIDENCE_SOURCES.length + 1))));
-      for (const source of RESEARCH_EVIDENCE_SOURCES) {
-        const request = prepareToolRequest({
-          capability: "public-content-search",
-          scope: { visibility: "global-public" },
-          input: { query: publicResearchQuery, maxResults: perSourceMax, source },
-          timeoutMs: 20_000,
-        });
-        try {
-          const result = await this.tools.invoke<DiscoveryEvidence[]>(request);
-          groups.push(result.output);
-        } catch {
-          degradedSources.add(source);
-          groups.push([]);
+    if (relevantPinnedEvidence.length < minimumRelevantEvidence) {
+      const generalRequest = prepareToolRequest({
+        capability: "public-content-search",
+        scope: { visibility: "global-public" },
+        input: { query: focusedQuery, maxResults: maxEvidence },
+        timeoutMs: 30_000,
+      });
+      const general = await this.tools.invoke<DiscoveryEvidence[]>(generalRequest);
+      groups.push(general.output);
+
+      if (publicResearchQuery) {
+        const perSourceMax = Math.max(1, Math.min(6, Math.ceil(maxEvidence / (RESEARCH_EVIDENCE_SOURCES.length + 1))));
+        for (const source of RESEARCH_EVIDENCE_SOURCES) {
+          const request = prepareToolRequest({
+            capability: "public-content-search",
+            scope: { visibility: "global-public" },
+            input: { query: publicResearchQuery, maxResults: perSourceMax, source },
+            timeoutMs: 20_000,
+          });
+          try {
+            const result = await this.tools.invoke<DiscoveryEvidence[]>(request);
+            groups.push(result.output);
+          } catch {
+            degradedSources.add(source);
+            groups.push([]);
+          }
         }
       }
     }
 
     const candidateEvidence = balancedUniqueEvidence(groups, maxEvidence);
     const relevantEvidence = candidateEvidence.filter((item) => isEvidenceRelevantToResearch(item, [query, ...(publicResearchQuery ? [publicResearchQuery] : [])]));
-    const minimumRelevantEvidence = Math.min(2, maxEvidence);
     if (relevantEvidence.length < minimumRelevantEvidence) {
       throw new Error(`Research has insufficient relevant evidence: ${relevantEvidence.length}/${minimumRelevantEvidence}`);
     }
@@ -166,6 +181,26 @@ export function buildFocusedResearchQuery(subject: string | { title: string; pre
   return focused.length >= 2 ? focused.join(" ") : raw;
 }
 
+export function extractResearchUrls(idea: { title: string; premise: string }): string[] {
+  const raw = `${idea.title} ${idea.premise}`;
+  const matches = raw.match(/https?:\/\/[^\s<>"']+/gi) ?? [];
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  for (const match of matches) {
+    const candidate = match.replace(/[)\]}>.,;!?]+$/g, "");
+    let url: URL;
+    try { url = new URL(candidate); } catch { continue; }
+    if ((url.protocol !== "http:" && url.protocol !== "https:") || url.username || url.password) continue;
+    url.hash = "";
+    const normalized = url.toString();
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    urls.push(normalized);
+    if (urls.length >= 4) break;
+  }
+  return urls;
+}
+
 export function isResearcherOutput(value: unknown): value is ResearcherOutput {
   if (!value || typeof value !== "object") return false;
   const output = value as ResearcherOutput;
@@ -185,6 +220,30 @@ function normalizePublicResearchQuery(value: string | undefined): string | undef
   if (!normalized) throw new Error("publicResearchQuery must be non-empty when supplied");
   if (normalized.length > 1_000) throw new Error("publicResearchQuery is too long");
   return normalized;
+}
+
+function normalizePinnedEvidence(value: DiscoveryEvidence[] | undefined, maxEvidence: number): DiscoveryEvidence[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new Error("pinnedEvidence must be a list");
+  return value.slice(0, maxEvidence).map((item) => {
+    if (!item || !nonEmpty(item.title) || !nonEmpty(item.sourceUrl) || !nonEmpty(item.platform) || !nonEmpty(item.retrievedAt) || !nonEmpty(item.provider)) {
+      throw new Error("pinnedEvidence contains an invalid evidence item");
+    }
+    let url: URL;
+    try { url = new URL(item.sourceUrl); } catch { throw new Error("pinnedEvidence contains an invalid source URL"); }
+    if ((url.protocol !== "http:" && url.protocol !== "https:") || url.username || url.password) {
+      throw new Error("pinnedEvidence source URLs must be credential-free HTTP(S)");
+    }
+    return {
+      ...item,
+      title: item.title.trim(),
+      ...(item.summary ? { summary: item.summary.trim() } : {}),
+      sourceUrl: url.toString(),
+      platform: item.platform.trim(),
+      retrievedAt: item.retrievedAt.trim(),
+      provider: item.provider.trim(),
+    };
+  });
 }
 
 function balancedUniqueEvidence(groups: DiscoveryEvidence[][], maxEvidence: number): DiscoveryEvidence[] {
