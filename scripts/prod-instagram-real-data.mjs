@@ -2,7 +2,9 @@ const base = required("KAIRO_API_URL").replace(/\/$/, "");
 const expectedSha = required("KAIRO_RELEASE_SHA");
 const token = required("KAIRO_SMOKE_TOKEN");
 const imageUrl = required("KAIRO_INSTAGRAM_IMAGE_URL");
-const sourceUrl = required("KAIRO_REAL_DATA_SOURCE_URL");
+const primarySourceUrl = required("KAIRO_REAL_DATA_SOURCE_URL");
+const secondarySourceUrl = required("KAIRO_REAL_DATA_SECONDARY_SOURCE_URL");
+const sourceUrls = [primarySourceUrl, secondarySourceUrl];
 
 const auth = { authorization: `Bearer ${token}` };
 
@@ -46,13 +48,16 @@ if (!imageType.toLowerCase().startsWith("image/")) throw new Error(`Instagram im
 await imageCheck.arrayBuffer();
 console.log(`INSTAGRAM_MEDIA_PREFLIGHT=PASS:${imageType}`);
 
-const sourceHost = new URL(sourceUrl).hostname.toLowerCase();
-if (!sourceHost.endsWith("ktm.com")) throw new Error(`Real-data source must be an official ktm.com page, got ${sourceHost}`);
+for (const sourceUrl of sourceUrls) {
+  const sourceHost = new URL(sourceUrl).hostname.toLowerCase();
+  if (!sourceHost.endsWith("ktm.com")) throw new Error(`Real-data source must be an official ktm.com page, got ${sourceHost}`);
+}
+if (new Set(sourceUrls).size !== 2) throw new Error("Real-data smoke requires two distinct official KTM source URLs");
 
 const runTag = Date.now();
 const ideasPath = `/api/v1/brands/${brandId}/ideas`;
 const ideaTitle = `2026 KTM 390 Duke official-data post ${runTag}`;
-const premise = `Research a factual Instagram post about the 2026 KTM 390 Duke using official KTM data. Primary source: ${sourceUrl}. Prefer exact technical specifications such as displacement, power, torque, suspension, braking or weight only when directly supported by official KTM evidence. Do not use unrelated sustainability, fashion, thrift, or generic social-media claims.`;
+const premise = `Research a factual Instagram post about the 2026 KTM 390 Duke using official KTM data. Primary source: ${primarySourceUrl}. Secondary source: ${secondarySourceUrl}. Prefer exact technical specifications such as displacement, power, torque, suspension, braking or weight only when directly supported by official KTM evidence. Do not use unrelated sustainability, fashion, thrift, or generic social-media claims.`;
 const ideaCreate = await jsonRequest(ideasPath, auth, { method: "POST", body: { title: ideaTitle, premise } });
 if (ideaCreate.response.status !== 201 || !ideaCreate.body?.id) throw new Error(`Real-data Idea creation failed: ${ideaCreate.response.status} ${JSON.stringify(ideaCreate.body)}`);
 const ideaId = ideaCreate.body.id;
@@ -75,7 +80,6 @@ for (let attempt = 0; attempt < 3; attempt += 1) {
 }
 if (!bundle?.research || !Array.isArray(bundle.angles) || !bundle.angles.length) throw new Error("Fresh KTM Research did not produce a usable dossier and Angles");
 
-const evidenceById = new Map((bundle.research.evidence ?? []).map((item) => [item.id, item]));
 const officialEvidenceIds = new Set(
   (bundle.research.evidence ?? [])
     .filter((item) => {
@@ -83,7 +87,7 @@ const officialEvidenceIds = new Set(
     })
     .map((item) => item.id),
 );
-if (!officialEvidenceIds.size) throw new Error(`Fresh Research contains no official ktm.com evidence: ${JSON.stringify((bundle.research.evidence ?? []).map((e) => e.sourceUrl))}`);
+if (officialEvidenceIds.size < 2) throw new Error(`Fresh Research must contain both official ktm.com sources; found ${officialEvidenceIds.size}: ${JSON.stringify((bundle.research.evidence ?? []).map((e) => e.sourceUrl))}`);
 
 const claimsById = new Map((bundle.research.claims ?? []).map((claim) => [claim.id, claim]));
 const officialFactClaims = (bundle.research.claims ?? []).filter((claim) =>
