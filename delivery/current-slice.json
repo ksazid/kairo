@@ -67,7 +67,7 @@
   ],
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":90,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"pending","commitSha":null,"evidence":[]},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"pending","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
