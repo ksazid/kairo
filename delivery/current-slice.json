@@ -102,7 +102,7 @@
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":90,"testing":30,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
-  "release": {"status":"pending","releaseId":"REL-003"},
+  "release": {"status":"pending","releaseId":null},
   "rollback": {"status":"ready","rollbackId":null},
   "postRelease": {
     "status":"not-started",
