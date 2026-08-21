@@ -1,8 +1,8 @@
 name: VS-73 final production smoke
 on:
-  push:
+  pull_request:
     branches:
-      - smoke/vs72-multi-brand
+      - main
 permissions:
   contents: read
 jobs:
