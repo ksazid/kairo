@@ -10,6 +10,7 @@
     "./discovery-provider": "./src/discovery-provider.ts",
     "./public-discovery-adapters": "./src/public-discovery-adapters.ts",
     "./research-evidence-adapters": "./src/research-evidence-adapters.ts",
+    "./retrying-discovery-provider": "./src/retrying-discovery-provider.ts",
     "./brand-brain-builder": "./src/brand-brain-builder.ts",
     "./drafter": "./src/drafter.ts",
     "./content-channel-adapters": "./src/content-channel-adapters.ts",
