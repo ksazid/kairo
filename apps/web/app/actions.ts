@@ -38,11 +38,12 @@ export async function createWorkspaceAction(formData: FormData): Promise<void> {
 
 export async function createBrandAction(workspaceId: string, formData: FormData): Promise<void> {
   const brandName = String(formData.get("brandName") ?? "");
+  let brandId: string;
   try {
-    const brand = await createBrand(workspaceId, brandName);
-    redirect(`/brands/${encodeURIComponent(brand.id)}/brain?setup=1`);
+    brandId = (await createBrand(workspaceId, brandName)).id;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create Brand";
     redirect(`/brands/new?workspace=${encodeURIComponent(workspaceId)}&error=${encodeURIComponent(message.slice(0, 180))}`);
   }
+  redirect(`/brands/${encodeURIComponent(brandId)}/brain?setup=1`);
 }
