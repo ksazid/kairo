@@ -179,8 +179,14 @@ export class PgResearchRepository implements ResearchRepository {
       if (!target.rows[0]) throw new ResourceNotFoundError("Angle not found");
       if (target.rows[0].version !== expectedVersion) throw new ConcurrencyConflictError("Angle version is stale");
       await client.query(
-        `update angles set status=case when id=$4 then 'selected' else 'candidate' end,version=version+1,updated_at=now()
-          where workspace_id=$1 and brand_id=$2 and idea_id=$3`, [workspaceId, brandId, ideaId, angleId],
+        `update angles set status='candidate',version=version+1,updated_at=now()
+          where workspace_id=$1 and brand_id=$2 and idea_id=$3 and id<>$4`,
+        [workspaceId, brandId, ideaId, angleId],
+      );
+      await client.query(
+        `update angles set status='selected',version=version+1,updated_at=now()
+          where workspace_id=$1 and brand_id=$2 and idea_id=$3 and id=$4`,
+        [workspaceId, brandId, ideaId, angleId],
       );
       const result = await client.query<AngleRow>(angleSelect, [workspaceId, brandId, ideaId]);
       await client.query("commit");
