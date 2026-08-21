@@ -34,7 +34,7 @@ async function setup(options: { developmentEnabled?: boolean } = {}) {
   return { app, auth, brandId: created.json().brand.id as string, researchStore, developCalls: () => developCalls };
 }
 
-describe("VS-04/VS-71 Research and Angle API", () => {
+describe("VS-04/VS-71/VS-73 Research and Angle API", () => {
   it("creates and lists a user-originated Idea with truthful lineage", async () => {
     const context = await setup();
     const created = await context.app.inject({
@@ -83,6 +83,53 @@ describe("VS-04/VS-71 Research and Angle API", () => {
     expect(repeated.json().angles).toHaveLength(2);
     expect(context.developCalls()).toBe(1);
     await context.app.close();
+  });
+
+  it("resumes from persisted Research when Angle generation previously failed", async () => {
+    const store = new MemoryKairoRepository();
+    const researchStore = new MemoryResearchRepository(store);
+    const auth = { authorization: "Bearer test:alice" };
+    let developCalls = 0;
+    let persistedResearchId: string | undefined;
+    const app = buildApp({
+      store,
+      researchStore,
+      identityVerifier: new TestIdentityVerifier(),
+      ideaDeveloper: {
+        develop: async (input) => {
+          developCalls += 1;
+          const before = await researchStore.getIdeaBundle(input.accountId, input.brandId, input.idea.id);
+          if (developCalls === 1) {
+            const dossier = await researchStore.seedResearchOnly(input.idea.id);
+            persistedResearchId = dossier.id;
+            throw new Error("Strategist transient failure");
+          }
+          expect(before?.research?.id).toBe(persistedResearchId);
+          expect(before?.angles).toHaveLength(0);
+          await researchStore.seedAngles(input.idea.id);
+        },
+      },
+    });
+    const workspace = await app.inject({ method: "POST", url: "/api/v1/workspaces", headers: auth, payload: { workspaceName: "Studio", brandName: "Kairo" } });
+    const brandId = workspace.json().brand.id as string;
+    const created = await app.inject({ method: "POST", url: `/api/v1/brands/${brandId}/ideas`, headers: auth, payload: { title: "Recover me", premise: "Research persists before strategy" } });
+    const ideaId = created.json().id as string;
+
+    const failed = await app.inject({ method: "POST", url: `/api/v1/brands/${brandId}/ideas/${ideaId}/research`, headers: auth });
+    expect(failed.statusCode).toBe(500);
+    const afterFailure = await researchStore.getIdeaBundle(workspace.json().account?.id ?? "", brandId, ideaId).catch(() => null);
+    const visibleAfterFailure = await app.inject({ method: "GET", url: `/api/v1/brands/${brandId}/ideas/${ideaId}`, headers: auth });
+    expect(visibleAfterFailure.statusCode).toBe(200);
+    expect(visibleAfterFailure.json().research.id).toBe(persistedResearchId);
+    expect(visibleAfterFailure.json().angles).toHaveLength(0);
+    expect(afterFailure).toBeNull();
+
+    const recovered = await app.inject({ method: "POST", url: `/api/v1/brands/${brandId}/ideas/${ideaId}/research`, headers: auth });
+    expect(recovered.statusCode).toBe(200);
+    expect(recovered.json().research.id).toBe(persistedResearchId);
+    expect(recovered.json().angles).toHaveLength(2);
+    expect(developCalls).toBe(2);
+    await app.close();
   });
 
   it("fails clearly when Research generation runtime is unavailable", async () => {
