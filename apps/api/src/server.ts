@@ -24,11 +24,14 @@ import{PgEncryptedContentAssetCredentialVault,PgGoogleDriveConnectionRepository}
 import{registerGoogleDriveContentAssetRoutes}from"./google-drive-content-assets-routes";
 import{ObservedAgentRuntime}from"./operations-runtime";
 import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
+import{PgBrandCreator}from"./brand-creator";
+import{registerBrandRoutes}from"./brand-routes";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
 import{ResearcherOrchestrator,isResearcherOutput}from"@kairo/worker/researcher";
 import{StrategistOrchestrator,isStrategistOutput}from"@kairo/worker/strategist";
 import{SourceRoutingToolGateway}from"@kairo/worker/discovery-provider";
 import{CrossrefResearchEvidenceProvider,OpenAlexResearchEvidenceProvider}from"@kairo/worker/research-evidence-adapters";
+import{RetryingDiscoverySourceProvider}from"@kairo/worker/retrying-discovery-provider";
 import{validateCarouselPlan}from"@kairo/domain/creative-formats";
 import{PerformanceCollectionWorker}from"@kairo/worker/performance";
 import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
@@ -59,6 +62,7 @@ const publishingStore=new PgPublishingRepository(pool);
 const groupStore=new PgChannelAccountGroupRepository(pool);
 const contentAssetLibraryStore=new PgContentAssetLibraryRepository(pool);
 const operationsStore=new PgOperationsRepository(pool);
+const brandCreator=new PgBrandCreator(pool);
 const telemetrySink=new PgOperationsTelemetrySink(pool,operationsStore);
 const agentOutputValidators={
   "content-draft@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),
@@ -130,6 +134,7 @@ const app = buildApp({
   identityVerifier,
   logger: true,
 });
+registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
@@ -275,8 +280,10 @@ process.once("SIGTERM", () => void shutdown());
 process.once("SIGINT", () => void shutdown());
 
 function createResearchToolGateway(){
-  const openAlex=new OpenAlexResearchEvidenceProvider({apiKey:process.env.OPENALEX_API_KEY});
-  const crossref=new CrossrefResearchEvidenceProvider({contactEmail:process.env.CROSSREF_CONTACT_EMAIL,userAgent:"Kairo/0.1"});
+  const openAlexBase=new OpenAlexResearchEvidenceProvider({apiKey:process.env.OPENALEX_API_KEY});
+  const crossrefBase=new CrossrefResearchEvidenceProvider({contactEmail:process.env.CROSSREF_CONTACT_EMAIL,userAgent:"Kairo/0.1"});
+  const openAlex=new RetryingDiscoverySourceProvider(openAlexBase);
+  const crossref=new RetryingDiscoverySourceProvider(crossrefBase);
   const fallback={
     async discover(request:Parameters<OpenAlexResearchEvidenceProvider["discover"]>[0]){
       const settled=await Promise.allSettled([openAlex.discover(request),crossref.discover(request)]);
