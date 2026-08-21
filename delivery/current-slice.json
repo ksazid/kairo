@@ -28,6 +28,7 @@
     "apps/api/src/brand-routes.test.ts",
     "apps/api/src/research-store.ts",
     "apps/api/src/research-api.test.ts",
+    "apps/worker/package.json",
     "apps/worker/src/model-gateway.ts",
     "apps/worker/src/model-gateway.test.ts",
     "apps/worker/src/research-evidence-adapters.ts",
@@ -99,7 +100,7 @@
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Owner has pre-authorized production enablement/deployment; exact certified SHA remains to be bound."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":85,"testing":30,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":90,"testing":30,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"pending","releaseId":"REL-003"},
   "rollback": {"status":"ready","rollbackId":null},
