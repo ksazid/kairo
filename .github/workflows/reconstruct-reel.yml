@@ -1,0 +1,43 @@
+name: VS-73 reconstruct full Reel media
+on:
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  reconstruct:
+    if: ${{ github.head_ref == 'smoke/vs73-instagram-reel' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: smoke/vs73-instagram-reel
+          fetch-depth: 0
+      - name: Reconstruct and verify Reel
+        run: |
+          cat smoke-assets/chunks/00.b64 \
+              smoke-assets/chunks/01.b64 \
+              smoke-assets/chunks/02.b64 \
+              smoke-assets/chunks/03.b64 \
+              smoke-assets/chunks/04.b64 \
+              smoke-assets/chunks/05.b64 \
+              smoke-assets/chunks/06.b64 \
+            | base64 -d > /tmp/ktm390duke-official-spec-reel.mp4
+          test "$(stat -c %s /tmp/ktm390duke-official-spec-reel.mp4)" = "81239"
+          echo "c58f4bae13a6df0be47531cdfc2b8207e84f59c22b288cfb287c6c8d3c3b8900  /tmp/ktm390duke-official-spec-reel.mp4" | sha256sum -c -
+          ffprobe -v error -show_entries stream=codec_name,width,height -show_entries format=duration,size -of json /tmp/ktm390duke-official-spec-reel.mp4
+      - name: Commit full Reel to media branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin media/vs73-instagram-reel
+          git switch media/vs73-instagram-reel
+          mkdir -p smoke-assets
+          cp /tmp/ktm390duke-official-spec-reel.mp4 smoke-assets/ktm390duke-official-spec-reel.mp4
+          test "$(stat -c %s smoke-assets/ktm390duke-official-spec-reel.mp4)" = "81239"
+          echo "c58f4bae13a6df0be47531cdfc2b8207e84f59c22b288cfb287c6c8d3c3b8900  smoke-assets/ktm390duke-official-spec-reel.mp4" | sha256sum -c -
+          git add smoke-assets/ktm390duke-official-spec-reel.mp4
+          git commit -m "TEST ONLY: host full VS-73 Instagram Reel media"
+          git push origin HEAD:media/vs73-instagram-reel
