@@ -62,6 +62,44 @@ function carouselPlanSchema(
 
 const CAROUSEL_PLAN_SCHEMA = Object.freeze(carouselPlanSchema());
 
+const CONTENT_DRAFT_SCHEMA = Object.freeze({
+  type: "object",
+  properties: {
+    content: { type: "string", minLength: 1, maxLength: 50_000 },
+    supportingClaimIds: {
+      type: "array",
+      maxItems: 100,
+      items: claimIdSchema,
+    },
+  },
+  required: ["content", "supportingClaimIds"],
+  additionalProperties: false,
+});
+
+const CRITIC_REVIEW_SCHEMA = Object.freeze({
+  type: "object",
+  properties: {
+    passed: { type: "boolean" },
+    score: { type: "number", minimum: 0, maximum: 100 },
+    findings: {
+      type: "array",
+      maxItems: 30,
+      items: {
+        type: "object",
+        properties: {
+          code: { type: "string", minLength: 1, maxLength: 120 },
+          severity: { type: "string", enum: ["advisory", "revision"] },
+          message: { type: "string", minLength: 1, maxLength: 2_000 },
+        },
+        required: ["code", "severity", "message"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["passed", "score", "findings"],
+  additionalProperties: false,
+});
+
 const qualityScoresSchema = Object.freeze({
   type: "object",
   properties: {
@@ -116,6 +154,26 @@ export function responseFormatForOutputSchema(
   input?: string,
 ): OpenAICompatibleResponseFormat {
   if (provider === "groq" && GROQ_STRICT_MODELS.has(model)) {
+    if (outputSchema.name === "content-draft" && outputSchema.version === "1") {
+      return {
+        type: "json_schema",
+        json_schema: {
+          name: "content_draft_1",
+          strict: true,
+          schema: CONTENT_DRAFT_SCHEMA,
+        },
+      };
+    }
+    if (outputSchema.name === "critic-review" && outputSchema.version === "1") {
+      return {
+        type: "json_schema",
+        json_schema: {
+          name: "critic_review_1",
+          strict: true,
+          schema: CRITIC_REVIEW_SCHEMA,
+        },
+      };
+    }
     if (outputSchema.name === "marketing-carousel-plan" && outputSchema.version === "1") {
       const qualification = qualificationClaimSchemas(input);
       return {
