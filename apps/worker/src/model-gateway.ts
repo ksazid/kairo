@@ -10,6 +10,7 @@ export class ModelGatewayError extends Error {
 }
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+type SleepLike = (ms: number) => Promise<void>;
 
 export interface ModelTokenPricing {
   inputUsdPerMillionTokens: number;
@@ -24,6 +25,9 @@ export interface OpenAICompatibleGatewayOptions {
   model: string;
   pricing: ModelTokenPricing;
   fetchImpl?: FetchLike;
+  maxAttempts?: number;
+  maxRetryDelayMs?: number;
+  sleep?: SleepLike;
 }
 
 export class OpenAICompatibleModelGateway implements ModelGatewayPort {
@@ -33,6 +37,9 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
   private readonly model: string;
   private readonly apiKey: string;
   private readonly pricing: ModelTokenPricing;
+  private readonly maxAttempts: number;
+  private readonly maxRetryDelayMs: number;
+  private readonly sleep: SleepLike;
 
   constructor(options: OpenAICompatibleGatewayOptions) {
     this.provider = required(options.provider, "provider").toLowerCase();
@@ -41,6 +48,9 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
     this.apiKey = required(options.apiKey, "apiKey");
     this.pricing = validatePricing(options.pricing);
     this.fetchImpl = options.fetchImpl ?? fetch;
+    this.maxAttempts = boundedInteger(options.maxAttempts ?? 3, "maxAttempts", 1, 5);
+    this.maxRetryDelayMs = boundedInteger(options.maxRetryDelayMs ?? 5_000, "maxRetryDelayMs", 0, 30_000);
+    this.sleep = options.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
     if (!/^https:\/\//.test(this.baseUrl) && !/^http:\/\/127\.0\.0\.1(?::\d+)?$/.test(this.baseUrl) && !/^http:\/\/localhost(?::\d+)?$/.test(this.baseUrl)) {
       throw new ModelGatewayError("Model gateway baseUrl must use HTTPS outside local development");
     }
@@ -51,19 +61,26 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
       throw new ModelGatewayError(`Provider ${this.provider} is not allowed by this invocation policy`);
     }
     const started = performance.now();
-    const response = await this.fetchImpl(`${this.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${this.apiKey}` },
-      body: JSON.stringify({
-        model: this.model,
-        messages: [
-          { role: "system", content: `Return only valid JSON matching Kairo schema ${request.outputSchema.name}@${request.outputSchema.version}.` },
-          { role: "user", content: request.input },
-        ],
-        max_tokens: request.policy.maxOutputTokens,
-        response_format: responseFormatForOutputSchema(this.provider, this.model, request.outputSchema, request.input),
-      }),
-    });
+    const response = await fetchWithRetry(
+      this.fetchImpl,
+      `${this.baseUrl}/chat/completions`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${this.apiKey}` },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            { role: "system", content: `Return only valid JSON matching Kairo schema ${request.outputSchema.name}@${request.outputSchema.version}.` },
+            { role: "user", content: request.input },
+          ],
+          max_tokens: request.policy.maxOutputTokens,
+          response_format: responseFormatForOutputSchema(this.provider, this.model, request.outputSchema, request.input),
+        }),
+      },
+      this.maxAttempts,
+      this.maxRetryDelayMs,
+      this.sleep,
+    );
     if (!response.ok) throw new ModelGatewayError(`Model provider returned ${response.status}`);
     const payload = await response.json() as {
       model?: string;
@@ -123,6 +140,44 @@ export function openAICompatibleGatewayFromEnv(env: NodeJS.ProcessEnv = process.
   });
 }
 
+async function fetchWithRetry(
+  fetchImpl: FetchLike,
+  input: string,
+  init: RequestInit,
+  maxAttempts: number,
+  maxRetryDelayMs: number,
+  sleep: SleepLike,
+): Promise<Response> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetchImpl(input, init);
+    } catch {
+      if (attempt >= maxAttempts) throw new ModelGatewayError("Model provider request failed");
+      await sleep(Math.min(maxRetryDelayMs, 250 * (2 ** (attempt - 1))));
+      continue;
+    }
+    if (!retryableStatus(response.status) || attempt >= maxAttempts) return response;
+    try { await response.body?.cancel(); } catch { /* best-effort cleanup */ }
+    await sleep(retryDelayMs(response.headers.get("retry-after"), attempt, maxRetryDelayMs));
+  }
+  throw new ModelGatewayError("Model provider request failed");
+}
+
+function retryableStatus(status: number): boolean {
+  return status === 408 || status === 429 || status === 500 || status === 502 || status === 503 || status === 504;
+}
+
+function retryDelayMs(retryAfter: string | null, attempt: number, maxRetryDelayMs: number): number {
+  const fallback = Math.min(maxRetryDelayMs, 250 * (2 ** (attempt - 1)));
+  if (!retryAfter) return fallback;
+  const seconds = Number(retryAfter);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.min(maxRetryDelayMs, Math.round(seconds * 1_000));
+  const dateMs = Date.parse(retryAfter);
+  if (Number.isNaN(dateMs)) return fallback;
+  return Math.min(maxRetryDelayMs, Math.max(0, dateMs - Date.now()));
+}
+
 function validatePricing(value: ModelTokenPricing): ModelTokenPricing {
   if (!value || typeof value !== "object") throw new ModelGatewayError("Model token pricing is required");
   return {
@@ -151,6 +206,13 @@ function usageInt(value: unknown, field: string): number {
 
 function nonNegativeRate(value: unknown, field: string): number {
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) throw new ModelGatewayError(`${field} must be a non-negative number`);
+  return value;
+}
+
+function boundedInteger(value: unknown, field: string, min: number, max: number): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < min || value > max) {
+    throw new ModelGatewayError(`${field} must be an integer from ${min} to ${max}`);
+  }
   return value;
 }
 
