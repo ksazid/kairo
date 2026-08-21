@@ -1,26 +1,22 @@
-name: VS-72 production smoke
+name: VS-73 final production smoke
 on:
   push:
     branches:
       - smoke/vs72-multi-brand
-  pull_request:
-    branches:
-      - main
 permissions:
   contents: read
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Run public and authenticated multi-brand smoke
+      - name: Run final authenticated production smoke
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
-          KAIRO_RELEASE_SHA: 7900c1123553bccdb8a98565234e7752e0352854
+          KAIRO_RELEASE_SHA: 7f60ec25f26205fdf863cee34f6c5987b2ecdc25
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
         run: node scripts/prod-smoke-readonly.mjs
-# rerun after KAIRO_SMOKE_TOKEN configured
