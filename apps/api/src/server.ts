@@ -39,6 +39,11 @@ import{InstagramConnectionService}from"./instagram-connection";
 import{PgEncryptedChannelCredentialVault,PgInstagramConnectionRepository}from"./instagram-connection-postgres";
 import{MetaInstagramOAuthClient}from"./meta-instagram-oauth";
 import{registerInstagramConnectionRoutes}from"./instagram-connection-routes";
+import{MetaDirectInstagramOAuthClient}from"./meta-direct-instagram-oauth";
+import{MetaFacebookOAuthClient}from"./meta-facebook-oauth";
+import{MetaChannelConnectionService}from"./meta-channel-connection";
+import{PgMetaConnectionRepository}from"./meta-channel-connection-postgres";
+import{registerMetaChannelConnectionRoutes}from"./meta-channel-connection-routes";
 import{InstagramMetricCollectionRunner,PgMetricCollectionJobStore}from"./instagram-metric-runner";
 import{
   executeMarketingShadowEvidenceAttempt,
@@ -175,6 +180,18 @@ if(meta){
     meta:new MetaInstagramOAuthClient(meta.appId,meta.appSecret,meta.graphVersion,meta.redirectUri),
   });
   registerInstagramConnectionRoutes(app,{coreStore,identityVerifier,service:connectionService});
+  const direct=metaDirectInstagramConfig(meta.graphVersion);
+  if(direct){
+    registerMetaChannelConnectionRoutes(app,{coreStore,identityVerifier,service:new MetaChannelConnectionService({
+      brands:coreStore,
+      publishing:publishingStore,
+      knowledge:coreStore,
+      repo:new PgMetaConnectionRepository(pool),
+      vault,
+      directInstagram:new MetaDirectInstagramOAuthClient(direct.appId,direct.appSecret,direct.graphVersion,direct.redirectUri),
+      facebook:new MetaFacebookOAuthClient(meta.appId,meta.appSecret,meta.graphVersion,meta.redirectUri),
+    })});
+  }
   instagramMetricRunner=new InstagramMetricCollectionRunner(
     new PgMetricCollectionJobStore(pool),
     new PerformanceCollectionWorker([new InstagramMetricCollector(vault,meta.graphVersion)]),
@@ -334,6 +351,15 @@ function metaInstagramConfig(){
   const missing=names.filter(name=>!values[name]);
   if(missing.length)throw new Error(`Meta Instagram configuration is incomplete: ${missing.join(", ")}`);
   return{appId:values.META_APP_ID,appSecret:values.META_APP_SECRET,graphVersion:values.META_GRAPH_VERSION,redirectUri:values.META_OAUTH_REDIRECT_URI,encryptionKey:values.CHANNEL_CREDENTIAL_ENCRYPTION_KEY};
+}
+
+function metaDirectInstagramConfig(graphVersion:string){
+  const names=["META_INSTAGRAM_APP_ID","META_INSTAGRAM_APP_SECRET","META_INSTAGRAM_OAUTH_REDIRECT_URI"] as const;
+  const values=Object.fromEntries(names.map(name=>[name,process.env[name]?.trim()??""])) as Record<(typeof names)[number],string>;
+  if(names.every(name=>!values[name]))return null;
+  const missing=names.filter(name=>!values[name]);
+  if(missing.length)throw new Error(`Meta Instagram Login configuration is incomplete: ${missing.join(", ")}`);
+  return{appId:values.META_INSTAGRAM_APP_ID,appSecret:values.META_INSTAGRAM_APP_SECRET,redirectUri:values.META_INSTAGRAM_OAUTH_REDIRECT_URI,graphVersion};
 }
 
 function googleDriveConfig(){

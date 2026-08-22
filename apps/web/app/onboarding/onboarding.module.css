@@ -90,19 +90,36 @@
 .form input:focus-visible { border-color: color-mix(in srgb, var(--k-primary) 55%, var(--k-neutral-200)); outline: 3px solid color-mix(in srgb, var(--k-primary) 12%, white); outline-offset: 1px; }
 .form button { width: 100%; min-height: 48px; margin-top: 2px; }
 
+.sourceOptions {
+  min-width: 0;
+  display: grid;
+  gap: 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.sourceOptions legend { padding: 0; color: var(--k-neutral-900); font-size: 14px; font-weight: 750; }
+.sourceIntro { margin: -3px 0 3px; color: var(--k-neutral-400); font-size: 12px; line-height: 18px; }
+
 .form .sourceChoice {
   grid-template-columns: 20px minmax(0, 1fr);
   align-items: start;
   gap: 10px;
+  min-height: 64px;
   padding: 14px;
   border: 1px solid var(--k-neutral-200);
   border-radius: 10px;
   background: var(--k-neutral-50);
   cursor: pointer;
 }
-.form .sourceChoice > input { width: 18px; min-height: 18px; margin-top: 2px; accent-color: var(--k-primary); }
+.form .sourceChoice:has(input:checked) { border-color: color-mix(in srgb, var(--k-primary) 55%, var(--k-neutral-200)); background: color-mix(in srgb, var(--k-primary) 5%, white); }
+.form .sourceChoice:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--k-primary) 12%, white); outline-offset: 2px; }
+.form .sourceChoice > input { width: 20px; min-height: 20px; margin-top: 1px; accent-color: var(--k-primary); }
 .form .sourceChoice > span { display: grid; gap: 3px; }
 .form .sourceChoice strong { color: var(--k-neutral-900); font-size: 14px; }
+.sourceTitle { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.sourceTitle em { padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--k-primary) 10%, white); color: var(--k-primary); font-size: 10px; font-style: normal; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
 
 .nextStep {
   display: grid;
@@ -142,4 +159,7 @@
   .topline { align-items: flex-start; }
   .header { padding-top: 26px; }
   .header h1 { font-size: 30px; }
+  .form input { font-size: 16px; }
+  .form .sourceChoice { grid-template-columns: 24px minmax(0, 1fr); min-height: 72px; padding: 14px 12px; }
+  .form .sourceChoice > input { width: 22px; min-height: 22px; }
 }

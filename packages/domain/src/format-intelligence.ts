@@ -49,7 +49,7 @@ export interface FormatRecommendationInput {
   maxEffort?: ProductionEffort;
 }
 
-const CHANNELS: PublishChannel[] = ["linkedin", "instagram", "manual"];
+const CHANNELS: PublishChannel[] = ["linkedin", "instagram", "facebook", "manual"];
 const CONTENT_TYPES: PublishContentType[] = ["text", "image", "video", "carousel", "reel"];
 const OBJECTIVES: FormatObjective[] = ["educate", "explain", "compare", "demonstrate", "story", "opinion", "announce", "conversation"];
 const EFFORTS: ProductionEffort[] = ["low", "medium", "high"];
@@ -67,6 +67,7 @@ const RAW_CATALOG: FormatIntelligenceProfile[] = [
     channelFit: [
       { channel: "linkedin", strength: "primary", rationale: "Strong fit for a clear argument, lesson, update or professional conversation." },
       { channel: "instagram", strength: "limited", rationale: "Useful as caption direction, but Kairo should usually pair the idea with an appropriate visual execution." },
+      { channel: "facebook", strength: "primary", rationale: "Strong fit for a focused Page update, useful explanation or audience conversation." },
       { channel: "manual", strength: "useful", rationale: "Portable copy that can be adapted safely when Kairo does not own the final destination workflow." },
     ],
     strengths: ["Fast to produce and revise", "Keeps nuance in the written argument", "Easy to compare versions during review"],
@@ -84,6 +85,7 @@ const RAW_CATALOG: FormatIntelligenceProfile[] = [
     channelFit: [
       { channel: "linkedin", strength: "useful", rationale: "Useful when a single diagram, proof point or visual summary strengthens the written context." },
       { channel: "instagram", strength: "primary", rationale: "Strong fit when one visual frame can communicate the core idea without forcing a multi-step narrative." },
+      { channel: "facebook", strength: "primary", rationale: "Strong fit for a Page post where one image and concise copy carry the message." },
       { channel: "manual", strength: "useful", rationale: "A portable visual asset that can be exported into an authorised manual workflow." },
     ],
     strengths: ["Communicates one idea quickly", "Creates a clear visual focal point", "Works well for announcements, diagrams and proof points"],
@@ -100,6 +102,7 @@ const RAW_CATALOG: FormatIntelligenceProfile[] = [
     channelFit: [
       { channel: "linkedin", strength: "useful", rationale: "Useful for demonstrations, founder explanations and motion that adds context beyond a text post." },
       { channel: "instagram", strength: "useful", rationale: "Useful when video is appropriate but the execution is not specifically structured as a Reel plan." },
+      { channel: "facebook", strength: "useful", rationale: "Useful for Page-native demonstrations, explanations and stories." },
       { channel: "manual", strength: "useful", rationale: "Keeps a provider-neutral video concept available for an authorised external workflow." },
     ],
     strengths: ["Shows motion, process and personality", "Can make demonstrations easier to understand", "Supports richer narrative sequencing"],
@@ -117,6 +120,7 @@ const RAW_CATALOG: FormatIntelligenceProfile[] = [
     channelFit: [
       { channel: "linkedin", strength: "useful", rationale: "Useful for structured educational or comparison narratives when multiple frames improve comprehension." },
       { channel: "instagram", strength: "primary", rationale: "Strong fit for a swipeable teaching, checklist or comparison sequence." },
+      { channel: "facebook", strength: "limited", rationale: "Keep as an approved creative plan when automatic multi-image publishing is unavailable." },
       { channel: "manual", strength: "useful", rationale: "The sequenced concept can be carried into an authorised manual publishing flow." },
     ],
     strengths: ["Breaks complex ideas into readable steps", "Supports progressive explanation", "Makes comparisons and checklists easy to scan"],
@@ -135,6 +139,7 @@ const RAW_CATALOG: FormatIntelligenceProfile[] = [
     channelFit: [
       { channel: "linkedin", strength: "limited", rationale: "The underlying video idea may transfer, but the Reel-specific structure should not be treated as a LinkedIn-native guarantee." },
       { channel: "instagram", strength: "primary", rationale: "Strong fit for concise scene-based storytelling, demonstrations and explanations designed for a Reel execution." },
+      { channel: "facebook", strength: "limited", rationale: "Keep as an approved short-video plan until Facebook video publishing is explicitly enabled." },
       { channel: "manual", strength: "useful", rationale: "The validated scene plan can guide a separately authorised manual production workflow." },
     ],
     strengths: ["Combines motion, voice and on-screen text", "Supports concise demonstrations and stories", "Makes timing an explicit part of the content plan"],

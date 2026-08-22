@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-75",
-  "title": "VS-75 — Structured Carousel Foundation",
-  "status": "completed",
-  "lifecycle": "certified",
-  "riskLevel": "medium",
+  "sliceId": "VS-76",
+  "title": "VS-76 — Multi-source Meta Onboarding",
+  "status": "active",
+  "lifecycle": "testing",
+  "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
-    "FR-08",
-    "FR-11",
-    "FR-13",
-    "FR-15"
+    "FR-01",
+    "FR-02",
+    "FR-15",
+    "FR-16"
   ],
   "owners": {
     "product": "Product Owner",
@@ -21,16 +21,18 @@
   "dependencies": [
     "VS-18",
     "VS-20",
-    "VS-34",
-    "VS-74"
+    "VS-74",
+    "VS-75"
   ],
   "blockers": [],
   "allowedPaths": [
+    "apps/api/**",
+    "apps/web/**",
+    "apps/worker/**",
     "packages/contracts/**",
     "packages/domain/**",
-    "apps/worker/**",
-    "docs/slices/VS-75.md",
-    "docs/plans/VS-75-implementation.md",
+    "docs/slices/VS-76.md",
+    "docs/plans/VS-76-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -40,52 +42,57 @@
   ],
   "impact": {
     "areas": [
-      "architecture",
+      "frontend",
+      "api",
+      "database",
+      "authentication",
+      "authorization",
+      "sensitive-data",
       "customer-flow"
     ],
     "notes": [
-      "Adds structured carousel projects and deterministic visual-quality reporting.",
-      "Extends the existing Claim-linked CarouselPlan and private generated-media boundaries.",
-      "Adds a replaceable rendering seam and bounded Brand visual metadata without arbitrary asset or network access.",
-      "Does not add production API/UI wiring, approval changes, publishing changes or an external engine dependency."
+      "Adds independent and combinable website, Instagram and Facebook onboarding choices.",
+      "Adds direct Instagram Login without a Facebook Page and retains Page-linked Meta Login.",
+      "Generalizes encrypted connection persistence and adds bounded Facebook Page publishing.",
+      "Does not enable production Meta credentials, release or deployment."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-75@1.0",
+      "version": "VS-76@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T02:58:00+02:00",
-      "rationale": "The Product Owner approved the Instagram completion programme in batches of ten and instructed go next after Batch 1 exact-SHA merge approval."
+      "at": "2026-08-22T00:00:00+02:00",
+      "rationale": "The Product Owner specified the four combinable onboarding choices and instructed the next ten-task batch to proceed."
     },
     {
       "type": "policy",
-      "status": "not-required",
-      "version": "VS-75@1.0",
+      "status": "approved",
+      "version": "VS-76@1.0",
       "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "This slice extends existing Claim-linked creative-plan, generated-media and provider-neutral adapter boundaries. BearCarousel remains reference-only pending a separate license/security decision."
+      "by": "Sazid Khan",
+      "at": "2026-08-22T00:00:00+02:00",
+      "rationale": "The Product Owner explicitly selected direct Instagram, Facebook plus Instagram, Facebook-only and optional website onboarding policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-75@1.0",
+      "version": "VS-76@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T02:58:00+02:00",
-      "rationale": "The Product Owner instructed implementation of the next ten approved tasks."
+      "at": "2026-08-22T00:00:00+02:00",
+      "rationale": "The Product Owner instructed go after approving the prior exact SHA."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-75@1.0",
-      "commitSha": "2c42aae55ef29e4fc1ffd846b33528b5b897b408",
-      "by": "Sazid Khan",
-      "at": "2026-08-22T03:45:00+02:00",
-      "rationale": "Product Owner approved the exact VS-75 head after Product Intake #714, Security #860 and CI #1027 passed; it merged as 1d9125ac48cfab7358e652a65f3ed84b28158626."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "release",
@@ -112,21 +119,14 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 100,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "2c42aae55ef29e4fc1ffd846b33528b5b897b408",
-    "evidence": [
-      "GitHub PR #146 Product Intake #714 passed",
-      "GitHub PR #146 Security baseline #860 passed",
-      "GitHub PR #146 CI #1027 passed",
-      "PR #146 exact approved head 2c42aae55ef29e4fc1ffd846b33528b5b897b408 merged as 1d9125ac48cfab7358e652a65f3ed84b28158626",
-      "550-test full runtime verification passed before rebase; exact rebased head CI repeated repository preflight/runtime verification",
-      "Independent implementation and generated-artifact hygiene verification passed"
-    ]
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
   },
   "release": {
     "status": "not-authorized",
@@ -143,12 +143,9 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-75.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/146",
-    "evidence": [
-      "delivery/context/VS-75.md",
-      "https://github.com/ksazid/kairo/pull/146"
-    ]
+    "specification": "docs/slices/VS-76.md",
+    "implementationPr": null,
+    "evidence": []
   },
   "maxAttempts": 3
 }

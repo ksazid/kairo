@@ -105,9 +105,14 @@
 .brain-source-card > div { display: grid; min-width: 0; gap: 3px; }
 .brain-source-card > .brain-source-card-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .brain-source-card-actions form { margin: 0; }
-.brain-source-card strong { overflow: hidden; color: var(--k-neutral-900); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.brain-source-card strong { color: var(--k-neutral-900); font-size: 14px; overflow-wrap: anywhere; }
 .brain-source-card small { color: var(--k-neutral-400); font-size: 11px; line-height: 16px; }
 .source-kind { color: var(--k-neutral-400); font-size: 10px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.meta-candidate-list { width: 100%; display: grid; gap: 10px; }
+.meta-candidate-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px; border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-md); background: var(--k-neutral-50); }
+.meta-candidate-card > div { min-width: 0; display: grid; gap: 4px; }
+.meta-candidate-card strong,.meta-candidate-card small { overflow-wrap: anywhere; }
+.meta-candidate-card small { color: var(--k-neutral-400); font-size: 12px; }
 
 .brand-brain-control-workspace { max-width: 1120px; }
 .brain-control-review { padding: 24px 26px; }
@@ -156,6 +161,8 @@
 }
 
 @media (max-width: 720px) {
+  .meta-candidate-card { align-items: stretch; flex-direction: column; }
+  .meta-candidate-card form,.meta-candidate-card button { width: 100%; }
   .brand-brain-workspace { padding: 24px 18px 96px; }
   .brand-brain-workspace .scope-picker { display: none; }
   .brain-profile-heading,

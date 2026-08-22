@@ -12,9 +12,9 @@ export class PgPublishingRepository implements PublishingRepository {
       const workspaceId = await scope(client, accountId, channel.brandId);
       if (workspaceId !== channel.workspaceId) throw new ResourceNotFoundError("Brand not found");
       await client.query(
-        `insert into channel_accounts(id,workspace_id,brand_id,channel,account_ref,display_name,credential_ref,capabilities,status,connected_at)
-         values($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10)
-         on conflict(brand_id,channel,account_ref) do update set display_name=excluded.display_name,credential_ref=excluded.credential_ref,capabilities=excluded.capabilities,status=excluded.status,connected_at=excluded.connected_at`,
+        `insert into channel_accounts(id,workspace_id,brand_id,channel,account_ref,display_name,credential_ref,auth_method,capabilities,status,connected_at)
+         values($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11)
+         on conflict(brand_id,channel,account_ref) do update set display_name=excluded.display_name,credential_ref=excluded.credential_ref,auth_method=excluded.auth_method,capabilities=excluded.capabilities,status=excluded.status,connected_at=excluded.connected_at`,
         [
           channel.id,
           channel.workspaceId,
@@ -23,6 +23,7 @@ export class PgPublishingRepository implements PublishingRepository {
           channel.accountRef,
           channel.displayName,
           channel.credentialRef,
+          channel.authMethod ?? (channel.channel === "instagram" || channel.channel === "facebook" ? "facebook-login" : "provider-native"),
           JSON.stringify(channel.capabilities),
           channel.status,
           channel.connectedAt,
@@ -261,6 +262,7 @@ function channel(row: any): ChannelAccount {
     accountRef: row.account_ref,
     displayName: row.display_name,
     credentialRef: row.credential_ref,
+    ...(row.auth_method ? { authMethod: row.auth_method } : {}),
     capabilities: row.capabilities,
     status: row.status,
     connectedAt: iso(row.connected_at),

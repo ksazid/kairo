@@ -22,6 +22,7 @@ export function resolveChannelContentProfile(channel: ContentChannel, format: st
   const normalizedFormat = requiredText(format, "format", 120).toLowerCase();
   if (channel === "linkedin") return linkedinProfile(normalizedFormat);
   if (channel === "instagram") return instagramProfile(normalizedFormat);
+  if (channel === "facebook") return facebookProfile(normalizedFormat);
   if (channel === "manual") return manualProfile(normalizedFormat);
   throw new DomainValidationError("channel is not supported");
 }
@@ -98,8 +99,13 @@ function manualProfile(format: string): ChannelContentProfile {
   };
 }
 
+function facebookProfile(format: string): ChannelContentProfile {
+  const imagePrimary = format === "image" || format === "static";
+  return { channel: "facebook", format, contentMode: imagePrimary ? "visual-caption" : "text-first", hardLimits: { maxCharacters: 5000 }, presentation: { visualPrimary: imagePrimary, videoPrimary: false }, requirements: ["Keep the Facebook Page post focused on one approved message."], recommendations: ["Use readable copy and pair it with one approved image when the selected format is image-led."] };
+}
+
 function displayName(channel: ContentChannel): string {
-  return channel === "linkedin" ? "LinkedIn" : channel === "instagram" ? "Instagram" : "Manual";
+  return channel === "linkedin" ? "LinkedIn" : channel === "instagram" ? "Instagram" : channel === "facebook" ? "Facebook" : "Manual";
 }
 
 function requiredText(value: unknown, field: string, max: number): string {

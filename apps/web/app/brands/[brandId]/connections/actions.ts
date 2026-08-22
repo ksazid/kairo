@@ -1,0 +1,6 @@
+"use server";
+import { redirect } from "next/navigation";
+import { disconnectMetaConnection,selectMetaCandidate } from "../../../../src/lib/meta-connection-api";
+import { safeBrandReturnTo } from "../../../../src/lib/brand-source-navigation";
+export async function selectMetaConnectionAction(brandId:string,intentId:string,candidateId:string,returnTo:string){const target=safeBrandReturnTo(returnTo,brandId);try{await selectMetaCandidate(brandId,intentId,candidateId)}catch(error){redirect(`/brands/${encodeURIComponent(brandId)}/connections/select?intent=${encodeURIComponent(intentId)}&returnTo=${encodeURIComponent(target)}&error=${encodeURIComponent(error instanceof Error?error.message:"Unable to connect account")}`)}const next=new URL(target,"https://kairo.local");next.searchParams.set("notice","Connection complete");redirect(`${next.pathname}${next.search}`)}
+export async function disconnectMetaConnectionAction(brandId:string,channelAccountId:string){try{await disconnectMetaConnection(brandId,channelAccountId)}catch(error){redirect(`/brands/${encodeURIComponent(brandId)}/brain?error=${encodeURIComponent(error instanceof Error?error.message:"Unable to disconnect account")}`)}redirect(`/brands/${encodeURIComponent(brandId)}/brain?notice=${encodeURIComponent("Connection removed")}`)}

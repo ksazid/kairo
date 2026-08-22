@@ -9,7 +9,7 @@ export interface TruthGateResult extends ContentScope { passed: boolean; finding
 export interface CriticFinding { code: string; severity: "advisory" | "revision"; message: string }
 export interface CriticResult { passed: boolean; score: number; findings: CriticFinding[] }
 export interface ContentReview extends ContentScope { id: string; status: ReviewStatus; truth: TruthGateResult; revisionCycle: number; requestedAt: string; completedAt?: string; critic?: CriticResult }
-export interface ApprovalDestination { channel: "linkedin" | "instagram" | "manual"; accountRef: string }
+export interface ApprovalDestination { channel: "linkedin" | "instagram" | "facebook" | "manual"; accountRef: string }
 export interface ContentApproval extends ContentScope { id: string; reviewId: string; approverAccountId: string; destination: ApprovalDestination; approvedAt: string }
 
 export function evaluateTruthGate(input: ContentScope & { claimUses: ClaimUse[]; prohibitedBrandLanguage: string[] }): TruthGateResult {
@@ -54,7 +54,7 @@ export function selectJudgedCandidate(input: { candidateVersionIds: string[]; va
 export function approveContentVersion(input: { id: string; review: ContentReview; currentVersionId: string; approverAccountId: string; destination: ApprovalDestination; approvedAt: string }): ContentApproval {
   if (input.review.status !== "passed" || !input.review.critic?.passed || !input.review.truth.passed) throw new DomainValidationError("Only passed reviewed content can be approved");
   if (text(input.currentVersionId, "currentVersionId", 200) !== input.review.versionId) throw new DomainValidationError("Approval requires the current version");
-  return { id: text(input.id, "id", 200), workspaceId: input.review.workspaceId, brandId: input.review.brandId, campaignId: input.review.campaignId, assetId: input.review.assetId, versionId: input.review.versionId, version: input.review.version, reviewId: input.review.id, approverAccountId: text(input.approverAccountId, "approverAccountId", 200), destination: { channel: enumValue(input.destination.channel, ["linkedin", "instagram", "manual"], "destination.channel"), accountRef: text(input.destination.accountRef, "destination.accountRef", 300) }, approvedAt: timestamp(input.approvedAt, "approvedAt") };
+  return { id: text(input.id, "id", 200), workspaceId: input.review.workspaceId, brandId: input.review.brandId, campaignId: input.review.campaignId, assetId: input.review.assetId, versionId: input.review.versionId, version: input.review.version, reviewId: input.review.id, approverAccountId: text(input.approverAccountId, "approverAccountId", 200), destination: { channel: enumValue(input.destination.channel, ["linkedin", "instagram", "facebook", "manual"], "destination.channel"), accountRef: text(input.destination.accountRef, "destination.accountRef", 300) }, approvedAt: timestamp(input.approvedAt, "approvedAt") };
 }
 
 function normalizeScope(input: ContentScope): ContentScope { return { workspaceId: text(input.workspaceId, "workspaceId", 200), brandId: text(input.brandId, "brandId", 200), campaignId: text(input.campaignId, "campaignId", 200), assetId: text(input.assetId, "assetId", 200), versionId: text(input.versionId, "versionId", 200), version: positiveInteger(input.version, "version") }; }
