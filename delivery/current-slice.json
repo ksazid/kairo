@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "sliceId": "VS-81",
   "title": "VS-81 — UI Feedback and Discovery",
-  "status": "active",
-  "lifecycle": "testing",
+  "status": "completed",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -79,12 +79,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-81@1.0",
+      "commitSha": "b2e0d8ded7255c6722222218e26eccf674e0a4ec",
+      "by": "Sazid Khan",
+      "at": "2026-08-22T06:20:00+02:00",
+      "rationale": "Product Owner approved the exact VS-81 head after Product Intake #723, Security baseline #869 and CI #1043 passed; it merged as 572fdc390c27a802ac2b0a83c3a4b6c7a9dfa47b."
     },
     {
       "type": "release",
@@ -111,14 +111,18 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "b2e0d8ded7255c6722222218e26eccf674e0a4ec",
     "evidence": [
+      "GitHub PR #154 Product Intake #723 passed",
+      "GitHub PR #154 Security baseline #869 passed",
+      "GitHub PR #154 CI #1043 passed",
+      "PR #154 exact approved head b2e0d8ded7255c6722222218e26eccf674e0a4ec merged as 572fdc390c27a802ac2b0a83c3a4b6c7a9dfa47b",
       "runtime:typecheck passed",
       "runtime:test passed: 618 tests, 37 skipped",
       "runtime:build passed",
@@ -141,12 +145,13 @@
   },
   "links": {
     "specification": "docs/slices/VS-81.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/154",
     "evidence": [
       "docs/slices/VS-81.md",
       "apps/api/src/brand-notifications-postgres.test.ts",
       "apps/api/src/command-search-routes.test.ts",
-      "apps/web/src/lib/ui-states.test.ts"
+      "apps/web/src/lib/ui-states.test.ts",
+      "https://github.com/ksazid/kairo/pull/154"
     ]
   },
   "maxAttempts": 3
