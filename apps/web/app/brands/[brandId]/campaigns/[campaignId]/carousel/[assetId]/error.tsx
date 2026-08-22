@@ -1,1 +1,0 @@
-"use client";export default function Error({error,reset}:{error:Error;reset:()=>void}){return <main className="workspace-main"><div className="notice error" role="alert"><strong>Carousel review could not load.</strong><p>{error.message}</p><button className="primary-button" onClick={reset}>Try again</button></div></main>}
