@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { deflateSync } from "node:zlib";
+import { deflateSync, inflateSync } from "node:zlib";
 import {
   validateCarouselPlan,
   validateReelPlan,
@@ -7,6 +7,7 @@ import {
 } from "@kairo/domain/creative-formats";
 
 export const CREATIVE_RENDERER_VERSION = "kairo-bitmap-v1";
+export const INSTAGRAM_CAROUSEL_PRESET = Object.freeze({ width: 1080, height: 1350 } as const);
 const PNG_SIGNATURE = Buffer.from([137,80,78,71,13,10,26,10]);
 
 type Rgb = readonly [number, number, number];
@@ -16,6 +17,23 @@ export interface CreativeRenderTheme {
   background?: Rgb;
   foreground?: Rgb;
   accent?: Rgb;
+  headingFontLabel?: string;
+  bodyFontLabel?: string;
+  logoAssetId?: string;
+  logoPlacement?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "none";
+}
+export interface CreativeTextLayoutMetric { role: "cover" | "headline" | "body" | "cta"; alignment: "left" | "center" | "right"; lineCount: number; characterCount: number; x: number; y: number; width: number; height: number }
+export interface CreativeLayoutMetrics {
+  canvas: { width: number; height: number };
+  safeArea: { x: number; y: number; width: number; height: number };
+  palette: { background: Rgb; foreground: Rgb; accent: Rgb };
+  text: CreativeTextLayoutMetric[];
+  textOccupiedRatio: number;
+  logoPlacement: NonNullable<CreativeRenderTheme["logoPlacement"]>;
+  logoAssetId?: string;
+  logoBounds?: { x: number; y: number; width: number; height: number };
+  headingFontLabel: string;
+  bodyFontLabel: string;
 }
 export type CreativeArtifactRole = "carousel-slide" | "reel-storyboard" | "reel-render-manifest";
 export interface RenderedCreativeArtifact {
@@ -26,6 +44,7 @@ export interface RenderedCreativeArtifact {
   sha256: string;
   supportingClaimIds: string[];
   index: number;
+  layoutMetrics?: CreativeLayoutMetrics;
 }
 export interface CreativeRenderPackage {
   format: "carousel" | "reel";
@@ -54,6 +73,7 @@ export interface StoredCreativeAsset {
   sizeBytes: number;
   supportingClaimIds: string[];
   index: number;
+  layoutMetrics?: CreativeLayoutMetrics;
 }
 export interface StoredCreativePackage {
   format: "carousel" | "reel";
@@ -63,20 +83,43 @@ export interface StoredCreativePackage {
 }
 
 export function renderCreativePlan(plan: MarketingCreativePlan, theme: CreativeRenderTheme = {}): CreativeRenderPackage {
-  if (plan.format === "carousel") return renderCarousel(validateCarouselPlan(plan), normalizeTheme("carousel", theme));
+  if (plan.format === "carousel") return DEFAULT_CAROUSEL_RENDERER.render(validateCarouselPlan(plan), normalizeTheme("carousel", theme));
   return renderReel(validateReelPlan(plan), normalizeTheme("reel", theme));
 }
+
+export interface CarouselRendererPort {
+  readonly version: string;
+  render(plan: ReturnType<typeof validateCarouselPlan>, theme: NormalizedCreativeRenderTheme): CreativeRenderPackage;
+}
+
+export class BitmapCarouselRenderer implements CarouselRendererPort {
+  readonly version = CREATIVE_RENDERER_VERSION;
+  render(plan: ReturnType<typeof validateCarouselPlan>, theme: NormalizedCreativeRenderTheme): CreativeRenderPackage {
+    return renderCarouselBitmap(plan, theme, this.version);
+  }
+}
+
+export function carouselSourceFingerprint(plan: ReturnType<typeof validateCarouselPlan>, theme: NormalizedCreativeRenderTheme, rendererVersion: string): string {
+  return fingerprint(plan, theme, label(rendererVersion, "rendererVersion"));
+}
+
+const DEFAULT_CAROUSEL_RENDERER: CarouselRendererPort = new BitmapCarouselRenderer();
 
 export class CreativeAssetProductionService {
   private readonly maxArtifactBytes: number;
   private readonly maxPackageBytes: number;
-  constructor(private readonly store: CreativeObjectStorePort, options: { maxArtifactBytes?: number; maxPackageBytes?: number } = {}) {
+  private readonly carouselRenderer: CarouselRendererPort;
+  constructor(private readonly store: CreativeObjectStorePort, options: { maxArtifactBytes?: number; maxPackageBytes?: number; carouselRenderer?: CarouselRendererPort } = {}) {
     this.maxArtifactBytes = boundedPositive(options.maxArtifactBytes ?? 12 * 1024 * 1024, "maxArtifactBytes", 128 * 1024 * 1024);
     this.maxPackageBytes = boundedPositive(options.maxPackageBytes ?? 80 * 1024 * 1024, "maxPackageBytes", 512 * 1024 * 1024);
+    this.carouselRenderer = validateCarouselRenderer(options.carouselRenderer ?? DEFAULT_CAROUSEL_RENDERER);
   }
   async produce(scopeInput: CreativeScope, plan: MarketingCreativePlan, theme: CreativeRenderTheme = {}): Promise<StoredCreativePackage> {
     const scope = validateScope(scopeInput);
-    const rendered = renderCreativePlan(plan, theme);
+    const rendered = plan.format === "carousel"
+      ? this.carouselRenderer.render(validateCarouselPlan(plan), normalizeTheme("carousel", theme))
+      : renderCreativePlan(plan, theme);
+    if (plan.format === "carousel") validateCarouselRendererOutput(rendered, validateCarouselPlan(plan), normalizeTheme("carousel", theme), this.carouselRenderer.version);
     let total = 0;
     for (const artifact of rendered.artifacts) {
       if (artifact.bytes.byteLength > this.maxArtifactBytes) throw new Error("Generated artifact size exceeds configured artifact size bound");
@@ -85,8 +128,11 @@ export class CreativeAssetProductionService {
     if (total > this.maxPackageBytes) throw new Error("Generated package size exceeds configured package size bound");
     const scopeKey = sha256(Buffer.from(`${scope.workspaceId}\u0000${scope.brandId}`)).slice(0, 24);
     const assets: StoredCreativeAsset[] = [];
+    const objectKeys = new Set<string>();
     for (const artifact of rendered.artifacts) {
       const objectKey = `generated/${scopeKey}/${rendered.format}/${rendered.sourceFingerprint}/${artifact.filename}`;
+      if (objectKeys.has(objectKey)) throw new Error("Generated creative object keys must be unique");
+      objectKeys.add(objectKey);
       const stored = await this.store.putPrivateObject({
         workspaceId: scope.workspaceId,
         brandId: scope.brandId,
@@ -106,24 +152,86 @@ export class CreativeAssetProductionService {
         sizeBytes: artifact.bytes.byteLength,
         supportingClaimIds: [...artifact.supportingClaimIds],
         index: artifact.index,
+        ...(artifact.layoutMetrics ? { layoutMetrics: artifact.layoutMetrics } : {}),
       });
     }
     return { format: rendered.format, rendererVersion: rendered.rendererVersion, sourceFingerprint: rendered.sourceFingerprint, assets };
   }
 }
 
-interface NormalizedTheme { width: number; height: number; background: Rgb; foreground: Rgb; accent: Rgb }
-function normalizeTheme(format: "carousel" | "reel", input: CreativeRenderTheme): NormalizedTheme {
+export interface NormalizedCreativeRenderTheme { width: number; height: number; background: Rgb; foreground: Rgb; accent: Rgb; headingFontLabel: string; bodyFontLabel: string; logoPlacement: NonNullable<CreativeRenderTheme["logoPlacement"]>; logoAssetId?: string }
+function normalizeTheme(format: "carousel" | "reel", input: CreativeRenderTheme): NormalizedCreativeRenderTheme {
   const width = dimension(input.width ?? 1080, "width", 64, 2160);
-  const height = dimension(input.height ?? (format === "carousel" ? 1080 : 1920), "height", 64, 3840);
+  const height = dimension(input.height ?? (format === "carousel" ? INSTAGRAM_CAROUSEL_PRESET.height : 1920), "height", 64, 3840);
   return {
     width,
     height,
     background: color(input.background ?? [247,247,244], "background"),
     foreground: color(input.foreground ?? [24,24,24], "foreground"),
     accent: color(input.accent ?? [72,92,75], "accent"),
+    headingFontLabel: label(input.headingFontLabel ?? "Kairo Bitmap", "headingFontLabel"),
+    bodyFontLabel: label(input.bodyFontLabel ?? "Kairo Bitmap", "bodyFontLabel"),
+    logoPlacement: logoPlacement(input.logoPlacement ?? "none"),
+    ...(input.logoAssetId ? { logoAssetId: label(input.logoAssetId, "logoAssetId") } : {}),
   };
 }
+function label(value: unknown, field: string): string { if (typeof value !== "string" || !value.trim() || value.trim().length > 200) throw new Error(`Creative ${field} is invalid`); return value.trim(); }
+function logoPlacement(value: unknown): NonNullable<CreativeRenderTheme["logoPlacement"]> { if (!["top-left","top-right","bottom-left","bottom-right","none"].includes(String(value))) throw new Error("Creative logoPlacement is invalid"); return value as NonNullable<CreativeRenderTheme["logoPlacement"]>; }
+function validateCarouselRenderer(value: CarouselRendererPort): CarouselRendererPort { if (!value || typeof value.render !== "function" || typeof value.version !== "string" || !value.version.trim() || value.version.length > 200) throw new Error("Carousel renderer is invalid"); return value; }
+function validateCarouselRendererOutput(rendered: CreativeRenderPackage, plan: ReturnType<typeof validateCarouselPlan>, theme: NormalizedCreativeRenderTheme, rendererVersion: string): void {
+  if (!rendered || rendered.format !== "carousel") throw new Error("Carousel renderer returned an invalid format");
+  if (rendered.rendererVersion !== rendererVersion) throw new Error("Carousel renderer version does not match the configured engine");
+  if (rendered.sourceFingerprint !== carouselSourceFingerprint(plan, theme, rendererVersion)) throw new Error("Carousel renderer returned an invalid source fingerprint");
+  if (!Array.isArray(rendered.artifacts) || rendered.artifacts.length !== plan.slides.length) throw new Error("Carousel renderer must return exactly one artifact per slide");
+  const seen = new Set<number>();
+  rendered.artifacts.forEach((item, index) => {
+    const expectedFilename = `carousel-${String(index + 1).padStart(2,"0")}.png`;
+    if (!item || item.role !== "carousel-slide" || item.contentType !== "image/png" || item.filename !== expectedFilename) throw new Error("Carousel renderer artifact filename does not match its slide index");
+    if (!Number.isInteger(item.index) || item.index !== index || seen.has(item.index)) throw new Error("Carousel renderer slide indexes must be unique, ordered and contiguous");
+    seen.add(item.index);
+    if (!(item.bytes instanceof Uint8Array)) throw new Error("Carousel renderer artifact is not a valid preset-sized PNG");
+    assertValidPng(item.bytes, theme.width, theme.height);
+    if (!/^[a-f0-9]{64}$/.test(item.sha256) || item.sha256 !== sha256(item.bytes)) throw new Error("Carousel renderer artifact hash is invalid");
+    if (!sameIds(item.supportingClaimIds, plan.slides[index]!.supportingClaimIds)) throw new Error("Carousel renderer artifact Claim lineage does not match its slide");
+    validateLayoutMetrics(item.layoutMetrics, theme);
+  });
+}
+function assertValidPng(bytes:Uint8Array,width:number,height:number):void{
+  const invalid=(reason:string):never=>{throw new Error(`Carousel renderer PNG ${reason}`)};
+  if(bytes.byteLength<45||!PNG_SIGNATURE.every((byte,offset)=>bytes[offset]===byte))invalid("signature is invalid");
+  const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);let offset=8,chunkIndex=0,sawIdat=false,sawIend=false,idatEnded=false;const idatParts:Uint8Array[]=[];
+  while(offset<bytes.byteLength){
+    if(offset+12>bytes.byteLength)invalid("chunk is truncated");
+    const length=view.getUint32(offset),typeStart=offset+4,dataStart=offset+8,dataEnd=dataStart+length,crcOffset=dataEnd,next=crcOffset+4;
+    if(!Number.isSafeInteger(next)||dataEnd<dataStart||next>bytes.byteLength)invalid("chunk length is invalid");
+    const type=String.fromCharCode(...bytes.slice(typeStart,typeStart+4));
+    if(!/^[A-Za-z]{4}$/.test(type)||view.getUint32(crcOffset)!==crc32(bytes.slice(typeStart,dataEnd)))invalid("chunk CRC is invalid");
+    if(chunkIndex===0){if(type!=="IHDR"||length!==13||view.getUint32(dataStart)!==width||view.getUint32(dataStart+4)!==height||bytes[dataStart+8]!==8||bytes[dataStart+9]!==2||bytes[dataStart+10]!==0||bytes[dataStart+11]!==0||bytes[dataStart+12]!==0)invalid("IHDR is unsupported");}
+    else if(type==="IHDR")invalid("contains duplicate IHDR");
+    if(type==="IDAT"){if(idatEnded)invalid("IDAT chunks are not consecutive");sawIdat=true;idatParts.push(bytes.slice(dataStart,dataEnd));}else if(sawIdat&&type!=="IEND")idatEnded=true;
+    if(type==="IEND"){if(length!==0||!sawIdat||next!==bytes.byteLength)invalid("IEND is invalid");sawIend=true;}
+    if(sawIend&&next!==bytes.byteLength)invalid("contains trailing data");
+    offset=next;chunkIndex++;
+  }
+  if(!sawIend||offset!==bytes.byteLength)invalid("is missing terminal IEND");
+  const rowBytes=width*3+1,expected=rowBytes*height;if(!Number.isSafeInteger(expected)||expected<=0)invalid("decoded size is invalid");
+  const raw=inflatePngIdat(Buffer.concat(idatParts.map(part=>Buffer.from(part))),expected+1);
+  if(raw.byteLength!==expected)invalid("decoded scanline length is invalid");
+  for(let row=0;row<height;row++){const filter=raw[row*rowBytes];if(filter===undefined||filter>4)invalid("scanline filter is invalid");}
+}
+function inflatePngIdat(compressed:Uint8Array,maxOutputLength:number):Buffer{try{return inflateSync(compressed,{maxOutputLength});}catch{throw new Error("Carousel renderer PNG IDAT deflate stream is invalid");}}
+function validateLayoutMetrics(value: CreativeLayoutMetrics | undefined, theme: NormalizedCreativeRenderTheme): void {
+  if (!value || value.canvas.width !== theme.width || value.canvas.height !== theme.height) throw new Error("Carousel renderer layout canvas is invalid");
+  const safe=value.safeArea;if(!safe||![safe.x,safe.y,safe.width,safe.height].every(nonNegativeFinite)||safe.width<=0||safe.height<=0||safe.x+safe.width>theme.width||safe.y+safe.height>theme.height)throw new Error("Carousel renderer safe area is invalid");
+  if(!value.palette||!sameColor(value.palette.background,theme.background)||!sameColor(value.palette.foreground,theme.foreground)||!sameColor(value.palette.accent,theme.accent))throw new Error("Carousel renderer palette metrics are invalid");
+  if(!Array.isArray(value.text)||!value.text.length||value.text.some(metric=>!metric||!["cover","headline","body","cta"].includes(metric.role)||!["left","center","right"].includes(metric.alignment)||!Number.isInteger(metric.lineCount)||metric.lineCount<1||!Number.isInteger(metric.characterCount)||metric.characterCount<1||![metric.x,metric.y,metric.width,metric.height].every(nonNegativeFinite)||metric.width<=0||metric.height<=0||metric.x+metric.width>theme.width||metric.y+metric.height>theme.height))throw new Error("Carousel renderer text layout metrics are invalid");
+  if(!Number.isFinite(value.textOccupiedRatio)||value.textOccupiedRatio<0||value.textOccupiedRatio>1)throw new Error("Carousel renderer text occupancy is invalid");
+  if(value.logoPlacement!==theme.logoPlacement||value.logoAssetId!==theme.logoAssetId||value.headingFontLabel!==theme.headingFontLabel||value.bodyFontLabel!==theme.bodyFontLabel)throw new Error("Carousel renderer Brand layout metadata is invalid");
+  if(value.logoBounds){const box=value.logoBounds;if(!theme.logoAssetId||theme.logoPlacement==="none"||![box.x,box.y,box.width,box.height].every(nonNegativeFinite)||box.width<=0||box.height<=0||box.x+box.width>theme.width||box.y+box.height>theme.height)throw new Error("Carousel renderer logo bounds are invalid");}
+}
+function nonNegativeFinite(value:number):boolean{return Number.isFinite(value)&&value>=0}
+function sameColor(a:Rgb,b:Rgb):boolean{return a.length===3&&a.every((part,index)=>part===b[index])}
+function sameIds(a:string[],b:string[]):boolean{return Array.isArray(a)&&a.length===b.length&&a.every((id,index)=>id===b[index])}
 function dimension(value: number, field: string, min: number, max: number): number {
   if (!Number.isInteger(value) || value < min || value > max) throw new Error(`Creative ${field} must be an integer between ${min} and ${max}`);
   return value;
@@ -144,27 +252,28 @@ function boundedPositive(value: number, field: string, max: number): number {
   return value;
 }
 
-function renderCarousel(plan: ReturnType<typeof validateCarouselPlan>, theme: NormalizedTheme): CreativeRenderPackage {
-  const sourceFingerprint = fingerprint(plan, theme);
+function renderCarouselBitmap(plan: ReturnType<typeof validateCarouselPlan>, theme: NormalizedCreativeRenderTheme, rendererVersion: string): CreativeRenderPackage {
+  const sourceFingerprint = fingerprint(plan, theme, rendererVersion);
   const artifacts = plan.slides.map((slide, index) => {
     const canvas = new Canvas(theme.width, theme.height, theme.background);
     const pad = Math.max(12, Math.floor(theme.width * 0.075));
     const headScale = Math.max(2, Math.floor(theme.width / 90));
     const bodyScale = Math.max(2, Math.floor(theme.width / 150));
     canvas.fillRect(0, 0, theme.width, Math.max(5, Math.floor(theme.height * 0.025)), theme.accent);
-    let y = pad;
-    if (index === 0) y = canvas.drawWrapped(plan.coverHook, pad, y, theme.width - pad * 2, headScale, theme.accent, 3) + bodyScale * 3;
-    y = canvas.drawWrapped(slide.headline, pad, y, theme.width - pad * 2, headScale, theme.foreground, 4) + bodyScale * 3;
-    canvas.drawWrapped(slide.body, pad, y, theme.width - pad * 2, bodyScale, theme.foreground, 12);
-    if (index === plan.slides.length - 1) canvas.drawWrapped(plan.cta, pad, theme.height - pad - bodyScale * 12, theme.width - pad * 2, bodyScale, theme.accent, 3);
+    let y = pad; const text: CreativeTextLayoutMetric[] = [];
+    if (index === 0) { const metric = canvas.drawMeasured(plan.coverHook, "cover", pad, y, theme.width - pad * 2, headScale, theme.accent, 3); text.push(metric); y = metric.y + metric.height + bodyScale * 3; }
+    const headline = canvas.drawMeasured(slide.headline, "headline", pad, y, theme.width - pad * 2, headScale, theme.foreground, 4); text.push(headline); y = headline.y + headline.height + bodyScale * 3;
+    text.push(canvas.drawMeasured(slide.body, "body", pad, y, theme.width - pad * 2, bodyScale, theme.foreground, 12));
+    if (index === plan.slides.length - 1) text.push(canvas.drawMeasured(plan.cta, "cta", pad, theme.height - pad - bodyScale * 12, theme.width - pad * 2, bodyScale, theme.accent, 3));
     const bytes = encodePng(canvas);
-    return artifact("carousel-slide", `carousel-${String(index + 1).padStart(2,"0")}.png`, "image/png", bytes, slide.supportingClaimIds, index);
+    const layoutMetrics = layout(theme, pad, text);
+    return artifact("carousel-slide", `carousel-${String(index + 1).padStart(2,"0")}.png`, "image/png", bytes, slide.supportingClaimIds, index, layoutMetrics);
   });
-  return { format: "carousel", rendererVersion: CREATIVE_RENDERER_VERSION, sourceFingerprint, artifacts };
+  return { format: "carousel", rendererVersion, sourceFingerprint, artifacts };
 }
 
-function renderReel(plan: ReturnType<typeof validateReelPlan>, theme: NormalizedTheme): CreativeRenderPackage {
-  const sourceFingerprint = fingerprint(plan, theme);
+function renderReel(plan: ReturnType<typeof validateReelPlan>, theme: NormalizedCreativeRenderTheme): CreativeRenderPackage {
+  const sourceFingerprint = fingerprint(plan, theme, CREATIVE_RENDERER_VERSION);
   const frames = plan.scenes.map((scene, index) => {
     const canvas = new Canvas(theme.width, theme.height, theme.background);
     const pad = Math.max(12, Math.floor(theme.width * 0.075));
@@ -206,12 +315,14 @@ function renderReel(plan: ReturnType<typeof validateReelPlan>, theme: Normalized
   return { format: "reel", rendererVersion: CREATIVE_RENDERER_VERSION, sourceFingerprint, artifacts: [...frames, manifest] };
 }
 
-function fingerprint(plan: MarketingCreativePlan, theme: NormalizedTheme): string {
-  return sha256(Buffer.from(JSON.stringify({ rendererVersion: CREATIVE_RENDERER_VERSION, plan, theme })));
+function fingerprint(plan: MarketingCreativePlan, theme: NormalizedCreativeRenderTheme, rendererVersion: string): string {
+  return sha256(Buffer.from(JSON.stringify({ rendererVersion, plan, theme })));
 }
-function artifact(role: CreativeArtifactRole, filename: string, contentType: RenderedCreativeArtifact["contentType"], bytes: Uint8Array, supportingClaimIds: string[], index: number): RenderedCreativeArtifact {
-  return { role, filename, contentType, bytes, sha256: sha256(bytes), supportingClaimIds: [...supportingClaimIds], index };
+function artifact(role: CreativeArtifactRole, filename: string, contentType: RenderedCreativeArtifact["contentType"], bytes: Uint8Array, supportingClaimIds: string[], index: number, layoutMetrics?: CreativeLayoutMetrics): RenderedCreativeArtifact {
+  return { role, filename, contentType, bytes, sha256: sha256(bytes), supportingClaimIds: [...supportingClaimIds], index, ...(layoutMetrics ? { layoutMetrics } : {}) };
 }
+function layout(theme: NormalizedCreativeRenderTheme, pad: number, text: CreativeTextLayoutMetric[]): CreativeLayoutMetrics { const occupied = text.reduce((sum,item)=>sum+item.width*item.height,0), logo = theme.logoAssetId && theme.logoPlacement !== "none" ? logoBounds(theme, pad) : undefined; return { canvas:{width:theme.width,height:theme.height}, safeArea:{x:pad,y:pad,width:theme.width-pad*2,height:theme.height-pad*2}, palette:{background:theme.background,foreground:theme.foreground,accent:theme.accent}, text, textOccupiedRatio:Number((occupied/(theme.width*theme.height)).toFixed(6)), logoPlacement:theme.logoPlacement, ...(theme.logoAssetId?{logoAssetId:theme.logoAssetId}:{}), ...(logo?{logoBounds:logo}:{}), headingFontLabel:theme.headingFontLabel, bodyFontLabel:theme.bodyFontLabel }; }
+function logoBounds(theme: NormalizedCreativeRenderTheme, pad: number): { x: number; y: number; width: number; height: number } { const width=Math.max(24,Math.floor(theme.width*.12)),height=Math.max(16,Math.floor(width*.5)),right=theme.logoPlacement.endsWith("right"),bottom=theme.logoPlacement.startsWith("bottom"); return{x:right?theme.width-pad-width:pad,y:bottom?theme.height-pad-height:pad,width,height}; }
 function sha256(value: Uint8Array): string { return createHash("sha256").update(value).digest("hex"); }
 
 class Canvas {
@@ -226,11 +337,15 @@ class Canvas {
     for (let py = y0; py < y1; py++) for (let px = x0; px < x1; px++) this.pixel(px, py, color);
   }
   drawWrapped(text: string, x: number, y: number, maxWidth: number, scale: number, color: Rgb, maxLines: number): number {
+    const metric = this.drawMeasured(text, "body", x, y, maxWidth, scale, color, maxLines); return metric.y + metric.height;
+  }
+  drawMeasured(text: string, role: CreativeTextLayoutMetric["role"], x: number, y: number, maxWidth: number, scale: number, color: Rgb, maxLines: number): CreativeTextLayoutMetric {
     assertRenderableText(text);
     const lines = wrapStrict(text, Math.max(1, Math.floor(maxWidth / (4 * scale))), maxLines);
     let cursorY = Math.floor(y);
     for (const line of lines) { this.drawLine(line, Math.floor(x), cursorY, scale, color); cursorY += 7 * scale; }
-    return cursorY;
+    const width = Math.min(maxWidth, Math.max(...lines.map(line => line.length * 4 * scale), 0));
+    return { role, alignment: "left", lineCount: lines.length, characterCount: text.length, x: Math.floor(x), y: Math.floor(y), width, height: cursorY - Math.floor(y) };
   }
   private drawLine(text: string, x: number, y: number, scale: number, color: Rgb): void {
     let cursor = x;

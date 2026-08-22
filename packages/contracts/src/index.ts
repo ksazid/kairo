@@ -187,3 +187,67 @@ export interface ProblemDetails {
   code: string;
   correlationId?: string;
 }
+
+export type ContentDevelopmentType = "carousel" | "reel";
+export type CarouselStructure = "aida" | "pas" | "listicle" | "case-study" | "story" | "comparison";
+export type CarouselSlideRole = "hook" | "attention" | "interest" | "desire" | "problem" | "agitation" | "solution" | "list-item" | "context" | "challenge" | "approach" | "result" | "story-beat" | "comparison" | "evidence" | "insight" | "cta";
+export type ReelSceneRole = "hook" | "problem" | "insight" | "evidence" | "solution" | "cta" | "story-beat";
+
+export interface ContentDevelopmentLineageDto {
+  ideaId: string;
+  angleId: string;
+  supportingClaimIds: string[];
+}
+
+export interface ProductionCarouselSlideDto {
+  id: string;
+  role: CarouselSlideRole;
+  headline: string;
+  body: string;
+  imageAssetId?: string;
+  supportingClaimIds: string[];
+}
+
+export interface ProductionCarouselProjectDto {
+  schemaVersion: 1;
+  format: "carousel";
+  structure: CarouselStructure;
+  coverHook: string;
+  caption: string;
+  cta: string;
+  slides: ProductionCarouselSlideDto[];
+  supportingClaimIds: string[];
+}
+
+export interface ProductionReelSceneDto {
+  id: string;
+  role: ReelSceneRole;
+  startSecond: number;
+  endSecond: number;
+  visual: string;
+  onScreenText: string;
+  voiceover: string;
+  supportingClaimIds: string[];
+}
+
+export interface ProductionReelProjectDto {
+  schemaVersion: 1;
+  contentType: "reel";
+  title: string;
+  hook: string;
+  targetDurationSeconds: number;
+  caption: string;
+  cta: string;
+  scenes: ProductionReelSceneDto[];
+  supportingClaimIds: string[];
+}
+
+export type ProductionContentProjectDto = ProductionCarouselProjectDto | ProductionReelProjectDto;
+
+export interface StructuredContentDevelopmentDto {
+  schemaVersion: 1;
+  lineage: ContentDevelopmentLineageDto;
+  contentType: ContentDevelopmentType;
+  recommendationRationale: string;
+  project: ProductionContentProjectDto;
+}
