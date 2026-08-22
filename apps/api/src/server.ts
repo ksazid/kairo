@@ -33,6 +33,7 @@ import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@k
 import{ResearcherOrchestrator,extractResearchUrls,isResearcherOutput}from"@kairo/worker/researcher";
 import{StrategistOrchestrator,isStrategistOutput}from"@kairo/worker/strategist";
 import{PgIdeaDevelopmentLock}from"./idea-development-lock";
+import{deterministicFallbackAngles}from"./deterministic-angle-fallback";
 import{SourceRoutingToolGateway}from"@kairo/worker/discovery-provider";
 import{CrossrefResearchEvidenceProvider,OpenAlexResearchEvidenceProvider}from"@kairo/worker/research-evidence-adapters";
 import{RetryingDiscoverySourceProvider}from"@kairo/worker/retrying-discovery-provider";
@@ -128,14 +129,11 @@ const ideaDeveloper=researcher&&strategist?{
     }
     if(!bundle?.research)throw new Error("Research development did not persist a dossier");
     if(bundle.angles.length<2){
-      await strategist.run({
-        accountId:input.accountId,
-        workspaceId:input.workspaceId,
-        brandId:input.brandId,
-        brandContextVersion:input.brandContextVersion,
-        idea:input.idea,
-        research:bundle.research,
-      });
+      try{
+        await strategist.run({accountId:input.accountId,workspaceId:input.workspaceId,brandId:input.brandId,brandContextVersion:input.brandContextVersion,idea:input.idea,research:bundle.research});
+      }catch{
+        await researchStore.saveCandidateAngles(input.accountId,deterministicFallbackAngles({workspaceId:input.workspaceId,brandId:input.brandId,idea:input.idea,research:bundle.research}));
+      }
     }
    });
   },
