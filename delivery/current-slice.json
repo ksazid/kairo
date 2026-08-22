@@ -162,14 +162,15 @@
   },
   "links": {
     "specification": "docs/slices/VS-82.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/155",
     "evidence": [
       "docs/slices/VS-82.md",
       "apps/api/src/instagram-source-intelligence.test.ts",
       "apps/api/src/instagram-visual-analysis.test.ts",
       "apps/worker/src/creative-renderer.test.ts",
       "apps/worker/src/performance-patterns.test.ts",
-      "apps/api/src/vs04-postgres-research.integration.test.ts"
+      "apps/api/src/vs04-postgres-research.integration.test.ts",
+      "https://github.com/ksazid/kairo/pull/155"
     ]
   },
   "maxAttempts": 3
