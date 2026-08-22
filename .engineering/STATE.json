@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-75","activeTask":"batch-2-verification-and-pr","branch":"feature/vs75-carousel-studio","lastSuccessfulStep":"vs75-runtime-verification-passed","attempts":0,"blockers":[],"nextPermittedAction":"run-preflight-and-open-draft-pr"}
+{"schemaVersion":1,"activeSlice":null,"activeTask":"vs75-certified-closeout","branch":"governance/vs75-certification-closeout","lastSuccessfulStep":"vs75-certified","attempts":0,"blockers":[],"nextPermittedAction":"activate-next-approved-slice"}

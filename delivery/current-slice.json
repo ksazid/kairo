@@ -2,18 +2,47 @@
   "schemaVersion": 2,
   "sliceId": "VS-75",
   "title": "VS-75 — Structured Carousel Foundation",
-  "status": "active",
-  "lifecycle": "testing",
+  "status": "completed",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-08", "FR-11", "FR-13", "FR-15"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-18", "VS-20", "VS-34", "VS-74"],
+  "requirements": [
+    "FR-08",
+    "FR-11",
+    "FR-13",
+    "FR-15"
+  ],
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": "Operations Owner",
+    "security": "Security Owner"
+  },
+  "dependencies": [
+    "VS-18",
+    "VS-20",
+    "VS-34",
+    "VS-74"
+  ],
   "blockers": [],
-  "allowedPaths": ["packages/contracts/**", "packages/domain/**", "apps/worker/**", "docs/slices/VS-75.md", "docs/plans/VS-75-implementation.md", "delivery/**", ".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**"],
+  "allowedPaths": [
+    "packages/contracts/**",
+    "packages/domain/**",
+    "apps/worker/**",
+    "docs/slices/VS-75.md",
+    "docs/plans/VS-75-implementation.md",
+    "delivery/**",
+    ".engineering/STATE.json"
+  ],
+  "protectedPaths": [
+    ".github/workflows/release.yml",
+    "infrastructure/**"
+  ],
   "impact": {
-    "areas": ["architecture", "customer-flow"],
+    "areas": [
+      "architecture",
+      "customer-flow"
+    ],
     "notes": [
       "Adds structured carousel projects and deterministic visual-quality reporting.",
       "Extends the existing Claim-linked CarouselPlan and private generated-media boundaries.",
@@ -22,19 +51,104 @@
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-75@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-22T02:58:00+02:00","rationale":"The Product Owner approved the Instagram completion programme in batches of ten and instructed go next after Batch 1 exact-SHA merge approval."},
-    {"type":"policy","status":"not-required","version":"VS-75@1.0","commitSha":null,"by":null,"at":null,"rationale":"This slice extends existing Claim-linked creative-plan, generated-media and provider-neutral adapter boundaries. BearCarousel remains reference-only pending a separate license/security decision."},
-    {"type":"implementation","status":"approved","version":"VS-75@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-22T02:58:00+02:00","rationale":"The Product Owner instructed implementation of the next ten approved tasks."},
-    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":null}
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-75@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-22T02:58:00+02:00",
+      "rationale": "The Product Owner approved the Instagram completion programme in batches of ten and instructed go next after Batch 1 exact-SHA merge approval."
+    },
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": "VS-75@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "This slice extends existing Claim-linked creative-plan, generated-media and provider-neutral adapter boundaries. BearCarousel remains reference-only pending a separate license/security decision."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-75@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-22T02:58:00+02:00",
+      "rationale": "The Product Owner instructed implementation of the next ten approved tasks."
+    },
+    {
+      "type": "certification",
+      "status": "approved",
+      "version": "VS-75@1.0",
+      "commitSha": "2c42aae55ef29e4fc1ffd846b33528b5b897b408",
+      "by": "Sazid Khan",
+      "at": "2026-08-22T03:45:00+02:00",
+      "rationale": "Product Owner approved the exact VS-75 head after Product Intake #714, Security #860 and CI #1027 passed; it merged as 1d9125ac48cfab7358e652a65f3ed84b28158626."
+    },
+    {
+      "type": "release",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    },
+    {
+      "type": "production-enable",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
-  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-75.md","implementationPr":null,"evidence":[]},
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
+    "release": 0,
+    "validation": 0
+  },
+  "certification": {
+    "status": "passed",
+    "commitSha": "2c42aae55ef29e4fc1ffd846b33528b5b897b408",
+    "evidence": [
+      "GitHub PR #146 Product Intake #714 passed",
+      "GitHub PR #146 Security baseline #860 passed",
+      "GitHub PR #146 CI #1027 passed",
+      "PR #146 exact approved head 2c42aae55ef29e4fc1ffd846b33528b5b897b408 merged as 1d9125ac48cfab7358e652a65f3ed84b28158626",
+      "550-test full runtime verification passed before rebase; exact rebased head CI repeated repository preflight/runtime verification",
+      "Independent implementation and generated-artifact hygiene verification passed"
+    ]
+  },
+  "release": {
+    "status": "not-authorized",
+    "releaseId": null
+  },
+  "rollback": {
+    "status": "not-applicable",
+    "rollbackId": null
+  },
+  "postRelease": {
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": null,
+    "metrics": []
+  },
+  "links": {
+    "specification": "docs/slices/VS-75.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/146",
+    "evidence": [
+      "delivery/context/VS-75.md",
+      "https://github.com/ksazid/kairo/pull/146"
+    ]
+  },
   "maxAttempts": 3
 }
