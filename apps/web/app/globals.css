@@ -152,7 +152,7 @@ h3 { margin: 0; font-size: 20px; line-height: 28px; }
   .brain-field-label { display: grid; }
   .field-state { justify-self: start; }
   .field-actions { align-items: flex-end; }
-  .mobile-nav { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); min-height: 64px; padding-bottom: env(safe-area-inset-bottom); background: color-mix(in srgb, white 96%, transparent); border-top: 1px solid var(--k-neutral-200); }
+  .mobile-nav { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(6, 1fr); min-height: 64px; padding-bottom: env(safe-area-inset-bottom); background: color-mix(in srgb, white 96%, transparent); border-top: 1px solid var(--k-neutral-200); }
   .mobile-nav-item { display: grid; place-items: center; min-height: 56px; padding: 8px 4px; color: var(--k-neutral-400); font-size: 11px; font-weight: 650; text-decoration: none; }
   .mobile-nav-item.active { color: var(--k-neutral-900); }
 }

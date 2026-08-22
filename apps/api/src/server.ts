@@ -61,6 +61,8 @@ import{KairoInstagramPublisher}from"@kairo/domain/instagram-publisher";
 import{RepositoryInstagramPublishingOperations,StoredInstagramInsightsReader}from"./instagram-mcp-adapters";
 import{MetaMcpToolHandler}from"./meta-mcp-tools";
 import{registerMetaMcpRoutes}from"./meta-mcp-routes";
+import{SimpleCreationService}from"./simple-creation";import{PgSimpleCreationStore}from"./simple-creation-postgres";import{registerSimpleCreationRoutes}from"./simple-creation-routes";
+import{SimplePublishFlowService}from"@kairo/domain/simple-publish-flow";import{PgSimplePublishFlowRepository}from"./simple-publish-flow-postgres";import{registerSimplePublishFlowRoutes}from"./simple-publish-flow-routes";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -152,6 +154,8 @@ const app = buildApp({
   identityVerifier,
   logger: true,
 });
+let simpleCreationService:SimpleCreationService|undefined;let simpleCreationRunning=false;
+if(ideaDeveloper){simpleCreationService=new SimpleCreationService(new PgSimpleCreationStore(pool),researchStore,campaignStore,ideaDeveloper);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,trigger:()=>void collectSimpleCreationTick()});}
 registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
@@ -159,7 +163,9 @@ registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publish
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 const carouselStorage=carouselObjectStorageConfig();
-if(carouselStorage)registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:new PgCarouselStudioStore(pool,undefined,undefined,new HmacObjectStorageTemporarySigner(carouselStorage.publicBaseUrl,carouselStorage.signingSecret))});
+const carouselSigner=carouselStorage?new HmacObjectStorageTemporarySigner(carouselStorage.publicBaseUrl,carouselStorage.signingSecret):undefined;
+if(carouselSigner)registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner)});
+registerSimplePublishFlowRoutes(app,{coreStore,identityVerifier,service:new SimplePublishFlowService(new PgSimplePublishFlowRepository(pool,carouselSigner))});
 
 const googleDrive=googleDriveConfig();
 let googleDriveService:GoogleDriveContentAssetService|undefined;
@@ -219,9 +225,11 @@ let metricTickRunning=false;
 let evidenceTimer:NodeJS.Timeout|undefined;
 let evidenceTickRunning=false;
 let evidenceTerminal=false;
+let simpleCreationTimer:NodeJS.Timeout|undefined;
 
 try {
   await app.listen({ port, host });
+  if(simpleCreationService){void collectSimpleCreationTick();simpleCreationTimer=setInterval(()=>void collectSimpleCreationTick(),5_000);simpleCreationTimer.unref();}
   if(instagramMetricRunner){
     void collectMetricTick();
     metricTimer=setInterval(()=>void collectMetricTick(),60_000);
@@ -251,6 +259,7 @@ try {
   await pool.end();
   process.exit(1);
 }
+async function collectSimpleCreationTick(){if(simpleCreationRunning||!simpleCreationService)return;simpleCreationRunning=true;try{for(let i=0;i<3&&await simpleCreationService.runOnce(`api-${process.pid}`);i++);}catch(error){app.log.error({err:error},"simple creation runner failed");}finally{simpleCreationRunning=false;}}
 
 async function collectMetricTick(){
   if(metricTickRunning||!instagramMetricRunner)return;
@@ -306,6 +315,7 @@ function stopEvidenceTimer(){if(evidenceTimer){clearInterval(evidenceTimer);evid
 
 async function shutdown(): Promise<void> {
   if(metricTimer)clearInterval(metricTimer);
+  if(simpleCreationTimer)clearInterval(simpleCreationTimer);
   stopEvidenceTimer();
   await app.close();
   await pool.end();
