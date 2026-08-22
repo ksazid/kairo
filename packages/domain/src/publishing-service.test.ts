@@ -82,4 +82,29 @@ describe("PublishingService", () => {
     expect(completed).toMatchObject({ status: "published", attemptCount: 1 });
     expect(repo.posts.size).toBe(1);
   });
+
+  it("locks an approved Reel media fingerprint without requiring a Carousel render approval", async () => {
+    const repo = new Repo();
+    const core = { getBrandForAccount: async () => ({ id: "brand-1", workspaceId: "ws-1", name: "Kairo", createdAt: "2026-08-13T00:00:00Z" }) } as unknown as KairoRepository;
+    const campaigns = { getCampaign: async () => ({
+      campaign: { id: "campaign-1", workspaceId: "ws-1", brandId: "brand-1", ideaId: "idea-1", researchId: "research-1", angleId: "angle-1", name: "Reel", objective: "Reach", supportingClaimIds: [], createdAt: "2026-08-13T00:00:00Z" },
+      assets: [{
+        asset: { id: "asset-1", workspaceId: "ws-1", brandId: "brand-1", campaignId: "campaign-1", channel: "instagram", format: "reel", audience: "riders", topic: "launch", hookType: "fact", cta: "watch", currentVersion: 2, createdAt: "2026-08-13T00:00:00Z" },
+        versions: [{ id: "version-2", workspaceId: "ws-1", brandId: "brand-1", campaignId: "campaign-1", assetId: "asset-1", version: 2, content: "Watch", supportingClaimIds: [], actor: "user", action: "manual-edit", createdAt: "2026-08-13T00:00:00Z" }],
+      }],
+    }) } as unknown as CampaignRepository;
+    const reelApproval = { ...approval, destination: { channel: "instagram" as const, accountRef: "ig-1" } };
+    const reviews = { getApproval: async () => reelApproval, getApprovalForDestination: async () => reelApproval, listApprovals: async () => [reelApproval] } as unknown as ReviewRepository;
+    const service = new PublishingService(core, campaigns, reviews, repo, () => new Date("2026-08-14T10:00:00Z"));
+    const account = await service.connect("human-1", "brand-1", { channel: "instagram", accountRef: "ig-1", displayName: "@kairo", credentialRef: "vault://ig", capabilities: ["publish-reel"] });
+
+    const command = await service.schedule("human-1", "brand-1", "campaign-1", "asset-1", {
+      channelAccountId: account.id,
+      contentType: "reel",
+      mediaItems: [{ kind: "video", url: "https://cdn.example.test/reel.mp4" }],
+    });
+
+    expect(command).toMatchObject({ status: "scheduled", approvedAssetVersionId: "version-2" });
+    expect(command.approvedMediaFingerprint).toMatch(/^[a-f0-9]{64}$/);
+  });
 });
