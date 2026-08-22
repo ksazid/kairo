@@ -12,6 +12,8 @@ import { getInstagramCandidates, type InstagramCandidateView } from "../../../..
 import { safeBrandReturnTo } from "../../../../src/lib/brand-source-navigation";
 import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
 import { disconnectInstagramAction, reviewLearningAction, selectInstagramAction } from "./actions";
+import { buildPerformanceFeedback } from "../../../../src/lib/performance-feedback-view-model";
+import { PerformanceFeedback } from "../../../performance-feedback";
 import "../../../performance.css";
 
 type Params = Promise<{ brandId: string }>;
@@ -36,6 +38,7 @@ export default async function PerformancePage({ params, searchParams }: { params
   const instagram = accounts.find((account) => account.channel === "instagram" && account.status !== "disabled");
   const strongestLearning = learnings.find((learning) => learning.status === "accepted") ?? learnings[0];
   const nextExperiment = experiments.find((experiment) => experiment.status === "draft") ?? experiments[0];
+  const feedback=buildPerformanceFeedback(metrics,learnings);
 
   return (
     <KairoProductShell brandId={brand.id} active="Performance" mobileActive="More">
@@ -51,6 +54,7 @@ export default async function PerformancePage({ params, searchParams }: { params
 
         {messages.notice ? <p className="notice success" role="status">{messages.notice}</p> : null}
         {messages.error ? <p className="notice error" role="alert">{messages.error}</p> : null}
+        <PerformanceFeedback brandId={brand.id} feedback={feedback}/>
 
         <section className="performance-story" aria-labelledby="performance-story-title">
           <div className="performance-section-heading">

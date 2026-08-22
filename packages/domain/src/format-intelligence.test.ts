@@ -47,6 +47,12 @@ describe("VS-34 format intelligence library", () => {
     expect(recommendFormats(input)).toEqual(recommendFormats(input));
   });
 
+  it("uses accepted Brand Learning evidence and explains its bounded influence", () => {
+    const recommendations = recommendFormats({ channel: "instagram", objective: "demonstrate", acceptedLearnings: [{ learningId: "learning-1", format: "carousel", channel: "instagram", confidence: .8, evidenceObservationIds: ["metric-1", "metric-2"], reason: "Comparable educational carousels correlated with stronger saves" }] });
+    expect(recommendations.find(item => item.profile.key === "carousel")?.reasons).toContain("Accepted Brand Learning: Comparable educational carousels correlated with stronger saves (2 observations)");
+    expect(() => recommendFormats({ acceptedLearnings: [{ learningId: "candidate", format: "carousel", confidence: .8, evidenceObservationIds: [], reason: "Unreviewed" }] })).toThrow(/requires at least one item/i);
+  });
+
   it("keeps actual provider capability outside format-fit guidance", () => {
     for (const profile of FORMAT_INTELLIGENCE_CATALOG) {
       expect(profile.channelFit).toHaveLength(4);
