@@ -65,11 +65,11 @@ const campaignId = encodeURIComponent(campaignIdRaw);
 console.log(`REEL_CAMPAIGN=PASS:${campaignIdRaw}`);
 
 const claimTexts = chosen.supporting.map(c => c.text?.trim()).filter(Boolean);
-const caption = `2026 KTM 390 Duke — verified KTM specs:\n\n${claimTexts.map(t => `• ${t}`).join("\n")}\n\nSave this Reel and follow @_dukeman390 for more Duke specs. Which number matters most to you?\n\n#KTM390Duke #Duke390 #KTM #Motorcycles #TheDukeMan`.slice(0,1900);
+const caption = `Three numbers. One Duke. Which spec defines the 2026 KTM 390 Duke for you?\n\nHere is the official KTM evidence behind this Reel:\n\n${claimTexts.map(t => `• ${t}`).join("\n")}\n\nPower tells one part of the story, torque another, and displacement gives them context. Now choose your winner: comment the number that matters most, save this for your next bike debate, share it with a Duke rider, and follow @_dukeman390 for more verified Duke breakdowns.\n\n#KTM390Duke #Duke390 #KTM #Motorcycles #TheDukeMan`.slice(0,1900);
 const topic = `2026 KTM 390 Duke engine specs Reel ${runTag}`;
 const created = await json(`/api/v1/brands/${brandId}/campaigns/${campaignId}/assets`, {
   method:"POST",
-  body:{channel:"instagram",format:"reel",audience:"KTM 390 Duke riders and motorcycle enthusiasts",topic,hookType:"verified-spec",cta:"Save this Reel and follow @_dukeman390 for more Duke specs.",content:caption}
+  body:{channel:"instagram",format:"reel",audience:"KTM 390 Duke riders and motorcycle enthusiasts",topic,hookType:"verified-spec",cta:"Comment your winning spec, save, share, and follow @_dukeman390.",content:caption}
 });
 if (created.response.status !== 201 || !Array.isArray(created.body?.assets)) throw new Error(`Reel asset creation failed: ${created.response.status}`);
 const entry = created.body.assets.find(x => x?.asset?.topic === topic && x?.versions?.at(-1)?.content === caption);
