@@ -5,8 +5,8 @@ export interface PublishingWorkerConfig {
   pollMs: number;
   leaseSeconds: number;
   maxJobsPerTick: number;
-  objectStoragePublicBaseUrl: string;
-  objectStorageSigningSecret: string;
+  objectStoragePublicBaseUrl?: string;
+  objectStorageSigningSecret?: string;
 }
 
 export function publishingWorkerConfigFromEnv(env: Record<string, string | undefined>): PublishingWorkerConfig {
@@ -19,6 +19,9 @@ export function publishingWorkerConfigFromEnv(env: Record<string, string | undef
   if (decoded.length !== 32 || decoded.toString("base64").replace(/=+$/u, "") !== encryptionKey.replace(/=+$/u, "")) {
     throw new Error("CHANNEL_CREDENTIAL_ENCRYPTION_KEY must be base64 for exactly 32 bytes");
   }
+  const objectStoragePublicBaseUrl = env.OBJECT_STORAGE_PUBLIC_BASE_URL?.trim();
+  const objectStorageSigningSecret = env.OBJECT_STORAGE_SIGNING_SECRET?.trim();
+  if (Boolean(objectStoragePublicBaseUrl) !== Boolean(objectStorageSigningSecret)) throw new Error("Object storage publishing configuration is incomplete");
   return {
     databaseUrl,
     graphVersion,
@@ -26,8 +29,7 @@ export function publishingWorkerConfigFromEnv(env: Record<string, string | undef
     pollMs: boundedInt(env.KAIRO_PUBLISHING_POLL_MS, "KAIRO_PUBLISHING_POLL_MS", 5_000, 1_000, 60_000),
     leaseSeconds: boundedInt(env.KAIRO_PUBLISHING_LEASE_SECONDS, "KAIRO_PUBLISHING_LEASE_SECONDS", 120, 30, 600),
     maxJobsPerTick: boundedInt(env.KAIRO_PUBLISHING_MAX_JOBS_PER_TICK, "KAIRO_PUBLISHING_MAX_JOBS_PER_TICK", 5, 1, 20),
-    objectStoragePublicBaseUrl: required(env.OBJECT_STORAGE_PUBLIC_BASE_URL, "OBJECT_STORAGE_PUBLIC_BASE_URL"),
-    objectStorageSigningSecret: required(env.OBJECT_STORAGE_SIGNING_SECRET, "OBJECT_STORAGE_SIGNING_SECRET"),
+    ...(objectStoragePublicBaseUrl && objectStorageSigningSecret ? { objectStoragePublicBaseUrl, objectStorageSigningSecret } : {}),
   };
 }
 

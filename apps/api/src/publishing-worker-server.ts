@@ -17,7 +17,10 @@ const providerPublishing = new DeterministicPublishingWorker([
   new InstagramProfessionalAdapter(vault, config.graphVersion, fetch, undefined, "instagram-login"),
   new FacebookPageAdapter(vault, config.graphVersion),
 ]);
-const publishing = new ApprovedMediaPublishingWorker(providerPublishing,new PgApprovedMediaDelivery(pool,new HmacObjectStorageTemporarySigner(config.objectStoragePublicBaseUrl,config.objectStorageSigningSecret)));
+const mediaDelivery = config.objectStoragePublicBaseUrl && config.objectStorageSigningSecret
+  ? new PgApprovedMediaDelivery(pool,new HmacObjectStorageTemporarySigner(config.objectStoragePublicBaseUrl,config.objectStorageSigningSecret))
+  : undefined;
+const publishing = new ApprovedMediaPublishingWorker(providerPublishing,mediaDelivery);
 const leaseOwner = `instagram-publisher-${process.pid}`;
 const runner = new PublishingJobRunner(store, publishing, leaseOwner, config.leaseSeconds);
 

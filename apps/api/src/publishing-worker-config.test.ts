@@ -24,8 +24,17 @@ describe("publishing worker configuration", () => {
     });
   });
 
-  it.each(["DATABASE_URL", "META_GRAPH_VERSION", "CHANNEL_CREDENTIAL_ENCRYPTION_KEY", "OBJECT_STORAGE_PUBLIC_BASE_URL", "OBJECT_STORAGE_SIGNING_SECRET"] as const)("requires %s", (name) => {
+  it.each(["DATABASE_URL", "META_GRAPH_VERSION", "CHANNEL_CREDENTIAL_ENCRYPTION_KEY"] as const)("requires %s", (name) => {
     expect(() => publishingWorkerConfigFromEnv({ ...base, [name]: "" })).toThrow(`${name} is required`);
+  });
+
+  it("allows Reel publishing without Carousel object storage", () => {
+    const { OBJECT_STORAGE_PUBLIC_BASE_URL: _, OBJECT_STORAGE_SIGNING_SECRET: __, ...withoutStorage } = base;
+    expect(publishingWorkerConfigFromEnv(withoutStorage)).not.toHaveProperty("objectStoragePublicBaseUrl");
+  });
+
+  it.each(["OBJECT_STORAGE_PUBLIC_BASE_URL", "OBJECT_STORAGE_SIGNING_SECRET"] as const)("rejects incomplete object storage when %s is missing", (name) => {
+    expect(() => publishingWorkerConfigFromEnv({ ...base, [name]: "" })).toThrow("Object storage publishing configuration is incomplete");
   });
 
   it("rejects an invalid Meta Graph version", () => {

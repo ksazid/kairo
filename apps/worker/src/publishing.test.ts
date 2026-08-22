@@ -158,6 +158,14 @@ describe("VS-77 approved media delivery",()=>{
     const mismatch=new ApprovedMediaPublishingWorker(new DeterministicPublishingWorker([adapter]),mismatchDelivery);
     expect(await mismatch.execute(job)).toMatchObject({status:"failed",failureCode:"approved-media-mismatch"});
   });
+
+  it("publishes an approved Reel from its fingerprint-locked media item without Carousel delivery",async()=>{
+    const adapter={channel:"instagram" as const,supports:()=>true,publish:async(job:PublishingJob)=>({status:"published" as const,externalPostId:job.mediaItems?.[0]?.url??"missing"})};
+    const delivery={deliver:async()=>{throw new Error("Carousel delivery must not run for Reels")}};
+    const worker=new ApprovedMediaPublishingWorker(new DeterministicPublishingWorker([adapter]),delivery);
+    const job={...base,channel:"instagram" as const,accountRef:"123",contentType:"reel" as const,approvedAssetVersionId:"content-version-2",approvedMediaFingerprint:"b".repeat(64),mediaItems:[{kind:"video" as const,url:"https://media.example.test/reel.mp4"}]};
+    expect(await worker.execute(job)).toEqual({status:"published",externalPostId:"https://media.example.test/reel.mp4"});
+  });
 });
 
 describe("PublishingJobRunner", () => {
