@@ -34,6 +34,35 @@
       ],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-004",
+      "releaseId": "REL-004",
+      "status": "ready",
+      "reason": "Rollback readiness for the high-risk VS-82 Instagram completion release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
+      "lastKnownGoodSha": "70267770d0fadf2b670d3dcb833e1c9687930dfc",
+      "triggers": [
+        "API health or exact release provenance fails",
+        "Instagram publisher startup or reconciliation regresses",
+        "Tenant isolation, destination approval or media fingerprint binding fails",
+        "Calendar or Results loses provider-confirmed publish lineage"
+      ],
+      "procedure": [
+        "Disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED while preserving commands, attempts, provider IDs and metrics.",
+        "Redeploy the final certified runtime or last-known-good SHA according to the failure boundary.",
+        "Do not roll back migrations 0023 through 0028; use forward recovery for schema defects.",
+        "Verify health, version, authentication, Brand scope and publishing safeguards before re-enabling the worker."
+      ],
+      "verification": [
+        "API health and version provenance are green",
+        "Authentication and tenant isolation pass",
+        "Publishing remains destination-bound and exact-version approved",
+        "Calendar and Results preserve existing provider evidence"
+      ],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }

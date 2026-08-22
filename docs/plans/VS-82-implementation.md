@@ -15,7 +15,7 @@
 
 ## Workstream D — production verification and documentation
 8. Extend the authenticated smoke harness for end-to-end multi-Brand scope, concurrent Research, Calendar and Results assertions. The harness is read-only at the external-provider boundary and requires explicit deployed-environment variables.
-9. Preserve evidence, then close/remove temporary smoke resources. PR #128 evidence is preserved; PR #141 and issue #142 remain until successful Reel/concurrency production evidence exists.
+9. Preserve evidence, then close/remove temporary smoke resources. PR #128 evidence is preserved; PR #141 and issue #142 are closed after successful Reel/concurrency production evidence.
 10. Reconcile PRD, TRD, decision log, roadmap, status, README and slice evidence.
 
 ## Verification
@@ -24,3 +24,9 @@
 - PostgreSQL migration/integration verification where schema changes are required.
 - Full typecheck, tests, build, preflight, security baseline and draft PR.
 - Stop for exact-SHA merge approval; do not release or deploy.
+
+## Completion evidence
+- Runtime `ec01d4b08bc58e92a615f90a8e18c221f2c45610` is live on Render.
+- Publishing worker startup and a provider-backed Reel publish completed successfully.
+- Calendar shows the verified Reel as Published; Results exposes fresh Instagram observations.
+- PR #141 and issue #142 are closed.
