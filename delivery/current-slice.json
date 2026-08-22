@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "sliceId": "VS-74",
   "title": "VS-74 — Brand Source Onboarding & Brand Brain Enrichment",
-  "status": "active",
-  "lifecycle": "testing",
+  "status": "completed",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -89,12 +89,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-74@1.0",
+      "commitSha": "6070c25e82d198762f57442ee1fcdf6005406344",
+      "by": "Sazid Khan",
+      "at": "2026-08-22T03:24:00+02:00",
+      "rationale": "Product Owner approved the exact VS-74 head for merge; Product Intake #710, Security #856 and CI #1021 passed before merge as 6b5a0878ef1b90bde42655e75afd575a563b0a36."
     },
     {
       "type": "release",
@@ -121,14 +121,20 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "6070c25e82d198762f57442ee1fcdf6005406344",
+    "evidence": [
+      "GitHub PR #145 Product Intake #710 passed",
+      "GitHub PR #145 Security baseline #856 passed",
+      "GitHub PR #145 CI #1021 passed",
+      "PR #145 exact approved head 6070c25e82d198762f57442ee1fcdf6005406344 merged as 6b5a0878ef1b90bde42655e75afd575a563b0a36",
+      "Independent implementation and generated-artifact hygiene verification passed"
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -146,8 +152,11 @@
   },
   "links": {
     "specification": "docs/slices/VS-74.md",
-    "implementationPr": null,
-    "evidence": []
+    "implementationPr": "https://github.com/ksazid/kairo/pull/145",
+    "evidence": [
+      "delivery/context/VS-74.md",
+      "https://github.com/ksazid/kairo/pull/145"
+    ]
   },
   "maxAttempts": 3
 }

@@ -1,1 +1,1 @@
-{"schemaVersion":1,"activeSlice":"VS-74","activeTask":"batch-1-verification-and-pr","branch":"feature/vs74-brand-source-onboarding","lastSuccessfulStep":"vs74-runtime-verification-passed","attempts":0,"blockers":[],"nextPermittedAction":"run-preflight-and-open-draft-pr"}
+{"schemaVersion":1,"activeSlice":null,"activeTask":"vs74-certified-closeout","branch":"governance/vs74-certification-closeout","lastSuccessfulStep":"vs74-certified","attempts":0,"blockers":[],"nextPermittedAction":"activate-next-approved-slice"}
