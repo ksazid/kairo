@@ -81,6 +81,45 @@
         "status": "not-started",
         "evidence": []
       }
+    },
+    {
+      "id": "REL-003",
+      "sliceIds": ["VS-73"],
+      "status": "released",
+      "commitSha": "d19c471a11ec30ca717870dc8ca4021ffac5fd5b",
+      "migrations": [],
+      "configurationChanges": [
+        "KAIRO_RELEASE_SHA set to d19c471a11ec30ca717870dc8ca4021ffac5fd5b on the Render API service.",
+        "Instagram publisher remains explicitly enabled with the existing capability-gated Meta configuration; no new scopes, credentials, migrations or web configuration are introduced by the closeout release.",
+        "No Vercel rollout is required for the closeout commit because Git compare from the last verified web release lineage to d19c471a11ec30ca717870dc8ca4021ffac5fd5b contains no apps/web changes."
+      ],
+      "featureFlags": [
+        "Instagram publishing remains destination-bound, approval-bound and capability-gated.",
+        "Concurrent Research production verification is deferred to issue #142 and is not a VS-73 release gate."
+      ],
+      "smokeTests": [
+        "Product Intake #708, Security #854 and CI #1017 passed on PR #143 exact head 41ce3656df74f2c00e042fee7ca3ba743b1ce596, merged as d19c471a11ec30ca717870dc8ca4021ffac5fd5b with only VS-73 governance documentation changes.",
+        "Render deploy dep-da4emu3bc2fs73cvrc20 is live on exact commit d19c471a11ec30ca717870dc8ca4021ffac5fd5b.",
+        "Exact deployment logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED using Meta Graph v24.0.",
+        "Git compare bb901c2e04549ffcf1d621e33567ce488839d4c1..d19c471a11ec30ca717870dc8ca4021ffac5fd5b changes only delivery/context/VS-73.md, delivery/current-slice.json and docs/slices/VS-73.md, so the runtime is identical to the provider-confirmed production publish build.",
+        "Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical production build.",
+        "The previously verified web deployment remains applicable because there are no apps/web changes after the verified web release lineage."
+      ],
+      "rollbackStrategy": {
+        "summary": "If the VS-73 closeout deployment regresses, disable the Instagram publisher if necessary and redeploy the last provider-confirmed runtime bb901c2e04549ffcf1d621e33567ce488839d4c1. No database rollback is required because the closeout release contains no migrations. Preserve publish/audit state and re-verify API startup, release provenance, authentication, tenant isolation and destination-bound approval behavior before reopening publishing."
+      },
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-22T02:23:00+02:00",
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Render deploy dep-da4emu3bc2fs73cvrc20 reached live status on d19c471a11ec30ca717870dc8ca4021ffac5fd5b.",
+          "Exact deployment startup logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening successfully.",
+          "Runtime equivalence from bb901c2e04549ffcf1d621e33567ce488839d4c1 to d19c471a11ec30ca717870dc8ca4021ffac5fd5b is proven by Git compare: only VS-73 delivery/specification documentation changed.",
+          "Real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 was provider-confirmed published with Calendar and Performance verification on the runtime-identical build.",
+          "Concurrent Research verification is explicitly deferred to follow-up issue #142."
+        ]
+      }
     }
   ]
 }
