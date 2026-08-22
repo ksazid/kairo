@@ -232,9 +232,9 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
     const publish = await this.post(base, token, accountRef, "media_publish", { creation_id: container });
     if (!publish.ok) return instagramFailure(publish, container);
     const id = (await publish.json() as { id?: string }).id;
-    return id
-      ? { status: "published", externalPostId: id, providerCorrelationId: container }
-      : { status: "unknown", providerCorrelationId: container };
+    if(!id)return { status: "unknown", providerCorrelationId: container };
+    try{const response=await this.fetchImpl(`${base}/${encodeURIComponent(id)}?fields=permalink`,{headers:{authorization:`Bearer ${token}`}});if(response.ok){const data=await response.json() as{permalink?:unknown};if(typeof data.permalink==="string"&&data.permalink.startsWith("https://"))return{status:"published",externalPostId:id,providerCorrelationId:container,publishedUrl:data.permalink}}}catch{}
+    return { status: "published", externalPostId: id, providerCorrelationId: container };
   }
 }
 

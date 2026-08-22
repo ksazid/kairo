@@ -95,6 +95,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
               const current = versions.at(-1)!;
               const currentProductionRefs = productionRefs(current);
               const isReel = asset.format.toLowerCase() === "reel";
+              const isCarousel = asset.format.toLowerCase() === "carousel";
               const contentScope = { workspaceId: detail.campaign.workspaceId, brandId: brand.id, campaignId, assetId: asset.id };
               const currentDisplay = isReel ? readableContent(current.content, contentScope) : current.content;
               const status = reviewStatuses.get(asset.id)!;
@@ -108,6 +109,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
                     ? "Revision required"
                     : "Draft";
               const videoStudioHref = `/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}/video/${encodeURIComponent(asset.id)}`;
+              const carouselReviewHref = `/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}/carousel/${encodeURIComponent(asset.id)}`;
 
               return (
                 <section className="studio-workspace" key={asset.id} aria-labelledby={`asset-${asset.id}`}>
@@ -118,6 +120,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
                     </div>
                     <div className="studio-asset-actions">
                       {isReel ? <Link className="secondary-button" href={videoStudioHref}>Open Video Studio</Link> : null}
+                      {isCarousel ? <Link className="secondary-button" href={carouselReviewHref}>Review rendered carousel</Link> : null}
                       <span className={`review-status ${approval ? "approved" : review?.status ?? "draft"}`}>{label}</span>
                     </div>
                   </header>

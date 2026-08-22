@@ -6,6 +6,8 @@ const base = {
   DATABASE_URL: "postgresql://example.invalid/kairo",
   META_GRAPH_VERSION: "v23.0",
   CHANNEL_CREDENTIAL_ENCRYPTION_KEY: key,
+  OBJECT_STORAGE_PUBLIC_BASE_URL: "https://media.example.test/kairo/",
+  OBJECT_STORAGE_SIGNING_SECRET: "x".repeat(32),
 };
 
 describe("publishing worker configuration", () => {
@@ -17,10 +19,12 @@ describe("publishing worker configuration", () => {
       pollMs: 5_000,
       leaseSeconds: 120,
       maxJobsPerTick: 5,
+      objectStoragePublicBaseUrl: base.OBJECT_STORAGE_PUBLIC_BASE_URL,
+      objectStorageSigningSecret: base.OBJECT_STORAGE_SIGNING_SECRET,
     });
   });
 
-  it.each(["DATABASE_URL", "META_GRAPH_VERSION", "CHANNEL_CREDENTIAL_ENCRYPTION_KEY"] as const)("requires %s", (name) => {
+  it.each(["DATABASE_URL", "META_GRAPH_VERSION", "CHANNEL_CREDENTIAL_ENCRYPTION_KEY", "OBJECT_STORAGE_PUBLIC_BASE_URL", "OBJECT_STORAGE_SIGNING_SECRET"] as const)("requires %s", (name) => {
     expect(() => publishingWorkerConfigFromEnv({ ...base, [name]: "" })).toThrow(`${name} is required`);
   });
 

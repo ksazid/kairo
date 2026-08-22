@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import type { PublishMediaItem } from "@kairo/domain/publishing";
+import type { PublishMediaItem, RenderedMediaApproval } from "@kairo/domain/publishing";
+import type { ContentApproval } from "@kairo/domain/review";
 import type { CreativeScope, StoredCreativeAsset, StoredCreativePackage } from "./creative-renderer";
 
 export interface PrivateCreativeObjectDescriptor {
@@ -35,6 +36,7 @@ export interface PreparedPublishableCreativeMedia {
   expiresAt:string;
   encoderVersion?:string;
 }
+export interface ApprovedPublishableCreativeMedia extends PreparedPublishableCreativeMedia { approvedAssetVersionId:string; approvedMediaFingerprint:string; approvalId:string }
 
 interface Options { publishingTtlSeconds?:number; maxEncodedBytes?:number; clock?:()=>Date }
 interface ReelManifestScene { index:number; startSecond:number; endSecond:number; storyboardFilename:string; storyboardSha256:string }
@@ -53,6 +55,13 @@ export class PublishableCreativeMediaService {
   async prepare(scopeInput:CreativeScope,pkg:StoredCreativePackage,lineageInput:CreativePublicationLineage):Promise<PreparedPublishableCreativeMedia>{
     const scope=validScope(scopeInput);validPackage(pkg);const contentVersionId=required(lineageInput?.contentVersionId,"contentVersionId",200);
     return pkg.format==="carousel"?this.prepareCarousel(scope,pkg,contentVersionId):this.prepareReel(scope,pkg,contentVersionId);
+  }
+  async prepareApproved(scopeInput:CreativeScope,pkg:StoredCreativePackage,approval:ContentApproval,renderedApproval:RenderedMediaApproval):Promise<ApprovedPublishableCreativeMedia>{
+    const scope=validScope(scopeInput);if(approval.workspaceId!==scope.workspaceId||approval.brandId!==scope.brandId)throw new Error("Approval is outside generated media scope");
+    const prepared=await this.prepare(scope,pkg,{contentVersionId:approval.versionId});
+    const approvedMediaFingerprint=sha256(JSON.stringify(prepared.objects.map(object=>({objectId:object.objectId,contentHash:object.contentHash,contentType:object.contentType,sizeBytes:object.sizeBytes}))));
+    if(renderedApproval.workspaceId!==scope.workspaceId||renderedApproval.brandId!==scope.brandId||renderedApproval.assetId!==approval.assetId||renderedApproval.contentVersionId!==approval.versionId||renderedApproval.mediaFingerprint!==approvedMediaFingerprint)throw new Error("Rendered media does not match its immutable approval");
+    return{...prepared,approvalId:required(renderedApproval.id,"renderedApproval.id",200),approvedAssetVersionId:required(renderedApproval.assetVersionId,"assetVersionId",200),approvedMediaFingerprint};
   }
   private async prepareCarousel(scope:CreativeScope,pkg:StoredCreativePackage,contentVersionId:string):Promise<PreparedPublishableCreativeMedia>{
     const assets=pkg.assets.filter(a=>a.role==="carousel-slide").sort((a,b)=>a.index-b.index);

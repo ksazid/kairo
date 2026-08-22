@@ -18,6 +18,9 @@ import{registerChannelAccountGroupRoutes}from"./channel-account-group-routes";
 import{PgContentAssetLibraryRepository}from"./content-asset-library-postgres-store";
 import{registerContentAssetLibraryRoutes}from"./content-asset-library-routes";
 import{registerContentAssetSelectionRoutes}from"./content-asset-selection-routes";
+import{PgCarouselStudioStore}from"./carousel-studio-postgres";
+import{registerCarouselStudioRoutes}from"./carousel-studio-routes";
+import{HmacObjectStorageTemporarySigner}from"./object-storage-temporary-signer";
 import{GoogleDriveContentAssetService}from"./google-drive-content-assets";
 import{GoogleDriveOAuthClient}from"./google-drive-content-assets-client";
 import{PgEncryptedContentAssetCredentialVault,PgGoogleDriveConnectionRepository}from"./google-drive-content-assets-postgres";
@@ -149,6 +152,8 @@ registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBr
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
+const carouselStorage=carouselObjectStorageConfig();
+if(carouselStorage)registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:new PgCarouselStudioStore(pool,undefined,undefined,new HmacObjectStorageTemporarySigner(carouselStorage.publicBaseUrl,carouselStorage.signingSecret))});
 
 const googleDrive=googleDriveConfig();
 let googleDriveService:GoogleDriveContentAssetService|undefined;
@@ -351,6 +356,13 @@ function metaInstagramConfig(){
   const missing=names.filter(name=>!values[name]);
   if(missing.length)throw new Error(`Meta Instagram configuration is incomplete: ${missing.join(", ")}`);
   return{appId:values.META_APP_ID,appSecret:values.META_APP_SECRET,graphVersion:values.META_GRAPH_VERSION,redirectUri:values.META_OAUTH_REDIRECT_URI,encryptionKey:values.CHANNEL_CREDENTIAL_ENCRYPTION_KEY};
+}
+
+function carouselObjectStorageConfig(){
+  const publicBaseUrl=process.env.OBJECT_STORAGE_PUBLIC_BASE_URL?.trim()??"",signingSecret=process.env.OBJECT_STORAGE_SIGNING_SECRET?.trim()??"";
+  if(!publicBaseUrl&&!signingSecret)return null;
+  if(!publicBaseUrl||!signingSecret)throw new Error("Carousel object-storage signing configuration is incomplete");
+  return{publicBaseUrl,signingSecret};
 }
 
 function metaDirectInstagramConfig(graphVersion:string){

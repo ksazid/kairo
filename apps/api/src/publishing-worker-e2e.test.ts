@@ -76,6 +76,7 @@ describe("Instagram publishing end-to-end contract", () => {
       if (url.endsWith("/media_publish")) {
         return jsonResponse(200, { id: "instagram-post-1" });
       }
+      if(url.endsWith("/instagram-post-1?fields=permalink"))return jsonResponse(200,{permalink:"https://www.instagram.com/p/e2e/"});
       throw new Error(`Unexpected Meta request: ${method} ${url}`);
     };
 
@@ -96,11 +97,13 @@ describe("Instagram publishing end-to-end contract", () => {
       status: "published",
       externalPostId: "instagram-post-1",
       providerCorrelationId: "parent-1",
+      publishedUrl:"https://www.instagram.com/p/e2e/",
     });
     expect(store.settlements[0]?.at).toBe(NOW);
 
-    expect(calls).toHaveLength(5);
-    expect(calls.every((call) => call.method === "POST")).toBe(true);
+    expect(calls).toHaveLength(6);
+    expect(calls.slice(0,5).every((call) => call.method === "POST")).toBe(true);
+    expect(calls[5]?.method).toBe("GET");
     expect(calls.every((call) => call.authorization === "Bearer test-page-token")).toBe(true);
     expect(calls.slice(0, 3).map((call) => call.body)).toEqual([
       { image_url: "https://media.kairo.test/carousel/slide-1.png", is_carousel_item: true },

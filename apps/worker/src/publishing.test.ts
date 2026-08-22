@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DeterministicPublishingWorker,
+  ApprovedMediaPublishingWorker,
   PublishingJobRunner,
   type PublishingExecutionStore,
   type PublishingJob,
@@ -52,7 +53,7 @@ describe("deterministic publishing adapters", () => {
     const calls: string[] = [];
     const adapter = new InstagramProfessionalAdapter(secrets, "v24.0", async (input) => {
       calls.push(String(input));
-      return new Response(JSON.stringify({ id: calls.length === 1 ? "container-1" : "media-1" }), {
+      return new Response(JSON.stringify(calls.length===3?{permalink:"https://www.instagram.com/p/example/"}:{ id: calls.length === 1 ? "container-1" : "media-1" }), {
         status: 200,
         headers: { "content-type": "application/json" },
       });
@@ -70,11 +71,13 @@ describe("deterministic publishing adapters", () => {
     expect(calls).toEqual([
       "https://graph.facebook.com/v24.0/123/media",
       "https://graph.facebook.com/v24.0/123/media_publish",
+      "https://graph.facebook.com/v24.0/media-1?fields=permalink",
     ]);
     expect(result).toMatchObject({
       status: "published",
       externalPostId: "media-1",
       providerCorrelationId: "container-1",
+      publishedUrl:"https://www.instagram.com/p/example/",
     });
   });
 
@@ -140,6 +143,20 @@ describe("deterministic publishing adapters", () => {
         mediaUrls: ["http://127.0.0.1/private"],
       }),
     ).toBe(false);
+  });
+});
+
+describe("VS-77 approved media delivery",()=>{
+  it("delivers only the exact approved asset version through temporary public URLs",async()=>{
+    const adapter={channel:"instagram" as const,supports:()=>true,publish:async(job:PublishingJob)=>({status:"published" as const,externalPostId:job.mediaItems?.[0]?.url??"missing"})};
+    const fingerprint="a".repeat(64);
+    const delivery={deliver:async(input:{approvedAssetVersionId:string;approvedMediaFingerprint:string})=>({approvedAssetVersionId:input.approvedAssetVersionId,approvedMediaFingerprint:input.approvedMediaFingerprint,mediaItems:[{kind:"image" as const,url:"https://media.example.test/temporary.png"}],expiresAt:"2026-08-15T12:10:00Z"})};
+    const worker=new ApprovedMediaPublishingWorker(new DeterministicPublishingWorker([adapter]),delivery,()=>new Date("2026-08-15T12:00:00Z"));
+    const job={...base,versionId:"content-version-2",channel:"instagram" as const,accountRef:"123",contentType:"carousel" as const,approvedAssetVersionId:"rendered-carousel-version-7",approvedMediaFingerprint:fingerprint};
+    expect(await worker.execute(job)).toEqual({status:"published",externalPostId:"https://media.example.test/temporary.png"});
+    const mismatchDelivery={deliver:async()=>({approvedAssetVersionId:"other",approvedMediaFingerprint:fingerprint,mediaItems:[],expiresAt:"2026-08-15T12:10:00Z"})};
+    const mismatch=new ApprovedMediaPublishingWorker(new DeterministicPublishingWorker([adapter]),mismatchDelivery);
+    expect(await mismatch.execute(job)).toMatchObject({status:"failed",failureCode:"approved-media-mismatch"});
   });
 });
 
