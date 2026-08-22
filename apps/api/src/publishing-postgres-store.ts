@@ -2,6 +2,7 @@ import type { Pool, PoolClient } from "pg";
 import { ConcurrencyConflictError, ResourceNotFoundError } from "@kairo/domain";
 import type { ChannelAccount, PublishAttempt, PublishCommand, PublishedPost } from "@kairo/domain/publishing";
 import type { PublishingRepository } from "@kairo/domain/publishing-service";
+import{enqueueInstagramMetricJobs}from"./instagram-metric-runner";
 
 export class PgPublishingRepository implements PublishingRepository {
   constructor(private pool: Pool) {}
@@ -225,6 +226,7 @@ export class PgPublishingRepository implements PublishingRepository {
            values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
           [post.id, post.workspaceId, post.brandId, post.campaignId, post.assetId, post.versionId, post.publishCommandId, post.channel, post.accountRef, post.externalPostId, post.publishedAt,commandValue.publishedUrl??null],
         );
+        await enqueueInstagramMetricJobs(client,post.id,post.publishedAt);
       }
       await client.query("commit");
       return command(query.rows[0]);

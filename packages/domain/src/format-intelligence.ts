@@ -47,6 +47,16 @@ export interface FormatRecommendationInput {
   channel?: PublishChannel;
   objective?: FormatObjective;
   maxEffort?: ProductionEffort;
+  acceptedLearnings?: AcceptedFormatLearning[];
+}
+
+export interface AcceptedFormatLearning {
+  learningId: string;
+  format: PublishContentType;
+  channel?: PublishChannel;
+  confidence: number;
+  evidenceObservationIds: string[];
+  reason: string;
 }
 
 const CHANNELS: PublishChannel[] = ["linkedin", "instagram", "facebook", "manual"];
@@ -156,6 +166,7 @@ export function recommendFormats(input: FormatRecommendationInput = {}): FormatR
   const channel = input.channel === undefined ? undefined : one(input.channel, CHANNELS, "channel");
   const objective = input.objective === undefined ? undefined : one(input.objective, OBJECTIVES, "objective");
   const maxEffort = input.maxEffort === undefined ? undefined : one(input.maxEffort, EFFORTS, "maxEffort");
+  const acceptedLearnings = normalizeAcceptedLearnings(input.acceptedLearnings);
   const maxEffortRank = maxEffort === undefined ? Number.POSITIVE_INFINITY : effortRank(maxEffort);
 
   return FORMAT_INTELLIGENCE_CATALOG
@@ -175,10 +186,27 @@ export function recommendFormats(input: FormatRecommendationInput = {}): FormatR
       }
       if (!channel && !objective) reasons.push(`${profile.effort} production effort`);
       if (maxEffort) reasons.push(`Within the ${maxEffort} effort limit`);
+      for (const learning of acceptedLearnings) {
+        if (learning.format !== profile.key || (learning.channel && channel && learning.channel !== channel)) continue;
+        score += Math.min(12, Math.max(1, Math.round(learning.confidence * 12)));
+        reasons.push(`Accepted Brand Learning: ${learning.reason} (${learning.evidenceObservationIds.length} observations)`);
+      }
       return { profile, score, reasons, index };
     })
     .sort((a, b) => b.score - a.score || a.index - b.index)
     .map(({ profile, score, reasons }) => ({ profile, score, reasons }));
+}
+
+function normalizeAcceptedLearnings(value: AcceptedFormatLearning[] | undefined): AcceptedFormatLearning[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new DomainValidationError("acceptedLearnings must be a list");
+  return value.map((item, index) => {
+    if (!item || typeof item !== "object") throw new DomainValidationError(`acceptedLearnings[${index}] must be an object`);
+    if (typeof item.confidence !== "number" || !Number.isFinite(item.confidence) || item.confidence < 0 || item.confidence > 1) throw new DomainValidationError(`acceptedLearnings[${index}].confidence is invalid`);
+    const evidenceObservationIds = uniqueText(item.evidenceObservationIds, `acceptedLearnings[${index}].evidenceObservationIds`);
+    if (!evidenceObservationIds.length) throw new DomainValidationError(`acceptedLearnings[${index}] requires supporting evidence`);
+    return { learningId: text(item.learningId, `acceptedLearnings[${index}].learningId`, 200), format: one(item.format, CONTENT_TYPES, `acceptedLearnings[${index}].format`), ...(item.channel ? { channel: one(item.channel, CHANNELS, `acceptedLearnings[${index}].channel`) } : {}), confidence: item.confidence, evidenceObservationIds, reason: text(item.reason, `acceptedLearnings[${index}].reason`, 300) };
+  });
 }
 
 export function isFormatObjective(value: string): value is FormatObjective {

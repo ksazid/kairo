@@ -48,6 +48,7 @@ import{MetaChannelConnectionService}from"./meta-channel-connection";
 import{PgMetaConnectionRepository}from"./meta-channel-connection-postgres";
 import{registerMetaChannelConnectionRoutes}from"./meta-channel-connection-routes";
 import{InstagramMetricCollectionRunner,PgMetricCollectionJobStore}from"./instagram-metric-runner";
+import{PgInstagramInsightsStatusStore,registerInstagramInsightsRoutes}from"./instagram-insights-routes";
 import{
   executeMarketingShadowEvidenceAttempt,
   marketingShadowEvidenceRequestFromEnv,
@@ -56,6 +57,10 @@ import{
 }from"./marketing-shadow-evidence-run";
 import{directModelProviderDiagnosticRequested,runDirectModelProviderDiagnostic}from"./direct-model-diagnostic";
 import{PublicBrandReferenceHttpReader}from"./public-brand-reference";
+import{KairoInstagramPublisher}from"@kairo/domain/instagram-publisher";
+import{RepositoryInstagramPublishingOperations,StoredInstagramInsightsReader}from"./instagram-mcp-adapters";
+import{MetaMcpToolHandler}from"./meta-mcp-tools";
+import{registerMetaMcpRoutes}from"./meta-mcp-routes";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -68,6 +73,7 @@ const coreStore=new PgKairoRepository(pool);
 const researchStore=new PgResearchRepository(pool);
 const campaignStore=new PgCampaignRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
+const analyticsStore=new PgAnalyticsRepository(pool);
 const groupStore=new PgChannelAccountGroupRepository(pool);
 const contentAssetLibraryStore=new PgContentAssetLibraryRepository(pool);
 const operationsStore=new PgOperationsRepository(pool);
@@ -139,7 +145,7 @@ const app = buildApp({
   campaignStore,
   reviewStore:new PgReviewRepository(pool),
   publishingStore,
-  analyticsStore:new PgAnalyticsRepository(pool),
+  analyticsStore,
   learningStore:new PgLearningRepository(pool),
   ...(contentGenerator?{contentGenerator}:{}),
   ...(criticEvaluator?{criticEvaluator}:{}),
@@ -169,6 +175,8 @@ if(googleDrive){
 }
 registerGoogleDriveContentAssetRoutes(app,{coreStore,identityVerifier,...(googleDriveService?{service:googleDriveService}:{})});
 registerReadinessRoutes(app,{releaseSha:requiredEnv("KAIRO_RELEASE_SHA"),check:async()=>{await pool.query("select 1")}});
+registerInstagramInsightsRoutes(app,{coreStore,identityVerifier,store:new PgInstagramInsightsStatusStore(pool)});
+registerMetaMcpRoutes(app,{coreStore,identityVerifier,handler:new MetaMcpToolHandler(new KairoInstagramPublisher(new RepositoryInstagramPublishingOperations(publishingStore)),new StoredInstagramInsightsReader(analyticsStore))});
 
 const meta=metaInstagramConfig();
 let instagramMetricRunner:InstagramMetricCollectionRunner|undefined;

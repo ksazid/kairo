@@ -1,16 +1,15 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-77",
-  "title": "VS-77 — Visual Carousel Review & Verified Publishing",
+  "sliceId": "VS-78",
+  "title": "VS-78 — Instagram Performance Learning & Meta MCP",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
-    "FR-08",
-    "FR-11",
-    "FR-13",
-    "FR-15"
+    "FR-09",
+    "FR-15",
+    "FR-16"
   ],
   "owners": {
     "product": "Product Owner",
@@ -19,10 +18,11 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-20",
+    "VS-08",
+    "VS-09",
     "VS-34",
-    "VS-75",
-    "VS-76"
+    "VS-76",
+    "VS-77"
   ],
   "blockers": [],
   "allowedPaths": [
@@ -31,8 +31,8 @@
     "apps/worker/**",
     "packages/contracts/**",
     "packages/domain/**",
-    "docs/slices/VS-77.md",
-    "docs/plans/VS-77-implementation.md",
+    "docs/slices/VS-78.md",
+    "docs/plans/VS-78-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -43,7 +43,6 @@
   "impact": {
     "areas": [
       "architecture",
-      "frontend",
       "api",
       "database",
       "authorization",
@@ -52,9 +51,9 @@
       "operations-support"
     ],
     "notes": [
-      "Adds persisted rendered carousel versions and a visual per-slide review workflow.",
-      "Locks approval and publishing to the same immutable media version.",
-      "Adds short-lived storage delivery and bounded Meta processing verification.",
+      "Adds durable Instagram Insights ingestion and Brand-scoped learning feedback.",
+      "Adds replaceable Meta MCP tools over approved publishing abstractions.",
+      "Keeps Learning acceptance under explicit human authority.",
       "Does not enable production credentials, release or deployment."
     ]
   },
@@ -62,29 +61,29 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-77@1.0",
+      "version": "VS-78@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T04:15:00+02:00",
-      "rationale": "The Product Owner instructed completion of the next whole ten-task batch after exact-SHA approval and merge of VS-76."
+      "at": "2026-08-22T04:45:00+02:00",
+      "rationale": "The Product Owner instructed the next complete ten-task batch after merging VS-77."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-77@1.0",
+      "version": "VS-78@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice extends approved generated-media, object-storage, approval and provider-adapter boundaries without changing production policy."
+      "rationale": "The slice preserves existing tenant, approval, credential-vault and human-learning authority boundaries."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-77@1.0",
+      "version": "VS-78@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T04:15:00+02:00",
-      "rationale": "The Product Owner explicitly instructed the whole next batch to be completed before the next merge approval request."
+      "at": "2026-08-22T04:45:00+02:00",
+      "rationale": "The Product Owner explicitly instructed implementation of the next full batch."
     },
     {
       "type": "certification",
@@ -144,7 +143,7 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-77.md",
+    "specification": "docs/slices/VS-78.md",
     "implementationPr": null,
     "evidence": []
   },

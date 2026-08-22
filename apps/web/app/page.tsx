@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import type { BrandOpportunityDto } from "@kairo/contracts";
 import { KairoProductShell, KairoScopePicker } from "./kairo-product-shell";
 import { OpportunityList } from "./opportunity-list";
-import { getBrands, getOpportunities, getSession } from "../src/lib/kairo-api";
+import { getBrands, getLearnings, getOpportunities, getPerformance, getSession } from "../src/lib/kairo-api";
+import { buildPerformanceFeedback } from "../src/lib/performance-feedback-view-model";
+import { PerformanceFeedback } from "./performance-feedback";
 
 type SearchParams = Promise<{ workspace?: string; brand?: string; notice?: string; error?: string }>;
 
@@ -20,9 +22,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   let opportunities: BrandOpportunityDto[] = [];
   let opportunityError: string | null = null;
+  let feedback=buildPerformanceFeedback([],[]);
   if (brand) {
     try { opportunities = await getOpportunities(brand.id); }
     catch (error) { opportunityError = error instanceof Error ? error.message : "Unable to load Opportunities"; }
+    try{const[metrics,learnings]=await Promise.all([getPerformance(brand.id),getLearnings(brand.id)]);feedback=buildPerformanceFeedback(metrics,learnings)}catch{/* Recommendations remain available when feedback cannot be read. */}
   }
 
   const today = opportunities.filter((item) => item.status !== "ignored").slice(0, 3);
@@ -44,6 +48,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         {params.notice ? <p className="notice success" role="status">{params.notice}</p> : null}
         {params.error ? <p className="notice error" role="alert">{params.error}</p> : null}
         {opportunityError ? <p className="notice error" role="alert">{opportunityError}</p> : null}
+        {brand?<PerformanceFeedback brandId={brand.id} feedback={feedback} compact/>:null}
 
         <section className="today-opportunity-section today-primary" aria-labelledby="today-opportunities-title">
           <div className="today-section-heading">

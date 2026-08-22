@@ -251,3 +251,14 @@ export interface StructuredContentDevelopmentDto {
   recommendationRationale: string;
   project: ProductionContentProjectDto;
 }
+
+export type MetaMcpToolName="publish_reel"|"publish_carousel"|"publish_image"|"get_publish_status"|"get_instagram_insights";
+export type InstagramPublishToolInput={brandId:string;publishCommandId:string};
+export type GetPublishStatusToolInput={brandId:string;publishCommandId:string};
+export type GetInstagramInsightsToolInput={brandId:string;publishedPostId:string};
+export type MetaMcpToolInputMap={publish_reel:InstagramPublishToolInput;publish_carousel:InstagramPublishToolInput;publish_image:InstagramPublishToolInput;get_publish_status:GetPublishStatusToolInput;get_instagram_insights:GetInstagramInsightsToolInput};
+export type InstagramPublishToolResult={publishCommandId:string;status:"approved"|"publishing"|"processing"|"published"|"failed";containerId?:string;publishId?:string;publishedUrl?:string;failureReason?:string};
+export type InstagramInsightValue={name:string;status:"available"|"unavailable";value?:number;reason?:string;capturedAt:string};
+export type GetInstagramInsightsToolResult={publishedPostId:string;metrics:InstagramInsightValue[]};
+export type MetaMcpToolResultMap={publish_reel:InstagramPublishToolResult;publish_carousel:InstagramPublishToolResult;publish_image:InstagramPublishToolResult;get_publish_status:InstagramPublishToolResult;get_instagram_insights:GetInstagramInsightsToolResult};
+export interface MetaMcpToolDefinition{name:MetaMcpToolName;description:string;inputSchema:{type:"object";additionalProperties:false;required:readonly string[];properties:Record<string,{type:"string";minLength:number;maxLength:number}>}}

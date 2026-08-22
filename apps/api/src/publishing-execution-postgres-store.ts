@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { PublishingExecutionStore, PublishingJob, ProviderPublishResult } from "@kairo/worker/publishing";
+import{enqueueInstagramMetricJobs}from"./instagram-metric-runner";
 
 type ExecutableChannel = Exclude<PublishingJob["channel"], "manual">;
 
@@ -108,10 +109,12 @@ export class PgPublishingExecutionStore implements PublishingExecutionStore {
         [job.commandId, mapped.commandStatus, mapped.nextAttemptAt, job.leaseOwner,mapped.lifecycleStatus,"providerCorrelationId" in result?result.providerCorrelationId??null:null,result.status==="published"?result.externalPostId:null,"failureCode" in result?result.failureCode:result.status==="manual-required"?result.reason:result.status==="unknown"&&!result.providerCorrelationId?"provider-result-unknown":null,result.status==="published"?result.publishedUrl??null:null],
       );
       if (result.status === "published") {
+        const publishedPostId=randomUUID();
         await x.query(
           `insert into published_posts(id,workspace_id,brand_id,campaign_id,asset_id,version_id,publish_command_id,channel,account_ref,external_post_id,published_at,published_url) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-          [randomUUID(), r.workspace_id, r.brand_id, r.campaign_id, r.asset_id, r.version_id, r.id, r.channel, r.account_ref, result.externalPostId, at,result.publishedUrl??null],
+          [publishedPostId, r.workspace_id, r.brand_id, r.campaign_id, r.asset_id, r.version_id, r.id, r.channel, r.account_ref, result.externalPostId, at,result.publishedUrl??null],
         );
+        await enqueueInstagramMetricJobs(x,publishedPostId,at);
       }
       await x.query("commit");
     } catch (error) {

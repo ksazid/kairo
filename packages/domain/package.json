@@ -19,6 +19,7 @@
     "./review-service": "./src/review-service.ts",
     "./publishing": "./src/publishing.ts",
     "./publishing-service": "./src/publishing-service.ts",
+    "./instagram-publisher": "./src/instagram-publisher.ts",
     "./channel-account-groups": "./src/channel-account-groups.ts",
     "./channel-account-group-service": "./src/channel-account-group-service.ts",
     "./content-asset-library": "./src/content-asset-library.ts",

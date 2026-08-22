@@ -6,9 +6,10 @@ import {
   recommendFormats,
   type FormatObjective,
   type ProductionEffort,
+  type AcceptedFormatLearning,
 } from "@kairo/domain/format-intelligence";
 import type { PublishChannel } from "@kairo/domain/publishing";
-import { getBrand } from "../../../../src/lib/kairo-api";
+import { getBrand, getLearnings } from "../../../../src/lib/kairo-api";
 import { PilotMobileNav } from "../../../pilot-mobile-nav";
 import { KairoSidebar } from "../ideas/page";
 import "./formats.css";
@@ -39,7 +40,7 @@ const EFFORT_OPTIONS: Array<{ value: ProductionEffort; label: string }> = [
 
 export default async function FormatsPage({ params, searchParams }: { params: Params; searchParams: Search }) {
   const [{ brandId }, query] = await Promise.all([params, searchParams]);
-  const brand = await getBrand(brandId);
+  const [brand, learnings] = await Promise.all([getBrand(brandId), getLearnings(brandId).catch(() => [])]);
   if (!brand) {
     return <main className="auth-page"><section className="auth-card"><h1>Brand not found.</h1><Link className="primary-button" href="/">Return to Today</Link></section></main>;
   }
@@ -47,7 +48,8 @@ export default async function FormatsPage({ params, searchParams }: { params: Pa
   const channel = query.channel && isFormatChannel(query.channel) ? query.channel : undefined;
   const objective = query.objective && isFormatObjective(query.objective) ? query.objective : undefined;
   const maxEffort = query.effort && isProductionEffort(query.effort) ? query.effort : undefined;
-  const recommendations = recommendFormats({ channel, objective, maxEffort });
+  const acceptedLearnings: AcceptedFormatLearning[] = learnings.flatMap(item => { const format=item.applicability.format; if(item.status!=="accepted"||!isPublishFormat(format))return[];return[{ learningId: item.id, format, ...(isFormatChannel(item.applicability.channel ?? "") ? { channel: item.applicability.channel as PublishChannel } : {}), confidence: item.confidence, evidenceObservationIds: [...new Set(item.evidence.flatMap(group => group.metricObservationIds))], reason: item.statement }] });
+  const recommendations = recommendFormats({ channel, objective, maxEffort, acceptedLearnings });
   const base = `/brands/${encodeURIComponent(brand.id)}/formats`;
 
   return <div className="app-shell">
@@ -146,4 +148,8 @@ function Guidance({ title, items }: { title: string; items: readonly string[] })
 
 function objectiveLabel(value: FormatObjective) {
   return value === "conversation" ? "conversation" : value;
+}
+
+function isPublishFormat(value: string | undefined): value is "text" | "image" | "video" | "carousel" | "reel" {
+  return !!value && ["text", "image", "video", "carousel", "reel"].includes(value);
 }
