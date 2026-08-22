@@ -18,7 +18,7 @@ import {
   type CalendarStatus,
 } from "../../../../src/lib/calendar-view-model";
 import { PilotMobileNav } from "../../../pilot-mobile-nav";
-import { KairoSidebar } from "../ideas/page";
+import { KairoSidebar } from "../../../legacy-pilot-navigation";
 import { cancelPublishAction, retryPublishAction } from "./actions";
 
 type Params = Promise<{ brandId: string }>;

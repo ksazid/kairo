@@ -97,7 +97,7 @@ export class MetaDirectInstagramOAuthClient implements DirectInstagramOAuthPort 
     const profileUrl = new URL(`https://graph.instagram.com/${graph(this.graphVersion)}/${id}`);
     profileUrl.searchParams.set("fields", "id,user_id,username,name,biography,website,profile_picture_url,followers_count,media_count");
     const mediaUrl = new URL(`https://graph.instagram.com/${graph(this.graphVersion)}/${id}/media`);
-    mediaUrl.searchParams.set("fields", "id,caption,media_type,media_product_type,permalink,timestamp");
+    mediaUrl.searchParams.set("fields", "id,caption,media_type,media_product_type,permalink,media_url,thumbnail_url,timestamp,like_count,comments_count");
     mediaUrl.searchParams.set("limit", "25");
     const [profileResponse, mediaResponse] = await Promise.all([
       this.fetchImpl(profileUrl, { headers: { authorization: `Bearer ${token}` } }),
@@ -143,7 +143,7 @@ function mediaItem(value: unknown) {
   const row = value as Record<string, unknown>;
   const id = string(row.id)?.slice(0, 200);
   if (!id) return [];
-  return [{ id, ...optionalString(row.caption, "caption", 2_200), ...optionalString(row.media_type, "mediaType", 40), ...optionalString(row.media_product_type, "mediaProductType", 40), ...optionalHttps(row.permalink, "permalink"), ...optionalTimestamp(row.timestamp) }];
+  return [{ id, ...optionalString(row.caption, "caption", 2_200), ...optionalString(row.media_type, "mediaType", 40), ...optionalString(row.media_product_type, "mediaProductType", 40), ...optionalHttps(row.permalink, "permalink"), ...optionalHttps(row.media_url, "mediaUrl"), ...optionalHttps(row.thumbnail_url, "thumbnailUrl"), ...optionalTimestamp(row.timestamp), ...optionalCount(row.like_count, "likeCount"), ...optionalCount(row.comments_count, "commentsCount") }];
 }
 function scopes(value: unknown): string[] { return Array.isArray(value) ? [...new Set(value.filter((item): item is string => typeof item === "string" && !!item.trim()).map((item) => item.trim()))].sort() : [...DIRECT_SCOPES]; }
 function string(value: unknown): string | undefined { return typeof value === "string" && value.trim() ? value.trim() : undefined; }
@@ -151,7 +151,7 @@ function numeric(value: unknown): string | undefined { const valueString = typeo
 function integer(value: unknown): number { const parsed = typeof value === "number" ? value : Number(value); return Number.isFinite(parsed) ? Math.floor(parsed) : 0; }
 function optionalString(value: unknown, key: string, max: number) { const normalized = string(value)?.slice(0, max); return normalized ? { [key]: normalized } : {}; }
 function optionalHttps(value: unknown, key: string) { const normalized = string(value); if (!normalized) return {}; try { const url = new URL(normalized); return url.protocol === "https:" ? { [key]: url.toString() } : {}; } catch { return {}; } }
-function optionalCount(value: unknown, key: string) { const count = integer(value); return count >= 0 && count <= Number.MAX_SAFE_INTEGER ? { [key]: count } : {}; }
+function optionalCount(value: unknown, key: string) { if(value===null||value===undefined||value==="")return{};const count=typeof value==="number"?value:Number(value);return Number.isSafeInteger(count)&&count>=0?{[key]:count}:{}; }
 function optionalTimestamp(value: unknown) { const normalized = string(value); return normalized && Number.isFinite(Date.parse(normalized)) ? { timestamp: new Date(normalized).toISOString() } : {}; }
 async function json(response: Response): Promise<unknown> { try { return await response.json(); } catch { throw new Error("Meta provider returned invalid JSON"); } }
 function providerError(operation: string, status: number) { return new Error(`Meta Instagram Login ${operation} failed with HTTP ${status}`); }

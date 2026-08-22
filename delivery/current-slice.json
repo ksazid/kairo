@@ -1,16 +1,21 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-81",
-  "title": "VS-81 — UI Feedback and Discovery",
-  "status": "completed",
-  "lifecycle": "certified",
-  "riskLevel": "medium",
+  "sliceId": "VS-82",
+  "title": "VS-82 — Remaining Instagram Completion",
+  "status": "active",
+  "lifecycle": "testing",
+  "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
+    "FR-02",
     "FR-03",
-    "FR-05",
-    "FR-13",
-    "FR-15"
+    "FR-04",
+    "FR-11",
+    "FR-15",
+    "FR-16",
+    "FR-17",
+    "FR-18",
+    "FR-20"
   ],
   "owners": {
     "product": "Product Owner",
@@ -19,17 +24,28 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-79",
-    "VS-80"
+    "VS-73",
+    "VS-74",
+    "VS-75",
+    "VS-77",
+    "VS-78",
+    "VS-81"
   ],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/**",
     "apps/api/**",
+    "apps/web/**",
+    "apps/worker/**",
     "packages/contracts/**",
-    "docs/slices/VS-81.md",
-    "docs/plans/VS-81-implementation.md",
+    "packages/domain/**",
+    "product/**",
+    "planning/**",
+    "decisions/**",
+    "docs/slices/VS-82.md",
+    "docs/plans/VS-82-implementation.md",
     "delivery/**",
+    "scripts/**",
+    "README.md",
     ".engineering/STATE.json"
   ],
   "protectedPaths": [
@@ -39,52 +55,56 @@
   "impact": {
     "areas": [
       "frontend",
+      "api",
+      "architecture",
+      "sensitive-data",
       "customer-flow",
+      "analytics",
       "operations-support"
     ],
     "notes": [
-      "Adds truthful Brand-scoped notifications and on-demand discovery.",
-      "Improves feedback, loading, channel identity and accessibility states.",
-      "Preserves every existing feature and route.",
-      "Does not enable production credentials, release or deployment."
+      "Completes bounded Instagram source analysis, Brand asset rendering and Performance Memory.",
+      "Extends existing provider-neutral and private-object boundaries instead of coupling domain code to Meta or storage.",
+      "Production verification remains credential-safe, exact-SHA bound and human controlled.",
+      "No release, deployment or production enablement is authorized."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-81@1.0",
+      "version": "VS-82@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner instructed proceeding with the next ten-task UI batch."
+      "at": "2026-08-22T06:35:00+02:00",
+      "rationale": "The Product Owner supplied the remaining task list and instructed Kairo to combine related tasks and start fixing them."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-81@1.0",
+      "version": "VS-82@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice is bounded to presentation, navigation and accessibility and does not weaken product or security controls."
+      "rationale": "Existing decisions govern Brand isolation, owner-reviewed inference, private media, deterministic publishing, human Learning acceptance and official channel adapters. The slice does not weaken those controls."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-81@1.0",
+      "version": "VS-82@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner explicitly instructed proceeding with implementation."
+      "at": "2026-08-22T06:35:00+02:00",
+      "rationale": "The Product Owner explicitly instructed implementation after combining the related remaining tasks."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-81@1.0",
-      "commitSha": "b2e0d8ded7255c6722222218e26eccf674e0a4ec",
-      "by": "Sazid Khan",
-      "at": "2026-08-22T06:20:00+02:00",
-      "rationale": "Product Owner approved the exact VS-81 head after Product Intake #723, Security baseline #869 and CI #1043 passed; it merged as 572fdc390c27a802ac2b0a83c3a4b6c7a9dfa47b."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "release",
@@ -110,23 +130,20 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "testing": 80,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "b2e0d8ded7255c6722222218e26eccf674e0a4ec",
+    "status": "not-started",
+    "commitSha": null,
     "evidence": [
-      "GitHub PR #154 Product Intake #723 passed",
-      "GitHub PR #154 Security baseline #869 passed",
-      "GitHub PR #154 CI #1043 passed",
-      "PR #154 exact approved head b2e0d8ded7255c6722222218e26eccf674e0a4ec merged as 572fdc390c27a802ac2b0a83c3a4b6c7a9dfa47b",
-      "runtime:typecheck passed",
-      "runtime:test passed: 618 tests, 37 skipped",
-      "runtime:build passed",
-      "slice validation and diff checks passed"
+      "Local TypeScript checks passed for Domain, Worker, API and Web",
+      "Local deterministic suite passed: 660 tests; 38 environment-gated tests skipped; 0 failures",
+      "Next.js production build passed with webpack after correcting a page-module export contract",
+      "Lock, JSON, governance, dashboard, script syntax and diff checks passed",
+      "Fresh-Idea PostgreSQL concurrency regression is implemented and awaits deployed-database execution"
     ]
   },
   "release": {
@@ -144,14 +161,15 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-81.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/154",
+    "specification": "docs/slices/VS-82.md",
+    "implementationPr": null,
     "evidence": [
-      "docs/slices/VS-81.md",
-      "apps/api/src/brand-notifications-postgres.test.ts",
-      "apps/api/src/command-search-routes.test.ts",
-      "apps/web/src/lib/ui-states.test.ts",
-      "https://github.com/ksazid/kairo/pull/154"
+      "docs/slices/VS-82.md",
+      "apps/api/src/instagram-source-intelligence.test.ts",
+      "apps/api/src/instagram-visual-analysis.test.ts",
+      "apps/worker/src/creative-renderer.test.ts",
+      "apps/worker/src/performance-patterns.test.ts",
+      "apps/api/src/vs04-postgres-research.integration.test.ts"
     ]
   },
   "maxAttempts": 3

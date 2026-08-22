@@ -122,7 +122,7 @@ describe("VS-17 Meta Instagram OAuth adapter", () => {
       const url = String(input);
       calls.push({ url, authorization: new Headers(init?.headers).get("authorization") });
       if (url.includes("/111/media?")) return new Response(JSON.stringify({ data: [
-        { id: "m1", caption: "Hello", media_type: "IMAGE", media_product_type: "FEED", permalink: "https://www.instagram.com/p/m1/", timestamp: "2026-08-14T10:00:00Z" },
+        { id: "m1", caption: "Hello", media_type: "IMAGE", media_product_type: "FEED", permalink: "https://www.instagram.com/p/m1/", media_url: "https://cdn.example/m1.jpg", thumbnail_url: "http://unsafe.example/m1.jpg", like_count: 42, comments_count: 4, timestamp: "2026-08-14T10:00:00Z" },
         { id: "m2", caption: "x".repeat(3_000), media_type: "VIDEO", permalink: "javascript:bad" },
         { caption: "missing id" },
       ] }), { status: 200 });
@@ -134,6 +134,8 @@ describe("VS-17 Meta Instagram OAuth adapter", () => {
     expect(snapshot).toMatchObject({ accountRef: "111", username: "brandone", biography: "Useful bio", website: "https://brand.example/", category: "Marketing Agency", businessAbout: "Page-level positioning", businessPhone: "+356 2000 0000", businessEmails: ["hello@brand.example"], followersCount: 42, mediaCount: 8 });
     expect(snapshot).not.toHaveProperty("profilePictureUrl");
     expect(snapshot.recentMedia).toHaveLength(2);
+    expect(snapshot.recentMedia[0]).toMatchObject({ mediaUrl: "https://cdn.example/m1.jpg", likeCount: 42, commentsCount: 4 });
+    expect(snapshot.recentMedia[0]).not.toHaveProperty("thumbnailUrl");
     expect(snapshot.recentMedia[1]?.caption).toHaveLength(2_200);
     expect(snapshot.recentMedia[1]).not.toHaveProperty("permalink");
     expect(calls.every((call) => !call.url.includes("page-secret") && call.authorization === "Bearer page-secret")).toBe(true);

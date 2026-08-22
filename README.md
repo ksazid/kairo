@@ -49,7 +49,7 @@ Kairo uses the approved **PES Web/AI profile** direction:
 
 ## Current state
 
-Runtime delivery is certified and merged through **VS-20 Publishable Creative Media Pipeline**. **VS-21 Pilot End-to-End Validation and Hardening is now in exact-SHA certification** on a frozen runtime. Its deterministic matrix composes the existing Kairo loop across all four proof sectors and both carousel/Reel paths, while the pilot UI now exposes the already-implemented workflow with recoverable high-risk read states. Real deployed Auth0 callback and production Meta publish/Insights smoke remain explicit external operational evidence rather than simulated PASS. Release, deployment and production enablement remain separate human approvals.
+Runtime delivery is merged through **VS-81**. **VS-82 Remaining Instagram Completion** is active, combining Instagram source/visual intelligence and health, approved Brand asset rendering, deterministic thumbnail lineage, dimension-specific Performance Memory, and final authenticated verification. Existing Brand Brain, Advanced details, human approval and deterministic publishing controls remain intact. Release, deployment and production enablement remain separate exact-SHA human approvals.
 
 ## Feature ledger
 
@@ -78,7 +78,7 @@ Status terms:
 | Instagram Insights | Implemented / governed foundation | Scoped Insights collection, metric jobs, unavailable/retry states and provenance-backed ingestion. |
 | LinkedIn publishing | Implemented / governed foundation | Official organization publishing adapter boundary and governed scheduling/publishing flow. |
 | Performance tracking | Implemented / governed | Raw/normalised metric model, provenance, asynchronous collection boundary and Brand baselines. |
-| Performance learning | Implemented / governed | Evidence-scoped Candidate Learnings with cautious correlation and bounded next-experiment proposals. |
+| Performance learning | Implemented / governed | Evidence-scoped Candidate Learnings with topic/hook/structure/template/format/timing patterns, cautious correlation, owner acceptance and bounded next-experiment proposals. |
 | Pilot operations / safety / cost | Implemented / governed | Operational states, retries, intervention/safety controls and bounded runtime/cost behavior. |
 | Pilot end-to-end readiness | Certification candidate | VS-21 composes the real Hunter → Research/Claims → Strategy → Content → Truth/Review → human approval → generated carousel/Reel media → publishing → metrics → Candidate Learning contracts across four proof sectors, with cross-Brand rejection and explicit external provider-smoke boundaries. |
 | Carousel asset production | Implemented / governed | Deterministic Claim-linked PNG slides with stable renderer/source fingerprints and private Brand-scoped object keys. |

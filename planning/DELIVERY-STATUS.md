@@ -3,19 +3,20 @@
 Project health: AMBER
 
 Requirements: 20 approved (`FR-01..FR-20`)
-Planned slices: 10 (`VS-01..VS-10`)
-Active slice: none
-Implementation mode: specification-only
+Planned/delivered slices: governed history through `VS-81`
+Active slice: `VS-82 — Remaining Instagram Completion`
+Implementation mode: runtime-enabled on `feature/vs82-remaining-instagram-completion`
 PES profile: `pes-web-ai`
 Pending decisions: DEC-001, DEC-002, DEC-003, DEC-004
 
 ## Current gate
 
-PES intake and planning. Runtime implementation is not authorised.
+VS-82 implementation and deterministic verification. Scope and runtime implementation are approved; certification, merge, release, deployment and production enablement remain pending exact-SHA gates.
 
 ## Next action
 
-1. Pass Product Intake, CI and Security checks for this planning PR.
-2. Review the proposed slice decomposition.
-3. Resolve DEC-001 and DEC-002 before VS-01 runtime implementation.
-4. Record typed scope and implementation approval before activating runtime work.
+1. Complete runtime, migration, build, security and governance checks for VS-82.
+2. Run the fresh-Idea concurrent Research integration check with PostgreSQL.
+3. Run the exact-SHA authenticated multi-Brand Brand → Publish read verification against an authorised deployed environment.
+4. Preserve smoke evidence, then close temporary PR/branch resources and issue #142 only when their production criteria pass.
+5. Request exact-SHA merge approval for the completed VS-82 head.

@@ -4,7 +4,7 @@ document_id: CIE-PRD-001
 version: 1.0
 status: Approved
 owner: Product
-last_updated: 2026-08-12
+last_updated: 2026-08-22
 used_by:
   - CIE TRD
   - CIE Design Baseline
@@ -265,8 +265,12 @@ Users can register, sign in, sign out, recover access, create or join a Workspac
 ### FR-02 — Brand creation
 The user can create multiple Brands. Minimum creation should remain extremely lightweight. Initial inputs may be Brand name, Website or social profile, and what the Brand does. Where possible, CIE may research supplied public sources and propose an initial Brand Brain. The user confirms or corrects material information before it becomes authoritative Brand context.
 
+Brand onboarding keeps both sources available in Brand Brain permanently and offers four combinable choices: Connect Instagram (recommended, Professional account through Instagram Login without requiring a Facebook Page), Connect Facebook + Instagram, Connect Facebook only, and Paste Website (optional). Website and channel adapters used during onboarding are the same replaceable adapters used for later refresh, reconnect, replacement and removal.
+
 ### FR-03 — Brand Brain
 The user can inspect and modify positioning, audience, goals, voice, content pillars, preferred topics, prohibited subjects, examples, language, geography, channels and Brand knowledge. AI-inferred and user-confirmed information must remain distinguishable where material.
+
+Brand Brain also presents source health and accepted Performance Memory. Connection health includes granted permissions, last verification/synchronisation, expiry, failures and one recovery action without exposing credentials. Imported Instagram profile/content and bounded visual analysis may propose positioning, audience, voice, palette, imagery or typography directions, but these remain evidence-linked suggestions until the owner confirms them.
 
 ### FR-04 — Knowledge and sources
 Users can add approved knowledge using supported sources including URLs, websites, documents, notes, pasted material, research and product information. CIE tracks provenance where available. A Brand source can be enabled, disabled, replaced or removed. Removing private source material must respect deletion and derived-memory policies defined by the TRD.
@@ -292,6 +296,8 @@ An approved Idea/Angle becomes a **Campaign**, the parent object for multiple ch
 ### FR-11 — Content Studio
 The Content Studio provides a quiet content-first editing environment. The user can view generated content, edit manually, request alternatives, simplify, expand, adjust technical depth, strengthen the opening, regenerate a section, inspect supporting evidence and compare versions. CIE stores useful content metadata including Brand, audience, objective, channel, format, topic, Angle, hook type, CTA, source Idea and Campaign. AI controls must not dominate the interface.
 
+Instagram creation supports structured Carousel, Reel and image output. Carousel structures include AIDA, PAS, listicle, case study, story and comparison. Finished media is rendered and reviewed visually; users can edit slide text, replace imagery, reorder slides, switch templates and regenerate one slide. Approved Brand logos, imagery, palette and supported fonts are applied by the renderer. Unsupported assets fail closed. Rendered media and deterministic thumbnails retain immutable Content → Asset → Asset Version lineage.
+
 ### FR-12 — Drafter, Critic and Judge
 Content generation and evaluation must be logically separated. The Drafter produces candidate content. The Critic evaluates content independently against the relevant rubric, which may include truth/evidence, Brand fit, audience fit, clarity, usefulness, originality, hook quality, structural quality, CTA and channel fit. The Judge selects the strongest candidate or hook when multiple valid alternatives exist. Hard failures such as fabricated experience, unsupported factual claims, prohibited Brand language or serious policy breaches cannot be compensated by a high overall score. Revision loops must be bounded.
 
@@ -304,14 +310,20 @@ Users can view upcoming content across one or multiple Brands. The calendar supp
 ### FR-15 — Publishing
 For supported integrations, CIE can publish approved content. The system records channel, destination account, external post identifier, publication status, publication time and failure/retry state. Publishing infrastructure must be deterministic rather than delegated to unrestricted agent behaviour. Failed publication must never silently appear successful.
 
+Instagram publishing uses a replaceable `InstagramPublisher` beneath Meta MCP tools for account discovery, image/Reel/carousel publication, status and Insights. Meta receives temporary public delivery URLs for the exact approved asset version. State progresses through Approved → Publishing → Processing → Published or Failed, retaining Meta container/publish IDs, retries, failure reason and published URL.
+
 ### FR-16 — Performance tracking
 Published posts retain their original content lineage. Where supported, CIE captures relevant metrics such as impressions, reach, views, watch time, retention, likes, comments, shares, saves, clicks, followers, leads, conversions and attributable revenue where reliable evidence exists. Metrics unavailable from a channel must be clearly labelled unavailable. CIE may compare a post with the Brand's normal baseline.
 
 ### FR-17 — Performance Intelligence
 The Performance experience should answer three questions: What happened? Why might it have happened? What should we do next? It summarises meaningful results, identifies evidence-supported patterns without overstating causation, and recommends a practical next content experiment or change. The primary experience must be narrative and action-oriented rather than a wall of charts.
 
+Comparable Brand-scoped posts may produce separate topic, hook, structure, template, format and timing pattern candidates. Every candidate retains the exact post and metric observations used, excludes unavailable measurements rather than treating them as zero, and describes correlation without claiming causation.
+
 ### FR-18 — Brand Learning
 CIE can derive candidate Learnings from repeated behaviour and measured results. Each Learning should retain supporting posts/data, relevant time period, confidence, applicable audience/channel, date learned and contradictory evidence where relevant. Users may accept, reject or correct important Learnings. A Learning is not permanent truth; new evidence can reduce confidence or supersede it.
+
+Only owner-accepted Learnings enter Brand Brain Performance Memory or influence later recommendations. Confirmed Brand facts are never overwritten by performance inference. Where an accepted format pattern is applicable, Kairo may use it as an explainable ranking input for the next recommended execution.
 
 ### FR-19 — Experiments
 CIE supports intentional content experimentation. An Experiment may define Hypothesis, Variant A, Variant B, Primary metric, Result and Learning. Experiment results become Brand Intelligence only when supported by sufficient evidence.

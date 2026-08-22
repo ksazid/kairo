@@ -107,6 +107,21 @@
 .brain-source-card-actions form { margin: 0; }
 .brain-source-card strong { color: var(--k-neutral-900); font-size: 14px; overflow-wrap: anywhere; }
 .brain-source-card small { color: var(--k-neutral-400); font-size: 11px; line-height: 16px; }
+.connection-health-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; margin: 8px 0 0; }
+.connection-health-details div { display: grid; gap: 1px; }
+.connection-health-details dt { color: var(--k-neutral-400); font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.connection-health-details dd { margin: 0; color: var(--k-neutral-700); font-size: 11px; line-height: 16px; }
+.connection-health-details .connection-health-recovery { grid-column: 1 / -1; padding: 7px 9px; border-radius: var(--k-radius-sm); background: color-mix(in srgb, var(--k-warning) 12%, transparent); }
+.performance-memory-panel { display: grid; gap: 16px; }
+.performance-memory-list { display: grid; gap: 10px; }
+.performance-memory-item { display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-md); background: var(--k-neutral-50); }
+.performance-memory-item > div { display: grid; gap: 3px; }
+.performance-memory-item strong { color: var(--k-neutral-900); font-size: 14px; }
+.performance-memory-item span,.brain-memory-empty { color: var(--k-neutral-500); font-size: 12px; line-height: 18px; }
+.performance-memory-item ul { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.performance-memory-item li { display: grid; gap: 2px; padding: 9px; border-radius: var(--k-radius-sm); background: var(--k-neutral-100); }
+.performance-memory-item li b { color: var(--k-primary); font-size: 10px; letter-spacing: .05em; text-transform: uppercase; }
+.performance-memory-item li small { color: var(--k-neutral-500); line-height: 16px; }
 .source-kind { color: var(--k-neutral-400); font-size: 10px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
 .meta-candidate-list { width: 100%; display: grid; gap: 10px; }
 .meta-candidate-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px; border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-md); background: var(--k-neutral-50); }

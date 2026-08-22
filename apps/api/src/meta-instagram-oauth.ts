@@ -65,7 +65,7 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
     const profileUrl = new URL(`https://graph.facebook.com/${graph(this.graphVersion)}/${encodeURIComponent(id)}`);
     profileUrl.searchParams.set("fields", "id,username,name,biography,website,profile_picture_url,followers_count,media_count");
     const mediaUrl = new URL(`https://graph.facebook.com/${graph(this.graphVersion)}/${encodeURIComponent(id)}/media`);
-    mediaUrl.searchParams.set("fields", "id,caption,media_type,media_product_type,permalink,timestamp");
+    mediaUrl.searchParams.set("fields", "id,caption,media_type,media_product_type,permalink,media_url,thumbnail_url,timestamp,like_count,comments_count");
     mediaUrl.searchParams.set("limit", "25");
     const pageUrl = pageRef ? new URL(`https://graph.facebook.com/${graph(this.graphVersion)}/${encodeURIComponent(numericId(pageRef))}`) : undefined;
     pageUrl?.searchParams.set("fields", "category,about,website,phone,emails");
@@ -83,7 +83,7 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
       if (!item || typeof item !== "object") return [];
       const row = item as Record<string, unknown>;
       const mediaId = safeString(row.id, 200); if (!mediaId) return [];
-      return [{ id: mediaId, ...optionalString(row.caption, "caption", 2_200), ...optionalString(row.media_type, "mediaType", 40), ...optionalString(row.media_product_type, "mediaProductType", 40), ...optionalHttps(row.permalink, "permalink"), ...optionalTimestamp(row.timestamp) }];
+      return [{ id: mediaId, ...optionalString(row.caption, "caption", 2_200), ...optionalString(row.media_type, "mediaType", 40), ...optionalString(row.media_product_type, "mediaProductType", 40), ...optionalHttps(row.permalink, "permalink"), ...optionalHttps(row.media_url, "mediaUrl"), ...optionalHttps(row.thumbnail_url, "thumbnailUrl"), ...optionalTimestamp(row.timestamp), ...optionalCount(row.like_count, "likeCount"), ...optionalCount(row.comments_count, "commentsCount") }];
     });
     return {
       accountRef: id,

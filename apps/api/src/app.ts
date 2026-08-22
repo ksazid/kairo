@@ -278,6 +278,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
 
   if (learning) {
     app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/learnings", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return learning.list(account.id, request.params.brandId); });
+    app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/performance-patterns", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return learning.patterns(account.id, request.params.brandId); });
     app.post<{ Params: { brandId: string; learningId: string }; Body: { action: "accept" | "reject" | "correct"; expectedVersion: number; reason?: string; statement?: string; interpretation?: string } }>("/api/v1/brands/:brandId/learnings/:learningId/decision", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return learning.decide(account.id, request.params.brandId, request.params.learningId, request.body); });
     app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/experiments", async (request, reply) => { const account = await authenticate(request, reply, service, options.identityVerifier); if (!account) return; return learning.experiments(account.id, request.params.brandId); });
   }

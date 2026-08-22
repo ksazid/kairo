@@ -67,4 +67,20 @@ describePostgres("PostgreSQL VS-04 Research and Angles repository", () => {
     expect(selected.filter((angle) => angle.status === "selected").map((angle) => angle.id)).toEqual(["angle-2"]);
     await expect(repository.selectAngle(alice.account.id, alice.brand.id, idea.id, "angle-1", 1)).rejects.toThrow(/version/i);
   });
+
+  it("keeps a fresh Idea idempotent under concurrent Research and Angle persistence", async () => {
+    const alice=await owner("concurrent-alice"),idea=createIdea({id:"fresh-concurrent-idea",workspaceId:alice.workspace.id,brandId:alice.brand.id,title:"Fresh concurrent research",premise:"Persist one bounded result",source:{type:"user"},createdAt:"2026-08-22T06:00:00.000Z"});
+    await repository.createIdea(alice.account.id,idea);
+    const dossier=(suffix:string)=>createResearchDossier({id:`research-${suffix}`,workspaceId:alice.workspace.id,brandId:alice.brand.id,ideaId:idea.id,summary:`Supported summary ${suffix}`,evidence:[{id:`evidence-${suffix}`,sourceUrl:`https://example.com/${suffix}`,sourceTitle:`Source ${suffix}`,retrievedAt:"2026-08-22T06:01:00.000Z"}],claims:[{id:`claim-${suffix}`,text:`Supported claim ${suffix}.`,classification:"fact",confidence:.9,evidenceStrength:"strong",verificationState:"supported",freshness:"fresh",evidenceIds:[`evidence-${suffix}`],firstPersonAuthorization:"not-applicable"}],unresolvedUncertainties:["The bounded test does not establish causation."],createdAt:"2026-08-22T06:02:00.000Z"});
+    await Promise.all([repository.saveResearchDossier(alice.account.id,dossier("a")),repository.saveResearchDossier(alice.account.id,dossier("b"))]);
+    const persisted=await repository.getIdeaBundle(alice.account.id,alice.brand.id,idea.id);
+    expect(persisted?.research).not.toBeNull();
+    expect((await pool.query(`select count(*)::int count from research_dossiers where idea_id=$1`,[idea.id])).rows[0]?.count).toBe(1);
+    const claimId=persisted!.research!.claims[0]!.id,base={workspaceId:alice.workspace.id,brandId:alice.brand.id,ideaId:idea.id,audience:"Owners",objective:"Education",hookDirection:"Evidence first",expectedValue:"Clarity",effort:"low"as const,recommendedFormat:"carousel",recommendedChannel:"instagram",supportingClaimIds:[claimId],status:"candidate"as const,version:1};
+    const angles=(suffix:string):Angle[]=>[{...base,id:`angle-${suffix}-1`,title:`Angle ${suffix} one`,framing:"First bounded frame"},{...base,id:`angle-${suffix}-2`,title:`Angle ${suffix} two`,framing:"Second bounded frame"}];
+    await Promise.all([repository.saveCandidateAngles(alice.account.id,angles("a")),repository.saveCandidateAngles(alice.account.id,angles("b"))]);
+    const rows=await pool.query(`select id from angles where idea_id=$1 order by id`,[idea.id]);
+    expect(rows.rows).toHaveLength(2);
+    expect(new Set(rows.rows.map(row=>String(row.id).split("-")[1])).size).toBe(1);
+  });
 });

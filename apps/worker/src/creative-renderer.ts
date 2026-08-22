@@ -11,6 +11,7 @@ export const INSTAGRAM_CAROUSEL_PRESET = Object.freeze({ width: 1080, height: 13
 const PNG_SIGNATURE = Buffer.from([137,80,78,71,13,10,26,10]);
 
 type Rgb = readonly [number, number, number];
+export interface ApprovedRasterAsset { id:string; approved:true; width:number; height:number; channels:3|4; pixels:Uint8Array }
 export interface CreativeRenderTheme {
   width?: number;
   height?: number;
@@ -20,6 +21,10 @@ export interface CreativeRenderTheme {
   headingFontLabel?: string;
   bodyFontLabel?: string;
   logoAssetId?: string;
+  logoAsset?: ApprovedRasterAsset;
+  imageryAsset?: ApprovedRasterAsset;
+  headingFontAssetId?: "kairo-bitmap-regular";
+  bodyFontAssetId?: "kairo-bitmap-regular";
   logoPlacement?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "none";
 }
 export interface CreativeTextLayoutMetric { role: "cover" | "headline" | "body" | "cta"; alignment: "left" | "center" | "right"; lineCount: number; characterCount: number; x: number; y: number; width: number; height: number }
@@ -35,7 +40,7 @@ export interface CreativeLayoutMetrics {
   headingFontLabel: string;
   bodyFontLabel: string;
 }
-export type CreativeArtifactRole = "carousel-slide" | "reel-storyboard" | "reel-render-manifest";
+export type CreativeArtifactRole = "carousel-slide" | "carousel-thumbnail" | "reel-storyboard" | "reel-thumbnail" | "reel-render-manifest";
 export interface RenderedCreativeArtifact {
   role: CreativeArtifactRole;
   filename: string;
@@ -120,8 +125,9 @@ export class CreativeAssetProductionService {
       ? this.carouselRenderer.render(validateCarouselPlan(plan), normalizeTheme("carousel", theme))
       : renderCreativePlan(plan, theme);
     if (plan.format === "carousel") validateCarouselRendererOutput(rendered, validateCarouselPlan(plan), normalizeTheme("carousel", theme), this.carouselRenderer.version);
+    const artifacts=[...rendered.artifacts,thumbnailArtifact(rendered)];
     let total = 0;
-    for (const artifact of rendered.artifacts) {
+    for (const artifact of artifacts) {
       if (artifact.bytes.byteLength > this.maxArtifactBytes) throw new Error("Generated artifact size exceeds configured artifact size bound");
       total += artifact.bytes.byteLength;
     }
@@ -129,7 +135,7 @@ export class CreativeAssetProductionService {
     const scopeKey = sha256(Buffer.from(`${scope.workspaceId}\u0000${scope.brandId}`)).slice(0, 24);
     const assets: StoredCreativeAsset[] = [];
     const objectKeys = new Set<string>();
-    for (const artifact of rendered.artifacts) {
+    for (const artifact of artifacts) {
       const objectKey = `generated/${scopeKey}/${rendered.format}/${rendered.sourceFingerprint}/${artifact.filename}`;
       if (objectKeys.has(objectKey)) throw new Error("Generated creative object keys must be unique");
       objectKeys.add(objectKey);
@@ -159,10 +165,15 @@ export class CreativeAssetProductionService {
   }
 }
 
-export interface NormalizedCreativeRenderTheme { width: number; height: number; background: Rgb; foreground: Rgb; accent: Rgb; headingFontLabel: string; bodyFontLabel: string; logoPlacement: NonNullable<CreativeRenderTheme["logoPlacement"]>; logoAssetId?: string }
+export interface NormalizedCreativeRenderTheme { width: number; height: number; background: Rgb; foreground: Rgb; accent: Rgb; headingFontLabel: string; bodyFontLabel: string; headingFontAssetId:"kairo-bitmap-regular"; bodyFontAssetId:"kairo-bitmap-regular"; logoPlacement: NonNullable<CreativeRenderTheme["logoPlacement"]>; logoAssetId?: string; logoAsset?:ApprovedRasterAsset; imageryAsset?:ApprovedRasterAsset }
 function normalizeTheme(format: "carousel" | "reel", input: CreativeRenderTheme): NormalizedCreativeRenderTheme {
   const width = dimension(input.width ?? 1080, "width", 64, 2160);
   const height = dimension(input.height ?? (format === "carousel" ? INSTAGRAM_CAROUSEL_PRESET.height : 1920), "height", 64, 3840);
+  const logoAsset=input.logoAsset?approvedRaster(input.logoAsset,"logoAsset"):undefined,imageryAsset=input.imageryAsset?approvedRaster(input.imageryAsset,"imageryAsset"):undefined,placement=logoPlacement(input.logoPlacement ?? "none");
+  const logoAssetId=input.logoAssetId?label(input.logoAssetId,"logoAssetId"):logoAsset?.id;
+  if(logoAssetId&&!logoAsset)throw new Error("Creative logoAssetId requires an approved resolved logoAsset");
+  if(logoAsset&&logoAssetId!==logoAsset.id)throw new Error("Creative logoAssetId does not match the approved logoAsset");
+  if(logoAsset&&placement==="none")throw new Error("Creative approved logoAsset requires a visible logoPlacement");
   return {
     width,
     height,
@@ -171,10 +182,16 @@ function normalizeTheme(format: "carousel" | "reel", input: CreativeRenderTheme)
     accent: color(input.accent ?? [72,92,75], "accent"),
     headingFontLabel: label(input.headingFontLabel ?? "Kairo Bitmap", "headingFontLabel"),
     bodyFontLabel: label(input.bodyFontLabel ?? "Kairo Bitmap", "bodyFontLabel"),
-    logoPlacement: logoPlacement(input.logoPlacement ?? "none"),
-    ...(input.logoAssetId ? { logoAssetId: label(input.logoAssetId, "logoAssetId") } : {}),
+    headingFontAssetId:fontAsset(input.headingFontAssetId??"kairo-bitmap-regular","headingFontAssetId"),
+    bodyFontAssetId:fontAsset(input.bodyFontAssetId??"kairo-bitmap-regular","bodyFontAssetId"),
+    logoPlacement: placement,
+    ...(logoAssetId ? { logoAssetId } : {}),
+    ...(logoAsset?{logoAsset}:{}),
+    ...(imageryAsset?{imageryAsset}:{}),
   };
 }
+function fontAsset(value:unknown,field:string):"kairo-bitmap-regular"{if(value!=="kairo-bitmap-regular")throw new Error(`Creative ${field} is unsupported`);return value}
+function approvedRaster(value:ApprovedRasterAsset,field:string):ApprovedRasterAsset{if(!value||value.approved!==true)throw new Error(`Creative ${field} must be approved`);const id=label(value.id,`${field}.id`),width=dimension(value.width,`${field}.width`,1,4096),height=dimension(value.height,`${field}.height`,1,4096);if(value.channels!==3&&value.channels!==4)throw new Error(`Creative ${field}.channels is invalid`);if(!(value.pixels instanceof Uint8Array)||value.pixels.byteLength!==width*height*value.channels)throw new Error(`Creative ${field}.pixels are invalid`);return{id,approved:true,width,height,channels:value.channels,pixels:value.pixels.slice()}}
 function label(value: unknown, field: string): string { if (typeof value !== "string" || !value.trim() || value.trim().length > 200) throw new Error(`Creative ${field} is invalid`); return value.trim(); }
 function logoPlacement(value: unknown): NonNullable<CreativeRenderTheme["logoPlacement"]> { if (!["top-left","top-right","bottom-left","bottom-right","none"].includes(String(value))) throw new Error("Creative logoPlacement is invalid"); return value as NonNullable<CreativeRenderTheme["logoPlacement"]>; }
 function validateCarouselRenderer(value: CarouselRendererPort): CarouselRendererPort { if (!value || typeof value.render !== "function" || typeof value.version !== "string" || !value.version.trim() || value.version.length > 200) throw new Error("Carousel renderer is invalid"); return value; }
@@ -260,6 +277,7 @@ function renderCarouselBitmap(plan: ReturnType<typeof validateCarouselPlan>, the
     const headScale = Math.max(2, Math.floor(theme.width / 90));
     const bodyScale = Math.max(2, Math.floor(theme.width / 150));
     canvas.fillRect(0, 0, theme.width, Math.max(5, Math.floor(theme.height * 0.025)), theme.accent);
+    drawBrandAssets(canvas,theme,pad);
     let y = pad; const text: CreativeTextLayoutMetric[] = [];
     if (index === 0) { const metric = canvas.drawMeasured(plan.coverHook, "cover", pad, y, theme.width - pad * 2, headScale, theme.accent, 3); text.push(metric); y = metric.y + metric.height + bodyScale * 3; }
     const headline = canvas.drawMeasured(slide.headline, "headline", pad, y, theme.width - pad * 2, headScale, theme.foreground, 4); text.push(headline); y = headline.y + headline.height + bodyScale * 3;
@@ -280,6 +298,7 @@ function renderReel(plan: ReturnType<typeof validateReelPlan>, theme: Normalized
     const hookScale = Math.max(2, Math.floor(theme.width / 90));
     const textScale = Math.max(2, Math.floor(theme.width / 145));
     canvas.fillRect(0, 0, Math.max(6, Math.floor(theme.width * 0.025)), theme.height, theme.accent);
+    drawBrandAssets(canvas,theme,pad);
     let y = pad;
     y = canvas.drawWrapped(plan.hook, pad * 1.5, y, theme.width - pad * 2.5, hookScale, theme.accent, 4) + textScale * 8;
     y = canvas.drawWrapped(scene.onScreenText, pad * 1.5, y, theme.width - pad * 2.5, hookScale, theme.foreground, 7) + textScale * 10;
@@ -315,14 +334,21 @@ function renderReel(plan: ReturnType<typeof validateReelPlan>, theme: Normalized
   return { format: "reel", rendererVersion: CREATIVE_RENDERER_VERSION, sourceFingerprint, artifacts: [...frames, manifest] };
 }
 
+function thumbnailArtifact(rendered:CreativeRenderPackage):RenderedCreativeArtifact{const source=rendered.artifacts.find((item)=>item.contentType==="image/png");if(!source)throw new Error("Generated creative package has no visual source for its thumbnail");const raster=decodeRgbPng(source.bytes),width=270,height=Math.max(1,Math.round(width*raster.height/raster.width)),canvas=new Canvas(width,height,[255,255,255]);canvas.drawRaster({...raster,id:`${rendered.sourceFingerprint}:thumbnail-source`,approved:true,channels:3},0,0,width,height,1);const bytes=encodePng(canvas),carousel=rendered.format==="carousel";return artifact(carousel?"carousel-thumbnail":"reel-thumbnail",carousel?"carousel-thumbnail.png":"reel-thumbnail.png","image/png",bytes,source.supportingClaimIds,0)}
+function decodeRgbPng(bytes:Uint8Array):{width:number;height:number;pixels:Uint8Array}{assertPngSignature(bytes);const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);let offset=8,width=0,height=0;const compressed:Uint8Array[]=[];while(offset<bytes.byteLength){const length=view.getUint32(offset),type=Buffer.from(bytes.slice(offset+4,offset+8)).toString("ascii"),dataStart=offset+8,dataEnd=dataStart+length;if(type==="IHDR"){width=view.getUint32(dataStart);height=view.getUint32(dataStart+4);if(bytes[dataStart+8]!==8||bytes[dataStart+9]!==2)throw new Error("Thumbnail source PNG format is unsupported")}if(type==="IDAT")compressed.push(bytes.slice(dataStart,dataEnd));offset=dataEnd+4}const stride=width*3,raw=inflatePngIdat(Buffer.concat(compressed.map((item)=>Buffer.from(item))),(stride+1)*height+1);if(raw.byteLength!==(stride+1)*height)throw new Error("Thumbnail source PNG scanlines are invalid");const pixels=new Uint8Array(stride*height),previous=new Uint8Array(stride);for(let y=0;y<height;y++){const sourceOffset=y*(stride+1),filter=raw[sourceOffset]!,row=new Uint8Array(stride);for(let x=0;x<stride;x++){const encoded=raw[sourceOffset+1+x]!,left=x>=3?row[x-3]!:0,up=previous[x]!,upLeft=x>=3?previous[x-3]!:0;row[x]=(encoded+filterPredictor(filter,left,up,upLeft))&255}pixels.set(row,y*stride);previous.set(row)}return{width,height,pixels}}
+function assertPngSignature(bytes:Uint8Array){if(bytes.byteLength<33||!PNG_SIGNATURE.every((byte,index)=>bytes[index]===byte))throw new Error("Thumbnail source PNG signature is invalid")}
+function filterPredictor(filter:number,left:number,up:number,upLeft:number){if(filter===0)return 0;if(filter===1)return left;if(filter===2)return up;if(filter===3)return Math.floor((left+up)/2);if(filter===4){const p=left+up-upLeft,pa=Math.abs(p-left),pb=Math.abs(p-up),pc=Math.abs(p-upLeft);return pa<=pb&&pa<=pc?left:pb<=pc?up:upLeft}throw new Error("Thumbnail source PNG filter is unsupported")}
+
 function fingerprint(plan: MarketingCreativePlan, theme: NormalizedCreativeRenderTheme, rendererVersion: string): string {
-  return sha256(Buffer.from(JSON.stringify({ rendererVersion, plan, theme })));
+  return sha256(Buffer.from(JSON.stringify({ rendererVersion, plan, theme:themeIdentity(theme) })));
 }
+function themeIdentity(theme:NormalizedCreativeRenderTheme){const{logoAsset,imageryAsset,...values}=theme;return{...values,...(logoAsset?{logoAsset:{id:logoAsset.id,width:logoAsset.width,height:logoAsset.height,channels:logoAsset.channels,sha256:sha256(logoAsset.pixels)}}:{}),...(imageryAsset?{imageryAsset:{id:imageryAsset.id,width:imageryAsset.width,height:imageryAsset.height,channels:imageryAsset.channels,sha256:sha256(imageryAsset.pixels)}}:{})}}
 function artifact(role: CreativeArtifactRole, filename: string, contentType: RenderedCreativeArtifact["contentType"], bytes: Uint8Array, supportingClaimIds: string[], index: number, layoutMetrics?: CreativeLayoutMetrics): RenderedCreativeArtifact {
   return { role, filename, contentType, bytes, sha256: sha256(bytes), supportingClaimIds: [...supportingClaimIds], index, ...(layoutMetrics ? { layoutMetrics } : {}) };
 }
 function layout(theme: NormalizedCreativeRenderTheme, pad: number, text: CreativeTextLayoutMetric[]): CreativeLayoutMetrics { const occupied = text.reduce((sum,item)=>sum+item.width*item.height,0), logo = theme.logoAssetId && theme.logoPlacement !== "none" ? logoBounds(theme, pad) : undefined; return { canvas:{width:theme.width,height:theme.height}, safeArea:{x:pad,y:pad,width:theme.width-pad*2,height:theme.height-pad*2}, palette:{background:theme.background,foreground:theme.foreground,accent:theme.accent}, text, textOccupiedRatio:Number((occupied/(theme.width*theme.height)).toFixed(6)), logoPlacement:theme.logoPlacement, ...(theme.logoAssetId?{logoAssetId:theme.logoAssetId}:{}), ...(logo?{logoBounds:logo}:{}), headingFontLabel:theme.headingFontLabel, bodyFontLabel:theme.bodyFontLabel }; }
 function logoBounds(theme: NormalizedCreativeRenderTheme, pad: number): { x: number; y: number; width: number; height: number } { const width=Math.max(24,Math.floor(theme.width*.12)),height=Math.max(16,Math.floor(width*.5)),right=theme.logoPlacement.endsWith("right"),bottom=theme.logoPlacement.startsWith("bottom"); return{x:right?theme.width-pad-width:pad,y:bottom?theme.height-pad-height:pad,width,height}; }
+function drawBrandAssets(canvas:Canvas,theme:NormalizedCreativeRenderTheme,pad:number){if(theme.imageryAsset){const width=Math.max(1,Math.floor(theme.width*.34));canvas.drawRaster(theme.imageryAsset,theme.width-width,0,width,theme.height,.28)}if(theme.logoAsset&&theme.logoPlacement!=="none"){const box=logoBounds(theme,pad);canvas.drawRaster(theme.logoAsset,box.x,box.y,box.width,box.height,1)}}
 function sha256(value: Uint8Array): string { return createHash("sha256").update(value).digest("hex"); }
 
 class Canvas {
@@ -336,6 +362,7 @@ class Canvas {
     const x1 = Math.min(this.width, Math.ceil(x + width)), y1 = Math.min(this.height, Math.ceil(y + height));
     for (let py = y0; py < y1; py++) for (let px = x0; px < x1; px++) this.pixel(px, py, color);
   }
+  drawRaster(asset:ApprovedRasterAsset,x:number,y:number,width:number,height:number,opacity:number):void{const targetWidth=Math.max(1,Math.floor(width)),targetHeight=Math.max(1,Math.floor(height)),alphaMultiplier=Math.max(0,Math.min(1,opacity));for(let ty=0;ty<targetHeight;ty++)for(let tx=0;tx<targetWidth;tx++){const sx=Math.min(asset.width-1,Math.floor(tx*asset.width/targetWidth)),sy=Math.min(asset.height-1,Math.floor(ty*asset.height/targetHeight)),source=(sy*asset.width+sx)*asset.channels,r=asset.pixels[source]!,g=asset.pixels[source+1]!,b=asset.pixels[source+2]!,alpha=(asset.channels===4?asset.pixels[source+3]!/255:1)*alphaMultiplier;this.blendPixel(Math.floor(x)+tx,Math.floor(y)+ty,[r,g,b],alpha)}}
   drawWrapped(text: string, x: number, y: number, maxWidth: number, scale: number, color: Rgb, maxLines: number): number {
     const metric = this.drawMeasured(text, "body", x, y, maxWidth, scale, color, maxLines); return metric.y + metric.height;
   }
@@ -361,6 +388,7 @@ class Canvas {
     const offset = (y * this.width + x) * 3;
     this.pixels[offset] = color[0]; this.pixels[offset + 1] = color[1]; this.pixels[offset + 2] = color[2];
   }
+  private blendPixel(x:number,y:number,color:Rgb,alpha:number):void{if(x<0||y<0||x>=this.width||y>=this.height||alpha<=0)return;const offset=(y*this.width+x)*3,inverse=1-alpha;this.pixels[offset]=Math.round(color[0]*alpha+this.pixels[offset]!*inverse);this.pixels[offset+1]=Math.round(color[1]*alpha+this.pixels[offset+1]!*inverse);this.pixels[offset+2]=Math.round(color[2]*alpha+this.pixels[offset+2]!*inverse)}
 }
 
 function assertRenderableText(input: string): void {

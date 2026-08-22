@@ -66,12 +66,16 @@ describe("creative renderer", () => {
     expect(first.layoutMetrics?.safeArea).toEqual({ x: 81, y: 81, width: 918, height: 1188 });
   });
 
-  it("retains bounded brand theme metadata without accepting a remote logo URL", () => {
+  it("renders approved Brand imagery and logo assets with bounded font selection", () => {
+    const logo=solidRaster("private-logo-object-1",2,2,[220,20,40,255]);
+    const imagery=solidRaster("approved-brand-image-1",2,2,[20,80,180,255]);
     const rendered = renderCreativePlan(carousel, {
       ...tinySquare,
       headingFontLabel: "Brand Display",
       bodyFontLabel: "Brand Sans",
       logoAssetId: "private-logo-object-1",
+      logoAsset:logo,
+      imageryAsset:imagery,
       logoPlacement: "bottom-right",
     });
     expect(rendered.artifacts[0]?.layoutMetrics).toMatchObject({
@@ -84,7 +88,10 @@ describe("creative renderer", () => {
     });
     expect(rendered.artifacts[0]?.layoutMetrics?.text.map(item => item.role)).toEqual(["cover", "headline", "body"]);
     expect(rendered.artifacts[0]?.layoutMetrics?.textOccupiedRatio).toBeGreaterThan(0);
+    expect(rendered.sourceFingerprint).not.toBe(renderCreativePlan(carousel,{...tinySquare,logoAsset:logo,logoPlacement:"bottom-right"}).sourceFingerprint);
     expect(() => renderCreativePlan(carousel, { ...tinySquare, logoAssetId: " ", logoPlacement: "bottom-right" })).toThrow(/logoAssetId/i);
+    expect(() => renderCreativePlan(carousel, { ...tinySquare, headingFontAssetId:"unapproved-font" as never })).toThrow(/unsupported/i);
+    expect(() => renderCreativePlan(carousel, { ...tinySquare, logoAsset:{...logo,approved:false as true},logoPlacement:"bottom-right" })).toThrow(/approved/i);
   });
 
   it("renders a deterministic Reel storyboard and canonical timed manifest", () => {
@@ -141,7 +148,8 @@ describe("CreativeAssetProductionService", () => {
       tinySquare,
     );
     expect(produced.rendererVersion).toBe("test-carousel-engine-v1");
-    expect(produced.assets.every(asset => asset.layoutMetrics?.canvas.width === 180)).toBe(true);
+    expect(produced.assets.filter(asset=>asset.role==="carousel-slide").every(asset => asset.layoutMetrics?.canvas.width === 180)).toBe(true);
+    expect(produced.assets.find(asset=>asset.role==="carousel-thumbnail")).toMatchObject({filename:"carousel-thumbnail.png",index:0});
   });
 
   it.each([
@@ -182,7 +190,8 @@ describe("CreativeAssetProductionService", () => {
     const second = await service.produce({ workspaceId: "ws-1", brandId: "brand-1" }, carousel, tinySquare);
     expect(second.sourceFingerprint).toBe(first.sourceFingerprint);
     expect(puts.map((item) => item.objectKey)).toEqual(firstKeys);
-    expect(first.assets).toHaveLength(3);
+    expect(first.assets).toHaveLength(4);
+    expect(first.assets.find((item)=>item.role==="carousel-thumbnail")?.objectKey).toContain(first.sourceFingerprint);
     expect(first.assets.every((item) => item.objectId.startsWith("obj:generated/"))).toBe(true);
   });
 
@@ -210,6 +219,7 @@ function pngDimensions(bytes: Uint8Array): { width: number; height: number } {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   return { width: view.getUint32(16), height: view.getUint32(20) };
 }
+function solidRaster(id:string,width:number,height:number,rgba:readonly[number,number,number,number]){const pixels=new Uint8Array(width*height*4);for(let index=0;index<pixels.length;index+=4)pixels.set(rgba,index);return{id,approved:true as const,width,height,channels:4 as const,pixels}}
 function rehash<T extends { bytes: Uint8Array; sha256: string }>(artifact: T): T { return { ...artifact, sha256: createHash("sha256").update(artifact.bytes).digest("hex") }; }
 function mutateFirstPngChunk(bytes:Uint8Array,target:string,mutate:(data:Buffer)=>Uint8Array):Uint8Array{
   const output:Buffer[]=[Buffer.from(bytes.slice(0,8))];let offset=8,changed=false;

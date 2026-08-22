@@ -16,8 +16,9 @@ export async function buildBrandBrainAction(brandId: string, formData: FormData)
       ...(publicReferenceUrl ? { publicReferenceUrl } : {}),
       ...(ownerBoundary ? { ownerBoundary } : {}),
     });
-    const evidenceNote = result.sourceIds.length
-      ? ` ${result.sourceIds.length} public ${result.sourceIds.length === 1 ? "reference was" : "references were"} successfully read.`
+    const sourceIds = result.sourceIds ?? [];
+    const evidenceNote = sourceIds.length
+      ? ` ${sourceIds.length} public ${sourceIds.length === 1 ? "reference was" : "references were"} successfully read.`
       : " Suggestions were generated from the Brand and owner-confirmed context available to Kairo; public links can be added later to improve them.";
     const notice = result.generatorStatus === "generated"
       ? `Brand Brain built with ${result.proposedCount} suggestions. Review the items that need your confirmation.${evidenceNote}`
