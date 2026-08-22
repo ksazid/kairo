@@ -1330,6 +1330,168 @@
         ]
       },
       "maxAttempts": 3
+    },
+    {
+      "schemaVersion": 2,
+      "sliceId": "VS-74",
+      "title": "VS-74 — Brand Source Onboarding & Brand Brain Enrichment",
+      "status": "completed",
+      "lifecycle": "certified",
+      "riskLevel": "high",
+      "implementationMode": "runtime-enabled",
+      "requirements": [
+        "FR-02",
+        "FR-03",
+        "FR-04",
+        "FR-05",
+        "FR-20"
+      ],
+      "owners": {
+        "product": "Product Owner",
+        "engineering": "Engineering Owner",
+        "operations": "Operations Owner",
+        "security": "Security Owner"
+      },
+      "dependencies": [
+        "VS-17",
+        "VS-26",
+        "VS-73"
+      ],
+      "blockers": [],
+      "allowedPaths": [
+        "packages/contracts/**",
+        "packages/domain/**",
+        "apps/worker/**",
+        "apps/api/**",
+        "apps/web/**",
+        "tests/**",
+        "docs/slices/VS-74.md",
+        "docs/plans/VS-74-implementation.md",
+        "delivery/**",
+        "README.md",
+        ".engineering/STATE.json"
+      ],
+      "protectedPaths": [
+        ".github/workflows/release.yml",
+        "infrastructure/**"
+      ],
+      "impact": {
+        "areas": [
+          "frontend",
+          "api",
+          "authentication",
+          "authorization",
+          "sensitive-data",
+          "customer-flow",
+          "analytics"
+        ],
+        "notes": [
+          "Adds Website and Instagram as reusable Brand sources during onboarding and later Brand Brain refresh.",
+          "Reuses existing Meta OAuth and encrypted credential boundaries; no new permissions or token model.",
+          "Imports bounded Instagram profile and recent-content evidence with Brand-private provenance.",
+          "Preserves confirmed owner fields and requires review of inferred Brand Brain proposals."
+        ]
+      },
+      "approvals": [
+        {
+          "type": "scope",
+          "status": "approved",
+          "version": "VS-74@1.0",
+          "commitSha": null,
+          "by": "Sazid Khan",
+          "at": "2026-08-22T02:35:00+02:00",
+          "rationale": "The Product Owner enumerated Batch 1 tasks 1-10 and instructed the implementation to go after checking VS-73 closeout."
+        },
+        {
+          "type": "policy",
+          "status": "not-required",
+          "version": "VS-74@1.0",
+          "commitSha": null,
+          "by": null,
+          "at": null,
+          "rationale": "DEC-004 already governs official Meta OAuth and professional-account selection; VS-26 and DEC-006 already govern safe public-reference ingestion, provenance and source removal. No new permissions or policy are introduced."
+        },
+        {
+          "type": "implementation",
+          "status": "approved",
+          "version": "VS-74@1.0",
+          "commitSha": null,
+          "by": "Sazid Khan",
+          "at": "2026-08-22T02:35:00+02:00",
+          "rationale": "The Product Owner said check and go, authorizing runtime implementation of the already enumerated Batch 1 scope."
+        },
+        {
+          "type": "certification",
+          "status": "approved",
+          "version": "VS-74@1.0",
+          "commitSha": "6070c25e82d198762f57442ee1fcdf6005406344",
+          "by": "Sazid Khan",
+          "at": "2026-08-22T03:24:00+02:00",
+          "rationale": "Product Owner approved the exact VS-74 head for merge; Product Intake #710, Security #856 and CI #1021 passed before merge as 6b5a0878ef1b90bde42655e75afd575a563b0a36."
+        },
+        {
+          "type": "release",
+          "status": "pending",
+          "version": null,
+          "commitSha": null,
+          "by": null,
+          "at": null,
+          "rationale": null
+        },
+        {
+          "type": "production-enable",
+          "status": "pending",
+          "version": null,
+          "commitSha": null,
+          "by": null,
+          "at": null,
+          "rationale": null
+        }
+      ],
+      "decisionIds": [],
+      "progress": {
+        "discovery": 100,
+        "decisions": 100,
+        "implementation": 100,
+        "testing": 100,
+        "certification": 100,
+        "release": 0,
+        "validation": 0
+      },
+      "certification": {
+        "status": "passed",
+        "commitSha": "6070c25e82d198762f57442ee1fcdf6005406344",
+        "evidence": [
+          "GitHub PR #145 Product Intake #710 passed",
+          "GitHub PR #145 Security baseline #856 passed",
+          "GitHub PR #145 CI #1021 passed",
+          "PR #145 exact approved head 6070c25e82d198762f57442ee1fcdf6005406344 merged as 6b5a0878ef1b90bde42655e75afd575a563b0a36",
+          "Independent implementation and generated-artifact hygiene verification passed"
+        ]
+      },
+      "release": {
+        "status": "not-authorized",
+        "releaseId": null
+      },
+      "rollback": {
+        "status": "not-applicable",
+        "rollbackId": null
+      },
+      "postRelease": {
+        "status": "not-started",
+        "reviewAt": null,
+        "expectedOutcome": null,
+        "metrics": []
+      },
+      "links": {
+        "specification": "docs/slices/VS-74.md",
+        "implementationPr": "https://github.com/ksazid/kairo/pull/145",
+        "evidence": [
+          "delivery/context/VS-74.md",
+          "https://github.com/ksazid/kairo/pull/145"
+        ]
+      },
+      "maxAttempts": 3
     }
   ]
 }
