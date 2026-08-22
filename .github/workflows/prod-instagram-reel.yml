@@ -18,7 +18,7 @@ jobs:
       - name: Publish owner-authorized KTM 390 Duke Reel
         env:
           KAIRO_API_URL: https://kairo-api-kebs.onrender.com
-          KAIRO_RELEASE_SHA: d19c471a11ec30ca717870dc8ca4021ffac5fd5b
+          KAIRO_RELEASE_SHA: abac52a671a2b52367e6fded3989d5485e2f03cd
           KAIRO_SMOKE_TOKEN: ${{ secrets.KAIRO_SMOKE_TOKEN }}
           KAIRO_INSTAGRAM_REEL_URL: https://raw.githubusercontent.com/ksazid/kairo/0fabdf638441c89248c81c7c81eb35966fd4bc73/smoke-assets/ktm390duke-official-spec-reel.mp4
         run: node scripts/prod-instagram-reel.mjs
