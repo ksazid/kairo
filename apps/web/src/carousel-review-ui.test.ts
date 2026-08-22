@@ -10,6 +10,9 @@ describe("VS-77 visual carousel review", () => {
       "/regenerate",
       "/style",
       "/approve",
+      "/bootstrap",
+      "/render",
+      "ensureCarouselReview",
       "expectedAssetVersion",
       "renderVersionId",
     ])

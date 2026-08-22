@@ -79,6 +79,33 @@ async function call(path: string, init?: RequestInit) {
 export function getCarouselReview(b: string, c: string, a: string) {
   return call(root(b, c, a));
 }
+export function bootstrapCarouselReview(b: string, c: string, a: string) {
+  return call(`${root(b, c, a)}/bootstrap`, { method: "POST" });
+}
+export function renderCarouselReview(
+  b: string,
+  projectId: string,
+  expectedAssetVersion: number,
+) {
+  return call(
+    `/api/v1/brands/${encodeURIComponent(b)}/carousel-projects/${encodeURIComponent(projectId)}/render`,
+    {
+      method: "POST",
+      body: JSON.stringify({ expectedAssetVersion }),
+    },
+  );
+}
+export async function ensureCarouselReview(b: string, c: string, a: string) {
+  try {
+    return await getCarouselReview(b, c, a);
+  } catch (error) {
+    if (!(error instanceof CarouselReviewApiError) || error.status !== 404)
+      throw error;
+    const draft = await bootstrapCarouselReview(b, c, a);
+    await renderCarouselReview(b, draft.id, draft.assetVersion);
+    return getCarouselReview(b, c, a);
+  }
+}
 export function editCarouselSlide(
   b: string,
   c: string,
