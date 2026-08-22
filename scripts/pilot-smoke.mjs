@@ -18,6 +18,7 @@ const token=process.env.KAIRO_SMOKE_TOKEN?.trim();
 const requireAuth=process.env.KAIRO_SMOKE_REQUIRE_AUTH==="1";
 const requireMultiBrand=process.env.KAIRO_SMOKE_REQUIRE_MULTI_BRAND==="1";
 const requirePublishedFlow=process.env.KAIRO_SMOKE_REQUIRE_PUBLISHED_FLOW==="1";
+const requirePublishedCarousel=process.env.KAIRO_SMOKE_REQUIRE_PUBLISHED_CAROUSEL==="1";
 if(requireAuth&&!token)throw new Error("KAIRO_SMOKE_TOKEN is required when KAIRO_SMOKE_REQUIRE_AUTH=1");
 
 if(token){
@@ -63,13 +64,16 @@ if(token){
             if(flowResponse.status!==200)continue;
             const flow=await flowResponse.json();
             if(flow?.brandId!==brand.id||flow?.campaignId!==campaign.id||flow?.assetId!==assetId)throw new Error("Brand → Publish flow returned cross-scope lineage");
-            if(flow?.review?.status==="ready"&&flow?.result?.status==="published"&&flow?.result?.publishId&&flow?.performance?.status==="available"){
+            const published=flow?.review?.status==="ready"&&flow?.result?.status==="published"&&flow?.result?.publishId&&flow?.performance?.status==="available";
+            const exactCarousel=!requirePublishedCarousel||(flow?.review?.contentType==="carousel"&&flow?.review?.itemCount>=2&&flow?.review?.approvedAssetVersionId&&flow?.review?.quality?.blockingIssues===0&&flow?.result?.publishedUrl);
+            if(published&&exactCarousel){
+              if(requirePublishedCarousel){if(!Array.isArray(flow.review.previewUrls)||flow.review.previewUrls.length!==flow.review.itemCount)throw new Error("Published Carousel preview lineage is incomplete");for(const url of flow.review.previewUrls){const media=await fetch(url,{headers:{range:"bytes=0-0"},redirect:"follow"});if(!media.ok||!media.headers.get("content-type")?.toLowerCase().startsWith("image/"))throw new Error(`Approved Carousel media delivery failed: ${media.status}`)}}
               verified=true;verifiedPublishedFlows++;break;
             }
           }
           if(verified)break;
         }
-        if(!verified)throw new Error(`Brand ${brand.id} has no approved → published → Results lineage to verify`);
+        if(!verified)throw new Error(`Brand ${brand.id} has no approved → published${requirePublishedCarousel?" Carousel":""} → Results lineage to verify`);
       }
       verifiedBrands+=1;
     }
