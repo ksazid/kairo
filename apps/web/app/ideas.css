@@ -8,12 +8,12 @@
 .idea-capture-body { max-width: 760px; padding: 2px 2px 24px; }
 .new-idea-form { display: grid; gap: 16px; }
 .new-idea-form label { display: grid; gap: 7px; font-size: 13px; font-weight: 700; }
-.new-idea-form input, .new-idea-form textarea, .angle-edit textarea { width: 100%; border: 1px solid var(--k-neutral-200); border-radius: 10px; padding: 11px 12px; background: white; color: var(--k-neutral-900); }
+.new-idea-form input, .new-idea-form textarea, .angle-edit textarea { width: 100%; border: 1px solid var(--k-neutral-200); border-radius: 10px; padding: 11px 12px; background:var(--k-surface); color: var(--k-neutral-900); }
 .new-idea-form textarea, .angle-edit textarea { resize: vertical; line-height: 21px; }
 .idea-capture-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .idea-capture-footer p { max-width: 480px; margin: 0; color: var(--k-neutral-400); font-size: 12px; line-height: 18px; }
 
-.ideas-list, .research-pending, .research-dossier, .angles-section { background: white; border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-lg); }
+.ideas-list, .research-pending, .research-dossier, .angles-section { background:var(--k-surface); border: 1px solid var(--k-neutral-200); border-radius: var(--k-radius-lg); }
 .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 24px 26px; border-bottom: 1px solid var(--k-neutral-200); }
 .section-heading p:last-child { max-width: 720px; margin: 6px 0 0; color: var(--k-neutral-400); font-size: 14px; line-height: 21px; }
 .idea-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; padding: 22px 26px; border-bottom: 1px solid var(--k-neutral-200); text-decoration: none; }
@@ -26,7 +26,7 @@
 .idea-row-tail { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; }
 .idea-open-cue { color: var(--k-neutral-400); font-size: 18px; }
 .idea-status { flex: 0 0 auto; display: inline-flex; padding: 5px 9px; border-radius: 999px; background: var(--k-neutral-50); color: var(--k-neutral-700); font-size: 11px; font-weight: 700; }
-.idea-status.angles-ready { color: var(--k-success); background: color-mix(in srgb, var(--k-success) 8%, white); }
+.idea-status.angles-ready { color: var(--k-success); background: color-mix(in srgb, var(--k-success) 8%,var(--k-surface)); }
 .idea-status.research-ready { color: var(--k-info); }
 .ideas-empty { padding: 42px 26px; }
 .ideas-empty p { max-width: 620px; margin: 8px 0 0; color: var(--k-neutral-700); line-height: 22px; }
@@ -59,7 +59,7 @@
 .evidence-list { display: grid; border-top: 1px solid var(--k-neutral-200); }
 .evidence-row { display: grid; gap: 4px; padding: 14px 0; border-bottom: 1px solid var(--k-neutral-200); text-decoration: none; }
 .evidence-row span { color: var(--k-neutral-700); font-size: 12px; }
-.uncertainty-panel { padding: 15px; border-radius: var(--k-radius-md); background: color-mix(in srgb, var(--k-warning) 7%, white); color: var(--k-neutral-700); font-size: 13px; }
+.uncertainty-panel { padding: 15px; border-radius: var(--k-radius-md); background: color-mix(in srgb, var(--k-warning) 7%,var(--k-surface)); color: var(--k-neutral-700); font-size: 13px; }
 .uncertainty-panel ul { margin: 0; padding-left: 18px; line-height: 20px; }
 
 .angles-section { margin-top: 22px; overflow: hidden; }
@@ -67,7 +67,7 @@
 .angle-list { display: grid; padding: 0 26px; }
 .angle-card { padding: 24px 0; border-bottom: 1px solid var(--k-neutral-200); }
 .angle-card:last-child { border-bottom: 0; }
-.angle-card.selected { margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-left: 2px solid var(--k-primary); background: color-mix(in srgb, var(--k-primary) 2.5%, white); }
+.angle-card.selected { margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-left: 2px solid var(--k-primary); background: color-mix(in srgb, var(--k-primary) 2.5%,var(--k-surface)); }
 .angle-card-top, .angle-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .angle-card-top > div { min-width: 0; }
 .angle-channel { color: var(--k-neutral-400); font-size: 11px; font-weight: 750; text-transform: capitalize; }

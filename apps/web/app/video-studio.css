@@ -11,7 +11,7 @@
 .video-studio-header>div:first-child{max-width:760px}
 .video-studio-header h1{margin-top:5px}
 .video-studio-header p,.video-project-overview p,.video-render-boundary p,.video-section-heading p,.video-initialize-actions p{margin:7px 0 0;color:var(--k-neutral-700);line-height:23px}
-.video-project-overview,.video-copy-panel,.video-timeline,.video-render-boundary,.video-initialize,.video-studio-empty{margin-bottom:24px;border:1px solid var(--k-neutral-200);border-radius:var(--k-radius-lg);background:white}
+.video-project-overview,.video-copy-panel,.video-timeline,.video-render-boundary,.video-initialize,.video-studio-empty{margin-bottom:24px;border:1px solid var(--k-neutral-200);border-radius:var(--k-radius-lg);background:var(--k-surface)}
 .video-project-overview,.video-render-boundary,.video-studio-empty{padding:22px 24px}
 .video-project-overview{align-items:center}
 .video-copy-panel,.video-timeline,.video-initialize{padding:24px}
@@ -20,11 +20,11 @@
 .video-copy-panel{display:grid;gap:16px}
 .video-copy-panel .video-section-heading{margin-bottom:0}
 .video-copy-panel label,.video-initialize-form label,.video-scene-copy label,.video-scene-timing label{display:grid;gap:7px;color:var(--k-neutral-700);font-size:13px;font-weight:700}
-.video-copy-panel input,.video-copy-panel textarea,.video-initialize-form input,.video-initialize-form textarea,.video-scene-copy textarea,.video-scene-timing input{width:100%;border:1px solid var(--k-neutral-200);border-radius:10px;padding:11px 12px;background:white;color:var(--k-neutral-900);font:inherit}
+.video-copy-panel input,.video-copy-panel textarea,.video-initialize-form input,.video-initialize-form textarea,.video-scene-copy textarea,.video-scene-timing input{width:100%;border:1px solid var(--k-neutral-200);border-radius:10px;padding:11px 12px;background:var(--k-surface);color:var(--k-neutral-900);font:inherit}
 .video-copy-panel textarea,.video-initialize-form textarea,.video-scene-copy textarea{resize:vertical;line-height:22px}
 .video-copy-panel input:focus-visible,.video-copy-panel textarea:focus-visible,.video-initialize-form input:focus-visible,.video-initialize-form textarea:focus-visible,.video-scene-copy textarea:focus-visible,.video-scene-timing input:focus-visible{outline:3px solid color-mix(in srgb,var(--k-primary) 24%,transparent);outline-offset:2px;border-color:var(--k-primary)}
 .video-scene-list{display:grid;gap:14px}
-.video-scene{overflow:hidden;border:1px solid var(--k-neutral-200);border-radius:var(--k-radius-md);background:white}
+.video-scene{overflow:hidden;border:1px solid var(--k-neutral-200);border-radius:var(--k-radius-md);background:var(--k-surface)}
 .video-scene-header{align-items:center;padding:18px 20px;border-bottom:1px solid var(--k-neutral-200);background:var(--k-neutral-50)}
 .video-scene-header h3{margin:5px 0 2px;font-size:18px;line-height:25px}
 .video-scene-header small{color:var(--k-neutral-400)}
@@ -46,7 +46,7 @@
 .video-studio-empty h1,.video-studio-empty h2{margin-top:5px}
 .video-studio-empty p{color:var(--k-neutral-700);line-height:23px}
 .video-studio-empty .secondary-button{margin-top:12px}
-.video-scene .tertiary-button,.video-scene-timing .tertiary-button{min-height:44px;border:1px solid var(--k-neutral-200);border-radius:8px;padding:9px 12px;background:white;color:var(--k-neutral-700);font-weight:700;cursor:pointer}
+.video-scene .tertiary-button,.video-scene-timing .tertiary-button{min-height:44px;border:1px solid var(--k-neutral-200);border-radius:8px;padding:9px 12px;background:var(--k-surface);color:var(--k-neutral-700);font-weight:700;cursor:pointer}
 .video-scene .tertiary-button:hover,.video-scene-timing .tertiary-button:hover{background:var(--k-neutral-50)}
 .video-scene .tertiary-button:focus-visible,.video-scene-timing .tertiary-button:focus-visible{outline:3px solid color-mix(in srgb,var(--k-primary) 24%,transparent);outline-offset:2px}
 

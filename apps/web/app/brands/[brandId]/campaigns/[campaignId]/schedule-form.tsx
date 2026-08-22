@@ -23,7 +23,7 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
           <input type="hidden" name="channelAccountId" value={account.id} />
           <input type="hidden" name="contentType" value="text" />
           <input type="hidden" name="publishMode" value="now" />
-          <button className="primary-button" type="submit">Publish now</button>
+          <button className="success-button" type="submit">Publish now</button>
           <p>The approved version is queued immediately through Kairo's normal publishing worker. Success is shown only after the channel confirms publication.</p>
         </form>
       ) : null}

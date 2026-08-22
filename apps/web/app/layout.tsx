@@ -19,7 +19,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{__html:`(()=>{try{const t=localStorage.getItem('kairo-theme')||'system';const r=t==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.dataset.theme=r;document.documentElement.dataset.sidebar=localStorage.getItem('kairo-sidebar-collapsed')==='true'?'collapsed':'expanded';document.documentElement.dataset.density=localStorage.getItem('kairo-density')||'comfortable';document.documentElement.style.colorScheme=r}catch{}})()`}} /></head>
       <body>
         <SessionKeepalive />
         {children}

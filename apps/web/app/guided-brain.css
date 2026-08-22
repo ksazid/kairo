@@ -91,7 +91,7 @@
 .guided-setup-form label > span { color: var(--k-neutral-400); font-size: 12px; line-height: 18px; font-weight: 500; }
 .guided-setup-form input,
 .guided-setup-form select,
-.guided-setup-form textarea { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--k-neutral-200); border-radius: 10px; background: white; color: var(--k-neutral-900); }
+.guided-setup-form textarea { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--k-neutral-200); border-radius: 10px; background:var(--k-surface); color: var(--k-neutral-900); }
 .guided-setup-form textarea { resize: vertical; line-height: 21px; }
 .guided-setup-form .primary-button { justify-self: start; min-width: 180px; }
 
@@ -128,9 +128,9 @@
 .brain-control-stack { display: grid; gap: 14px; margin-top: 16px; }
 .brain-control-section { overflow: clip; scroll-margin-top: 18px; }
 .brain-control-section > summary { min-height: 76px; padding: 18px 24px; }
-.brain-control-section > summary:hover { background: color-mix(in srgb, var(--k-neutral-50) 65%, white); }
+.brain-control-section > summary:hover { background: color-mix(in srgb, var(--k-neutral-50) 65%,var(--k-surface)); }
 .brain-control-section .brain-field { scroll-margin-top: 18px; padding: 22px 24px; }
-.brain-control-section .brain-field.needs-review { background: color-mix(in srgb, var(--k-warning) 3%, white); }
+.brain-control-section .brain-field.needs-review { background: color-mix(in srgb, var(--k-warning) 3%,var(--k-surface)); }
 .brain-control-section .brain-field textarea { min-height: 96px; }
 .field-context { display: grid; gap: 2px; min-width: 0; }
 .field-evidence,
