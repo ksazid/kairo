@@ -252,6 +252,13 @@ export interface StructuredContentDevelopmentDto {
   project: ProductionContentProjectDto;
 }
 
+export interface SimpleReviewSummaryDto{status:"needs-review"|"ready";contentType:"image"|"carousel"|"reel"|"video"|"text";title:string;itemCount:number;approvedAssetVersionId?:string;previewUrls:string[];quality:{status:"unchecked"|"passed"|"blocked";blockingIssues:number}}
+export interface SimplePublishReadinessDto{status:"needs-review"|"needs-destination"|"ready"|"scheduled";destination?:{channel:string;accountRef:string;displayName:string;health:"connected"|"reconnect-required"|"disabled"};scheduledFor?:string;reason?:string}
+export interface SimplePublishResultDto{status:"not-started"|"approved"|"publishing"|"processing"|"published"|"failed";publishCommandId?:string;publishId?:string;publishedUrl?:string;failureReason?:string;publishedAt?:string}
+export interface SimplePerformanceMetricDto{name:string;status:"available"|"unavailable";value?:number;capturedAt:string;reason?:string}
+export interface SimpleAdvancedLinkDto{key:"media-editor"|"approval-history"|"publishing-details"|"performance-details";label:string;href:string}
+export interface SimpleReviewPublishResultsDto{brandId:string;campaignId:string;assetId:string;review:SimpleReviewSummaryDto;publish:SimplePublishReadinessDto;result:SimplePublishResultDto;performance:{status:"waiting"|"available";metrics:SimplePerformanceMetricDto[]};advancedLinks:SimpleAdvancedLinkDto[]}
+
 export type MetaMcpToolName="publish_reel"|"publish_carousel"|"publish_image"|"get_publish_status"|"get_instagram_insights";
 export type InstagramPublishToolInput={brandId:string;publishCommandId:string};
 export type GetPublishStatusToolInput={brandId:string;publishCommandId:string};

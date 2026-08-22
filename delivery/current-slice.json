@@ -1,13 +1,15 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-78",
-  "title": "VS-78 — Instagram Performance Learning & Meta MCP",
+  "sliceId": "VS-79",
+  "title": "VS-79 — Simple Product Journey",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
+    "FR-08",
     "FR-09",
+    "FR-13",
     "FR-15",
     "FR-16"
   ],
@@ -18,11 +20,11 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-08",
-    "VS-09",
     "VS-34",
+    "VS-75",
     "VS-76",
-    "VS-77"
+    "VS-77",
+    "VS-78"
   ],
   "blockers": [],
   "allowedPaths": [
@@ -31,8 +33,8 @@
     "apps/worker/**",
     "packages/contracts/**",
     "packages/domain/**",
-    "docs/slices/VS-78.md",
-    "docs/plans/VS-78-implementation.md",
+    "docs/slices/VS-79.md",
+    "docs/plans/VS-79-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -43,17 +45,16 @@
   "impact": {
     "areas": [
       "architecture",
+      "frontend",
       "api",
-      "database",
       "authorization",
-      "sensitive-data",
       "customer-flow",
       "operations-support"
     ],
     "notes": [
-      "Adds durable Instagram Insights ingestion and Brand-scoped learning feedback.",
-      "Adds replaceable Meta MCP tools over approved publishing abstractions.",
-      "Keeps Learning acceptance under explicit human authority.",
+      "Makes Create → Review → Publish → Results the default mental model.",
+      "Preserves the complete existing domain pipeline as Advanced details.",
+      "Keeps approval, truth and Learning authority unchanged.",
       "Does not enable production credentials, release or deployment."
     ]
   },
@@ -61,29 +62,29 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-78@1.0",
+      "version": "VS-79@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T04:45:00+02:00",
-      "rationale": "The Product Owner instructed the next complete ten-task batch after merging VS-77."
+      "at": "2026-08-22T05:00:00+02:00",
+      "rationale": "The Product Owner specified the simplified product-level journey and instructed proceeding."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-78@1.0",
+      "version": "VS-79@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice preserves existing tenant, approval, credential-vault and human-learning authority boundaries."
+      "rationale": "The slice changes default presentation and orchestration projections without weakening approval, truth or tenant boundaries."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-78@1.0",
+      "version": "VS-79@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T04:45:00+02:00",
-      "rationale": "The Product Owner explicitly instructed implementation of the next full batch."
+      "at": "2026-08-22T05:00:00+02:00",
+      "rationale": "The Product Owner explicitly requested these additions and instructed proceeding."
     },
     {
       "type": "certification",
@@ -126,7 +127,12 @@
   "certification": {
     "status": "not-started",
     "commitSha": null,
-    "evidence": ["runtime:typecheck", "runtime:test", "runtime:build", "preflight"]
+    "evidence": [
+      "runtime:typecheck passed for all workspaces",
+      "runtime:test passed: 601 tests",
+      "runtime:build passed",
+      "lock, JSON, governance, dashboard and diff checks passed"
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -143,7 +149,7 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-78.md",
+    "specification": "docs/slices/VS-79.md",
     "implementationPr": null,
     "evidence": []
   },
