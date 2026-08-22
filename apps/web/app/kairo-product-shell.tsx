@@ -1,5 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { getBrands, getCampaigns, getSession } from "../src/lib/kairo-api";
+import { KairoIcon, KairoLogo, type KairoIconName } from "./kairo-icons";
+import { ShellControls } from "./shell-controls";
+import { BrandSwitcher } from "./brand-switcher";
+import { CommandPalette } from "./command-palette";
+import { ProductGuide, ReplayGuideButton } from "./product-guide";
 import {
   buildProductNavigation,
   type DesktopProductDestination,
@@ -15,7 +21,9 @@ type ProductShellProps = {
   children: ReactNode;
 };
 
-export function KairoProductShell({
+const destinationIcons:Record<string,KairoIconName>={Home:"home",Create:"create",Library:"library",Calendar:"calendar",Results:"results",Brand:"brain"};
+
+export async function KairoProductShell({
   brandId,
   workspaceId,
   active,
@@ -23,6 +31,12 @@ export function KairoProductShell({
   children,
 }: ProductShellProps) {
   const navigation = buildProductNavigation({ brandId, workspaceId });
+  const session=await getSession();
+  const workspace=session?.workspaces.find(item=>item.id===workspaceId)??session?.workspaces[0];
+  const brands=workspace?await getBrands(workspace.id):[];
+  const currentBrand=brands.find(item=>item.id===brandId)??null;
+  const campaigns=brandId?await getCampaigns(brandId).catch(()=>[]):[];
+  const commandItems=[...navigation.desktop.filter(item=>item.href).map(item=>({label:item.label,detail:currentBrand?.name??"Kairo",href:item.href!,icon:(destinationIcons[item.label]??"brand") as KairoIconName})),...brands.map(brand=>({label:brand.name,detail:"Switch Brand",href:`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}`,icon:"brand" as KairoIconName})),...campaigns.map(campaign=>({label:campaign.name,detail:"Campaign",href:`/brands/${encodeURIComponent(campaign.brandId)}/campaigns/${encodeURIComponent(campaign.id)}`,icon:"library" as KairoIconName}))];
   const resolvedActive = active ? simpleDestinationFor(active) : null;
   const resolvedMobileActive = simpleDestinationFor(
     mobileActive ?? active ?? "Brand",
@@ -38,12 +52,10 @@ export function KairoProductShell({
       </a>
       <aside className="sidebar" aria-label="Primary navigation">
         <div>
-          <div className="wordmark">
-            <span className="brandmark" aria-hidden="true" />
-            Kairo
-          </div>
+          <Link href="/" className="wordmark"><KairoLogo /></Link>
           <p className="sidebar-caption">Content Intelligence</p>
         </div>
+        <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref}/>
         <nav className="nav-list">
           {navigation.desktop.map((item) =>
             item.href ? (
@@ -55,7 +67,7 @@ export function KairoProductShell({
                   item.label === resolvedActive ? "page" : undefined
                 }
               >
-                {item.label}
+                <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
               </Link>
             ) : (
               <span
@@ -63,26 +75,37 @@ export function KairoProductShell({
                 className="nav-item disabled"
                 aria-disabled="true"
               >
-                {item.label}
+                <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
                 <small>Select Brand</small>
               </span>
             ),
           )}
         </nav>
         <div className="sidebar-footer">
+          <CommandPalette items={commandItems}/>
+          <ShellControls />
           <Link className="nav-item" href={addBrandHref}>
-            Add Brand
+            <KairoIcon name="plus"/><span>Add Brand</span>
           </Link>
+          <ReplayGuideButton />
           <span className="nav-item disabled" aria-disabled="true">
-            Settings<small>Later</small>
+            <KairoIcon name="settings"/><span>Settings</span><small>Later</small>
           </span>
           <a className="nav-item" href="/auth/logout">
-            Sign out
+            <KairoIcon name="logout"/><span>Sign out</span>
           </a>
         </div>
       </aside>
-
-      {children}
+      <div className="mobile-brand-bar">
+        <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} compact/>
+        <CommandPalette items={commandItems}/>
+        <ShellControls />
+      </div>
+      <div className="shell-content">
+        <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/">Kairo</Link><KairoIcon name="chevron"/>{currentBrand?<Link href={`/?workspace=${encodeURIComponent(currentBrand.workspaceId)}&brand=${encodeURIComponent(currentBrand.id)}`}>{currentBrand.name}</Link>:<span>Brand</span>}<KairoIcon name="chevron"/><span aria-current="page">{resolvedActive??"Home"}</span></nav>
+        <ProductGuide />
+        {children}
+      </div>
 
       <nav className="mobile-nav" aria-label="Mobile navigation">
         {navigation.mobile.map((item) =>
@@ -95,7 +118,7 @@ export function KairoProductShell({
                 item.label === resolvedMobileActive ? "page" : undefined
               }
             >
-              {item.label}
+              <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
             </Link>
           ) : (
             <span
@@ -103,7 +126,7 @@ export function KairoProductShell({
               className="mobile-nav-item disabled"
               aria-disabled="true"
             >
-              {item.label}
+              <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
             </span>
           ),
         )}
@@ -111,6 +134,7 @@ export function KairoProductShell({
     </div>
   );
 }
+
 
 export function KairoScopePicker({
   brandName,

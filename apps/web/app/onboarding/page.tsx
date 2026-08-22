@@ -3,6 +3,7 @@ import { createWorkspaceAction } from "../actions";
 import { getSession } from "../../src/lib/kairo-api";
 import styles from "./onboarding.module.css";
 import { BrandSourceOptions } from "../source-options";
+import { KairoLogo } from "../kairo-icons";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function OnboardingPage() {
     <main className={styles.page}>
       <section className={styles.surface} aria-labelledby="onboarding-title">
         <div className={styles.topline}>
-          <div className="wordmark"><span className="brandmark" aria-hidden="true" />Kairo</div>
+          <div className="wordmark"><KairoLogo /></div>
           <span className={styles.step}>Step 1 of 2</span>
         </div>
 

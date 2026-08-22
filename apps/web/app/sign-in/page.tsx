@@ -1,6 +1,7 @@
 import styles from "./sign-in.module.css";
 import { signInRecoveryView } from "../../src/lib/first-run-view-model";
 import { safeReturnTo } from "../../src/lib/oidc-session";
+import { KairoLogo } from "../kairo-icons";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function SignInRecoveryPage({ searchParams }: { searchParam
     <main className={styles.page}>
       <section className={styles.surface} aria-labelledby="auth-title">
         <div className={styles.wordmarkRow}>
-          <div className="wordmark"><span className="brandmark" aria-hidden="true" />Kairo</div>
+          <div className="wordmark"><KairoLogo /></div>
           <span className={styles.context}>Secure access</span>
         </div>
 

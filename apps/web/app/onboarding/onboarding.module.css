@@ -81,13 +81,13 @@
   padding: 11px 13px;
   border: 1px solid var(--k-neutral-200);
   border-radius: 10px;
-  background: white;
+  background:var(--k-surface);
   color: var(--k-neutral-900);
 }
 
 .form input::placeholder { color: var(--k-neutral-400); }
 .form input:hover { border-color: color-mix(in srgb, var(--k-neutral-400) 52%, var(--k-neutral-200)); }
-.form input:focus-visible { border-color: color-mix(in srgb, var(--k-primary) 55%, var(--k-neutral-200)); outline: 3px solid color-mix(in srgb, var(--k-primary) 12%, white); outline-offset: 1px; }
+.form input:focus-visible { border-color: color-mix(in srgb, var(--k-primary) 55%, var(--k-neutral-200)); outline: 3px solid color-mix(in srgb, var(--k-primary) 12%,var(--k-surface)); outline-offset: 1px; }
 .form button { width: 100%; min-height: 48px; margin-top: 2px; }
 
 .sourceOptions {
@@ -113,13 +113,14 @@
   background: var(--k-neutral-50);
   cursor: pointer;
 }
-.form .sourceChoice:has(input:checked) { border-color: color-mix(in srgb, var(--k-primary) 55%, var(--k-neutral-200)); background: color-mix(in srgb, var(--k-primary) 5%, white); }
-.form .sourceChoice:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--k-primary) 12%, white); outline-offset: 2px; }
+.form .sourceChoice:has(input:checked) { border-color: color-mix(in srgb, var(--k-primary) 55%, var(--k-neutral-200)); background: color-mix(in srgb, var(--k-primary) 5%,var(--k-surface)); }
+.form .sourceChoice:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--k-primary) 12%,var(--k-surface)); outline-offset: 2px; }
 .form .sourceChoice > input { width: 20px; min-height: 20px; margin-top: 1px; accent-color: var(--k-primary); }
 .form .sourceChoice > span { display: grid; gap: 3px; }
 .form .sourceChoice strong { color: var(--k-neutral-900); font-size: 14px; }
 .sourceTitle { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.sourceTitle em { padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--k-primary) 10%, white); color: var(--k-primary); font-size: 10px; font-style: normal; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+.sourceTitle svg { width: 19px; height: 19px; color: var(--k-primary); }
+.sourceTitle em { padding: 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--k-primary) 10%,var(--k-surface)); color: var(--k-primary); font-size: 10px; font-style: normal; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
 
 .nextStep {
   display: grid;

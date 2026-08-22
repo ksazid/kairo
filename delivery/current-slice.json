@@ -1,17 +1,16 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-79",
-  "title": "VS-79 — Simple Product Journey",
+  "sliceId": "VS-80",
+  "title": "VS-80 — Visual Navigation and Accessibility",
   "status": "active",
   "lifecycle": "testing",
-  "riskLevel": "high",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
-    "FR-08",
-    "FR-09",
-    "FR-13",
-    "FR-15",
-    "FR-16"
+    "FR-01",
+    "FR-02",
+    "FR-03",
+    "FR-05"
   ],
   "owners": {
     "product": "Product Owner",
@@ -21,20 +20,13 @@
   },
   "dependencies": [
     "VS-34",
-    "VS-75",
-    "VS-76",
-    "VS-77",
-    "VS-78"
+    "VS-79"
   ],
   "blockers": [],
   "allowedPaths": [
-    "apps/api/**",
     "apps/web/**",
-    "apps/worker/**",
-    "packages/contracts/**",
-    "packages/domain/**",
-    "docs/slices/VS-79.md",
-    "docs/plans/VS-79-implementation.md",
+    "docs/slices/VS-80.md",
+    "docs/plans/VS-80-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -44,17 +36,14 @@
   ],
   "impact": {
     "areas": [
-      "architecture",
       "frontend",
-      "api",
-      "authorization",
       "customer-flow",
       "operations-support"
     ],
     "notes": [
-      "Makes Create → Review → Publish → Results the default mental model.",
-      "Preserves the complete existing domain pipeline as Advanced details.",
-      "Keeps approval, truth and Learning authority unchanged.",
+      "Adds coherent logo, icon navigation, Brand switching and theme support.",
+      "Improves interaction clarity, responsive behavior and accessibility.",
+      "Preserves every existing feature and route.",
       "Does not enable production credentials, release or deployment."
     ]
   },
@@ -62,29 +51,29 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-79@1.0",
+      "version": "VS-80@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner specified the simplified product-level journey and instructed proceeding."
+      "rationale": "The Product Owner approved the complete visual navigation and accessibility task list and instructed implementation."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-79@1.0",
+      "version": "VS-80@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice changes default presentation and orchestration projections without weakening approval, truth or tenant boundaries."
+      "rationale": "The slice is bounded to presentation, navigation and accessibility and does not weaken product or security controls."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-79@1.0",
+      "version": "VS-80@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner explicitly requested these additions and instructed proceeding."
+      "rationale": "The Product Owner explicitly instructed building the approved UI batch."
     },
     {
       "type": "certification",
@@ -129,9 +118,9 @@
     "commitSha": null,
     "evidence": [
       "runtime:typecheck passed for all workspaces",
-      "runtime:test passed: 601 tests",
-      "runtime:build passed",
-      "lock, JSON, governance, dashboard and diff checks passed"
+      "runtime:test passed: 607 tests including 6 new visual-navigation tests",
+      "web production build passed",
+      "JSON, governance, dashboard and diff checks passed"
     ]
   },
   "release": {
@@ -149,7 +138,7 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-79.md",
+    "specification": "docs/slices/VS-80.md",
     "implementationPr": null,
     "evidence": []
   },
