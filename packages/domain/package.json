@@ -29,6 +29,8 @@
     "./operations": "./src/operations.ts",
     "./skill-registry": "./src/skill-registry.ts",
     "./creative-formats": "./src/creative-formats.ts",
+    "./carousel-project": "./src/carousel-project.ts",
+    "./creative-quality": "./src/creative-quality.ts",
     "./format-intelligence": "./src/format-intelligence.ts",
     "./video-project": "./src/video-project.ts",
     "./marketing-benchmark": "./src/marketing-benchmark.ts",

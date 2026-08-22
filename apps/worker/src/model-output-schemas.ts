@@ -76,6 +76,83 @@ const CONTENT_DRAFT_SCHEMA = Object.freeze({
   additionalProperties: false,
 });
 
+const productionClaimIdsSchema = Object.freeze({
+  type: "array",
+  minItems: 1,
+  maxItems: 100,
+  uniqueItems: true,
+  items: claimIdSchema,
+});
+
+const PRODUCTION_CAROUSEL_PROJECT_SCHEMA = Object.freeze({
+  type: "object",
+  properties: {
+    schemaVersion: { type: "integer", enum: [1] },
+    format: { type: "string", enum: ["carousel"] },
+    structure: { type: "string", enum: ["aida", "pas", "listicle", "case-study", "story", "comparison"] },
+    coverHook: { type: "string", minLength: 1, maxLength: 300 },
+    caption: { type: "string", minLength: 1, maxLength: 5_000 },
+    cta: { type: "string", minLength: 1, maxLength: 500 },
+    slides: {
+      type: "array",
+      minItems: 2,
+      maxItems: 10,
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$", maxLength: 200 },
+          role: { type: "string", enum: ["hook", "attention", "interest", "desire", "problem", "agitation", "solution", "list-item", "context", "challenge", "approach", "result", "story-beat", "comparison", "evidence", "insight", "cta"] },
+          headline: { type: "string", minLength: 1, maxLength: 240 },
+          body: { type: "string", minLength: 1, maxLength: 2_000 },
+          imageAssetId: { type: "string", minLength: 1, maxLength: 600 },
+          supportingClaimIds: productionClaimIdsSchema,
+        },
+        required: ["id", "role", "headline", "body", "supportingClaimIds"],
+        additionalProperties: false,
+      },
+    },
+    supportingClaimIds: productionClaimIdsSchema,
+  },
+  required: ["schemaVersion", "format", "structure", "coverHook", "caption", "cta", "slides", "supportingClaimIds"],
+  additionalProperties: false,
+});
+
+const PRODUCTION_REEL_PROJECT_SCHEMA = Object.freeze({
+  type: "object",
+  properties: {
+    schemaVersion: { type: "integer", enum: [1] },
+    contentType: { type: "string", enum: ["reel"] },
+    title: { type: "string", minLength: 1, maxLength: 300 },
+    hook: { type: "string", minLength: 1, maxLength: 300 },
+    targetDurationSeconds: { type: "number", minimum: 5, maximum: 300 },
+    caption: { type: "string", minLength: 1, maxLength: 2_200 },
+    cta: { type: "string", minLength: 1, maxLength: 500 },
+    scenes: {
+      type: "array",
+      minItems: 2,
+      maxItems: 40,
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._-]*$", maxLength: 120 },
+          role: { type: "string", enum: ["hook", "problem", "insight", "evidence", "solution", "cta", "story-beat"] },
+          startSecond: { type: "number", minimum: 0, maximum: 300 },
+          endSecond: { type: "number", minimum: 0, maximum: 300 },
+          visual: { type: "string", minLength: 1, maxLength: 1_000 },
+          onScreenText: { type: "string", minLength: 1, maxLength: 500 },
+          voiceover: { type: "string", minLength: 1, maxLength: 2_000 },
+          supportingClaimIds: productionClaimIdsSchema,
+        },
+        required: ["id", "role", "startSecond", "endSecond", "visual", "onScreenText", "voiceover", "supportingClaimIds"],
+        additionalProperties: false,
+      },
+    },
+    supportingClaimIds: productionClaimIdsSchema,
+  },
+  required: ["schemaVersion", "contentType", "title", "hook", "targetDurationSeconds", "caption", "cta", "scenes", "supportingClaimIds"],
+  additionalProperties: false,
+});
+
 const CRITIC_REVIEW_SCHEMA = Object.freeze({
   type: "object",
   properties: {
@@ -154,6 +231,26 @@ export function responseFormatForOutputSchema(
   input?: string,
 ): OpenAICompatibleResponseFormat {
   if (provider === "groq" && GROQ_STRICT_MODELS.has(model)) {
+    if (outputSchema.name === "production-carousel-project" && outputSchema.version === "1") {
+      return {
+        type: "json_schema",
+        json_schema: {
+          name: "production_carousel_project_1",
+          strict: true,
+          schema: PRODUCTION_CAROUSEL_PROJECT_SCHEMA,
+        },
+      };
+    }
+    if (outputSchema.name === "production-reel-project" && outputSchema.version === "1") {
+      return {
+        type: "json_schema",
+        json_schema: {
+          name: "production_reel_project_1",
+          strict: true,
+          schema: PRODUCTION_REEL_PROJECT_SCHEMA,
+        },
+      };
+    }
     if (outputSchema.name === "content-draft" && outputSchema.version === "1") {
       return {
         type: "json_schema",

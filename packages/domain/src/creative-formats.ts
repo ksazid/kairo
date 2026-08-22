@@ -39,7 +39,7 @@ export type MarketingCreativePlan = CarouselPlan | ReelPlan;
 export function validateCarouselPlan(input: CarouselPlan): CarouselPlan {
   if (!input || input.format !== "carousel") throw new DomainValidationError("Carousel format is required");
   const supportingClaimIds = claimIds(input.supportingClaimIds, "carousel.supportingClaimIds");
-  if (!Array.isArray(input.slides) || input.slides.length < 3 || input.slides.length > 20) throw new DomainValidationError("Carousel requires between 3 and 20 slides");
+  if (!Array.isArray(input.slides) || input.slides.length < 2 || input.slides.length > 20) throw new DomainValidationError("Carousel requires between 2 and 20 slides");
   const allowed = new Set(supportingClaimIds);
   const slides = input.slides.map((slide, index) => {
     if (!slide || typeof slide !== "object") throw new DomainValidationError(`carousel.slides[${index}] is required`);

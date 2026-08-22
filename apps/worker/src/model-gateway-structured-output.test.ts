@@ -169,6 +169,26 @@ describe("strict structured model output", () => {
     });
   });
 
+  it("uses strict production project schemas for carousel and Reel generation", () => {
+    const carousel = responseFormatForOutputSchema("groq", "openai/gpt-oss-120b", { name: "production-carousel-project", version: "1" });
+    expect(carousel).toMatchObject({
+      type: "json_schema",
+      json_schema: {
+        name: "production_carousel_project_1",
+        strict: true,
+        schema: {
+          properties: {
+            structure: { enum: ["aida", "pas", "listicle", "case-study", "story", "comparison"] },
+            caption: { type: "string", minLength: 1, maxLength: 5_000 },
+            slides: { minItems: 2, maxItems: 10, items: { properties: { id: { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$", maxLength: 200 }, role: { type: "string" }, imageAssetId: { type: "string", minLength: 1, maxLength: 600 }, supportingClaimIds: { minItems: 1 } }, additionalProperties: false } },
+          },
+          additionalProperties: false,
+        },
+      },
+    });
+    expect(responseFormatForOutputSchema("groq", "openai/gpt-oss-120b", { name: "production-reel-project", version: "1" })).toMatchObject({ type: "json_schema", json_schema: { name: "production_reel_project_1", strict: true } });
+  });
+
   it("keeps JSON object mode for providers or models without the certified Groq strict route", () => {
     expect(responseFormatForOutputSchema("openai", "openai/gpt-oss-120b", { name: "marketing-carousel-plan", version: "1" })).toEqual({ type: "json_object" });
     expect(responseFormatForOutputSchema("groq", "other-model", { name: "marketing-carousel-plan", version: "1" })).toEqual({ type: "json_object" });
