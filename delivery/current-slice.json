@@ -1,11 +1,11 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-82",
-  "title": "VS-82 — Remaining Instagram Completion",
-  "status": "completed",
-  "lifecycle": "validated",
+  "sliceId": "VS-83",
+  "title": "VS-83 — Production Object Storage and Live Carousel Verification",
+  "status": "active",
+  "lifecycle": "testing",
   "riskLevel": "high",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "runtime-disabled",
   "requirements": [
     "FR-02",
     "FR-03",
@@ -29,7 +29,8 @@
     "VS-75",
     "VS-77",
     "VS-78",
-    "VS-81"
+    "VS-81",
+    "VS-82"
   ],
   "blockers": [],
   "allowedPaths": [
@@ -41,8 +42,8 @@
     "product/**",
     "planning/**",
     "decisions/**",
-    "docs/slices/VS-82.md",
-    "docs/plans/VS-82-implementation.md",
+    "docs/slices/VS-83.md",
+    "docs/plans/VS-83-implementation.md",
     "delivery/**",
     "scripts/**",
     "README.md",
@@ -73,56 +74,56 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-82@1.0",
+      "version": "VS-83@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T06:35:00+02:00",
-      "rationale": "The Product Owner supplied the remaining task list and instructed Kairo to combine related tasks and start fixing them."
+      "at": "2026-08-22T22:00:00+02:00",
+      "rationale": "The Product Owner approved the production object storage and live carousel verification batch."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-82@1.0",
+      "version": "VS-83@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Existing decisions govern Brand isolation, owner-reviewed inference, private media, deterministic publishing, human Learning acceptance and official channel adapters. The slice does not weaken those controls."
+      "rationale": "Existing decisions require private media, temporary adapter-bound delivery and immutable approved publishing."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-82@1.0",
+      "version": "VS-83@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T06:35:00+02:00",
-      "rationale": "The Product Owner explicitly instructed implementation after combining the related remaining tasks."
+      "at": "2026-08-22T22:00:00+02:00",
+      "rationale": "The Product Owner explicitly instructed the next approved batch to start."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-82@1.0",
-      "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
-      "by": "Sazid Khan",
-      "at": "2026-08-22T19:07:00+02:00",
-      "rationale": "Product Owner confirmed Certification completed after the final Reel worker fix merged."
+      "status": "pending",
+      "version": "VS-83@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-82@1.0",
-      "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
-      "by": "Sazid Khan",
-      "at": "2026-08-22T19:07:00+02:00",
-      "rationale": "Product Owner confirmed Release Gate completed for the final runtime SHA."
+      "status": "pending",
+      "version": "VS-83@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-82@1.0",
-      "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
-      "by": "Sazid Khan",
-      "at": "2026-08-22T19:08:00+02:00",
-      "rationale": "The final certified release was deployed and the already-approved production Reel command was provider-confirmed Published."
+      "status": "pending",
+      "version": "VS-83@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     }
   ],
   "decisionIds": [],
@@ -131,54 +132,33 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 100,
-    "release": 100,
-    "validation": 100
+    "certification": 0,
+    "release": 0,
+    "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
-    "evidence": [
-      "Local TypeScript checks passed for Domain, Worker, API and Web",
-      "Local deterministic suite passed: 660 tests; 38 environment-gated tests skipped; 0 failures",
-      "Next.js production build passed with webpack after correcting a page-module export contract",
-      "Lock, JSON, governance, dashboard, script syntax and diff checks passed",
-      "Fresh-Idea production concurrency verification persisted one Research dossier and exactly two candidate Angles",
-      "Migrations 0023 through 0028 applied transactionally with checksum and exact-SHA guards",
-      "Provider-backed Reel command 95783df8-11df-4e6f-8143-857b63c5d791 reached Published in Calendar",
-      "Results exposed fresh Instagram observations after publishing",
-      "PR #141 and issue #142 were closed after evidence preservation"
-    ]
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
   },
   "release": {
-    "status": "released",
-    "releaseId": "REL-004"
+    "status": "not-authorized",
+    "releaseId": null
   },
   "rollback": {
-    "status": "ready",
-    "rollbackId": "RB-004"
+    "status": "not-applicable",
+    "rollbackId": null
   },
   "postRelease": {
-    "status": "validated",
-    "reviewAt": "2026-08-22T19:12:00+02:00",
-    "expectedOutcome": "Instagram Reel publishes through the deterministic worker and appears in Calendar and Results.",
-    "metrics": ["published Reel command", "Calendar Published state", "Instagram Results observations"]
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": "The exact approved private carousel asset publishes to Instagram and appears in Calendar and Results.",
+    "metrics": ["published carousel command", "provider media ID", "Calendar Published state", "Instagram Results observations"]
   },
   "links": {
-    "specification": "docs/slices/VS-82.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/155",
-    "evidence": [
-      "docs/slices/VS-82.md",
-      "delivery/context/VS-82.md",
-      "apps/api/src/instagram-source-intelligence.test.ts",
-      "apps/api/src/instagram-visual-analysis.test.ts",
-      "apps/worker/src/creative-renderer.test.ts",
-      "apps/worker/src/performance-patterns.test.ts",
-      "apps/api/src/vs04-postgres-research.integration.test.ts",
-      "https://github.com/ksazid/kairo/pull/155",
-      "https://github.com/ksazid/kairo/pull/160",
-      "https://github.com/ksazid/kairo/pull/141"
-    ]
+    "specification": "docs/slices/VS-83.md",
+    "implementationPr": null,
+    "evidence": ["docs/slices/VS-83.md"]
   },
   "maxAttempts": 3
 }

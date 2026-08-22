@@ -7,6 +7,7 @@ import { publishingWorkerConfigFromEnv } from "./publishing-worker-config";
 import { runPublishingTick } from "./publishing-worker-runtime";
 import { PgApprovedMediaDelivery } from "./approved-media-delivery-postgres";
 import { HmacObjectStorageTemporarySigner } from "./object-storage-temporary-signer";
+import { S3TemporaryObjectSigner, s3PrivateObjectStorageConfigFromEnv } from "./private-object-storage";
 
 const config = publishingWorkerConfigFromEnv(process.env);
 const pool = new Pool({ connectionString: config.databaseUrl });
@@ -17,9 +18,9 @@ const providerPublishing = new DeterministicPublishingWorker([
   new InstagramProfessionalAdapter(vault, config.graphVersion, fetch, undefined, "instagram-login"),
   new FacebookPageAdapter(vault, config.graphVersion),
 ]);
-const mediaDelivery = config.objectStoragePublicBaseUrl && config.objectStorageSigningSecret
-  ? new PgApprovedMediaDelivery(pool,new HmacObjectStorageTemporarySigner(config.objectStoragePublicBaseUrl,config.objectStorageSigningSecret))
-  : undefined;
+const privateObjectStorage=s3PrivateObjectStorageConfigFromEnv(process.env);
+const mediaSigner=privateObjectStorage?new S3TemporaryObjectSigner(privateObjectStorage):config.objectStoragePublicBaseUrl&&config.objectStorageSigningSecret?new HmacObjectStorageTemporarySigner(config.objectStoragePublicBaseUrl,config.objectStorageSigningSecret):undefined;
+const mediaDelivery=mediaSigner?new PgApprovedMediaDelivery(pool,mediaSigner):undefined;
 const publishing = new ApprovedMediaPublishingWorker(providerPublishing,mediaDelivery);
 const leaseOwner = `instagram-publisher-${process.pid}`;
 const runner = new PublishingJobRunner(store, publishing, leaseOwner, config.leaseSeconds);

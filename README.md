@@ -75,6 +75,7 @@ Status terms:
 | Calendar / Publishing | Implemented / governed | Deterministic jobs, idempotency/retries/reconciliation and official channel-adapter boundary. |
 | Instagram account connection | Implemented / governed | Server-side Meta OAuth flow, encrypted channel credentials, scoped account selection, reconnect/expiry handling. |
 | Instagram publishing | Implemented / governed | Official Instagram Professional single-image, Reel and 2–10 image-carousel publishing through deterministic provider containers; credentials remain behind `credentialRef`. |
+| Private creative storage | Implementation | S3-compatible private object storage uses immutable Brand-scoped keys; Review and Meta receive bounded SigV4 GET URLs only. Configure `OBJECT_STORAGE_ENDPOINT`, `OBJECT_STORAGE_REGION`, `OBJECT_STORAGE_BUCKET`, `OBJECT_STORAGE_ACCESS_KEY_ID`, `OBJECT_STORAGE_SECRET_ACCESS_KEY`, and optional `OBJECT_STORAGE_PROVIDER`. |
 | Instagram Insights | Implemented / governed foundation | Scoped Insights collection, metric jobs, unavailable/retry states and provenance-backed ingestion. |
 | LinkedIn publishing | Implemented / governed foundation | Official organization publishing adapter boundary and governed scheduling/publishing flow. |
 | Performance tracking | Implemented / governed | Raw/normalised metric model, provenance, asynchronous collection boundary and Brand baselines. |

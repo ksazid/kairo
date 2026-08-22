@@ -21,6 +21,8 @@ import{registerContentAssetSelectionRoutes}from"./content-asset-selection-routes
 import{PgCarouselStudioStore}from"./carousel-studio-postgres";
 import{registerCarouselStudioRoutes}from"./carousel-studio-routes";
 import{HmacObjectStorageTemporarySigner}from"./object-storage-temporary-signer";
+import{S3PrivateCreativeObjectStore,S3TemporaryObjectSigner,s3PrivateObjectStorageConfigFromEnv}from"./private-object-storage";
+import{CarouselRenderService}from"./carousel-render-service";
 import{GoogleDriveContentAssetService}from"./google-drive-content-assets";
 import{GoogleDriveOAuthClient}from"./google-drive-content-assets-client";
 import{PgEncryptedContentAssetCredentialVault,PgGoogleDriveConnectionRepository}from"./google-drive-content-assets-postgres";
@@ -167,9 +169,9 @@ registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBr
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
-const carouselStorage=carouselObjectStorageConfig();
-const carouselSigner=carouselStorage?new HmacObjectStorageTemporarySigner(carouselStorage.publicBaseUrl,carouselStorage.signingSecret):undefined;
-if(carouselSigner)registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner)});
+const privateCarouselStorage=s3PrivateObjectStorageConfigFromEnv(process.env),legacyCarouselStorage=carouselObjectStorageConfig();
+const carouselSigner=privateCarouselStorage?new S3TemporaryObjectSigner(privateCarouselStorage):legacyCarouselStorage?new HmacObjectStorageTemporarySigner(legacyCarouselStorage.publicBaseUrl,legacyCarouselStorage.signingSecret):undefined;
+if(carouselSigner){const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner),renderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:carouselStore,...(renderer?{renderer}:{})});}
 registerSimplePublishFlowRoutes(app,{coreStore,identityVerifier,service:new SimplePublishFlowService(new PgSimplePublishFlowRepository(pool,carouselSigner))});
 registerBrandNotificationRoutes(app,{coreStore,identityVerifier,repository:new PgBrandNotificationRepository(pool)});
 
