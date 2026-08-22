@@ -87,7 +87,6 @@ for (let attempt = 0; attempt < 4; attempt += 1) {
     if (review?.status === "passed") break;
     if (review?.status && review.status !== "passed") {
       console.log(`REEL_REVIEW_FEEDBACK=${JSON.stringify(review)}`);
-      throw new Error(`Reel review did not pass: ${review.status}`);
     }
   }
   if (attempt < 3) await sleep((attempt + 1) * 6000);
