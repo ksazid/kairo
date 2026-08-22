@@ -6,7 +6,7 @@ import {
   getSession,
 } from "../../../../../../../src/lib/kairo-api";
 import {
-  getCarouselReview,
+  ensureCarouselReview,
   type CarouselQualityFinding,
 } from "../../../../../../../src/lib/carousel-review-api";
 import {
@@ -38,7 +38,7 @@ export default async function CarouselReviewPage({
   const [brand, detail, review] = await Promise.all([
     getBrand(brandId),
     getCampaignDetail(brandId, campaignId),
-    getCarouselReview(brandId, campaignId, assetId),
+    ensureCarouselReview(brandId, campaignId, assetId),
   ]);
   if (!brand || !detail) redirect("/");
   const workspace = session.workspaces.find((x) => x.id === brand.workspaceId);
