@@ -1,4 +1,4 @@
-export type CalendarChannel = "linkedin" | "instagram" | "manual";
+export type CalendarChannel = "linkedin" | "instagram" | "facebook" | "manual";
 export type CalendarStatus = "scheduled" | "dispatching" | "published" | "failed" | "unknown" | "manual-required" | "cancelled";
 
 export interface CalendarFilterable {

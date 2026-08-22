@@ -36,7 +36,7 @@ export class PgPublishingExecutionStore implements PublishingExecutionStore {
         params,
       );
       const q = await x.query(
-        `select c.*,v.content,a.credential_ref from publish_commands c join content_versions v on v.id=c.version_id and v.asset_id=c.asset_id join channel_accounts a on a.id=c.channel_account_id and a.status='connected' where c.status='scheduled' and c.attempt_count<3 and coalesce(c.next_attempt_at,c.scheduled_for)<=$1 and (c.lease_expires_at is null or c.lease_expires_at<$1)${filter} order by coalesce(c.next_attempt_at,c.scheduled_for),c.id for update of c skip locked limit 1`,
+        `select c.*,v.content,a.credential_ref,a.auth_method from publish_commands c join content_versions v on v.id=c.version_id and v.asset_id=c.asset_id join channel_accounts a on a.id=c.channel_account_id and a.status='connected' where c.status='scheduled' and c.attempt_count<3 and coalesce(c.next_attempt_at,c.scheduled_for)<=$1 and (c.lease_expires_at is null or c.lease_expires_at<$1)${filter} order by coalesce(c.next_attempt_at,c.scheduled_for),c.id for update of c skip locked limit 1`,
         params,
       );
       const r = q.rows[0];
@@ -71,6 +71,7 @@ export class PgPublishingExecutionStore implements PublishingExecutionStore {
         channel: r.channel,
         accountRef: r.account_ref,
         credentialRef: r.credential_ref,
+        ...(r.auth_method ? { authMethod: r.auth_method } : {}),
         contentType: r.content_type,
         content: r.content,
         mediaUrls: mediaItems.map((item: any) => item?.url).filter((value: unknown): value is string => typeof value === "string"),

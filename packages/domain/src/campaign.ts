@@ -1,7 +1,7 @@
 import { ConcurrencyConflictError, DomainValidationError } from "./index";
 import type { ContentAssetKind, ContentAssetProvider } from "./content-asset-library";
 
-export type ContentChannel = "linkedin" | "instagram" | "manual";
+export type ContentChannel = "linkedin" | "instagram" | "facebook" | "manual";
 export type ContentActor = "user" | "ai";
 export type ContentAction = "initial-draft" | "alternative" | "simplify" | "expand" | "adjust-depth" | "strengthen-opening" | "regenerate-section" | "manual-edit" | "asset-selection";
 
@@ -33,7 +33,7 @@ export function createCampaign(input: { id: string; name: string; objective: str
 }
 
 export function createContentAsset(input: { id: string; campaign: Campaign; channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; createdAt: string }): ContentAsset {
-  if (!["linkedin", "instagram", "manual"].includes(input.channel)) throw new DomainValidationError("channel is not supported");
+  if (!["linkedin", "instagram", "facebook", "manual"].includes(input.channel)) throw new DomainValidationError("channel is not supported");
   return { id: text(input.id, "id", 200), workspaceId: input.campaign.workspaceId, brandId: input.campaign.brandId, campaignId: input.campaign.id, channel: input.channel, format: text(input.format, "format", 120), audience: text(input.audience, "audience", 500), topic: text(input.topic, "topic", 500), hookType: text(input.hookType, "hookType", 120), cta: text(input.cta, "cta", 500), supportingClaimIds: [...input.campaign.supportingClaimIds], currentVersion: 0, status: "draft", createdAt: timestamp(input.createdAt, "createdAt") };
 }
 

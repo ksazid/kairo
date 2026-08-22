@@ -6,7 +6,7 @@ import {
   type PublishingJob,
   type ProviderPublishResult,
 } from "./publishing";
-import { InstagramProfessionalAdapter, LinkedInOrganizationAdapter } from "./publishing-adapters";
+import { FacebookPageAdapter, InstagramProfessionalAdapter, LinkedInOrganizationAdapter } from "./publishing-adapters";
 
 const base: PublishingJob = {
   commandId: "cmd",
@@ -95,6 +95,33 @@ describe("deterministic publishing adapters", () => {
     };
     expect(instagram.supports({ ...instagramImage, content: "x".repeat(2200) })).toBe(true);
     expect(instagram.supports({ ...instagramImage, content: "x".repeat(2201) })).toBe(false);
+  });
+
+  it("routes direct Instagram Login to graph.instagram.com without changing the legacy path", async () => {
+    const calls: string[] = [];
+    const direct = new InstagramProfessionalAdapter(secrets, "v24.0", async (input) => {
+      calls.push(String(input));
+      return new Response(JSON.stringify({ id: calls.length === 1 ? "container-direct" : "media-direct" }), { status: 200, headers: { "content-type": "application/json" } });
+    }, undefined, "instagram-login");
+    const legacy = new InstagramProfessionalAdapter(secrets, "v24.0");
+    const job: PublishingJob = { ...base, channel: "instagram", authMethod: "instagram-login", accountRef: "123", credentialRef: "vault://ig-direct", contentType: "image", mediaItems: [{ kind: "image", url: "https://cdn.example.com/image.jpg" }], mediaUrls: [] };
+    expect(legacy.supports(job)).toBe(false);
+    expect((await new DeterministicPublishingWorker([legacy, direct]).execute(job)).status).toBe("published");
+    expect(calls.every((url) => url.startsWith("https://graph.instagram.com/v24.0/"))).toBe(true);
+  });
+
+  it("publishes bounded Facebook Page text and image while leaving other formats manual", async () => {
+    const requests: Array<{ url: string; body: unknown }> = [];
+    const adapter = new FacebookPageAdapter(secrets, "v24.0", async (input, init) => {
+      requests.push({ url: String(input), body: JSON.parse(String(init?.body)) });
+      return new Response(JSON.stringify({ id: "page-post-1" }), { status: 200, headers: { "content-type": "application/json" } });
+    });
+    const textJob: PublishingJob = { ...base, channel: "facebook", authMethod: "facebook-login", accountRef: "456", credentialRef: "vault://fb", contentType: "text" };
+    expect(await adapter.publish(textJob)).toEqual({ status: "published", externalPostId: "page-post-1" });
+    const imageJob: PublishingJob = { ...textJob, contentType: "image", mediaItems: [{ kind: "image", url: "https://cdn.example.com/page.jpg" }] };
+    expect(await adapter.publish(imageJob)).toEqual({ status: "published", externalPostId: "page-post-1" });
+    expect(requests.map((item) => item.url)).toEqual(["https://graph.facebook.com/v24.0/456/feed", "https://graph.facebook.com/v24.0/456/photos"]);
+    expect(await new DeterministicPublishingWorker([adapter]).execute({ ...textJob, contentType: "carousel" })).toMatchObject({ status: "manual-required" });
   });
 
   it("fails closed to manual and preserves unknown network outcomes", async () => {

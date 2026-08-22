@@ -49,7 +49,7 @@ describe("VS-34 format intelligence library", () => {
 
   it("keeps actual provider capability outside format-fit guidance", () => {
     for (const profile of FORMAT_INTELLIGENCE_CATALOG) {
-      expect(profile.channelFit).toHaveLength(3);
+      expect(profile.channelFit).toHaveLength(4);
       for (const fit of profile.channelFit) {
         expect(fit.rationale.toLowerCase()).not.toMatch(/api supports|provider supports|publish capability granted|oauth/);
       }

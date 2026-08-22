@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { DeterministicPublishingWorker, PublishingJobRunner } from "@kairo/worker/publishing";
-import { InstagramProfessionalAdapter } from "@kairo/worker/publishing-adapters";
+import { FacebookPageAdapter, InstagramProfessionalAdapter } from "@kairo/worker/publishing-adapters";
 import { PgEncryptedChannelCredentialVault } from "./instagram-connection-postgres";
 import { PgPublishingExecutionStore } from "./publishing-execution-postgres-store";
 import { publishingWorkerConfigFromEnv } from "./publishing-worker-config";
@@ -9,9 +9,11 @@ import { runPublishingTick } from "./publishing-worker-runtime";
 const config = publishingWorkerConfigFromEnv(process.env);
 const pool = new Pool({ connectionString: config.databaseUrl });
 const vault = new PgEncryptedChannelCredentialVault(pool, config.encryptionKey);
-const store = new PgPublishingExecutionStore(pool, { channels: ["instagram"] });
+const store = new PgPublishingExecutionStore(pool, { channels: ["instagram", "facebook"] });
 const publishing = new DeterministicPublishingWorker([
   new InstagramProfessionalAdapter(vault, config.graphVersion),
+  new InstagramProfessionalAdapter(vault, config.graphVersion, fetch, undefined, "instagram-login"),
+  new FacebookPageAdapter(vault, config.graphVersion),
 ]);
 const leaseOwner = `instagram-publisher-${process.pid}`;
 const runner = new PublishingJobRunner(store, publishing, leaseOwner, config.leaseSeconds);

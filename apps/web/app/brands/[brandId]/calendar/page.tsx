@@ -36,7 +36,7 @@ type CalendarEntry = PublishCommandView & { brandName: string; campaignName: str
 
 type DestinationView = Awaited<ReturnType<typeof getChannelAccounts>>[number] & { brandName: string };
 
-const CHANNELS: CalendarChannel[] = ["instagram", "linkedin", "manual"];
+const CHANNELS: CalendarChannel[] = ["instagram", "facebook", "linkedin", "manual"];
 const STATUSES: CalendarStatus[] = ["scheduled", "dispatching", "published", "failed", "unknown", "manual-required", "cancelled"];
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 

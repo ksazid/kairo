@@ -362,7 +362,7 @@ export default async function Studio({ params, searchParams }: { params: Params;
               <p>Start manually; contextual AI actions remain secondary and every save creates a new immutable version.</p>
             </div>
             <form className="asset-form" action={createAssetAction.bind(null, brand.id, campaignId)}>
-              <label>Channel<select name="channel"><option value="linkedin">LinkedIn</option><option value="instagram">Instagram</option><option value="manual">Manual</option></select></label>
+              <label>Channel<select name="channel"><option value="linkedin">LinkedIn</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="manual">Manual</option></select></label>
               <label>Format<input name="format" defaultValue="text" required /></label>
               <label>Audience<input name="audience" required /></label>
               <label>Topic<input name="topic" required /></label>

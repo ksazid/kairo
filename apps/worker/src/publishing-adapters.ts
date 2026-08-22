@@ -87,6 +87,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
     private graphVersion: string,
     private fetchImpl: FetchLike = fetch,
     processing?: Partial<InstagramProcessingPolicy>,
+    private authMethod: "facebook-login" | "instagram-login" = "facebook-login",
   ) {
     this.processing = {
       ...defaultProcessing,
@@ -96,6 +97,7 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
   }
 
   supports(job: PublishingJob) {
+    if ((job.authMethod ?? "facebook-login") !== this.authMethod) return false;
     if (!channelContentFits("instagram", job.contentType, job.content) || !/^\d+$/.test(job.accountRef)) return false;
     const items = media(job);
     if (job.contentType === "image") {
@@ -113,7 +115,8 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
   async publish(job: PublishingJob): Promise<ProviderPublishResult> {
     const token = await credential(this.secrets, job.credentialRef);
     if (!token) return { status: "failed", failureCode: "credential-unavailable", retryable: false };
-    const base = `https://graph.facebook.com/${requiredGraph(this.graphVersion)}`;
+    const host = this.authMethod === "instagram-login" ? "graph.instagram.com" : "graph.facebook.com";
+    const base = `https://${host}/${requiredGraph(this.graphVersion)}`;
 
     try {
       if (job.contentType === "image") return this.publishImage(base, token, job);
@@ -232,6 +235,30 @@ export class InstagramProfessionalAdapter implements PublishingAdapter {
     return id
       ? { status: "published", externalPostId: id, providerCorrelationId: container }
       : { status: "unknown", providerCorrelationId: container };
+  }
+}
+
+export class FacebookPageAdapter implements PublishingAdapter {
+  readonly channel = "facebook" as const;
+  constructor(private secrets: PublishingSecretResolver, private graphVersion: string, private fetchImpl: FetchLike = fetch) {}
+  supports(job: PublishingJob) {
+    if (job.authMethod !== "facebook-login" || !/^\d+$/.test(job.accountRef) || !channelContentFits("facebook", job.contentType, job.content)) return false;
+    if (job.contentType === "text") return true;
+    const items = media(job);
+    return job.contentType === "image" && items.length === 1 && items[0]?.kind === "image" && safeMedia(items[0].url);
+  }
+  async publish(job: PublishingJob): Promise<ProviderPublishResult> {
+    const token = await credential(this.secrets, job.credentialRef);
+    if (!token) return { status: "failed", failureCode: "credential-unavailable", retryable: false };
+    const base = `https://graph.facebook.com/${requiredGraph(this.graphVersion)}/${job.accountRef}`;
+    try {
+      const image = job.contentType === "image" ? media(job)[0] : undefined;
+      const response = await this.fetchImpl(`${base}/${image ? "photos" : "feed"}`, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(image ? { url: image.url, caption: job.content, published: true } : { message: job.content }) });
+      if (!response.ok) return failure(response);
+      const result = await response.json() as { id?: unknown; post_id?: unknown };
+      const id = typeof result.post_id === "string" ? result.post_id : typeof result.id === "string" ? result.id : undefined;
+      return id ? { status: "published", externalPostId: id } : { status: "unknown" };
+    } catch { return { status: "unknown" }; }
   }
 }
 

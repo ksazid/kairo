@@ -1,6 +1,7 @@
 const OAUTH_RETURN_COOKIE = "kairo_instagram_return_to";
+const META_RETURN_COOKIE = "kairo_meta_return_to";
 
-export { OAUTH_RETURN_COOKIE };
+export { META_RETURN_COOKIE, OAUTH_RETURN_COOKIE };
 
 export function safeBrandReturnTo(value: string | null | undefined, brandId: string): string {
   const fallback = `/brands/${encodeURIComponent(brandId)}/brain`;

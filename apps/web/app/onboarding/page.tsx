@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createWorkspaceAction } from "../actions";
 import { getSession } from "../../src/lib/kairo-api";
 import styles from "./onboarding.module.css";
+import { BrandSourceOptions } from "../source-options";
 
 export const dynamic = "force-dynamic";
 
@@ -42,10 +43,7 @@ export default async function OnboardingPage() {
             <small id="brand-reference-help">Kairo will use readable public pages as evidence for Brand Brain suggestions.</small>
           </label>
 
-          <label className={styles.sourceChoice}>
-            <input name="connectInstagram" type="checkbox" value="yes" />
-            <span><strong>Connect Instagram next</strong><small>After the Brand is created, connect its Professional account securely through Meta.</small></span>
-          </label>
+          <BrandSourceOptions />
 
           <button className="primary-button" type="submit">Create Brand and continue</button>
         </form>

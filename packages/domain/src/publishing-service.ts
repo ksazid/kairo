@@ -50,7 +50,7 @@ export class PublishingService {
   async connect(
     accountId: string,
     brandId: string,
-    input: { channel: PublishChannel; accountRef: string; displayName: string; credentialRef: string; capabilities: PublishCapability[] },
+    input: { channel: PublishChannel; accountRef: string; displayName: string; credentialRef: string; authMethod?: ChannelAccount["authMethod"]; capabilities: PublishCapability[] },
   ) {
     const brand = await this.core.getBrandForAccount(accountId, brandId);
     if (!brand) throw new ResourceNotFoundError("Brand not found");
