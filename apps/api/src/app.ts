@@ -204,13 +204,19 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
       if (bundle.research && bundle.angles.length >= 2) return bundle;
       if (!options.ideaDeveloper) throw new DomainValidationError("Research generation is not configured");
       const brand = await service.getBrand(account.id, request.params.brandId);
-      await options.ideaDeveloper.develop({
-        accountId: account.id,
-        workspaceId: brand.workspaceId,
-        brandId: brand.id,
-        brandContextVersion: `${brand.id}@current`,
-        idea: { id: bundle.idea.id, title: bundle.idea.title, premise: bundle.idea.premise },
-      });
+      try {
+        await options.ideaDeveloper.develop({
+          accountId: account.id,
+          workspaceId: brand.workspaceId,
+          brandId: brand.id,
+          brandContextVersion: `${brand.id}@current`,
+          idea: { id: bundle.idea.id, title: bundle.idea.title, premise: bundle.idea.premise },
+        });
+      } catch (error) {
+        const recovered = await research.getIdea(account.id, request.params.brandId, request.params.ideaId);
+        if (recovered?.research && recovered.angles.length >= 2) return recovered;
+        throw error;
+      }
       const developed = await research.getIdea(account.id, request.params.brandId, request.params.ideaId);
       if (!developed?.research || developed.angles.length < 2) throw new DomainValidationError("Research development did not produce usable candidate Angles");
       return developed;
