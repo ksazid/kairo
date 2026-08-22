@@ -39,6 +39,12 @@ export function registerInstagramConnectionRoutes(app: FastifyInstance, deps: {
     await deps.service.disconnect(account.id, request.params.brandId, request.params.channelAccountId);
     return reply.status(204).send();
   });
+
+  app.post<{ Params: { brandId: string; channelAccountId: string } }>("/api/v1/brands/:brandId/channels/instagram/:channelAccountId/refresh-source", async (request, reply) => {
+    const account = await authenticate(request, reply, core, deps.identityVerifier); if (!account) return;
+    await deps.service.refreshSource(account.id, request.params.brandId, request.params.channelAccountId);
+    return reply.status(204).send();
+  });
 }
 
 async function authenticate(request: FastifyRequest, reply: FastifyReply, core: KairoService, verifier: IdentityVerifier) {

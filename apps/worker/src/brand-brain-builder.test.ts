@@ -83,6 +83,53 @@ describe("BrandBrainBuilder", () => {
     await expect(builder.propose(input)).rejects.toThrow(/source/i);
   });
 
+  it("accepts bounded source-backed visual direction in the existing content-strategy section", async () => {
+    const runtime = new FakeRuntime({ proposals: [
+      {
+        section: "content-strategy",
+        fieldKey: "content.imagery-direction",
+        value: "Dynamic riding photography with clear subject focus.",
+        sourceIds: ["source-1"],
+      },
+    ] });
+    const builder = new BrandBrainBuilder(runtime);
+
+    await expect(builder.propose(input)).resolves.toEqual([{
+      section: "content-strategy",
+      fieldKey: "content.imagery-direction",
+      value: "Dynamic riding photography with clear subject focus.",
+      sourceIds: ["source-1"],
+    }]);
+  });
+
+  it("rejects visual direction without active supplied-source provenance", async () => {
+    const runtime = new FakeRuntime({ proposals: [
+      {
+        section: "content-strategy",
+        fieldKey: "content.logo-guidance",
+        value: "Keep the logo in the lower-right corner.",
+        sourceIds: [],
+      },
+    ] });
+    const builder = new BrandBrainBuilder(runtime);
+
+    await expect(builder.propose(input)).rejects.toThrow(/active source provenance/i);
+  });
+
+  it("rejects oversized imported visual direction", async () => {
+    const runtime = new FakeRuntime({ proposals: [
+      {
+        section: "content-strategy",
+        fieldKey: "content.visual-direction",
+        value: "x".repeat(2_001),
+        sourceIds: ["source-1"],
+      },
+    ] });
+    const builder = new BrandBrainBuilder(runtime);
+
+    await expect(builder.propose(input)).rejects.toThrow(/value is invalid/i);
+  });
+
   it("rejects empty, oversized or malformed proposal output", async () => {
     const malformed = [
       { proposals: [{ section: "audience", fieldKey: "audience.primary", value: "", sourceIds: ["source-1"] }] },

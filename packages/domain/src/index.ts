@@ -78,6 +78,10 @@ export interface KairoRepository {
   ): Promise<BrandBrainFieldDto>;
 
   listKnowledgeSources(accountId: string, brandId: string): Promise<KnowledgeSourceDto[]>;
+  listActiveKnowledgeExtractsForBrandBrain?(
+    accountId: string,
+    brandId: string,
+  ): Promise<Array<{ sourceId: string; title?: string; sourceUrl?: string; excerpt: string; contentType?: string; updatedAt: string }>>;
   createKnowledgeSource(
     accountId: string,
     brandId: string,

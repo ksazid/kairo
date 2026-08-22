@@ -90,6 +90,20 @@
 .form input:focus-visible { border-color: color-mix(in srgb, var(--k-primary) 55%, var(--k-neutral-200)); outline: 3px solid color-mix(in srgb, var(--k-primary) 12%, white); outline-offset: 1px; }
 .form button { width: 100%; min-height: 48px; margin-top: 2px; }
 
+.form .sourceChoice {
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--k-neutral-200);
+  border-radius: 10px;
+  background: var(--k-neutral-50);
+  cursor: pointer;
+}
+.form .sourceChoice > input { width: 18px; min-height: 18px; margin-top: 2px; accent-color: var(--k-primary); }
+.form .sourceChoice > span { display: grid; gap: 3px; }
+.form .sourceChoice strong { color: var(--k-neutral-900); font-size: 14px; }
+
 .nextStep {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);

@@ -169,6 +169,7 @@ if(meta){
   const connectionService=new InstagramConnectionService({
     brands:coreStore,
     publishing:publishingStore,
+    knowledge:coreStore,
     repo:instagramConnectionRepo,
     vault,
     meta:new MetaInstagramOAuthClient(meta.appId,meta.appSecret,meta.graphVersion,meta.redirectUri),

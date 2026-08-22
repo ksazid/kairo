@@ -68,10 +68,25 @@ const PROPOSAL_FIELDS = new Map<string, BrandBrainSection>([
   ["content.pillars", "content-strategy"],
   ["content.preferred-topics", "content-strategy"],
   ["content.channels", "content-strategy"],
+  ["content.visual-direction", "content-strategy"],
+  ["content.color-direction", "content-strategy"],
+  ["content.typography-direction", "content-strategy"],
+  ["content.imagery-direction", "content-strategy"],
+  ["content.logo-guidance", "content-strategy"],
   ["boundaries.claims-to-avoid", "boundaries"],
   ["boundaries.prohibited-subjects", "boundaries"],
   ["boundaries.sensitive-subjects", "boundaries"],
 ]);
+
+const SOURCE_REQUIRED_PROPOSAL_FIELDS = new Set([
+  "content.visual-direction",
+  "content.color-direction",
+  "content.typography-direction",
+  "content.imagery-direction",
+  "content.logo-guidance",
+]);
+
+const VISUAL_DIRECTION_VALUE_LIMIT = 2_000;
 
 export class BrandBrainBootstrapService {
   constructor(
@@ -109,6 +124,8 @@ export class BrandBrainBootstrapService {
       brand.publicProfileUrl,
       optionalUrl(input.publicReferenceUrl),
     ]);
+    const privateExtracts = await this.readActiveKnowledgeExtracts(accountId, brandId, new Set(successfulReferences.map((item) => item.sourceId)));
+    successfulReferences.push(...privateExtracts);
 
     if (!this.generator) {
       return {
@@ -152,8 +169,12 @@ export class BrandBrainBootstrapService {
       const section = PROPOSAL_FIELDS.get(proposal.fieldKey);
       if (!section || proposal.section !== section) throw new DomainValidationError("Brand Brain proposal is outside the guided allow-list");
       const value = proposal.value.trim();
-      if (!value || value.length > 10_000) throw new DomainValidationError("Brand Brain proposal value is invalid");
+      const valueLimit = SOURCE_REQUIRED_PROPOSAL_FIELDS.has(proposal.fieldKey) ? VISUAL_DIRECTION_VALUE_LIMIT : 10_000;
+      if (!value || value.length > valueLimit) throw new DomainValidationError("Brand Brain proposal value is invalid");
       const proposalSourceIds = [...new Set(proposal.sourceIds.map((sourceId) => sourceId.trim()).filter(Boolean))];
+      if (SOURCE_REQUIRED_PROPOSAL_FIELDS.has(proposal.fieldKey) && proposalSourceIds.length === 0) {
+        throw new DomainValidationError("Imported visual direction requires active source provenance");
+      }
       if (proposalSourceIds.some((sourceId) => !inspectedSources.has(sourceId))) {
         throw new DomainValidationError("Brand Brain proposal provenance is invalid");
       }
@@ -180,6 +201,26 @@ export class BrandBrainBootstrapService {
       skippedConfirmedCount,
       sourceIds: inspectedSourceIds,
     };
+  }
+
+  private async readActiveKnowledgeExtracts(
+    accountId: string,
+    brandId: string,
+    excludedSourceIds: ReadonlySet<string>,
+  ): Promise<Array<PublicBrandReference & { sourceId: string }>> {
+    if (!this.repository.listActiveKnowledgeExtractsForBrandBrain) return [];
+    const extracts = await this.repository.listActiveKnowledgeExtractsForBrandBrain(accountId, brandId);
+    return extracts
+      .filter((item) => !excludedSourceIds.has(item.sourceId) && item.excerpt.trim())
+      .slice(0, 5)
+      .map((item) => ({
+        sourceId: item.sourceId,
+        url: item.sourceUrl ?? `kairo-knowledge://${encodeURIComponent(item.sourceId)}`,
+        ...(item.title ? { title: item.title } : {}),
+        excerpt: item.excerpt.slice(0, 20_000),
+        retrievedAt: item.updatedAt,
+        ...(item.contentType ? { contentType: item.contentType } : {}),
+      }));
   }
 
   private async readReferences(

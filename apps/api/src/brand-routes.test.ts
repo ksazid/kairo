@@ -54,6 +54,22 @@ describe("VS-73 multi-Brand API", () => {
     await app.close();
   });
 
+  it("preserves Website and Instagram references for an additional Brand", async () => {
+    const app = testApp();
+    const alice = { authorization: "Bearer test:alice" };
+    const initial = await app.inject({ method: "POST", url: "/api/v1/workspaces", headers: alice, payload: { workspaceName: "Studio", brandName: "First" } });
+    const workspaceId = initial.json().workspace.id as string;
+    const created = await app.inject({
+      method: "POST",
+      url: `/api/v1/workspaces/${workspaceId}/brands`,
+      headers: alice,
+      payload: { brandName: "Second", publicSourceUrl: "https://example.com/about", publicProfileUrl: "https://www.instagram.com/example/" },
+    });
+    expect(created.statusCode).toBe(201);
+    expect(created.json()).toMatchObject({ publicSourceUrl: "https://example.com/about", publicProfileUrl: "https://www.instagram.com/example/" });
+    await app.close();
+  });
+
   it("returns safe not-found behavior when a foreign account tries to create or read a Brand in another Workspace", async () => {
     const app = testApp();
     const alice = { authorization: "Bearer test:alice" };
@@ -93,6 +109,17 @@ describe("VS-73 multi-Brand API", () => {
     expect(invalid.json().code).toBe("validation_error");
     const listed = await app.inject({ method: "GET", url: `/api/v1/workspaces/${workspaceId}/brands`, headers: alice });
     expect(listed.json()).toHaveLength(1);
+    await app.close();
+  });
+
+  it("rejects private-host Website references", async () => {
+    const app = testApp();
+    const alice = { authorization: "Bearer test:alice" };
+    const initial = await app.inject({ method: "POST", url: "/api/v1/workspaces", headers: alice, payload: { workspaceName: "Studio", brandName: "First" } });
+    const workspaceId = initial.json().workspace.id as string;
+    const invalid = await app.inject({ method: "POST", url: `/api/v1/workspaces/${workspaceId}/brands`, headers: alice, payload: { brandName: "Second", publicSourceUrl: "http://127.0.0.1/private" } });
+    expect(invalid.statusCode).toBe(400);
+    expect(invalid.json().code).toBe("validation_error");
     await app.close();
   });
 });

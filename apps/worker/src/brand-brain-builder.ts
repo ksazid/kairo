@@ -24,10 +24,25 @@ const ALLOWED_FIELDS = new Map<string, BrandBrainProposal["section"]>([
   ["content.pillars", "content-strategy"],
   ["content.preferred-topics", "content-strategy"],
   ["content.channels", "content-strategy"],
+  ["content.visual-direction", "content-strategy"],
+  ["content.color-direction", "content-strategy"],
+  ["content.typography-direction", "content-strategy"],
+  ["content.imagery-direction", "content-strategy"],
+  ["content.logo-guidance", "content-strategy"],
   ["boundaries.claims-to-avoid", "boundaries"],
   ["boundaries.prohibited-subjects", "boundaries"],
   ["boundaries.sensitive-subjects", "boundaries"],
 ]);
+
+const SOURCE_REQUIRED_FIELDS = new Set([
+  "content.visual-direction",
+  "content.color-direction",
+  "content.typography-direction",
+  "content.imagery-direction",
+  "content.logo-guidance",
+]);
+
+const VISUAL_DIRECTION_VALUE_LIMIT = 2_000;
 
 interface RawOutput { proposals: unknown }
 
@@ -47,6 +62,7 @@ export class BrandBrainBuilder implements BrandBrainProposalGenerator {
           "Use only owner-confirmed facts, facts supported by the supplied extracts, or cautious strategic interpretations that are clearly reasonable from that context.",
           "When a proposal relies on an external reference, sourceIds must contain only the supplied reference source IDs that actually support that field.",
           "When a proposal is based solely on owner-confirmed context, Brand name, or the owner-selected objective, sourceIds must be an empty array.",
+          "Visual-direction proposals are imported observations: output them only when a supplied active reference supports them, and always include that reference source ID.",
           "Do not cite a source merely because it was available. Do not invent source IDs.",
           "Do not invent personal experience, demographics, market facts, product claims, results, credentials, or browsing activity.",
           "Never output goals.objectives or boundaries.owner-directive; those belong to the owner.",
@@ -87,9 +103,13 @@ export function validateBrandBrainProposalOutput(value: unknown, allowedSourceId
     const valueText = typeof record.value === "string" ? record.value.trim() : "";
     const expectedSection = ALLOWED_FIELDS.get(fieldKey);
     if (!expectedSection || section !== expectedSection) throw new Error("Brand Brain proposal key is outside the guided allow-list");
-    if (!valueText || valueText.length > 10_000) throw new Error("Brand Brain proposal value is invalid");
+    const valueLimit = SOURCE_REQUIRED_FIELDS.has(fieldKey) ? VISUAL_DIRECTION_VALUE_LIMIT : 10_000;
+    if (!valueText || valueText.length > valueLimit) throw new Error("Brand Brain proposal value is invalid");
     if (!Array.isArray(record.sourceIds)) throw new Error("Brand Brain proposal sourceIds are required");
     const sourceIds = [...new Set(record.sourceIds.map((sourceId) => typeof sourceId === "string" ? sourceId.trim() : "").filter(Boolean))];
+    if (SOURCE_REQUIRED_FIELDS.has(fieldKey) && sourceIds.length === 0) {
+      throw new Error("Imported visual direction requires active source provenance");
+    }
     if (sourceIds.some((sourceId) => !allowedSourceIds.has(sourceId))) throw new Error("Brand Brain proposal source provenance is invalid");
     if (seen.has(fieldKey)) continue;
     seen.add(fieldKey);

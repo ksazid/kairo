@@ -13,6 +13,7 @@ class Repo implements InstagramConnectionRepository {
   intents: Array<any> = [];
   candidates: InstagramConnectionCandidate[] = [];
   disabled: string[] = [];
+  importTarget: { accountRef: string; pageRef: string; credentialRef: string } | null = null;
   async createIntent(value: any) { this.intents.push(value); }
   async consumeIntent(accountId: string, stateHash: string) {
     const intent = this.intents.find((x) => x.accountId === accountId && x.stateHash === stateHash && !x.consumedAt);
@@ -31,6 +32,7 @@ class Repo implements InstagramConnectionRepository {
     return item;
   }
   async disableConnection(_accountId: string, _brandId: string, channelAccountId: string) { this.disabled.push(channelAccountId); }
+  async connectionImportTarget() { return this.importTarget; }
 }
 
 class Vault implements InstagramCredentialVault {
@@ -55,13 +57,23 @@ class Meta implements MetaInstagramOAuthPort {
       ],
     };
   }
+  async readProfileSnapshot(accountRef: string, pageAccessToken: string) {
+    expect(pageAccessToken).toBe("secret-page-token-1");
+    return { accountRef, username: "one", biography: "Evidence-led studio", website: "https://one.example/", recentMedia: [{ id: "media-1", caption: "A useful caption", mediaType: "IMAGE" }], retrievedAt: "2026-08-15T05:00:00.000Z" };
+  }
 }
 
 function service(repo = new Repo(), vault = new Vault()) {
   const saved: ChannelAccount[] = [];
+  const sources: any[] = [];
   const instance = new InstagramConnectionService({
     brands: { async getBrandForAccount(accountId, brandId) { return accountId === "alice" && brandId === "brand-1" ? { id: brandId, workspaceId: "ws-1" } : null; } },
     publishing: { async saveChannelAccount(_accountId, channel) { saved.push(channel); return channel; } },
+    knowledge: {
+      async listKnowledgeSources() { return sources; },
+      async createKnowledgeSource(accountId, brandId, input) { const source = { id: `source-${sources.length + 1}`, accountId, brandId, ...input }; sources.push(source); return source; },
+      async removeKnowledgeSource(_accountId, _brandId, sourceId) { const source = sources.find((item) => item.id === sourceId); if (source) source.status = "removed"; return source; },
+    },
     repo,
     vault,
     meta: new Meta(),
@@ -69,7 +81,7 @@ function service(repo = new Repo(), vault = new Vault()) {
     stateBytes: () => Buffer.from("0123456789abcdef0123456789abcdef"),
     id: (() => { let n = 0; return () => `id-${++n}`; })(),
   });
-  return { instance, repo, vault, saved };
+  return { instance, repo, vault, saved, sources };
 }
 
 describe("VS-17 Instagram connection", () => {
@@ -99,7 +111,7 @@ describe("VS-17 Instagram connection", () => {
   });
 
   it("selects one candidate, preserves separate publish/Insights credentials and revokes both unselected secrets", async () => {
-    const { instance, vault, saved } = service();
+    const { instance, vault, saved, sources } = service();
     const started = await instance.begin("alice", "brand-1");
     const state = new URL(started.authorizationUrl).searchParams.get("state")!;
     const completed = await instance.complete("alice", "meta-code", state);
@@ -113,5 +125,23 @@ describe("VS-17 Instagram connection", () => {
     expect(vault.values.size).toBe(2);
     expect(selected.credentialRef).toContain(":publish:");
     expect(selected.credentialRef).not.toContain("secret-page-token");
+    expect(sources).toHaveLength(1);
+    expect(sources[0]).toMatchObject({ accountId: "alice", brandId: "brand-1", type: "research", status: "active", contentType: "application/vnd.kairo.instagram-profile+json" });
+    expect(JSON.parse(sources[0].rawContent)).toMatchObject({ accountRef: "111", biography: "Evidence-led studio", recentMedia: [{ id: "media-1", caption: "A useful caption" }] });
+    expect(sources[0].rawContent).not.toContain("secret-page-token");
+    expect(sources[0].contentHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("refreshes the connected Instagram source and retires the previous active snapshot", async () => {
+    const { instance, repo, vault, sources } = service();
+    repo.importTarget = { accountRef: "111", pageRef: "page-1", credentialRef: "publish-ref" };
+    vault.values.set("publish-ref", "secret-page-token-1");
+    sources.push({ id: "source-old", status: "active", contentType: "application/vnd.kairo.instagram-profile+json", contentHash: "old" });
+
+    await instance.refreshSource("alice", "brand-1", "channel-1");
+
+    expect(sources.filter((source) => source.status === "active")).toHaveLength(1);
+    expect(sources.find((source) => source.id === "source-old")?.status).toBe("removed");
+    expect(sources.at(-1)).toMatchObject({ status: "active", contentType: "application/vnd.kairo.instagram-profile+json" });
   });
 });

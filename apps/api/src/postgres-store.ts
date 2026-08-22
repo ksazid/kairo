@@ -165,6 +165,20 @@ export class PgKairoRepository implements KairoRepository {
     return result.rows.map(toSource);
   }
 
+  async listActiveKnowledgeExtractsForBrandBrain(accountId: string, brandId: string) {
+    const result = await this.pool.query<{ id: string; title: string | null; source_url: string | null; raw_content: string; content_type: string | null; updated_at: Date | string }>(
+      `select s.id, s.title, s.source_url, left(s.raw_content, 20000) as raw_content, s.content_type, s.updated_at
+         from knowledge_sources s
+         join workspace_memberships m on m.workspace_id=s.workspace_id
+        where m.account_id=$1 and m.active=true and s.brand_id=$2 and s.status='active' and s.raw_content is not null
+        order by s.updated_at desc, s.id
+        limit 5`,
+      [accountId, brandId],
+    );
+    if (!result.rows.length && !(await this.getBrandForAccount(accountId, brandId))) throw new ResourceNotFoundError("Brand not found");
+    return result.rows.map((row) => ({ sourceId: row.id, ...(row.title ? { title: row.title } : {}), ...(row.source_url ? { sourceUrl: row.source_url } : {}), excerpt: row.raw_content, ...(row.content_type ? { contentType: row.content_type } : {}), updatedAt: iso(row.updated_at) }));
+  }
+
   async createKnowledgeSource(accountId: string, brandId: string, input: PreparedKnowledgeSourceInput): Promise<KnowledgeSourceDto> {
     const client = await this.pool.connect();
     try {

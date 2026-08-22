@@ -8,6 +8,7 @@ import {
   removeKnowledgeSource,
   setKnowledgeSourceEnabled,
 } from "../../../../src/lib/kairo-api";
+import { refreshInstagramBrandSource } from "../../../../src/lib/instagram-api";
 
 function target(brandId: string, key: "notice" | "error", value: string): never {
   const params = new URLSearchParams({ [key]: value.slice(0, 180) });
@@ -69,4 +70,13 @@ export async function removeKnowledgeSourceAction(brandId: string, sourceId: str
     return target(brandId, "error", error instanceof Error ? error.message : "Unable to remove Knowledge source");
   }
   return target(brandId, "notice", "Knowledge source removed and derived context re-evaluated");
+}
+
+export async function refreshInstagramBrandSourceAction(brandId: string, channelAccountId: string): Promise<void> {
+  try {
+    await refreshInstagramBrandSource(brandId, channelAccountId);
+  } catch (error) {
+    return target(brandId, "error", error instanceof Error ? error.message : "Unable to refresh Instagram source");
+  }
+  return target(brandId, "notice", "Instagram Brand source refreshed. Refresh suggestions when you are ready to review changes.");
 }
