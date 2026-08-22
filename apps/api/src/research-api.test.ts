@@ -144,6 +144,31 @@ describe("VS-04/VS-71/VS-73 Research and Angle API", () => {
     await context.app.close();
   });
 
+  it("returns a concurrently persisted ready bundle when the competing developer reports an error", async () => {
+    const store = new MemoryKairoRepository();
+    const researchStore = new MemoryResearchRepository(store);
+    const auth = { authorization: "Bearer test:alice" };
+    const app = buildApp({
+      store,
+      researchStore,
+      identityVerifier: new TestIdentityVerifier(),
+      ideaDeveloper: {
+        develop: async (input) => {
+          await researchStore.seedReadyBundle(input.idea.id);
+          throw new Error("Competing request completed first");
+        },
+      },
+    });
+    const workspace = await app.inject({ method: "POST", url: "/api/v1/workspaces", headers: auth, payload: { workspaceName: "Studio", brandName: "Kairo" } });
+    const brandId = workspace.json().brand.id as string;
+    const created = await app.inject({ method: "POST", url: `/api/v1/brands/${brandId}/ideas`, headers: auth, payload: { title: "Concurrent", premise: "Reuse the winning result" } });
+    const response = await app.inject({ method: "POST", url: `/api/v1/brands/${brandId}/ideas/${created.json().id}/research`, headers: auth });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().research).toBeTruthy();
+    expect(response.json().angles).toHaveLength(2);
+    await app.close();
+  });
+
   it("returns Research/Angles and enforces optimistic Angle selection", async () => {
     const context = await setup();
     const created = await context.app.inject({ method: "POST", url: `/api/v1/brands/${context.brandId}/ideas`, headers: context.auth, payload: { title: "Evidence", premise: "Use supported facts" } });

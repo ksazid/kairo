@@ -53,7 +53,15 @@ describe("VS-04 Strategist orchestration", () => {
 
   it("rejects a single framing when multiple Angles are appropriate", async () => {
     const sink = new FakeSink();
-    await expect(new StrategistOrchestrator(new FakeRuntime(output({ candidates: [output().candidates[0]!] })), sink).run(input)).rejects.toThrow(/at least two/i);
+    await expect(new StrategistOrchestrator(new FakeRuntime(output({ candidates: [output().candidates[0]!] })), sink).run(input)).rejects.toThrow(/two candidate/i);
     expect(sink.saved).toHaveLength(0);
+  });
+
+  it("persists exactly two Angles when a provider returns extras", async () => {
+    const sink = new FakeSink();
+    const extra = { ...output().candidates[0]!, title: "Extra framing" };
+    const result = await new StrategistOrchestrator(new FakeRuntime(output({ candidates: [...output().candidates, extra] })), sink).run(input);
+    expect(result.angleCount).toBe(2);
+    expect(sink.saved[0]).toHaveLength(2);
   });
 });

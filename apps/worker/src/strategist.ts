@@ -41,7 +41,7 @@ export class StrategistOrchestrator {
       approvedContextVersion: input.brandContextVersion,
       capabilities: [],
       task: {
-        instruction: "Generate 2 to 5 distinct candidate Angles from validated Research. Cite only supplied Claim IDs. Do not draft final content or invent evidence, results, or first-person experience. Return exactly one JSON object with a candidates array. Every candidate must contain non-empty title, framing, audience, objective, hookDirection, expectedValue, recommendedFormat and recommendedChannel; effort must be low, medium or high; supportingClaimIds must be a non-empty array containing only Claim IDs supplied in context. Make the candidates meaningfully different from one another so a human can choose a direction.",
+        instruction: "Generate exactly 2 distinct candidate Angles from validated Research. Cite only supplied Claim IDs. Do not draft final content or invent evidence, results, or first-person experience. Return exactly one JSON object with a candidates array containing exactly 2 entries. Every candidate must contain non-empty title, framing, audience, objective, hookDirection, expectedValue, recommendedFormat and recommendedChannel; effort must be low, medium or high; supportingClaimIds must be a non-empty array containing only Claim IDs supplied in context. Make the candidates meaningfully different from one another so a human can choose a direction.",
         context: {
           idea: input.idea,
           research: {
@@ -56,7 +56,7 @@ export class StrategistOrchestrator {
     });
     const result = await this.runtime.invoke<StrategistOutput>(invocation);
     if (!isStrategistOutput(result.output)) throw new Error("Strategist output failed schema validation");
-    if (result.output.candidates.length < 2) throw new Error("Strategist must return at least two candidate Angles");
+    if (result.output.candidates.length < 2) throw new Error("Strategist must return two candidate Angles");
     const knownClaims = new Set(input.research.claims.map((claim) => claim.id));
     for (const candidate of result.output.candidates) {
       if (!candidate.supportingClaimIds.length || candidate.supportingClaimIds.some((id) => !knownClaims.has(id))) {
@@ -64,7 +64,7 @@ export class StrategistOrchestrator {
       }
     }
     const provenance = { runtime: result.metadata.runtime, ...(result.metadata.provider ? { provider: result.metadata.provider } : {}), ...(result.metadata.model ? { model: result.metadata.model } : {}), ...(result.metadata.costUsd !== undefined ? { costUsd: result.metadata.costUsd } : {}), latencyMs: result.metadata.latencyMs };
-    const angles: Angle[] = result.output.candidates.slice(0, 5).map((candidate) => ({
+    const angles: Angle[] = result.output.candidates.slice(0, 2).map((candidate) => ({
       id: randomUUID(), workspaceId: input.workspaceId, brandId: input.brandId, ideaId: input.idea.id,
       ...candidate, supportingClaimIds: [...new Set(candidate.supportingClaimIds)], status: "candidate", version: 1,
       runtimeProvenance: provenance,
