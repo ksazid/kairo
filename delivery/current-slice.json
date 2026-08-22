@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-80",
-  "title": "VS-80 — Visual Navigation and Accessibility",
+  "sliceId": "VS-81",
+  "title": "VS-81 — UI Feedback and Discovery",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
-    "FR-01",
-    "FR-02",
     "FR-03",
-    "FR-05"
+    "FR-05",
+    "FR-13",
+    "FR-15"
   ],
   "owners": {
     "product": "Product Owner",
@@ -19,14 +19,16 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-34",
-    "VS-79"
+    "VS-79",
+    "VS-80"
   ],
   "blockers": [],
   "allowedPaths": [
     "apps/web/**",
-    "docs/slices/VS-80.md",
-    "docs/plans/VS-80-implementation.md",
+    "apps/api/**",
+    "packages/contracts/**",
+    "docs/slices/VS-81.md",
+    "docs/plans/VS-81-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -41,8 +43,8 @@
       "operations-support"
     ],
     "notes": [
-      "Adds coherent logo, icon navigation, Brand switching and theme support.",
-      "Improves interaction clarity, responsive behavior and accessibility.",
+      "Adds truthful Brand-scoped notifications and on-demand discovery.",
+      "Improves feedback, loading, channel identity and accessibility states.",
       "Preserves every existing feature and route.",
       "Does not enable production credentials, release or deployment."
     ]
@@ -51,16 +53,16 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-80@1.0",
+      "version": "VS-81@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner approved the complete visual navigation and accessibility task list and instructed implementation."
+      "rationale": "The Product Owner instructed proceeding with the next ten-task UI batch."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-80@1.0",
+      "version": "VS-81@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -69,11 +71,11 @@
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-80@1.0",
+      "version": "VS-81@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner explicitly instructed building the approved UI batch."
+      "rationale": "The Product Owner explicitly instructed proceeding with implementation."
     },
     {
       "type": "certification",
@@ -117,10 +119,10 @@
     "status": "not-started",
     "commitSha": null,
     "evidence": [
-      "runtime:typecheck passed for all workspaces",
-      "runtime:test passed: 607 tests including 6 new visual-navigation tests",
-      "web production build passed",
-      "JSON, governance, dashboard and diff checks passed"
+      "runtime:typecheck passed",
+      "runtime:test passed: 618 tests, 37 skipped",
+      "runtime:build passed",
+      "slice validation and diff checks passed"
     ]
   },
   "release": {
@@ -138,9 +140,14 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-80.md",
+    "specification": "docs/slices/VS-81.md",
     "implementationPr": null,
-    "evidence": []
+    "evidence": [
+      "docs/slices/VS-81.md",
+      "apps/api/src/brand-notifications-postgres.test.ts",
+      "apps/api/src/command-search-routes.test.ts",
+      "apps/web/src/lib/ui-states.test.ts"
+    ]
   },
   "maxAttempts": 3
 }

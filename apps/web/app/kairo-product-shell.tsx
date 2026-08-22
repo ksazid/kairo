@@ -1,11 +1,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { getBrands, getCampaigns, getSession } from "../src/lib/kairo-api";
+import { getBrandNotifications, getBrands, getSession } from "../src/lib/kairo-api";
 import { KairoIcon, KairoLogo, type KairoIconName } from "./kairo-icons";
 import { ShellControls } from "./shell-controls";
 import { BrandSwitcher } from "./brand-switcher";
 import { CommandPalette } from "./command-palette";
 import { ProductGuide, ReplayGuideButton } from "./product-guide";
+import { NotificationCentre, type ProductNotification } from "./ui-states";
 import {
   buildProductNavigation,
   type DesktopProductDestination,
@@ -35,8 +36,9 @@ export async function KairoProductShell({
   const workspace=session?.workspaces.find(item=>item.id===workspaceId)??session?.workspaces[0];
   const brands=workspace?await getBrands(workspace.id):[];
   const currentBrand=brands.find(item=>item.id===brandId)??null;
-  const campaigns=brandId?await getCampaigns(brandId).catch(()=>[]):[];
-  const commandItems=[...navigation.desktop.filter(item=>item.href).map(item=>({label:item.label,detail:currentBrand?.name??"Kairo",href:item.href!,icon:(destinationIcons[item.label]??"brand") as KairoIconName})),...brands.map(brand=>({label:brand.name,detail:"Switch Brand",href:`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}`,icon:"brand" as KairoIconName})),...campaigns.map(campaign=>({label:campaign.name,detail:"Campaign",href:`/brands/${encodeURIComponent(campaign.brandId)}/campaigns/${encodeURIComponent(campaign.id)}`,icon:"library" as KairoIconName}))];
+  const notificationResult=brandId?await getBrandNotifications(brandId).catch(()=>null):null;
+  const commandItems=[...navigation.desktop.filter(item=>item.href).map(item=>({label:item.label,detail:currentBrand?.name??"Kairo",href:item.href!,icon:(destinationIcons[item.label]??"brand") as KairoIconName})),...brands.map(brand=>({label:brand.name,detail:"Switch Brand",href:`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}`,icon:"brand" as KairoIconName}))];
+  const notifications:ProductNotification[]=(notificationResult?.items??[]).map(item=>notificationView(item));
   const resolvedActive = active ? simpleDestinationFor(active) : null;
   const resolvedMobileActive = simpleDestinationFor(
     mobileActive ?? active ?? "Brand",
@@ -82,7 +84,7 @@ export async function KairoProductShell({
           )}
         </nav>
         <div className="sidebar-footer">
-          <CommandPalette items={commandItems}/>
+          <div className="sidebar-utilities"><NotificationCentre notifications={notifications}/><CommandPalette items={commandItems} brandId={brandId}/></div>
           <ShellControls />
           <Link className="nav-item" href={addBrandHref}>
             <KairoIcon name="plus"/><span>Add Brand</span>
@@ -98,7 +100,8 @@ export async function KairoProductShell({
       </aside>
       <div className="mobile-brand-bar">
         <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} compact/>
-        <CommandPalette items={commandItems}/>
+        <NotificationCentre notifications={notifications}/>
+        <CommandPalette items={commandItems} brandId={brandId}/>
         <ShellControls />
       </div>
       <div className="shell-content">
@@ -134,6 +137,8 @@ export async function KairoProductShell({
     </div>
   );
 }
+
+function notificationView(item:{id:string;kind:string;occurredAt:string;context:{campaignId?:string;assetId?:string;channel?:string;accountRef?:string;failureReason?:string};brandId:string}):ProductNotification{const base=`/brands/${encodeURIComponent(item.brandId)}`;if(item.kind==="publishing-failed")return{id:item.id,title:"Publishing failed",detail:item.context.failureReason??"Open Calendar to review the failed publish.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:`${base}/calendar`,unread:true};if(item.kind==="connection-reconnect-required")return{id:item.id,title:`${item.context.channel??"Channel"} needs reconnection`,detail:item.context.accountRef??"Reconnect the publishing destination.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:`${base}/performance`,unread:true};return{id:item.id,title:"Content ready for approval",detail:"A reviewed asset is waiting for your decision.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:item.context.campaignId?`${base}/campaigns/${encodeURIComponent(item.context.campaignId)}`:`${base}/campaigns`,unread:true}}
 
 
 export function KairoScopePicker({
