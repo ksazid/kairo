@@ -32,6 +32,7 @@ import{registerBrandRoutes}from"./brand-routes";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
 import{ResearcherOrchestrator,extractResearchUrls,isResearcherOutput}from"@kairo/worker/researcher";
 import{StrategistOrchestrator,isStrategistOutput}from"@kairo/worker/strategist";
+import{PgIdeaDevelopmentLock}from"./idea-development-lock";
 import{SourceRoutingToolGateway}from"@kairo/worker/discovery-provider";
 import{CrossrefResearchEvidenceProvider,OpenAlexResearchEvidenceProvider}from"@kairo/worker/research-evidence-adapters";
 import{RetryingDiscoverySourceProvider}from"@kairo/worker/retrying-discovery-provider";
@@ -105,8 +106,10 @@ const researchTools=createResearchToolGateway();
 const publicReferenceReader=new PublicBrandReferenceHttpReader({timeoutMs:10_000,maxBytes:2_000_000,maxRedirects:2});
 const researcher=runtime?new ResearcherOrchestrator(researchTools,runtime,researchStore):undefined;
 const strategist=runtime?new StrategistOrchestrator(runtime,researchStore):undefined;
+const ideaDevelopmentLock=new PgIdeaDevelopmentLock(pool);
 const ideaDeveloper=researcher&&strategist?{
   async develop(input:{accountId:string;workspaceId:string;brandId:string;brandContextVersion:string;idea:{id:string;title:string;premise:string}}){
+   return ideaDevelopmentLock.run(input.brandId,input.idea.id,async()=>{
     let bundle=await researchStore.getIdeaBundle(input.accountId,input.brandId,input.idea.id);
     if(!bundle)throw new Error("Idea not found");
     if(!bundle.research){
@@ -134,6 +137,7 @@ const ideaDeveloper=researcher&&strategist?{
         research:bundle.research,
       });
     }
+   });
   },
 }:undefined;
 const identityVerifier=new OidcJwtVerifier({
