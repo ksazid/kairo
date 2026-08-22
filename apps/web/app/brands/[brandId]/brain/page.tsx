@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { BrandBrainFieldDto } from "@kairo/contracts";
-import { getBrand, getBrandBrain, getKnowledgeSources, getSession } from "../../../../src/lib/kairo-api";
+import { getBrand, getBrandBrain, getChannelAccounts, getKnowledgeSources, getSession } from "../../../../src/lib/kairo-api";
 import {
   buildBrandBrainOverview,
   fieldEvidenceLabel,
@@ -10,6 +10,7 @@ import {
 } from "../../../../src/lib/brand-brain-view-model";
 import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
 import { buildBrandBrainAction } from "./guided-actions";
+import { refreshInstagramBrandSourceAction } from "./actions";
 
 type Params = Promise<{ brandId: string }>;
 type SearchParams = Promise<{ notice?: string; error?: string; setup?: string }>;
@@ -23,9 +24,10 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
   const workspace = session.workspaces.find((item) => item.id === brand.workspaceId);
   if (!workspace) redirect("/");
 
-  const [brain, sources, messages] = await Promise.all([
+  const [brain, sources, accountResult, messages] = await Promise.all([
     getBrandBrain(brand.id),
     getKnowledgeSources(brand.id),
+    getChannelAccounts(brand.id).then((accounts) => ({ accounts, available: true as const })).catch(() => ({ accounts: [], available: false as const })),
     searchParams,
   ]);
   const overview = buildBrandBrainOverview(brain);
@@ -37,6 +39,8 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
   const sourceIssues = sources.filter((source) => source.status === "failed" || source.status === "quarantined");
   const encoded = encodeURIComponent(brand.id);
   const controlHref = `/brands/${encoded}/brand-brain-control`;
+  const instagram = accountResult.accounts.find((account) => account.channel === "instagram" && account.status !== "disabled");
+  const instagramConnectHref = `/brands/${encoded}/channels/instagram/connect?returnTo=${encodeURIComponent(`/brands/${encoded}/brain`)}`;
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand Brain" mobileActive="More">
@@ -168,15 +172,25 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
           </div>
         </details>
 
-        <section className="brain-source-panel" aria-labelledby="source-heading">
+        <section className="brain-source-panel brain-source-hub" aria-labelledby="source-heading">
           <div>
             <p className="eyebrow">Sources</p>
             <h2 id="source-heading">Evidence &amp; Knowledge</h2>
             <p>{sourceSummary(activeSources.length, sourceIssues.length, publicReference)}</p>
           </div>
-          <div className="brain-source-actions">
-            {publicReference ? <span className="source-reference-label">Reference · {safeHost(publicReference)}</span> : null}
-            <Link className="secondary-button" href={`${controlHref}#knowledge-sources`}>Manage sources</Link>
+          <div className="brain-source-cards">
+            <article className="brain-source-card">
+              <div><span className="source-kind">Website</span><strong>{brand.publicSourceUrl ? safeHost(brand.publicSourceUrl) : "No website added"}</strong><small>{brand.publicSourceUrl ? "Available to Brand Brain as public evidence" : "Add a readable public website or Brand page"}</small></div>
+              <Link className="tertiary-button" href={`${controlHref}#knowledge-sources`}>{brand.publicSourceUrl ? "Manage" : "Add website"}</Link>
+            </article>
+            <article className="brain-source-card">
+              <div><span className="source-kind">Instagram</span><strong>{instagram?.displayName ?? (accountResult.available ? "Not connected" : "Status unavailable")}</strong><small>{instagram ? `Professional account · ${instagram.status}` : accountResult.available ? "Connect through Meta for Brand context, publishing and measured Insights" : "Kairo could not verify the connection right now; existing Brand Brain context is unchanged"}</small></div>
+              <div className="brain-source-card-actions">
+                {instagram?.status === "connected" ? <form action={refreshInstagramBrandSourceAction.bind(null, brand.id, instagram.id)}><button className="tertiary-button" type="submit">Refresh source</button></form> : null}
+                <Link className={instagram?.status === "connected" ? "tertiary-button" : "secondary-button"} href={instagram || !accountResult.available ? `/brands/${encoded}/performance` : instagramConnectHref}>{instagram || !accountResult.available ? "Manage" : "Connect"}</Link>
+              </div>
+            </article>
+            <Link className="secondary-button" href={`${controlHref}#knowledge-sources`}>Manage all sources</Link>
           </div>
         </section>
       </main>

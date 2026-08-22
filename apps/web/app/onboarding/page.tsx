@@ -37,12 +37,17 @@ export default async function OnboardingPage() {
             <input name="brandName" required maxLength={120} placeholder="The Duke 390" autoComplete="off" />
           </label>
           <label>
-            <span>Brand reference <em>optional</em></span>
-            <input name="publicReferenceUrl" type="url" placeholder="Website, Instagram, blog or public PDF URL" inputMode="url" aria-describedby="brand-reference-help" />
-            <small id="brand-reference-help">Kairo will try to read the public URL. If it cannot, setup still continues from the details you provide.</small>
+            <span>Paste your website <em>optional</em></span>
+            <input name="websiteUrl" type="url" placeholder="https://yourbrand.com" inputMode="url" aria-describedby="brand-reference-help" />
+            <small id="brand-reference-help">Kairo will use readable public pages as evidence for Brand Brain suggestions.</small>
           </label>
 
-          <button className="primary-button" type="submit">Continue to Brand Brain</button>
+          <label className={styles.sourceChoice}>
+            <input name="connectInstagram" type="checkbox" value="yes" />
+            <span><strong>Connect Instagram next</strong><small>After the Brand is created, connect its Professional account securely through Meta.</small></span>
+          </label>
+
+          <button className="primary-button" type="submit">Create Brand and continue</button>
         </form>
 
         <div className={styles.nextStep} aria-label="What happens next">

@@ -39,6 +39,12 @@ export interface CreateWorkspaceWithBrandResponse {
   brand: BrandDto;
 }
 
+export interface CreateBrandRequest {
+  brandName: string;
+  publicSourceUrl?: string;
+  publicProfileUrl?: string;
+}
+
 export interface SessionResponse {
   account: AccountDto;
   workspaces: WorkspaceDto[];

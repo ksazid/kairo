@@ -37,7 +37,16 @@ export default async function NewBrandPage({ searchParams }: { searchParams: Sea
             <span>Brand name</span>
             <input name="brandName" required maxLength={120} placeholder="My next Brand" autoComplete="off" autoFocus />
           </label>
-          <button className="primary-button" type="submit">Create Brand</button>
+          <label>
+            <span>Paste your website <em>optional</em></span>
+            <input name="websiteUrl" type="url" placeholder="https://yourbrand.com" inputMode="url" />
+            <small>Kairo will use readable public pages as evidence, never automatic Brand truth.</small>
+          </label>
+          <label className={styles.sourceChoice}>
+            <input name="connectInstagram" type="checkbox" value="yes" />
+            <span><strong>Connect Instagram next</strong><small>Connect this Brand's Professional account securely through Meta.</small></span>
+          </label>
+          <button className="primary-button" type="submit">Create Brand and continue</button>
         </form>
 
         <Link className={styles.signOut} href="/">Cancel</Link>

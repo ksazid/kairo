@@ -1,101 +1,153 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-73",
-  "title": "End-to-End Production Reliability Repair",
-  "status": "completed",
-  "lifecycle": "validated",
+  "sliceId": "VS-74",
+  "title": "VS-74 — Brand Source Onboarding & Brand Brain Enrichment",
+  "status": "active",
+  "lifecycle": "testing",
   "riskLevel": "high",
-  "implementationMode": "production-enabled",
-  "requirements": ["FR-02", "FR-08", "FR-09", "FR-20"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-72"],
+  "implementationMode": "runtime-enabled",
+  "requirements": [
+    "FR-02",
+    "FR-03",
+    "FR-04",
+    "FR-05",
+    "FR-20"
+  ],
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": "Operations Owner",
+    "security": "Security Owner"
+  },
+  "dependencies": [
+    "VS-17",
+    "VS-26",
+    "VS-73"
+  ],
   "blockers": [],
   "allowedPaths": [
-    "packages/contracts/src/index.ts",
-    "packages/domain/src/index.ts",
-    "apps/api/src/app.ts",
-    "apps/api/src/app.test.ts",
-    "apps/api/src/meta-instagram-oauth.ts",
-    "apps/api/src/meta-instagram-oauth.test.ts",
-    "apps/api/src/store.ts",
-    "apps/api/src/postgres-store.ts",
-    "apps/api/src/server.ts",
-    "apps/api/src/brand-creator.ts",
-    "apps/api/src/brand-routes.ts",
-    "apps/api/src/brand-routes.test.ts",
-    "apps/api/src/research-store.ts",
-    "apps/api/src/research-postgres-store.ts",
-    "apps/api/src/research-api.test.ts",
-    "apps/worker/package.json",
-    "apps/worker/src/model-gateway.ts",
-    "apps/worker/src/model-gateway.test.ts",
-    "apps/worker/src/model-gateway-structured-output.test.ts",
-    "apps/worker/src/model-output-schemas.ts",
-    "apps/worker/src/researcher.ts",
-    "apps/worker/src/researcher.test.ts",
-    "apps/worker/src/research-evidence-adapters.ts",
-    "apps/worker/src/research-evidence-adapters.test.ts",
-    "apps/worker/src/retrying-discovery-provider.ts",
-    "apps/worker/src/retrying-discovery-provider.test.ts",
-    "services/hermes-runtime/hermes_runtime/schema_contracts.py",
-    "services/hermes-runtime/tests/test_schema_contracts.py",
-    "apps/web/package.json",
-    "apps/web/scripts/write-release-sha.mjs",
-    "apps/web/src/auth-entry.test.ts",
-    "apps/web/src/lib/generated-release-sha.ts",
-    "apps/web/src/lib/kairo-api.ts",
-    "apps/web/src/lib/brand-api.ts",
-    "apps/web/src/lib/instagram-api.ts",
-    "apps/web/app/actions.ts",
-    "apps/web/app/brands/new/page.tsx",
-    "apps/web/app/brands/[brandId]/ideas/[ideaId]/page.tsx",
-    "apps/web/app/channels/instagram/callback/route.ts",
-    "apps/web/app/kairo-product-shell.tsx",
-    "apps/web/app/api/version/route.ts",
-    "scripts/start-api.mjs",
-    "scripts/pilot-smoke.mjs",
-    "docs/slices/VS-73.md",
-    "docs/plans/VS-73-implementation.md",
-    "delivery/current-slice.json",
-    "delivery/context/VS-73.md"
+    "packages/contracts/**",
+    "packages/domain/**",
+    "apps/worker/**",
+    "apps/api/**",
+    "apps/web/**",
+    "tests/**",
+    "docs/slices/VS-74.md",
+    "docs/plans/VS-74-implementation.md",
+    "delivery/**",
+    "README.md",
+    ".engineering/STATE.json"
   ],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**","apps/api/src/publishing-execution-postgres-store.ts","apps/api/src/publishing-worker-server.ts","apps/worker/src/publishing*","packages/domain/src/publishing*"],
+  "protectedPaths": [
+    ".github/workflows/release.yml",
+    "infrastructure/**"
+  ],
   "impact": {
-    "areas": ["frontend","api","architecture","authorization","customer-flow","deployment","operations-support"],
+    "areas": [
+      "frontend",
+      "api",
+      "authentication",
+      "authorization",
+      "sensitive-data",
+      "customer-flow",
+      "analytics"
+    ],
     "notes": [
-      "Repairs bounded provider retry/backoff for rate limits and transient upstream failures.",
-      "Makes persisted Research recoverable when Angle generation fails, without duplicating Research.",
-      "Restores FR-02 multi-Brand creation inside an existing authenticated Workspace.",
-      "Strengthens tenant-isolation regressions and authenticated multi-Brand smoke coverage.",
-      "Adds exact web/API release-SHA provenance; empty Vercel Git metadata no longer masks the build-generated exact SHA fallback.",
-      "Production smoke exposed a Hermes Researcher output-contract gap: factual Claims with empty evidenceIds reached domain validation. Reopen VS-73 testing to fail closed at the runtime boundary and provide explicit Researcher/Strategist Hermes contracts.",
-      "Concurrent production smoke requests exposed duplicate Research persistence for the same Idea; make Research and candidate-Angle persistence idempotent after the existing per-Idea database lock.",
-      "Final production smoke exposed malformed direct-model Drafter JSON under generic json_object mode; bind content-draft and critic-review to strict provider-side JSON schemas before runtime validation.",
-      "Production deployment exposed that the existing Instagram publishing worker was built but never started by the API container; launch that existing worker only when explicitly production-enabled so approved publish commands can reach Meta without changing approval authority.",
-      "Live OAuth diagnostics proved the Instagram callback route already exists, but when the Kairo access-token cookie has expired it redirects to the root error path; root then starts Auth0 with returnTo=/ and discards Meta code/state. Preserve the complete local callback path and query through the signed Auth0 transaction so OAuth resumes after sign-in.",
-      "Live Meta authorization now reaches the API callback, but Meta can omit expires_in when exchanging the Facebook User token. Treat omission only as a conservative 60-day operational horizon while retaining the existing minimum-lifetime rejection for explicit short expiries, so valid Meta connections are not rejected before account discovery.",
-      "Product Owner deferred the remaining deliberate concurrent-Research production verification to issue #142. The historical concurrency defect/fix remains recorded, but that dedicated smoke is not a VS-73 acceptance or certification gate."
+      "Adds Website and Instagram as reusable Brand sources during onboarding and later Brand Brain refresh.",
+      "Reuses existing Meta OAuth and encrypted credential boundaries; no new permissions or token model.",
+      "Imports bounded Instagram profile and recent-content evidence with Brand-private provenance.",
+      "Preserves confirmed owner fields and requires review of inferred Brand Brain proposals."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-73@1.5","commitSha":null,"by":"Sazid Khan","at":"2026-08-22T00:22:00+02:00","rationale":"Owner explicitly instructed the Publish blocker to be fixed and execution to continue through the real Instagram publish test; live logs proved the remaining blocker is Meta token-lifetime compatibility in the OAuth adapter."},
-    {"type":"policy","status":"not-required","version":"VS-73@1.5","commitSha":null,"by":null,"at":null,"rationale":"The repair does not expand Meta permissions, expose credentials, relax tenant binding, bypass approval authority, or alter publishing execution; it only handles a valid provider response shape while retaining explicit short-token rejection."},
-    {"type":"implementation","status":"approved","version":"VS-73@1.5","commitSha":null,"by":"Sazid Khan","at":"2026-08-22T00:22:00+02:00","rationale":"Owner said to fix the connection failure and go ahead with live publishing validation."},
-    {"type":"certification","status":"approved","version":null,"commitSha":"d19c471a11ec30ca717870dc8ca4021ffac5fd5b","by":"Sazid Khan","at":"2026-08-22T02:23:00+02:00","rationale":"Product Owner approved the VS-73 closeout after explicitly deferring concurrent Research verification to issue #142. Product Intake #708, Security #854 and CI #1017 passed on the exact tree merged as d19c471a11ec30ca717870dc8ca4021ffac5fd5b; production deployment dep-da4emu3bc2fs73cvrc20 is live on that SHA, and the runtime is unchanged from provider-confirmed Instagram publishing build bb901c2e04549ffcf1d621e33567ce488839d4c1."},
-    {"type":"release","status":"approved","version":null,"commitSha":"d19c471a11ec30ca717870dc8ca4021ffac5fd5b","by":"Sazid Khan","at":"2026-08-22T02:23:00+02:00","rationale":"Owner said go to defer the non-acceptance concurrent verification and merge/close VS-73. The exact certified SHA is live, rollback readiness is preserved, and the production-proven runtime behavior is unchanged."},
-    {"type":"production-enable","status":"approved","version":null,"commitSha":"d19c471a11ec30ca717870dc8ca4021ffac5fd5b","by":"Sazid Khan","at":"2026-08-22T02:23:00+02:00","rationale":"Standing Product Owner authorization covered production enablement for the VS-73 corrective scope, and the current instruction confirmed closeout. The Instagram publisher started successfully on exact deployment d19c471a11ec30ca717870dc8ca4021ffac5fd5b without expanding permissions or approval authority."}
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-74@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-22T02:35:00+02:00",
+      "rationale": "The Product Owner enumerated Batch 1 tasks 1-10 and instructed the implementation to go after checking VS-73 closeout."
+    },
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": "VS-74@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "DEC-004 already governs official Meta OAuth and professional-account selection; VS-26 and DEC-006 already govern safe public-reference ingestion, provenance and source removal. No new permissions or policy are introduced."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-74@1.0",
+      "commitSha": null,
+      "by": "Sazid Khan",
+      "at": "2026-08-22T02:35:00+02:00",
+      "rationale": "The Product Owner said check and go, authorizing runtime implementation of the already enumerated Batch 1 scope."
+    },
+    {
+      "type": "certification",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    },
+    {
+      "type": "release",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    },
+    {
+      "type": "production-enable",
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
+    }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":100},
-  "certification": {"status":"passed","commitSha":"d19c471a11ec30ca717870dc8ca4021ffac5fd5b","evidence":["GitHub PR #143 Product Intake run 32539901011 / #708: passed","GitHub PR #143 Security baseline run 32539900991 / #854: passed","GitHub PR #143 CI run 32539901017 / #1017: PostgreSQL 18 migrations, dependency audit, preflight, runtime verification and dashboard build passed","PR #143 exact head 41ce3656df74f2c00e042fee7ca3ba743b1ce596 merged as d19c471a11ec30ca717870dc8ca4021ffac5fd5b with no runtime-file change","Render deploy dep-da4emu3bc2fs73cvrc20 is live on exact SHA d19c471a11ec30ca717870dc8ca4021ffac5fd5b","Production logs on the exact deployment show KAIRO_INSTAGRAM_PUBLISHER_STARTED with Meta Graph v24.0","Git compare bb901c2e04549ffcf1d621e33567ce488839d4c1..d19c471a11ec30ca717870dc8ca4021ffac5fd5b changes only delivery/context/VS-73.md, delivery/current-slice.json and docs/slices/VS-73.md; therefore the runtime is identical to the provider-confirmed real-data Instagram publish build","Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical build","Concurrent Research production verification intentionally deferred to issue #142 and is not a VS-73 acceptance/certification gate"]},
-  "release": {"status":"released","releaseId":"REL-003"},
-  "rollback": {"status":"ready","rollbackId":null},
-  "postRelease": {
-    "status":"validated",
-    "reviewAt":"2026-08-22T02:23:00+02:00",
-    "expectedOutcome":"Authenticated users can create multiple isolated Brands and reliably progress Brand → Idea → Research → Angles → Campaign → Content → Review → Approval → provider-confirmed Instagram publish under transient provider failures, with exact deployed-SHA provenance.",
-    "metrics":["provider retry recovery","Research-to-Angle recovery","multi-Brand creation","tenant isolation","structured content output","Instagram OAuth completion","provider-confirmed Instagram publish","exact deployed SHA","authenticated smoke"]
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 0,
+    "release": 0,
+    "validation": 0
   },
-  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#137","evidence":["delivery/context/VS-73.md","https://github.com/ksazid/kairo/issues/142","https://github.com/ksazid/kairo/pull/143"]},
+  "certification": {
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
+  },
+  "release": {
+    "status": "not-authorized",
+    "releaseId": null
+  },
+  "rollback": {
+    "status": "not-applicable",
+    "rollbackId": null
+  },
+  "postRelease": {
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": null,
+    "metrics": []
+  },
+  "links": {
+    "specification": "docs/slices/VS-74.md",
+    "implementationPr": null,
+    "evidence": []
+  },
   "maxAttempts": 3
 }

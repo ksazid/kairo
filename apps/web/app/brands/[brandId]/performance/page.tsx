@@ -9,16 +9,18 @@ import {
   type PerformanceMetricView,
 } from "../../../../src/lib/kairo-api";
 import { getInstagramCandidates, type InstagramCandidateView } from "../../../../src/lib/instagram-api";
+import { safeBrandReturnTo } from "../../../../src/lib/brand-source-navigation";
 import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
 import { disconnectInstagramAction, reviewLearningAction, selectInstagramAction } from "./actions";
 import "../../../performance.css";
 
 type Params = Promise<{ brandId: string }>;
-type SearchParams = Promise<{ notice?: string; error?: string; instagramIntent?: string }>;
+type SearchParams = Promise<{ notice?: string; error?: string; instagramIntent?: string; returnTo?: string }>;
 
 export default async function PerformancePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const { brandId } = await params;
   const messages = await searchParams;
+  const instagramReturnTo = safeBrandReturnTo(messages.returnTo, brandId);
   const [brand, metrics, learnings, experiments, accounts, candidates] = await Promise.all([
     getBrand(brandId),
     getPerformance(brandId),
@@ -69,7 +71,7 @@ export default async function PerformancePage({ params, searchParams }: { params
           </div>
         </section>
 
-        <ChannelConnection brandId={brand.id} account={instagram} intentId={messages.instagramIntent} candidates={candidates} />
+        <ChannelConnection brandId={brand.id} account={instagram} intentId={messages.instagramIntent} candidates={candidates} returnTo={instagramReturnTo} />
 
         <section className="performance-section" aria-labelledby="learning-title">
           <div className="performance-section-heading"><div><p className="eyebrow">Brand Learning</p><h2 id="learning-title">Patterns that require human judgement</h2><p>Accept only a cautious pattern you want Kairo to remember for this Brand.</p></div><span className="quiet-count">{learnings.length} total</span></div>
@@ -112,12 +114,12 @@ export default async function PerformancePage({ params, searchParams }: { params
   );
 }
 
-function ChannelConnection({ brandId, account, intentId, candidates }: { brandId: string; account?: ChannelAccountView; intentId?: string; candidates: InstagramCandidateView[] }) {
+function ChannelConnection({ brandId, account, intentId, candidates, returnTo }: { brandId: string; account?: ChannelAccountView; intentId?: string; candidates: InstagramCandidateView[]; returnTo: string }) {
   const connected = account?.status === "connected";
   return <section className="performance-section channel-section" aria-labelledby="channel-title">
     <div className="performance-section-heading"><div><p className="eyebrow">Channel management</p><h2 id="channel-title">Instagram connection</h2><p>{connected ? "Publishing and provider-backed Insights use this secured Professional account." : account?.status === "reconnect-required" ? "Meta permissions need attention before Kairo can publish or collect fresh Insights." : "Connect a Professional account only when this Brand needs supported publishing and measured Insights."}</p></div><Link className="secondary-button" href={`/brands/${encodeURIComponent(brandId)}/channels/groups`}>Account groups</Link></div>
     {account ? <div className="channel-account-row"><div><span className={`channel-state ${connected ? "connected" : "attention"}`}>{label(account.status)}</span><h3>{account.displayName}</h3><p>Instagram · {account.accountRef}</p>{account.capabilities.length ? <small>{account.capabilities.map(label).join(" · ")}</small> : null}</div><div className="channel-actions">{account.status === "reconnect-required" ? <Link className="primary-button" href={`/brands/${encodeURIComponent(brandId)}/channels/instagram/connect`}>Reconnect Instagram</Link> : null}<form action={disconnectInstagramAction.bind(null, brandId, account.id)}><button className="tertiary-button">Disconnect</button></form></div></div> : <div className="channel-account-row"><div><h3>No Instagram account connected</h3><p>Kairo will not infer or substitute a publishing destination.</p></div><Link className="primary-button" href={`/brands/${encodeURIComponent(brandId)}/channels/instagram/connect`}>Connect Instagram</Link></div>}
-    {intentId && candidates.length ? <div className="candidate-list"><div><p className="eyebrow">Choose destination</p><h3>Select the Professional account Kairo may use</h3></div>{candidates.map((candidate) => <article className="candidate-row" key={candidate.id}><div><strong>{candidate.username ? `@${candidate.username}` : candidate.displayName}</strong><p>{candidate.pageName}</p><small>Instagram {candidate.accountRef} · Page {candidate.pageRef}</small></div><form action={selectInstagramAction.bind(null, brandId, intentId, candidate.id)}><button className="primary-button">Connect this account</button></form></article>)}</div> : null}
+    {intentId && candidates.length ? <div className="candidate-list"><div><p className="eyebrow">Choose destination</p><h3>Select the Professional account Kairo may use</h3></div>{candidates.map((candidate) => <article className="candidate-row" key={candidate.id}><div><strong>{candidate.username ? `@${candidate.username}` : candidate.displayName}</strong><p>{candidate.pageName}</p><small>Instagram {candidate.accountRef} · Page {candidate.pageRef}</small></div><form action={selectInstagramAction.bind(null, brandId, intentId, candidate.id, returnTo)}><button className="primary-button">Connect this account</button></form></article>)}</div> : null}
   </section>;
 }
 

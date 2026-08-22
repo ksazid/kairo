@@ -61,9 +61,9 @@ export class MemoryKairoRepository implements KairoRepository {
     return { workspace: { ...workspace, role: "owner" }, brand };
   }
 
-  async createBrandForAccount(accountId: string, workspaceId: string, input: { brandName: string }): Promise<BrandDto> {
+  async createBrandForAccount(accountId: string, workspaceId: string, input: { brandName: string; publicSourceUrl?: string; publicProfileUrl?: string }): Promise<BrandDto> {
     if (!(await this.hasWorkspaceAccess(accountId, workspaceId))) throw new ResourceNotFoundError("Workspace not found");
-    const brand: BrandDto = { id: randomUUID(), workspaceId, name: input.brandName };
+    const brand: BrandDto = { id: randomUUID(), workspaceId, name: input.brandName, ...(input.publicSourceUrl ? { publicSourceUrl: input.publicSourceUrl } : {}), ...(input.publicProfileUrl ? { publicProfileUrl: input.publicProfileUrl } : {}) };
     this.brands.set(brand.id, brand);
     return { ...brand };
   }
@@ -148,6 +148,13 @@ export class MemoryKairoRepository implements KairoRepository {
   async listKnowledgeSources(accountId: string, brandId: string): Promise<KnowledgeSourceDto[]> {
     await this.requireBrand(accountId, brandId);
     return [...this.sources.values()].filter((source) => source.brandId === brandId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map(toSourceDto);
+  }
+
+  async listActiveKnowledgeExtractsForBrandBrain(accountId: string, brandId: string) {
+    if (!(await this.getBrandForAccount(accountId, brandId))) throw new ResourceNotFoundError("Brand not found");
+    return [...this.sources.values()]
+      .filter((source) => source.brandId === brandId && source.status === "active" && Boolean(source.rawContent))
+      .map((source) => ({ sourceId: source.id, ...(source.title ? { title: source.title } : {}), ...(source.sourceUrl ? { sourceUrl: source.sourceUrl } : {}), excerpt: source.rawContent!.slice(0, 20_000), ...(source.contentType ? { contentType: source.contentType } : {}), updatedAt: source.updatedAt }));
   }
 
   async createKnowledgeSource(accountId: string, brandId: string, input: PreparedKnowledgeSourceInput): Promise<KnowledgeSourceDto> {

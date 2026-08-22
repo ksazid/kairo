@@ -115,4 +115,28 @@ describe("VS-17 Meta Instagram OAuth adapter", () => {
 
     await expect(client.exchangeAndDiscover("auth-code")).rejects.toThrow("sufficiently durable Facebook User access token");
   });
+
+  it("imports a bounded sanitized profile and recent-media snapshot without putting credentials in URLs", async () => {
+    const calls: Array<{ url: string; authorization: string | null }> = [];
+    const client = new MetaInstagramOAuthClient("app-1", "top-secret", "v99.0", "https://kairo.example/channels/instagram/callback", async (input, init) => {
+      const url = String(input);
+      calls.push({ url, authorization: new Headers(init?.headers).get("authorization") });
+      if (url.includes("/111/media?")) return new Response(JSON.stringify({ data: [
+        { id: "m1", caption: "Hello", media_type: "IMAGE", media_product_type: "FEED", permalink: "https://www.instagram.com/p/m1/", timestamp: "2026-08-14T10:00:00Z" },
+        { id: "m2", caption: "x".repeat(3_000), media_type: "VIDEO", permalink: "javascript:bad" },
+        { caption: "missing id" },
+      ] }), { status: 200 });
+      if (url.includes("/999?")) return new Response(JSON.stringify({ category: "Marketing Agency", about: "Page-level positioning", website: "https://page.example", phone: "+356 2000 0000", emails: ["HELLO@BRAND.EXAMPLE", "invalid"] }), { status: 200 });
+      if (url.includes("/111?")) return new Response(JSON.stringify({ id: "111", username: "brandone", name: "Brand One", biography: "Useful bio", website: "https://brand.example", profile_picture_url: "http://unsafe.example/avatar.png", followers_count: 42, media_count: 8 }), { status: 200 });
+      throw new Error(`unexpected ${url}`);
+    });
+    const snapshot = await client.readProfileSnapshot("111", "page-secret", "999");
+    expect(snapshot).toMatchObject({ accountRef: "111", username: "brandone", biography: "Useful bio", website: "https://brand.example/", category: "Marketing Agency", businessAbout: "Page-level positioning", businessPhone: "+356 2000 0000", businessEmails: ["hello@brand.example"], followersCount: 42, mediaCount: 8 });
+    expect(snapshot).not.toHaveProperty("profilePictureUrl");
+    expect(snapshot.recentMedia).toHaveLength(2);
+    expect(snapshot.recentMedia[1]?.caption).toHaveLength(2_200);
+    expect(snapshot.recentMedia[1]).not.toHaveProperty("permalink");
+    expect(calls.every((call) => !call.url.includes("page-secret") && call.authorization === "Bearer page-secret")).toBe(true);
+    expect(calls.find((call) => call.url.includes("/media?"))?.url).toContain("limit=25");
+  });
 });

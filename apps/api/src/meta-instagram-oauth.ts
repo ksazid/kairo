@@ -1,4 +1,4 @@
-import type { MetaInstagramOAuthPort, MetaInstagramDiscoveredAccount } from "./instagram-connection";
+import type { InstagramProfileSnapshot, MetaInstagramOAuthPort, MetaInstagramDiscoveredAccount } from "./instagram-connection";
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -57,6 +57,50 @@ export class MetaInstagramOAuthClient implements MetaInstagramOAuthPort {
       });
     }
     return { grantedScopes, userAccessToken: extended.accessToken, userAccessTokenExpiresInSeconds: extended.expiresInSeconds, accounts };
+  }
+
+  async readProfileSnapshot(accountRef: string, pageAccessToken: string, pageRef?: string): Promise<InstagramProfileSnapshot> {
+    const id = numericId(accountRef);
+    const token = required(pageAccessToken, "Page access token");
+    const profileUrl = new URL(`https://graph.facebook.com/${graph(this.graphVersion)}/${encodeURIComponent(id)}`);
+    profileUrl.searchParams.set("fields", "id,username,name,biography,website,profile_picture_url,followers_count,media_count");
+    const mediaUrl = new URL(`https://graph.facebook.com/${graph(this.graphVersion)}/${encodeURIComponent(id)}/media`);
+    mediaUrl.searchParams.set("fields", "id,caption,media_type,media_product_type,permalink,timestamp");
+    mediaUrl.searchParams.set("limit", "25");
+    const pageUrl = pageRef ? new URL(`https://graph.facebook.com/${graph(this.graphVersion)}/${encodeURIComponent(numericId(pageRef))}`) : undefined;
+    pageUrl?.searchParams.set("fields", "category,about,website,phone,emails");
+    const [profileResponse, mediaResponse, pageResponse] = await Promise.all([
+      this.fetchImpl(profileUrl, { headers: { authorization: `Bearer ${token}` } }),
+      this.fetchImpl(mediaUrl, { headers: { authorization: `Bearer ${token}` } }),
+      pageUrl ? this.fetchImpl(pageUrl, { headers: { authorization: `Bearer ${token}` } }) : Promise.resolve(undefined),
+    ]);
+    if (!profileResponse.ok) throw providerError("instagram-profile-import", profileResponse.status);
+    if (!mediaResponse.ok) throw providerError("instagram-media-import", mediaResponse.status);
+    const profile = await json(profileResponse) as Record<string, unknown>;
+    const page = pageResponse?.ok ? await json(pageResponse) as Record<string, unknown> : {};
+    const mediaPayload = await json(mediaResponse) as { data?: unknown };
+    const recentMedia = (Array.isArray(mediaPayload.data) ? mediaPayload.data : []).slice(0, 25).flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const row = item as Record<string, unknown>;
+      const mediaId = safeString(row.id, 200); if (!mediaId) return [];
+      return [{ id: mediaId, ...optionalString(row.caption, "caption", 2_200), ...optionalString(row.media_type, "mediaType", 40), ...optionalString(row.media_product_type, "mediaProductType", 40), ...optionalHttps(row.permalink, "permalink"), ...optionalTimestamp(row.timestamp) }];
+    });
+    return {
+      accountRef: id,
+      ...optionalString(profile.username, "username", 300),
+      ...optionalString(profile.name, "name", 300),
+      ...optionalString(profile.biography, "biography", 2_200),
+      ...optionalHttps(profile.website ?? page.website, "website"),
+      ...optionalHttps(profile.profile_picture_url, "profilePictureUrl"),
+      ...optionalString(page.category, "category", 300),
+      ...optionalString(page.about, "businessAbout", 2_200),
+      ...optionalString(page.phone, "businessPhone", 100),
+      ...optionalEmails(page.emails),
+      ...optionalCount(profile.followers_count, "followersCount"),
+      ...optionalCount(profile.media_count, "mediaCount"),
+      recentMedia,
+      retrievedAt: new Date().toISOString(),
+    };
   }
 
   private async exchangeCode(code: string): Promise<string> {
@@ -147,4 +191,11 @@ function providerError(operation: string, status: number): Error { return new Er
 async function json(response: Response): Promise<unknown> { try { return await response.json(); } catch { throw new Error("Meta provider returned invalid JSON"); } }
 function graph(value: string) { if (!/^v\d+\.\d+$/.test(value)) throw new Error("META_GRAPH_VERSION is invalid"); return value; }
 function required(value: string, field: string) { const normalized = value.trim(); if (!normalized) throw new Error(`${field} is required`); return normalized; }
+function numericId(value:string){const id=required(value,"Instagram accountRef");if(!/^\d+$/.test(id))throw new Error("Instagram accountRef must be numeric");return id}
+function safeString(value:unknown,max:number){return typeof value==="string"&&value.trim()?value.trim().slice(0,max):undefined}
+function optionalString(value:unknown,key:string,max:number){const normalized=safeString(value,max);return normalized?{[key]:normalized}:{}}
+function optionalHttps(value:unknown,key:string){const normalized=safeString(value,2_048);if(!normalized)return{};try{const url=new URL(normalized);return url.protocol==="https:"?{[key]:url.toString()}:{} }catch{return{}}}
+function optionalTimestamp(value:unknown){const normalized=safeString(value,100);if(!normalized||!Number.isFinite(Date.parse(normalized)))return{};return{timestamp:new Date(normalized).toISOString()}}
+function optionalCount(value:unknown,key:string){return Number.isInteger(value)&&Number(value)>=0&&Number(value)<=Number.MAX_SAFE_INTEGER?{[key]:Number(value)}:{}}
+function optionalEmails(value:unknown){if(!Array.isArray(value))return{};const emails=[...new Set(value.map(item=>safeString(item,320)?.toLowerCase()).filter((item):item is string=>Boolean(item)&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(item!)))].slice(0,5);return emails.length?{businessEmails:emails}:{}}
 function httpsUrl(value: string, field: string) { let url: URL; try { url = new URL(value); } catch { throw new Error(`${field} must be a valid URL`); } if (url.protocol !== "https:") throw new Error(`${field} must use HTTPS`); return url.toString(); }

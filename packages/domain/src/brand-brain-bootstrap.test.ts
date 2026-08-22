@@ -33,6 +33,7 @@ class FakeRepository implements KairoRepository {
   };
   fields: BrandBrainFieldDto[] = [];
   sources: KnowledgeSourceDto[] = [];
+  activeExtracts: Array<{ sourceId: string; title?: string; sourceUrl?: string; excerpt: string; contentType?: string; updatedAt: string }> = [];
 
   resolveAccount(_identity: ExternalIdentity): Promise<AccountDto> { return Promise.resolve(this.account); }
   createWorkspaceWithBrand(_accountId: string, _input: CreateWorkspaceWithBrandRequest): Promise<CreateWorkspaceWithBrandResponse> { throw new Error("unused"); }
@@ -78,6 +79,7 @@ class FakeRepository implements KairoRepository {
     return Promise.resolve(field);
   }
   listKnowledgeSources(): Promise<KnowledgeSourceDto[]> { return Promise.resolve(this.sources.map((source) => ({ ...source }))); }
+  listActiveKnowledgeExtractsForBrandBrain() { return Promise.resolve(this.activeExtracts); }
   createKnowledgeSource(_accountId: string, _brandId: string, input: PreparedKnowledgeSourceInput): Promise<KnowledgeSourceDto> {
     const source: KnowledgeSourceDto = {
       id: `source-${this.sources.length + 1}`,
@@ -206,6 +208,91 @@ describe("BrandBrainBootstrapService", () => {
     const result = await service.build("account-1", "brand-1", { primaryObjective: "build-authority" });
 
     expect(repository.fields.find((field) => field.fieldKey === "audience.primary")?.value).toBe("Confirmed owner audience");
+    expect(result.skippedConfirmedCount).toBe(1);
+  });
+
+  it("records bounded visual direction in the existing content-strategy section with active provenance", async () => {
+    const repository = new FakeRepository();
+    const generator: BrandBrainProposalGenerator = {
+      propose: async () => [{
+        section: "content-strategy",
+        fieldKey: "content.visual-direction",
+        value: "High-contrast motorcycle photography with restrained orange accents.",
+        sourceIds: ["source-1"],
+      }],
+    };
+    const service = new BrandBrainBootstrapService(repository, generator, new FakeReferenceReader());
+
+    await service.build("account-1", "brand-1", { primaryObjective: "grow-audience" });
+
+    expect(repository.fields.find((field) => field.fieldKey === "content.visual-direction")).toMatchObject({
+      section: "content-strategy",
+      state: "inferred",
+      sourceIds: ["source-1"],
+    });
+  });
+
+  it("passes an imported Instagram Knowledge snapshot into source-backed proposal generation", async () => {
+    const repository = new FakeRepository();
+    repository.brand = { id: "brand-1", workspaceId: "workspace-1", name: "Imported Brand" };
+    repository.activeExtracts = [{ sourceId: "instagram-source", title: "Instagram profile snapshot", excerpt: JSON.stringify({ biography: "Evidence-led studio", recentMedia: [{ mediaType: "CAROUSEL_ALBUM", caption: "Practical growth lessons" }] }), contentType: "application/vnd.kairo.instagram-profile+json", updatedAt: NOW }];
+    let inspected = "";
+    const generator: BrandBrainProposalGenerator = { propose: async (input) => {
+      inspected = input.references[0]?.excerpt ?? "";
+      return [{ section: "voice", fieldKey: "voice.tone", value: "Practical and evidence-led.", sourceIds: ["instagram-source"] }];
+    } };
+    const service = new BrandBrainBootstrapService(repository, generator, new FakeReferenceReader());
+
+    const result = await service.build("account-1", "brand-1", { primaryObjective: "build-authority" });
+
+    expect(inspected).toContain("CAROUSEL_ALBUM");
+    expect(result.sourceIds).toContain("instagram-source");
+    expect(repository.fields.find((field) => field.fieldKey === "voice.tone")?.sourceIds).toEqual(["instagram-source"]);
+  });
+
+  it("rejects visual direction without active inspected-source provenance", async () => {
+    const repository = new FakeRepository();
+    const generator: BrandBrainProposalGenerator = {
+      propose: async () => [{
+        section: "content-strategy",
+        fieldKey: "content.color-direction",
+        value: "Orange and charcoal.",
+        sourceIds: [],
+      }],
+    };
+    const service = new BrandBrainBootstrapService(repository, generator, new FakeReferenceReader());
+
+    await expect(service.build("account-1", "brand-1", { primaryObjective: "grow-audience" })).rejects.toThrow(/active source provenance/i);
+  });
+
+  it("keeps confirmed visual direction protected during an imported rebuild", async () => {
+    const repository = new FakeRepository();
+    repository.fields.push({
+      id: "field-visual",
+      workspaceId: "workspace-1",
+      brandId: "brand-1",
+      section: "content-strategy",
+      fieldKey: "content.visual-direction",
+      value: "Owner-confirmed minimal studio imagery.",
+      state: "confirmed",
+      sourceIds: [],
+      version: 1,
+      updatedAt: NOW,
+      confirmedByAccountId: "account-1",
+    });
+    const generator: BrandBrainProposalGenerator = {
+      propose: async () => [{
+        section: "content-strategy",
+        fieldKey: "content.visual-direction",
+        value: "Imported alternative direction.",
+        sourceIds: ["source-1"],
+      }],
+    };
+    const service = new BrandBrainBootstrapService(repository, generator, new FakeReferenceReader());
+
+    const result = await service.build("account-1", "brand-1", { primaryObjective: "grow-audience" });
+
+    expect(repository.fields.find((field) => field.fieldKey === "content.visual-direction")?.value).toBe("Owner-confirmed minimal studio imagery.");
     expect(result.skippedConfirmedCount).toBe(1);
   });
 
