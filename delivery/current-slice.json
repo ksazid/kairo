@@ -73,14 +73,15 @@
       "Final production smoke exposed malformed direct-model Drafter JSON under generic json_object mode; bind content-draft and critic-review to strict provider-side JSON schemas before runtime validation.",
       "Production deployment exposed that the existing Instagram publishing worker was built but never started by the API container; launch that existing worker only when explicitly production-enabled so approved publish commands can reach Meta without changing approval authority.",
       "Live OAuth diagnostics proved the Instagram callback route already exists, but when the Kairo access-token cookie has expired it redirects to the root error path; root then starts Auth0 with returnTo=/ and discards Meta code/state. Preserve the complete local callback path and query through the signed Auth0 transaction so OAuth resumes after sign-in.",
-      "Live Meta authorization now reaches the API callback, but Meta can omit expires_in when exchanging the Facebook User token. Treat omission only as a conservative 60-day operational horizon while retaining the existing minimum-lifetime rejection for explicit short expiries, so valid Meta connections are not rejected before account discovery."
+      "Live Meta authorization now reaches the API callback, but Meta can omit expires_in when exchanging the Facebook User token. Treat omission only as a conservative 60-day operational horizon while retaining the existing minimum-lifetime rejection for explicit short expiries, so valid Meta connections are not rejected before account discovery.",
+      "Product Owner deferred the remaining deliberate concurrent-Research production verification to issue #142. The historical concurrency defect/fix remains recorded, but that dedicated smoke is not a VS-73 acceptance or certification gate."
     ]
   },
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-73@1.5","commitSha":null,"by":"Sazid Khan","at":"2026-08-22T00:22:00+02:00","rationale":"Owner explicitly instructed the Publish blocker to be fixed and execution to continue through the real Instagram publish test; live logs proved the remaining blocker is Meta token-lifetime compatibility in the OAuth adapter."},
     {"type":"policy","status":"not-required","version":"VS-73@1.5","commitSha":null,"by":null,"at":null,"rationale":"The repair does not expand Meta permissions, expose credentials, relax tenant binding, bypass approval authority, or alter publishing execution; it only handles a valid provider response shape while retaining explicit short-token rejection."},
     {"type":"implementation","status":"approved","version":"VS-73@1.5","commitSha":null,"by":"Sazid Khan","at":"2026-08-22T00:22:00+02:00","rationale":"Owner said to fix the connection failure and go ahead with live publishing validation."},
-    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Fresh exact-head CI and production OAuth verification are required after the Meta token-lifetime compatibility repair."},
+    {"type":"certification","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Fresh exact-head CI and production verification are required after the Meta token-lifetime compatibility repair."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Exact merge SHA will be bound after CI and merge."},
     {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Instagram publisher remains enabled; the repaired API must deploy before the user repeats the Meta authorization and provider-confirmed publish smoke."}
   ],
@@ -93,8 +94,8 @@
     "status":"not-started",
     "reviewAt":null,
     "expectedOutcome":"Authenticated users can create multiple isolated Brands and reliably progress Brand → Idea → Research → Angles → Campaign → Content → Review → Approval → provider-confirmed Instagram publish under transient provider failures, with exact deployed-SHA provenance.",
-    "metrics":["provider retry recovery","Research-to-Angle recovery","multi-Brand creation","tenant isolation","concurrent Research idempotency","structured content output","Instagram OAuth completion","provider-confirmed Instagram publish","exact deployed SHA","authenticated smoke"]
+    "metrics":["provider retry recovery","Research-to-Angle recovery","multi-Brand creation","tenant isolation","structured content output","Instagram OAuth completion","provider-confirmed Instagram publish","exact deployed SHA","authenticated smoke"]
   },
-  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#137","evidence":["delivery/context/VS-73.md"]},
+  "links": {"specification":"docs/slices/VS-73.md","implementationPr":"#137","evidence":["delivery/context/VS-73.md","https://github.com/ksazid/kairo/issues/142"]},
   "maxAttempts": 3
 }
