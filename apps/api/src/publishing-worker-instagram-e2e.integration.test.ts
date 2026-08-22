@@ -56,6 +56,7 @@ suite("VS-63 Instagram publishing worker end-to-end", () => {
       const body = init?.body ? JSON.parse(String(init.body)) as Record<string, unknown> : {};
       calls.push({ url: requestUrl, authorization: new Headers(init?.headers).get("authorization"), body });
       if (requestUrl.endsWith("/media_publish")) return jsonResponse({ id: "ig-post-1" });
+      if (requestUrl.endsWith("/ig-post-1?fields=permalink")) return jsonResponse({ permalink: "https://www.instagram.com/p/kairo-e2e/" });
       if (body.is_carousel_item === true) return jsonResponse({ id: `child-${++child}` });
       if (body.media_type === "CAROUSEL") return jsonResponse({ id: "parent-1" });
       throw new Error(`Unexpected Meta request: ${requestUrl}`);
@@ -65,25 +66,26 @@ suite("VS-63 Instagram publishing worker end-to-end", () => {
     expect(await seeded.runner.runOnce()).toBe(true);
     expect(await seeded.runner.runOnce()).toBe(false);
 
-    expect(calls).toHaveLength(4);
+    expect(calls).toHaveLength(5);
     expect(calls.every(call => call.authorization === "Bearer test-page-token")).toBe(true);
     expect(calls[0]?.body).toEqual({ image_url: "https://cdn.example.com/slide-1.png", is_carousel_item: true });
     expect(calls[1]?.body).toEqual({ image_url: "https://cdn.example.com/slide-2.png", is_carousel_item: true });
     expect(calls[2]?.body).toEqual({ media_type: "CAROUSEL", children: "child-1,child-2", caption: "Carousel caption" });
     expect(calls[3]?.body).toEqual({ creation_id: "parent-1" });
+    expect(calls[4]).toMatchObject({ url: "https://graph.facebook.com/v24.0/ig-post-1?fields=permalink", body: {} });
 
     const credential = await pool.query<{ ciphertext: string }>("select ciphertext from channel_credentials where credential_ref=$1", [seeded.credentialRef]);
     expect(credential.rows[0]?.ciphertext).toBeTruthy();
     expect(credential.rows[0]?.ciphertext).not.toContain("test-page-token");
 
-    const command = await pool.query("select status,attempt_count,lease_owner,lease_expires_at from publish_commands where id='cmd'");
-    expect(command.rows[0]).toMatchObject({ status: "published", attempt_count: 1, lease_owner: null, lease_expires_at: null });
+    const command = await pool.query("select status,lifecycle_status,provider_publish_id,meta_container_id,published_url,attempt_count,lease_owner,lease_expires_at from publish_commands where id='cmd'");
+    expect(command.rows[0]).toMatchObject({ status: "published", lifecycle_status: "published", provider_publish_id: "ig-post-1", meta_container_id: "parent-1", published_url: "https://www.instagram.com/p/kairo-e2e/", attempt_count: 1, lease_owner: null, lease_expires_at: null });
 
     const attempt = await pool.query("select status,external_post_id,provider_correlation_id,failure_code from publish_attempts where command_id='cmd'");
     expect(attempt.rows[0]).toMatchObject({ status: "published", external_post_id: "ig-post-1", provider_correlation_id: "parent-1", failure_code: null });
 
-    const published = await pool.query("select channel,account_ref,external_post_id from published_posts where publish_command_id='cmd'");
-    expect(published.rows).toEqual([{ channel: "instagram", account_ref: "123456", external_post_id: "ig-post-1" }]);
+    const published = await pool.query("select channel,account_ref,external_post_id,published_url from published_posts where publish_command_id='cmd'");
+    expect(published.rows).toEqual([{ channel: "instagram", account_ref: "123456", external_post_id: "ig-post-1", published_url: "https://www.instagram.com/p/kairo-e2e/" }]);
   });
 
   it("schedules the VS-62 transient retry hint and creates no published record when Meta returns HTTP 500", async () => {
