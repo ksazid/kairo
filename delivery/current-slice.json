@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "sliceId": "VS-82",
   "title": "VS-82 — Remaining Instagram Completion",
-  "status": "active",
-  "lifecycle": "testing",
+  "status": "completed",
+  "lifecycle": "validated",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -99,30 +99,30 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-82@1.0",
+      "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
+      "by": "Sazid Khan",
+      "at": "2026-08-22T19:07:00+02:00",
+      "rationale": "Product Owner confirmed Certification completed after the final Reel worker fix merged."
     },
     {
       "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-82@1.0",
+      "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
+      "by": "Sazid Khan",
+      "at": "2026-08-22T19:07:00+02:00",
+      "rationale": "Product Owner confirmed Release Gate completed for the final runtime SHA."
     },
     {
       "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-82@1.0",
+      "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
+      "by": "Sazid Khan",
+      "at": "2026-08-22T19:08:00+02:00",
+      "rationale": "The final certified release was deployed and the already-approved production Reel command was provider-confirmed Published."
     }
   ],
   "decisionIds": [],
@@ -130,47 +130,54 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 80,
-    "certification": 0,
-    "release": 0,
-    "validation": 0
+    "testing": 100,
+    "certification": 100,
+    "release": 100,
+    "validation": 100
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
     "evidence": [
       "Local TypeScript checks passed for Domain, Worker, API and Web",
       "Local deterministic suite passed: 660 tests; 38 environment-gated tests skipped; 0 failures",
       "Next.js production build passed with webpack after correcting a page-module export contract",
       "Lock, JSON, governance, dashboard, script syntax and diff checks passed",
-      "Fresh-Idea PostgreSQL concurrency regression is implemented and awaits deployed-database execution"
+      "Fresh-Idea production concurrency verification persisted one Research dossier and exactly two candidate Angles",
+      "Migrations 0023 through 0028 applied transactionally with checksum and exact-SHA guards",
+      "Provider-backed Reel command 95783df8-11df-4e6f-8143-857b63c5d791 reached Published in Calendar",
+      "Results exposed fresh Instagram observations after publishing",
+      "PR #141 and issue #142 were closed after evidence preservation"
     ]
   },
   "release": {
-    "status": "not-authorized",
-    "releaseId": null
+    "status": "released",
+    "releaseId": "REL-004"
   },
   "rollback": {
-    "status": "not-applicable",
-    "rollbackId": null
+    "status": "ready",
+    "rollbackId": "RB-004"
   },
   "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
+    "status": "validated",
+    "reviewAt": "2026-08-22T19:12:00+02:00",
+    "expectedOutcome": "Instagram Reel publishes through the deterministic worker and appears in Calendar and Results.",
+    "metrics": ["published Reel command", "Calendar Published state", "Instagram Results observations"]
   },
   "links": {
     "specification": "docs/slices/VS-82.md",
     "implementationPr": "https://github.com/ksazid/kairo/pull/155",
     "evidence": [
       "docs/slices/VS-82.md",
+      "delivery/context/VS-82.md",
       "apps/api/src/instagram-source-intelligence.test.ts",
       "apps/api/src/instagram-visual-analysis.test.ts",
       "apps/worker/src/creative-renderer.test.ts",
       "apps/worker/src/performance-patterns.test.ts",
       "apps/api/src/vs04-postgres-research.integration.test.ts",
-      "https://github.com/ksazid/kairo/pull/155"
+      "https://github.com/ksazid/kairo/pull/155",
+      "https://github.com/ksazid/kairo/pull/160",
+      "https://github.com/ksazid/kairo/pull/141"
     ]
   },
   "maxAttempts": 3

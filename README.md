@@ -49,7 +49,7 @@ Kairo uses the approved **PES Web/AI profile** direction:
 
 ## Current state
 
-Runtime delivery is merged through **VS-81**. **VS-82 Remaining Instagram Completion** is active, combining Instagram source/visual intelligence and health, approved Brand asset rendering, deterministic thumbnail lineage, dimension-specific Performance Memory, and final authenticated verification. Existing Brand Brain, Advanced details, human approval and deterministic publishing controls remain intact. Release, deployment and production enablement remain separate exact-SHA human approvals.
+Runtime delivery is released through **VS-82 Remaining Instagram Completion**. Instagram source/visual intelligence and health, approved Brand asset rendering, deterministic thumbnail lineage, dimension-specific Performance Memory, concurrent Research recovery, provider-backed Reel publishing, Calendar verification and Results ingestion are production-validated. Existing Brand Brain, Advanced details, human approval and deterministic publishing controls remain intact.
 
 ## Feature ledger
 

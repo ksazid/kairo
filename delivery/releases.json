@@ -120,6 +120,51 @@
           "Concurrent Research verification is explicitly deferred to follow-up issue #142."
         ]
       }
+    },
+    {
+      "id": "REL-004",
+      "sliceIds": ["VS-82"],
+      "status": "released",
+      "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
+      "migrations": [
+        "0023_meta_multichannel_connections.sql",
+        "0024_carousel_studio_persistence.sql",
+        "0025_content_asset_connections.sql",
+        "0026_instagram_content_insights.sql",
+        "0027_asset_thumbnails.sql",
+        "0028_performance_pattern_memory.sql"
+      ],
+      "configurationChanges": [
+        "KAIRO_RELEASE_SHA set to ec01d4b08bc58e92a615f90a8e18c221f2c45610 on the Render API service.",
+        "The bounded startup migration range was enabled for one deployment and cleared immediately after successful application.",
+        "Instagram publishing remained explicitly enabled; Reel execution no longer depends on carousel-only object storage."
+      ],
+      "featureFlags": [
+        "Instagram publishing remains destination-bound, exact-version approved and media-fingerprint locked.",
+        "Carousel publishing continues to fail closed unless approved rendered media delivery is configured."
+      ],
+      "smokeTests": [
+        "All CI and Security checks passed on PRs #155 through #160 before exact-SHA merge approvals.",
+        "Fresh-Idea concurrent Research verification persisted one dossier and exactly two candidate Angles.",
+        "Render deploy dep-da4tf8v40ujc73a0p8tg reached live on the final runtime SHA.",
+        "Instagram publisher logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and processed the pending Reel command.",
+        "Reel command 95783df8-11df-4e6f-8143-857b63c5d791 displayed Published in Calendar for @_dukeman390.",
+        "Results displayed six available Instagram observations with fresh provider evidence."
+      ],
+      "rollbackStrategy": {
+        "summary": "If the final publisher runtime regresses, disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED and redeploy ec01d4b08bc58e92a615f90a8e18c221f2c45610 or the preceding certified runtime. Do not roll back applied migrations; preserve publish commands, provider IDs, audit lineage and metric snapshots before recovery."
+      },
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-22T19:07:00+02:00",
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Final Render deployment is live at ec01d4b08bc58e92a615f90a8e18c221f2c45610.",
+          "Provider-backed Reel command reached Published after one deterministic worker attempt.",
+          "Calendar and Results verification passed in the authenticated TheDukeMan Brand scope.",
+          "Temporary PR #141 and issue #142 were closed after evidence preservation."
+        ]
+      }
     }
   ]
 }
