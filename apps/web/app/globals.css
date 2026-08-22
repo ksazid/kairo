@@ -30,6 +30,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .nav-item.disabled { color: var(--k-neutral-400); cursor: default; }
 .nav-item small { font-size: 10px; font-weight: 600; color: var(--k-neutral-400); }
 .sidebar-footer { margin-top: auto; display: grid; gap: 4px; }
+.sidebar-utilities { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 8px; align-items: center; }
 
 .workspace-main { padding: 44px clamp(24px, 4vw, 64px) 80px; max-width: 1320px; width: 100%; }
 .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; margin-bottom: 36px; }
@@ -211,6 +212,7 @@ h3 { margin: 0; font-size: 20px; line-height: 28px; }
 :root[data-sidebar="collapsed"] .command-trigger span, :root[data-sidebar="collapsed"] .command-trigger kbd { display: none; }
 :root[data-sidebar="collapsed"] .replay-guide > span:last-child { display: none; }
 :root[data-sidebar="collapsed"] .command-trigger { justify-content: center; padding-inline: 8px; }
+:root[data-sidebar="collapsed"] .sidebar-utilities { grid-template-columns: 1fr; }
 :root[data-sidebar="collapsed"] .brand-switcher > summary, :root[data-sidebar="collapsed"] .nav-item { justify-content: center; padding-inline: 8px; }
 :root[data-sidebar="collapsed"] .sidebar-toggle svg { transform: rotate(180deg); }
 :root[data-sidebar="collapsed"] .brand-switcher-menu { left: 52px; top: 0; }

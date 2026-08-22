@@ -63,6 +63,8 @@ import{MetaMcpToolHandler}from"./meta-mcp-tools";
 import{registerMetaMcpRoutes}from"./meta-mcp-routes";
 import{SimpleCreationService}from"./simple-creation";import{PgSimpleCreationStore}from"./simple-creation-postgres";import{registerSimpleCreationRoutes}from"./simple-creation-routes";
 import{SimplePublishFlowService}from"@kairo/domain/simple-publish-flow";import{PgSimplePublishFlowRepository}from"./simple-publish-flow-postgres";import{registerSimplePublishFlowRoutes}from"./simple-publish-flow-routes";
+import{PgCommandSearchRepository}from"./command-search-postgres";import{registerCommandSearchRoutes}from"./command-search-routes";
+import{PgBrandNotificationRepository}from"./brand-notifications-postgres";import{registerBrandNotificationRoutes}from"./brand-notifications-routes";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -157,6 +159,7 @@ const app = buildApp({
 let simpleCreationService:SimpleCreationService|undefined;let simpleCreationRunning=false;
 if(ideaDeveloper){simpleCreationService=new SimpleCreationService(new PgSimpleCreationStore(pool),researchStore,campaignStore,ideaDeveloper);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,trigger:()=>void collectSimpleCreationTick()});}
 registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier});
+registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
@@ -166,6 +169,7 @@ const carouselStorage=carouselObjectStorageConfig();
 const carouselSigner=carouselStorage?new HmacObjectStorageTemporarySigner(carouselStorage.publicBaseUrl,carouselStorage.signingSecret):undefined;
 if(carouselSigner)registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner)});
 registerSimplePublishFlowRoutes(app,{coreStore,identityVerifier,service:new SimplePublishFlowService(new PgSimplePublishFlowRepository(pool,carouselSigner))});
+registerBrandNotificationRoutes(app,{coreStore,identityVerifier,repository:new PgBrandNotificationRepository(pool)});
 
 const googleDrive=googleDriveConfig();
 let googleDriveService:GoogleDriveContentAssetService|undefined;

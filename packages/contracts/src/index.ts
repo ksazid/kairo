@@ -257,6 +257,9 @@ export interface SimplePublishReadinessDto{status:"needs-review"|"needs-destinat
 export interface SimplePublishResultDto{status:"not-started"|"approved"|"publishing"|"processing"|"published"|"failed";publishCommandId?:string;publishId?:string;publishedUrl?:string;failureReason?:string;publishedAt?:string}
 export interface SimplePerformanceMetricDto{name:string;status:"available"|"unavailable";value?:number;capturedAt:string;reason?:string}
 export interface SimpleAdvancedLinkDto{key:"media-editor"|"approval-history"|"publishing-details"|"performance-details";label:string;href:string}
+export type BrandNotificationKind="approval-required"|"publishing-failed"|"connection-reconnect-required";
+export interface BrandNotificationDto{id:string;kind:BrandNotificationKind;brandId:string;occurredAt:string;source:{type:"content-review"|"publish-command"|"channel-account";id:string};context:{campaignId?:string;assetId?:string;channel?:string;accountRef?:string;failureReason?:string}}
+export interface BrandNotificationsDto{brandId:string;items:BrandNotificationDto[]}
 export interface SimpleReviewPublishResultsDto{brandId:string;campaignId:string;assetId:string;review:SimpleReviewSummaryDto;publish:SimplePublishReadinessDto;result:SimplePublishResultDto;performance:{status:"waiting"|"available";metrics:SimplePerformanceMetricDto[]};advancedLinks:SimpleAdvancedLinkDto[]}
 
 export type MetaMcpToolName="publish_reel"|"publish_carousel"|"publish_image"|"get_publish_status"|"get_instagram_insights";
@@ -269,3 +272,22 @@ export type InstagramInsightValue={name:string;status:"available"|"unavailable";
 export type GetInstagramInsightsToolResult={publishedPostId:string;metrics:InstagramInsightValue[]};
 export type MetaMcpToolResultMap={publish_reel:InstagramPublishToolResult;publish_carousel:InstagramPublishToolResult;publish_image:InstagramPublishToolResult;get_publish_status:InstagramPublishToolResult;get_instagram_insights:GetInstagramInsightsToolResult};
 export interface MetaMcpToolDefinition{name:MetaMcpToolName;description:string;inputSchema:{type:"object";additionalProperties:false;required:readonly string[];properties:Record<string,{type:"string";minLength:number;maxLength:number}>}}
+
+export type CommandSearchResultKind = "brand" | "campaign" | "content-asset";
+
+export interface CommandSearchResultDto {
+  kind: CommandSearchResultKind;
+  id: string;
+  brandId: string;
+  brandName: string;
+  label: string;
+  detail: string;
+  href: string;
+  campaignId?: string;
+}
+
+export interface CommandSearchResponse {
+  query: string;
+  scope: { brandId?: string };
+  results: CommandSearchResultDto[];
+}

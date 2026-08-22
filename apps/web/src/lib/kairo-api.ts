@@ -10,6 +10,8 @@ import type {
   OpportunityAction,
   PutBrandBrainFieldRequest,
   SessionResponse,
+  CommandSearchResponse,
+  BrandNotificationsDto,
 } from "@kairo/contracts";
 
 export class KairoApiError extends Error {
@@ -74,6 +76,15 @@ export async function getBrand(brandId: string): Promise<BrandDto | null> {
   if (!response?.ok) return null;
   return (await response.json()) as BrandDto;
 }
+
+export async function searchCommands(query: string, options: { brandId?: string; limit?: number } = {}): Promise<CommandSearchResponse> {
+  const params = new URLSearchParams({ q: query });
+  if (options.brandId) params.set("brandId", options.brandId);
+  if (options.limit) params.set("limit", String(options.limit));
+  return bodyOrError(await authorizedFetch(`/api/v1/command-search?${params}`), "Unable to search Kairo");
+}
+
+export async function getBrandNotifications(brandId:string):Promise<BrandNotificationsDto>{return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/notifications`),"Unable to load notifications")}
 
 export async function createWorkspaceWithBrand(input: CreateWorkspaceWithBrandRequest): Promise<CreateWorkspaceWithBrandResponse> {
   return bodyOrError(await authorizedFetch("/api/v1/workspaces", { method: "POST", body: JSON.stringify(input) }), "Unable to create Workspace and Brand");
