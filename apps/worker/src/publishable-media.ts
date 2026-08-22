@@ -65,7 +65,8 @@ export class PublishableCreativeMediaService {
   }
   private async prepareCarousel(scope:CreativeScope,pkg:StoredCreativePackage,contentVersionId:string):Promise<PreparedPublishableCreativeMedia>{
     const assets=pkg.assets.filter(a=>a.role==="carousel-slide").sort((a,b)=>a.index-b.index);
-    if(assets.length<2||assets.length>10||assets.length!==pkg.assets.length)throw new Error("Carousel package must contain 2 to 10 slide assets");
+    const thumbnails=pkg.assets.filter(a=>a.role==="carousel-thumbnail");
+    if(assets.length<2||assets.length>10||thumbnails.length>1||assets.length+thumbnails.length!==pkg.assets.length)throw new Error("Carousel package must contain 2 to 10 slide assets and at most one thumbnail");
     contiguous(assets.map(a=>a.index),"carousel slide");
     const mediaItems:PublishMediaItem[]=[];const objects:PreparedPublishableObject[]=[];
     for(const asset of assets){
@@ -78,7 +79,8 @@ export class PublishableCreativeMediaService {
   private async prepareReel(scope:CreativeScope,pkg:StoredCreativePackage,contentVersionId:string):Promise<PreparedPublishableCreativeMedia>{
     const manifestAsset=pkg.assets.filter(a=>a.role==="reel-render-manifest");
     const frameAssets=pkg.assets.filter(a=>a.role==="reel-storyboard").sort((a,b)=>a.index-b.index);
-    if(manifestAsset.length!==1||frameAssets.length<1||manifestAsset.length+frameAssets.length!==pkg.assets.length)throw new Error("Reel package must contain storyboard frames and one render manifest");
+    const thumbnails=pkg.assets.filter(a=>a.role==="reel-thumbnail");
+    if(manifestAsset.length!==1||frameAssets.length<1||thumbnails.length>1||manifestAsset.length+frameAssets.length+thumbnails.length!==pkg.assets.length)throw new Error("Reel package must contain storyboard frames, one render manifest and at most one thumbnail");
     contiguous(frameAssets.map(a=>a.index),"reel storyboard");
     const manifestObject=await this.verifyAsset(scope,manifestAsset[0]!,"application/vnd.kairo.reel-render+json");
     const manifest=parseManifest(manifestObject.bytes,pkg);

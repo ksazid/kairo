@@ -16,3 +16,7 @@ Kairo V1 is deliberately sequenced around the approved closed intelligence loop.
 | 10 | VS-10 | Pilot Operations, Safety and Cost Controls |
 
 Mobile remains a later companion unless separately approved. Paid advertising, autonomous spend and unrestricted autonomous publishing remain outside V1.
+
+## Runtime continuation
+
+VS-01 through VS-81 delivered the governed V1 foundation and product simplification. VS-82 is the active completion slice combining Instagram source/visual intelligence, connection health, approved Brand media rendering, deterministic thumbnails, dimension-specific Performance Memory, authenticated multi-Brand verification and documentation reconciliation. Release, deployment and production enablement remain separate exact-SHA approvals.

@@ -22,6 +22,7 @@
     "./publishing-adapters": "./src/publishing-adapters.ts",
     "./performance": "./src/performance.ts",
     "./instagram-insights": "./src/instagram-insights.ts",
+    "./performance-patterns": "./src/performance-patterns.ts",
     "./learner": "./src/learner.ts",
     "./creative-renderer": "./src/creative-renderer.ts",
     "./carousel-quality-adapter": "./src/carousel-quality-adapter.ts",

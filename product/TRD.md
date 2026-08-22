@@ -4,7 +4,7 @@ document_id: CIE-TRD-001
 version: 1.0
 status: Approved
 owner: Architecture and Engineering
-last_updated: 2026-08-12
+last_updated: 2026-08-22
 depends_on:
   - CIE-PRD-001
   - ventures/content-intelligence-engine/evaluation/SKILLS-ARCHITECTURE.md
@@ -375,15 +375,25 @@ Publishing requires bounded retries, exponential backoff, duplicate prevention, 
 
 OAuth/provider tokens are encrypted, scoped, revocable and accessible only to deterministic channel adapters.
 
+Instagram account connection supports two provider-neutral authentication adapters: Instagram Login for a Professional account without a Facebook Page, and Facebook Login for Page/Facebook plus linked Professional Instagram discovery. The same Instagram/Website adapter boundaries serve onboarding and later Brand Brain refresh. Health projections expose scopes, verification/sync times, expiry and recovery state, never plaintext credentials.
+
+Meta operations are exposed through replaceable MCP tools above an application-owned `InstagramPublisher`; MCP does not own tenancy, approval, asset locking, retry policy or secrets. Image, carousel and Reel publishing binds commands to the exact approved media fingerprint and persists provider container, media ID, published URL and lifecycle state.
+
+Creative rendering accepts only approved resolved raster assets and supported bounded font assets. Remote URLs and unapproved asset identifiers are not render authority. Carousel output is 1080×1350 (4:5); generated carousel/Reel thumbnails are deterministic private objects keyed by the immutable source fingerprint and persisted with the rendered version. Temporary signed delivery is produced only at the adapter boundary.
+
 ## Metrics and Performance Memory
 
 Metric ingestion is asynchronous. Raw channel metric snapshots are retained sufficiently to reproduce derived results, then normalised into supported CIE metrics. Unsupported channel metrics remain explicitly unavailable rather than inferred.
 
 Performance Memory preserves dimensions including Brand, Audience, Topic, Hook, Angle, Format, Channel, Timing, CTA, Campaign and Outcome. PostgreSQL remains authoritative; semantic representations may support retrieval and similarity analysis.
 
+The pattern reader compares only Brand-scoped published posts with available numerator and reach/impression evidence. Topic, hook, structure, template, format and UTC timing candidates retain published-post and normalised-metric IDs. Missing metrics are excluded. Candidate observations are causally restrained and remain separate until a human accepts the Learning.
+
 ## Learning
 
 The Learner produces `CandidateLearning`, not permanent Brand truth. Each candidate retains supporting posts/data, time range, sample size, confidence, contradictory evidence, scope and suggested action.
+
+`CandidateLearning.patterns` stores typed dimension/value observations with their own evidence subset. Accepted Learnings are projected into Brand Brain Performance Memory and may influence explainable format ranking; candidate, rejected and superseded Learnings cannot silently change confirmed Brand Brain fields.
 
 Lifecycle may include Candidate, Accepted, Active, Weakened, Superseded and Rejected. New evidence may reduce or supersede prior learning.
 

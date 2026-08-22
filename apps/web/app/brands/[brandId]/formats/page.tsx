@@ -8,10 +8,10 @@ import {
   type ProductionEffort,
   type AcceptedFormatLearning,
 } from "@kairo/domain/format-intelligence";
-import type { PublishChannel } from "@kairo/domain/publishing";
+import type { PublishChannel, PublishContentType } from "@kairo/domain/publishing";
 import { getBrand, getLearnings } from "../../../../src/lib/kairo-api";
 import { PilotMobileNav } from "../../../pilot-mobile-nav";
-import { KairoSidebar } from "../ideas/page";
+import { KairoSidebar } from "../../../legacy-pilot-navigation";
 import "./formats.css";
 
 type Params = Promise<{ brandId: string }>;
@@ -48,7 +48,7 @@ export default async function FormatsPage({ params, searchParams }: { params: Pa
   const channel = query.channel && isFormatChannel(query.channel) ? query.channel : undefined;
   const objective = query.objective && isFormatObjective(query.objective) ? query.objective : undefined;
   const maxEffort = query.effort && isProductionEffort(query.effort) ? query.effort : undefined;
-  const acceptedLearnings: AcceptedFormatLearning[] = learnings.flatMap(item => { const format=item.applicability.format; if(item.status!=="accepted"||!isPublishFormat(format))return[];return[{ learningId: item.id, format, ...(isFormatChannel(item.applicability.channel ?? "") ? { channel: item.applicability.channel as PublishChannel } : {}), confidence: item.confidence, evidenceObservationIds: [...new Set(item.evidence.flatMap(group => group.metricObservationIds))], reason: item.statement }] });
+  const acceptedLearnings: AcceptedFormatLearning[] = learnings.flatMap(item => {if(item.status!=="accepted")return[];const patternFormats=(item.patterns??[]).filter(pattern=>pattern.dimension==="format"&&isPublishFormat(pattern.value));const values:Array<{format:PublishContentType;reason:string;evidence:Array<{publishedPostId:string;metricObservationIds:string[]}>}>=[...(isPublishFormat(item.applicability.format)?[{format:item.applicability.format,reason:item.statement,evidence:item.evidence}]:[]),...patternFormats.map(pattern=>({format:pattern.value as PublishContentType,reason:pattern.observation,evidence:pattern.evidence}))];return values.map((value)=>({learningId:`${item.id}:${value.format}`,format:value.format,...(isFormatChannel(item.applicability.channel??"")?{channel:item.applicability.channel as PublishChannel}:{}),confidence:item.confidence,evidenceObservationIds:[...new Set(value.evidence.flatMap(group=>group.metricObservationIds))],reason:value.reason}))});
   const recommendations = recommendFormats({ channel, objective, maxEffort, acceptedLearnings });
   const base = `/brands/${encodeURIComponent(brand.id)}/formats`;
 

@@ -195,3 +195,17 @@
 **Implementation boundary:** This handoff approval authorises PES intake and decomposition; it does not by itself approve production deployment, autonomous publishing, paid advertising or autonomous spend.
 
 **Reopen only if:** PES intake identifies a material contradiction among approved artifacts, required validation invalidates a technical assumption, or new customer/legal/platform evidence requires an approved change.
+
+---
+
+## CIE-DEC-021 — Instagram intelligence, approved media and Performance Memory boundaries
+
+**Decision:** Instagram onboarding and later Brand Brain refresh use the same replaceable adapters. Instagram Login is the recommended Professional-account path; Facebook Login remains available for Facebook Pages and linked Instagram accounts. Website remains optional and may be selected alongside either connection.
+
+**Rendering boundary:** Brand palette plus approved resolved logo/imagery and explicitly supported font assets may enter deterministic rendering. A URL or asset identifier alone is not render authority. Carousel/Reel thumbnails share the immutable asset-version fingerprint and private-object lineage of the approved media.
+
+**Learning boundary:** Performance patterns are typed as topic, hook, structure, template, format or timing, retain exact Brand-scoped post/metric evidence and remain causal-restrained Candidate Learnings. Only human-accepted Learnings appear in Brand Brain Performance Memory or influence later recommendations; they do not overwrite confirmed Brand facts.
+
+**Operational boundary:** Production verification is exact-SHA bound and read-only unless the owner separately authorises an external publish. Temporary smoke resources may be removed only after their run evidence is preserved.
+
+**Reopen only if:** Meta platform changes, renderer safety evidence or pilot learning quality materially invalidates these boundaries.

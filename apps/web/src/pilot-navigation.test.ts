@@ -4,22 +4,21 @@ import { describe, expect, it } from "vitest";
 const source = (relative: string) => readFileSync(new URL(relative, import.meta.url), "utf8");
 
 describe("VS-21 pilot navigation contract", () => {
-  it("Today and Discover expose the implemented Campaigns, Calendar and Performance routes", () => {
+  it("Today and Discover mount the shared simple product shell", () => {
     const today = source("../app/page.tsx");
     const discover = source("../app/brands/[brandId]/discover/page.tsx");
     for (const page of [today, discover]) {
-      expect(page).toContain("/campaigns");
-      expect(page).toContain("/calendar");
-      expect(page).toContain("/performance");
-      expect(page).toContain("/more");
+      expect(page).toContain("KairoProductShell");
     }
   });
 
-  it("mobile navigation reaches Calendar and the More hub instead of disabling implemented workflow areas", () => {
-    const nav = source("../app/pilot-mobile-nav.tsx");
+  it("the shared navigation exposes Create, Library, Calendar, Results and Brand", () => {
+    const nav = source("./lib/product-navigation.ts");
+    expect(nav).toContain('label: "Create"');
+    expect(nav).toContain('label: "Library"');
     expect(nav).toContain("/calendar");
-    expect(nav).toContain("/more");
-    expect(nav).not.toContain("aria-disabled");
+    expect(nav).toContain("/performance");
+    expect(nav).toContain("/brain");
   });
 
   it("the mobile More hub exposes the existing pilot management surfaces", () => {
@@ -30,14 +29,14 @@ describe("VS-21 pilot navigation contract", () => {
     expect(more).toContain("/operations");
   });
 
-  it("Campaigns, Content Studio, Performance and Operations keep the mobile pilot navigation mounted", () => {
+  it("Campaigns, Content Studio, Performance and Operations keep the shared responsive shell mounted", () => {
     const pages = [
       source("../app/brands/[brandId]/campaigns/page.tsx"),
       source("../app/brands/[brandId]/campaigns/[campaignId]/page.tsx"),
       source("../app/brands/[brandId]/performance/page.tsx"),
       source("../app/brands/[brandId]/operations/page.tsx"),
     ];
-    for (const page of pages) expect(page).toContain("PilotMobileNav");
+    for (const page of pages) expect(page).toContain("KairoProductShell");
   });
 
   it("high-risk pilot read surfaces expose local loading and recoverable error boundaries", () => {

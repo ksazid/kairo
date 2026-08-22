@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { BrandBrainFieldDto } from "@kairo/contracts";
-import { getBrand, getBrandBrain, getKnowledgeSources, getSession } from "../../../../src/lib/kairo-api";
-import { getMetaConnectionHealth } from "../../../../src/lib/meta-connection-api";
+import { getBrand, getBrandBrain, getKnowledgeSources, getLearnings, getSession } from "../../../../src/lib/kairo-api";
+import { getMetaConnectionHealth, type MetaConnectionHealth } from "../../../../src/lib/meta-connection-api";
 import {
   buildBrandBrainOverview,
   fieldEvidenceLabel,
@@ -26,10 +26,11 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
   const workspace = session.workspaces.find((item) => item.id === brand.workspaceId);
   if (!workspace) redirect("/");
 
-  const [brain, sources, accountResult, messages] = await Promise.all([
+  const [brain, sources, accountResult, learnings, messages] = await Promise.all([
     getBrandBrain(brand.id),
     getKnowledgeSources(brand.id),
     getMetaConnectionHealth(brand.id).then((accounts) => ({ accounts, available: true as const })).catch(() => ({ accounts: [], available: false as const })),
+    getLearnings(brand.id).catch(() => []),
     searchParams,
   ]);
   const overview = buildBrandBrainOverview(brain);
@@ -46,6 +47,7 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
   const facebookInstagram = usableAccounts.find((account) => account.channel === "instagram" && authMethod(account) !== "instagram-login");
   const facebook = usableAccounts.find((account) => String(account.channel) === "facebook");
   const brainReturn = `/brands/${encoded}/brain`;
+  const acceptedLearnings=learnings.filter((learning)=>learning.status==="accepted");
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand Brain" mobileActive="More">
@@ -177,6 +179,19 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
           </div>
         </details>
 
+        <section className="brain-source-panel performance-memory-panel" aria-labelledby="performance-memory-heading">
+          <div>
+            <p className="eyebrow">Performance Memory</p>
+            <h2 id="performance-memory-heading">What this Brand has learned</h2>
+            <p>Only Learnings you accepted appear here and influence later recommendations.</p>
+          </div>
+          {acceptedLearnings.length?<div className="performance-memory-list">{acceptedLearnings.slice(0,6).map((learning)=><article className="performance-memory-item" key={learning.id}>
+            <div><strong>{learning.statement}</strong><span>{Math.round(learning.confidence*100)}% confidence · {learning.evidence.length} evidence {learning.evidence.length===1?"group":"groups"}</span></div>
+            {(learning.patterns??[]).length?<ul>{learning.patterns.map((pattern)=><li key={`${pattern.dimension}:${pattern.value}`}><b>{friendlyDimension(pattern.dimension)}</b><span>{pattern.value}</span><small>{pattern.observation}</small></li>)}</ul>:null}
+          </article>)}</div>:<p className="brain-memory-empty">No accepted performance Learnings yet. Candidate findings remain in Results until you approve them.</p>}
+          <Link className="tertiary-button" href={`/brands/${encoded}/performance`}>Review performance Learnings</Link>
+        </section>
+
         <section className="brain-source-panel brain-source-hub" aria-labelledby="source-heading">
           <div>
             <p className="eyebrow">Sources</p>
@@ -189,7 +204,7 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
               <Link className="tertiary-button" href={`${controlHref}#knowledge-sources`}>{brand.publicSourceUrl ? "Manage" : "Add website"}</Link>
             </article>
             <article className="brain-source-card">
-              <div><span className="source-kind">Instagram · Recommended</span><strong>{instagram?.displayName ?? (accountResult.available ? "Not connected" : "Status unavailable")}</strong><small>{instagram ? `Professional account · ${instagram.status}` : accountResult.available ? "Instagram Login; no Facebook Page required" : "Kairo could not verify the connection right now; existing Brand Brain context is unchanged"}</small></div>
+              <div><span className="source-kind">Instagram · Recommended</span><strong>{instagram?.displayName ?? (accountResult.available ? "Not connected" : "Status unavailable")}</strong><small>{instagram ? `Professional account · ${healthLabel(instagram)}` : accountResult.available ? "Instagram Login; no Facebook Page required" : "Kairo could not verify the connection right now; existing Brand Brain context is unchanged"}</small>{instagram ? <ConnectionHealthDetails account={instagram} /> : null}</div>
               <div className="brain-source-card-actions">
                 {instagram ? <form action={disconnectMetaConnectionAction.bind(null,brand.id,instagram.id)}><button className="tertiary-button" type="submit">Disconnect</button></form> : null}
                 <Link className={instagram?.status === "connected" ? "tertiary-button" : "secondary-button"} href={instagram || !accountResult.available ? `/brands/${encoded}/performance` : connectionStartPath(brand.id, "instagram", brainReturn)}>{instagram || !accountResult.available ? "Manage" : "Connect"}</Link>
@@ -223,7 +238,7 @@ export default async function BrandBrainPage({ params, searchParams }: { params:
 
 function ConnectionSourceCard({ kind, account, available, help, connectHref, manageHref, brandId }: {
   kind: string;
-  account?: { id: string; displayName: string; status: string };
+  account?: MetaConnectionHealth;
   available: boolean;
   help: string;
   connectHref: string;
@@ -236,7 +251,8 @@ function ConnectionSourceCard({ kind, account, available, help, connectHref, man
       <div>
         <span className="source-kind">{kind}</span>
         <strong>{account?.displayName ?? (available ? "Not connected" : "Status unavailable")}</strong>
-        <small>{account ? `${help} · ${account.status}` : available ? help : "Connection health is temporarily unavailable; saved Brand context is unchanged"}</small>
+        <small>{account ? `${help} · ${healthLabel(account)}` : available ? help : "Connection health is temporarily unavailable; saved Brand context is unchanged"}</small>
+        {account ? <ConnectionHealthDetails account={account} /> : null}
       </div>
       <div className="brain-source-card-actions">
         {account ? <form action={disconnectMetaConnectionAction.bind(null,brandId,account.id)}><button className="tertiary-button" type="submit">Disconnect</button></form> : null}
@@ -245,6 +261,20 @@ function ConnectionSourceCard({ kind, account, available, help, connectHref, man
     </article>
   );
 }
+
+function ConnectionHealthDetails({account}:{account:MetaConnectionHealth}) {
+  const recovery=account.issue==="token-expired"||account.issue==="reconnect-required"?"Reconnect to restore publishing and refresh access.":account.issue==="source-sync-failed"?"Refresh the Instagram source; reconnect if the failure continues.":undefined;
+  return <dl className="connection-health-details">
+    <div><dt>Permissions</dt><dd>{account.grantedScopes?.length ? `${account.grantedScopes.length} granted` : "None reported"}</dd></div>
+    <div><dt>Last verified</dt><dd>{friendlyDate(account.lastVerifiedAt)}</dd></div>
+    {account.channel==="instagram"?<div><dt>Brand sync</dt><dd>{friendlyDate(account.lastSourceSyncAt)}{account.sourceStatus?` · ${account.sourceStatus}`:""}</dd></div>:null}
+    {account.tokenExpiresAt?<div><dt>Access expires</dt><dd>{friendlyDate(account.tokenExpiresAt)}</dd></div>:null}
+    {recovery?<div className="connection-health-recovery"><dt>Action</dt><dd>{recovery}</dd></div>:null}
+  </dl>;
+}
+
+function healthLabel(account:MetaConnectionHealth){return account.healthy?"Healthy":account.issue==="source-sync-failed"?"Source refresh needs attention":"Reconnect required"}
+function friendlyDate(value?:string){if(!value)return"Not yet";const parsed=new Date(value);return Number.isFinite(parsed.getTime())?new Intl.DateTimeFormat("en",{dateStyle:"medium",timeStyle:"short"}).format(parsed):"Unavailable"}
 
 function authMethod(account: unknown): string | undefined {
   if (!account || typeof account !== "object" || !("authMethod" in account)) return undefined;
@@ -290,3 +320,4 @@ function safeHost(value: string) {
 function friendlyFieldName(key: string) {
   return key.split(".").at(-1)?.replace(/-/g, " ") ?? key;
 }
+function friendlyDimension(value:string){return value.charAt(0).toUpperCase()+value.slice(1)}

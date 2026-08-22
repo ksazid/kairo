@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getBrand, getIdeas } from "../../../../src/lib/kairo-api";
 import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
-import { PilotMobileNav } from "../../../pilot-mobile-nav";
 import { createIdeaAction } from "./actions";
 
 type Params = Promise<{ brandId: string }>;
@@ -97,16 +96,3 @@ function statusLabel(status: string) {
     "angles-ready": "Angles ready",
   } as Record<string, string>)[status] ?? status;
 }
-
-// Temporary compatibility exports for legacy pages that still consume the
-// pre-VS-50 sidebar/mobile-nav helpers. Those pages migrate in later UI slices.
-function KairoSidebar({ brandId, active }: { brandId: string; active: string }) {
-  const items = ["Today", "Discover", "Ideas", "Campaigns", "Content Studio", "Calendar", "Performance", "Brand Brain"];
-  return <aside className="sidebar" aria-label="Primary navigation"><div><div className="wordmark"><span className="brandmark" aria-hidden="true" />Kairo</div><p className="sidebar-caption">Content Intelligence</p></div><nav className="nav-list">{items.map((item) => { const href = item === "Today" ? `/?brand=${encodeURIComponent(brandId)}` : item === "Discover" ? `/brands/${encodeURIComponent(brandId)}/discover` : item === "Ideas" ? `/brands/${encodeURIComponent(brandId)}/ideas` : item === "Campaigns" || item === "Content Studio" ? `/brands/${encodeURIComponent(brandId)}/campaigns` : item === "Calendar" ? `/brands/${encodeURIComponent(brandId)}/calendar` : item === "Performance" ? `/brands/${encodeURIComponent(brandId)}/performance` : item === "Brand Brain" ? `/brands/${encodeURIComponent(brandId)}/brain` : null; return href ? <Link key={item} href={href} className={`nav-item ${item === active ? "active" : ""}`} aria-current={item === active ? "page" : undefined}>{item}</Link> : <span key={item} className="nav-item disabled">{item}<small>Later</small></span>; })}</nav><div className="sidebar-footer"><span className="nav-item disabled">Settings<small>Later</small></span><a className="nav-item" href="/auth/logout">Sign out</a></div></aside>;
-}
-
-function MobileIdeasNav({ brandId }: { brandId: string }) {
-  return <PilotMobileNav brandId={brandId} active="Ideas" />;
-}
-
-export { KairoSidebar, MobileIdeasNav };

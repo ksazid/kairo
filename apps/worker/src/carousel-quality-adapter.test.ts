@@ -35,7 +35,6 @@ describe("rendered carousel quality adapter", () => {
       foreground: [120, 120, 120],
       background: [130, 130, 130],
       accent: [125, 125, 125],
-      logoAssetId: "private-logo-1",
       logoPlacement: "none",
     });
     const report = evaluateRenderedCarouselArtifactsQuality(crowded, rendered.artifacts, { fontFamilies:["Kairo Bitmap"],colors:[[130,130,130],[120,120,120],[125,125,125]],logoRequired:true });

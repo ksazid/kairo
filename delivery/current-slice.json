@@ -1,16 +1,21 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-81",
-  "title": "VS-81 — UI Feedback and Discovery",
+  "sliceId": "VS-82",
+  "title": "VS-82 — Remaining Instagram Completion",
   "status": "active",
   "lifecycle": "testing",
-  "riskLevel": "medium",
+  "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
+    "FR-02",
     "FR-03",
-    "FR-05",
-    "FR-13",
-    "FR-15"
+    "FR-04",
+    "FR-11",
+    "FR-15",
+    "FR-16",
+    "FR-17",
+    "FR-18",
+    "FR-20"
   ],
   "owners": {
     "product": "Product Owner",
@@ -19,17 +24,28 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-79",
-    "VS-80"
+    "VS-73",
+    "VS-74",
+    "VS-75",
+    "VS-77",
+    "VS-78",
+    "VS-81"
   ],
   "blockers": [],
   "allowedPaths": [
-    "apps/web/**",
     "apps/api/**",
+    "apps/web/**",
+    "apps/worker/**",
     "packages/contracts/**",
-    "docs/slices/VS-81.md",
-    "docs/plans/VS-81-implementation.md",
+    "packages/domain/**",
+    "product/**",
+    "planning/**",
+    "decisions/**",
+    "docs/slices/VS-82.md",
+    "docs/plans/VS-82-implementation.md",
     "delivery/**",
+    "scripts/**",
+    "README.md",
     ".engineering/STATE.json"
   ],
   "protectedPaths": [
@@ -39,43 +55,47 @@
   "impact": {
     "areas": [
       "frontend",
+      "api",
+      "architecture",
+      "sensitive-data",
       "customer-flow",
+      "analytics",
       "operations-support"
     ],
     "notes": [
-      "Adds truthful Brand-scoped notifications and on-demand discovery.",
-      "Improves feedback, loading, channel identity and accessibility states.",
-      "Preserves every existing feature and route.",
-      "Does not enable production credentials, release or deployment."
+      "Completes bounded Instagram source analysis, Brand asset rendering and Performance Memory.",
+      "Extends existing provider-neutral and private-object boundaries instead of coupling domain code to Meta or storage.",
+      "Production verification remains credential-safe, exact-SHA bound and human controlled.",
+      "No release, deployment or production enablement is authorized."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-81@1.0",
+      "version": "VS-82@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner instructed proceeding with the next ten-task UI batch."
+      "at": "2026-08-22T06:35:00+02:00",
+      "rationale": "The Product Owner supplied the remaining task list and instructed Kairo to combine related tasks and start fixing them."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-81@1.0",
+      "version": "VS-82@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice is bounded to presentation, navigation and accessibility and does not weaken product or security controls."
+      "rationale": "Existing decisions govern Brand isolation, owner-reviewed inference, private media, deterministic publishing, human Learning acceptance and official channel adapters. The slice does not weaken those controls."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-81@1.0",
+      "version": "VS-82@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T05:00:00+02:00",
-      "rationale": "The Product Owner explicitly instructed proceeding with implementation."
+      "at": "2026-08-22T06:35:00+02:00",
+      "rationale": "The Product Owner explicitly instructed implementation after combining the related remaining tasks."
     },
     {
       "type": "certification",
@@ -110,7 +130,7 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 100,
+    "testing": 80,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -119,10 +139,11 @@
     "status": "not-started",
     "commitSha": null,
     "evidence": [
-      "runtime:typecheck passed",
-      "runtime:test passed: 618 tests, 37 skipped",
-      "runtime:build passed",
-      "slice validation and diff checks passed"
+      "Local TypeScript checks passed for Domain, Worker, API and Web",
+      "Local deterministic suite passed: 660 tests; 38 environment-gated tests skipped; 0 failures",
+      "Next.js production build passed with webpack after correcting a page-module export contract",
+      "Lock, JSON, governance, dashboard, script syntax and diff checks passed",
+      "Fresh-Idea PostgreSQL concurrency regression is implemented and awaits deployed-database execution"
     ]
   },
   "release": {
@@ -140,13 +161,16 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-81.md",
-    "implementationPr": null,
+    "specification": "docs/slices/VS-82.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/155",
     "evidence": [
-      "docs/slices/VS-81.md",
-      "apps/api/src/brand-notifications-postgres.test.ts",
-      "apps/api/src/command-search-routes.test.ts",
-      "apps/web/src/lib/ui-states.test.ts"
+      "docs/slices/VS-82.md",
+      "apps/api/src/instagram-source-intelligence.test.ts",
+      "apps/api/src/instagram-visual-analysis.test.ts",
+      "apps/worker/src/creative-renderer.test.ts",
+      "apps/worker/src/performance-patterns.test.ts",
+      "apps/api/src/vs04-postgres-research.integration.test.ts",
+      "https://github.com/ksazid/kairo/pull/155"
     ]
   },
   "maxAttempts": 3

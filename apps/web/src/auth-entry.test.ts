@@ -21,7 +21,7 @@ describe("VS-28 Kairo auth entry contract", () => {
 
   it("keeps the Kairo sign-in route recovery-only instead of collecting an identifier or password", () => {
     const recovery = source("../app/sign-in/page.tsx");
-    expect(recovery).toContain("Auth0 Universal Login");
+    expect(recovery).toContain("secure identity-provider window");
     expect(recovery).not.toContain("login_hint");
     expect(recovery).not.toContain('type="password"');
     expect(recovery).not.toContain('type="email"');

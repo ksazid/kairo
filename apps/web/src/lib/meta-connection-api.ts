@@ -3,7 +3,7 @@ import type { BrandConnectionOption } from "./brand-connection-plan";
 
 export type MetaAuthMethod = "instagram-login" | "facebook-login";
 export interface MetaCandidateView { id:string;channel:"instagram"|"facebook";authMethod:MetaAuthMethod;accountRef:string;displayName:string;pageRef?:string;pageName?:string;username?:string }
-export interface MetaConnectionHealth { id:string;channel:"instagram"|"facebook";authMethod:MetaAuthMethod;accountRef:string;displayName:string;status:"connected"|"reconnect-required";tokenExpiresAt?:string;lastVerifiedAt?:string;healthy:boolean }
+export interface MetaConnectionHealth { id:string;channel:"instagram"|"facebook";authMethod:MetaAuthMethod;accountRef:string;displayName:string;status:"connected"|"reconnect-required";tokenExpiresAt?:string;lastVerifiedAt?:string;grantedScopes:string[];lastSourceSyncAt?:string;sourceStatus?:string;healthy:boolean;issue?:"reconnect-required"|"token-expired"|"source-sync-failed" }
 export type MetaCompleteResult=
   |{status:"selection-required";intentId:string;brandId:string;candidates:MetaCandidateView[]}
   |{status:"connected";intentId:string;brandId:string;connection:{id:string;channel:"instagram"|"facebook";authMethod?:MetaAuthMethod;accountRef:string;displayName:string;status:string}}
