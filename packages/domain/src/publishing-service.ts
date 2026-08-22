@@ -104,10 +104,10 @@ export class PublishingService {
       if (!sameScheduleRequest(existing, comparable)) throw new ConcurrencyConflictError("Destination already has a different publish command");
       return existing;
     }
-    const renderedApproval = request.contentType === "carousel" || request.contentType === "reel"
+    const renderedApproval = request.contentType === "carousel"
       ? await this.publishing.getRenderedMediaApproval?.(accountId, brandId, assetId) ?? null
       : null;
-    if ((request.contentType === "carousel" || request.contentType === "reel") && !renderedApproval) {
+    if (request.contentType === "carousel" && !renderedApproval) {
       throw new ResourceNotFoundError("Approved rendered media not found for Content Asset");
     }
     const commandInput = {
