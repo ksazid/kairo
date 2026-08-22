@@ -35,10 +35,9 @@ export default async function CarouselReviewPage({
   if (!session) redirect("/");
   const { brandId, campaignId, assetId } = await params,
     messages = await searchParams;
-  const [brand, detail, review] = await Promise.all([
+  const [brand, detail] = await Promise.all([
     getBrand(brandId),
     getCampaignDetail(brandId, campaignId),
-    ensureCarouselReview(brandId, campaignId, assetId),
   ]);
   if (!brand || !detail) redirect("/");
   const workspace = session.workspaces.find((x) => x.id === brand.workspaceId);
@@ -48,6 +47,7 @@ export default async function CarouselReviewPage({
     redirect(
       `/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(campaignId)}`,
     );
+  const review = await ensureCarouselReview(brandId, campaignId, assetId);
   const ordered = review.slides.map((x) => x.id),
     blocking = review.qualitySummary.errors > 0 || review.status !== "ready";
   return (
@@ -167,11 +167,7 @@ export default async function CarouselReviewPage({
                         alt={`Rendered slide ${index + 1}: ${slide.role}`}
                       />
                     ) : (
-                      <div role="status">
-                        {review.status === "rendering"
-                          ? "Rendering preview…"
-                          : "Preview unavailable"}
-                      </div>
+                      <span>Rendering…</span>
                     )}
                   </div>
                   <figcaption>
