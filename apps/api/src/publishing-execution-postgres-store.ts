@@ -48,7 +48,7 @@ export class PgPublishingExecutionStore implements PublishingExecutionStore {
       const attemptNumber = r.attempt_count + 1;
       const key = `${r.id}:${r.version_id}:${r.account_ref}`;
       const u = await x.query(
-        `update publish_commands set status='dispatching',attempt_count=$2,last_attempt_at=$3,lease_owner=$4,lease_expires_at=$3::timestamptz+($5*interval '1 second') where id=$1 and status='scheduled' returning id`,
+        `update publish_commands set status='dispatching',lifecycle_status='publishing',attempt_count=$2,last_attempt_at=$3,lease_owner=$4,lease_expires_at=$3::timestamptz+($5*interval '1 second') where id=$1 and status='scheduled' returning id`,
         [r.id, attemptNumber, now, owner, leaseSeconds],
       );
       if (!u.rows[0]) {
@@ -64,6 +64,8 @@ export class PgPublishingExecutionStore implements PublishingExecutionStore {
       return {
         commandId: r.id,
         versionId: r.version_id,
+        ...(r.approved_asset_version_id?{approvedAssetVersionId:r.approved_asset_version_id}:{}),
+        ...(r.approved_media_fingerprint?{approvedMediaFingerprint:r.approved_media_fingerprint}:{}),
         attemptId,
         attemptNumber,
         leaseOwner: owner,
@@ -102,13 +104,13 @@ export class PgPublishingExecutionStore implements PublishingExecutionStore {
         [r.attempt_id, mapped.attemptStatus, at, result.status === "published" ? result.externalPostId : null, "providerCorrelationId" in result ? result.providerCorrelationId ?? null : null, "failureCode" in result ? result.failureCode : null],
       );
       await x.query(
-        `update publish_commands set status=$2,next_attempt_at=$3,lease_owner=null,lease_expires_at=null where id=$1 and status='dispatching' and lease_owner=$4`,
-        [job.commandId, mapped.commandStatus, mapped.nextAttemptAt, job.leaseOwner],
+        `update publish_commands set status=$2,next_attempt_at=$3,lease_owner=null,lease_expires_at=null,lifecycle_status=$5,meta_container_id=$6,provider_publish_id=$7,failure_reason=$8,published_url=$9 where id=$1 and status='dispatching' and lease_owner=$4`,
+        [job.commandId, mapped.commandStatus, mapped.nextAttemptAt, job.leaseOwner,mapped.lifecycleStatus,"providerCorrelationId" in result?result.providerCorrelationId??null:null,result.status==="published"?result.externalPostId:null,"failureCode" in result?result.failureCode:result.status==="manual-required"?result.reason:result.status==="unknown"&&!result.providerCorrelationId?"provider-result-unknown":null,result.status==="published"?result.publishedUrl??null:null],
       );
       if (result.status === "published") {
         await x.query(
-          `insert into published_posts(id,workspace_id,brand_id,campaign_id,asset_id,version_id,publish_command_id,channel,account_ref,external_post_id,published_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-          [randomUUID(), r.workspace_id, r.brand_id, r.campaign_id, r.asset_id, r.version_id, r.id, r.channel, r.account_ref, result.externalPostId, at],
+          `insert into published_posts(id,workspace_id,brand_id,campaign_id,asset_id,version_id,publish_command_id,channel,account_ref,external_post_id,published_at,published_url) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [randomUUID(), r.workspace_id, r.brand_id, r.campaign_id, r.asset_id, r.version_id, r.id, r.channel, r.account_ref, result.externalPostId, at,result.publishedUrl??null],
         );
       }
       await x.query("commit");
@@ -122,14 +124,14 @@ export class PgPublishingExecutionStore implements PublishingExecutionStore {
 }
 
 function state(r: ProviderPublishResult, n: number, at: string) {
-  if (r.status === "published") return { attemptStatus: "published", commandStatus: "published", nextAttemptAt: null };
-  if (r.status === "unknown") return { attemptStatus: "unknown", commandStatus: "unknown", nextAttemptAt: null };
-  if (r.status === "manual-required") return { attemptStatus: "failed", commandStatus: "manual-required", nextAttemptAt: null };
+  if (r.status === "published") return { attemptStatus: "published", commandStatus: "published", lifecycleStatus:"published",nextAttemptAt: null };
+  if (r.status === "unknown") return { attemptStatus: "unknown", commandStatus: "unknown", lifecycleStatus:r.providerCorrelationId?"processing":"failed",nextAttemptAt: null };
+  if (r.status === "manual-required") return { attemptStatus: "failed", commandStatus: "manual-required", lifecycleStatus:"failed",nextAttemptAt: null };
   if (r.retryable && n < 3) {
     const seconds = Math.max(30, Math.min(r.retryAfterSeconds ?? 60, 3600));
-    return { attemptStatus: "failed", commandStatus: "scheduled", nextAttemptAt: new Date(Date.parse(at) + seconds * 1000).toISOString() };
+    return { attemptStatus: "failed", commandStatus: "scheduled", lifecycleStatus:"approved",nextAttemptAt: new Date(Date.parse(at) + seconds * 1000).toISOString() };
   }
-  return { attemptStatus: "failed", commandStatus: "failed", nextAttemptAt: null };
+  return { attemptStatus: "failed", commandStatus: "failed", lifecycleStatus:"failed",nextAttemptAt: null };
 }
 
 async function rollback(x: PoolClient) {

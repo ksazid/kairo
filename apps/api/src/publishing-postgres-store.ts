@@ -58,14 +58,37 @@ export class PgPublishingRepository implements PublishingRepository {
     }
   }
 
+  async getRenderedMediaApproval(accountId: string, brandId: string, assetId: string) {
+    const client = await this.pool.connect();
+    try {
+      const workspaceId = await scope(client, accountId, brandId);
+      const query = await client.query(
+        `select a.id,p.content_asset_id,p.content_version_id,v.id asset_version_id,v.media_fingerprint,a.approved_at
+         from carousel_rendered_approvals a
+         join carousel_projects p on p.id=a.project_id and p.workspace_id=a.workspace_id and p.brand_id=a.brand_id
+         join carousel_rendered_asset_versions v on v.id=a.rendered_version_id and v.project_id=p.id
+         where a.workspace_id=$1 and a.brand_id=$2 and p.content_asset_id=$3`,
+        [workspaceId, brandId, assetId],
+      );
+      const row = query.rows[0];
+      return row ? {
+        id: String(row.id), workspaceId, brandId, assetId: String(row.content_asset_id),
+        contentVersionId: String(row.content_version_id), assetVersionId: String(row.asset_version_id),
+        mediaFingerprint: String(row.media_fingerprint), approvedAt: new Date(row.approved_at).toISOString(),
+      } : null;
+    } finally {
+      client.release();
+    }
+  }
+
   async saveCommand(accountId: string, commandValue: PublishCommand) {
     const client = await this.pool.connect();
     try {
       await scope(client, accountId, commandValue.brandId);
       const query = await client.query(
-        `insert into publish_commands(id,workspace_id,brand_id,campaign_id,asset_id,version_id,version,approval_id,channel_account_id,channel,account_ref,content_type,media_items,publish_options,scheduled_for,status,attempt_count,created_at,last_attempt_at)
-         values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16,$17,$18,$19)
-         on conflict(id) do update set status=excluded.status,last_attempt_at=excluded.last_attempt_at
+        `insert into publish_commands(id,workspace_id,brand_id,campaign_id,asset_id,version_id,version,approval_id,channel_account_id,channel,account_ref,content_type,media_items,publish_options,scheduled_for,status,attempt_count,created_at,last_attempt_at,approved_asset_version_id,approved_media_fingerprint,lifecycle_status,meta_container_id,provider_publish_id,failure_reason,published_url)
+         values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)
+         on conflict(id) do update set status=excluded.status,last_attempt_at=excluded.last_attempt_at,lifecycle_status=excluded.lifecycle_status,meta_container_id=excluded.meta_container_id,provider_publish_id=excluded.provider_publish_id,failure_reason=excluded.failure_reason,published_url=excluded.published_url
          where publish_commands.status in ('failed','unknown') and excluded.status='scheduled' and publish_commands.attempt_count=excluded.attempt_count
          returning *`,
         params(commandValue),
@@ -140,7 +163,7 @@ export class PgPublishingRepository implements PublishingRepository {
       await client.query("begin");
       await scope(client, accountId, commandValue.brandId);
       const query = await client.query(
-        `update publish_commands set status='dispatching',attempt_count=$2,last_attempt_at=$3
+        `update publish_commands set status='dispatching',lifecycle_status='publishing',attempt_count=$2,last_attempt_at=$3
          where id=$1 and version_id=$4 and attempt_count=$2-1 and status in ('scheduled','failed') returning id`,
         [commandValue.id, commandValue.attemptCount, commandValue.lastAttemptAt, commandValue.versionId],
       );
@@ -177,9 +200,9 @@ export class PgPublishingRepository implements PublishingRepository {
       await client.query("begin");
       await scope(client, accountId, commandValue.brandId);
       const query = await client.query(
-        `update publish_commands set status=$2,last_attempt_at=$3
+        `update publish_commands set status=$2,last_attempt_at=$3,lifecycle_status=$6,meta_container_id=$7,provider_publish_id=$8,failure_reason=$9,published_url=$10
          where id=$1 and version_id=$4 and status='dispatching' and attempt_count=$5 returning *`,
-        [commandValue.id, commandValue.status, commandValue.lastAttemptAt, commandValue.versionId, commandValue.attemptCount],
+        [commandValue.id, commandValue.status, commandValue.lastAttemptAt, commandValue.versionId, commandValue.attemptCount,commandValue.lifecycleStatus??"publishing",commandValue.metaContainerId??null,commandValue.providerPublishId??null,commandValue.failureReason??null,commandValue.publishedUrl??null],
       );
       if (!query.rows[0]) throw new ConcurrencyConflictError("Publish Attempt changed");
       const attemptQuery = await client.query(
@@ -198,9 +221,9 @@ export class PgPublishingRepository implements PublishingRepository {
       if (!attemptQuery.rows[0]) throw new ConcurrencyConflictError("Publish Attempt changed");
       if (post) {
         await client.query(
-          `insert into published_posts(id,workspace_id,brand_id,campaign_id,asset_id,version_id,publish_command_id,channel,account_ref,external_post_id,published_at)
-           values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-          [post.id, post.workspaceId, post.brandId, post.campaignId, post.assetId, post.versionId, post.publishCommandId, post.channel, post.accountRef, post.externalPostId, post.publishedAt],
+          `insert into published_posts(id,workspace_id,brand_id,campaign_id,asset_id,version_id,publish_command_id,channel,account_ref,external_post_id,published_at,published_url)
+           values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [post.id, post.workspaceId, post.brandId, post.campaignId, post.assetId, post.versionId, post.publishCommandId, post.channel, post.accountRef, post.externalPostId, post.publishedAt,commandValue.publishedUrl??null],
         );
       }
       await client.query("commit");
@@ -243,6 +266,13 @@ function params(value: PublishCommand) {
     value.attemptCount,
     value.createdAt,
     value.lastAttemptAt ?? null,
+    value.approvedAssetVersionId ?? null,
+    value.approvedMediaFingerprint ?? null,
+    value.lifecycleStatus ?? "approved",
+    value.metaContainerId ?? null,
+    value.providerPublishId ?? null,
+    value.failureReason ?? null,
+    value.publishedUrl ?? null,
   ];
 }
 
@@ -290,6 +320,13 @@ function command(row: any): PublishCommand {
     attemptCount: row.attempt_count,
     createdAt: iso(row.created_at),
     ...(row.last_attempt_at ? { lastAttemptAt: iso(row.last_attempt_at) } : {}),
+    ...(row.approved_asset_version_id ? { approvedAssetVersionId: row.approved_asset_version_id } : {}),
+    ...(row.approved_media_fingerprint ? { approvedMediaFingerprint: row.approved_media_fingerprint } : {}),
+    ...(row.lifecycle_status ? { lifecycleStatus: row.lifecycle_status } : {}),
+    ...(row.meta_container_id ? { metaContainerId: row.meta_container_id } : {}),
+    ...(row.provider_publish_id ? { providerPublishId: row.provider_publish_id } : {}),
+    ...(row.failure_reason ? { failureReason: row.failure_reason } : {}),
+    ...(row.published_url ? { publishedUrl: row.published_url } : {}),
   };
 }
 

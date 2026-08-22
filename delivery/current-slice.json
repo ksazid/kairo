@@ -1,16 +1,16 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-76",
-  "title": "VS-76 — Multi-source Meta Onboarding",
+  "sliceId": "VS-77",
+  "title": "VS-77 — Visual Carousel Review & Verified Publishing",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": [
-    "FR-01",
-    "FR-02",
-    "FR-15",
-    "FR-16"
+    "FR-08",
+    "FR-11",
+    "FR-13",
+    "FR-15"
   ],
   "owners": {
     "product": "Product Owner",
@@ -19,10 +19,10 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-18",
     "VS-20",
-    "VS-74",
-    "VS-75"
+    "VS-34",
+    "VS-75",
+    "VS-76"
   ],
   "blockers": [],
   "allowedPaths": [
@@ -31,8 +31,8 @@
     "apps/worker/**",
     "packages/contracts/**",
     "packages/domain/**",
-    "docs/slices/VS-76.md",
-    "docs/plans/VS-76-implementation.md",
+    "docs/slices/VS-77.md",
+    "docs/plans/VS-77-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -42,48 +42,49 @@
   ],
   "impact": {
     "areas": [
+      "architecture",
       "frontend",
       "api",
       "database",
-      "authentication",
       "authorization",
       "sensitive-data",
-      "customer-flow"
+      "customer-flow",
+      "operations-support"
     ],
     "notes": [
-      "Adds independent and combinable website, Instagram and Facebook onboarding choices.",
-      "Adds direct Instagram Login without a Facebook Page and retains Page-linked Meta Login.",
-      "Generalizes encrypted connection persistence and adds bounded Facebook Page publishing.",
-      "Does not enable production Meta credentials, release or deployment."
+      "Adds persisted rendered carousel versions and a visual per-slide review workflow.",
+      "Locks approval and publishing to the same immutable media version.",
+      "Adds short-lived storage delivery and bounded Meta processing verification.",
+      "Does not enable production credentials, release or deployment."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-76@1.0",
+      "version": "VS-77@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T00:00:00+02:00",
-      "rationale": "The Product Owner specified the four combinable onboarding choices and instructed the next ten-task batch to proceed."
+      "at": "2026-08-22T04:15:00+02:00",
+      "rationale": "The Product Owner instructed completion of the next whole ten-task batch after exact-SHA approval and merge of VS-76."
     },
     {
       "type": "policy",
-      "status": "approved",
-      "version": "VS-76@1.0",
+      "status": "not-required",
+      "version": "VS-77@1.0",
       "commitSha": null,
-      "by": "Sazid Khan",
-      "at": "2026-08-22T00:00:00+02:00",
-      "rationale": "The Product Owner explicitly selected direct Instagram, Facebook plus Instagram, Facebook-only and optional website onboarding policy."
+      "by": null,
+      "at": null,
+      "rationale": "The slice extends approved generated-media, object-storage, approval and provider-adapter boundaries without changing production policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-76@1.0",
+      "version": "VS-77@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-22T00:00:00+02:00",
-      "rationale": "The Product Owner instructed go after approving the prior exact SHA."
+      "at": "2026-08-22T04:15:00+02:00",
+      "rationale": "The Product Owner explicitly instructed the whole next batch to be completed before the next merge approval request."
     },
     {
       "type": "certification",
@@ -126,7 +127,7 @@
   "certification": {
     "status": "not-started",
     "commitSha": null,
-    "evidence": []
+    "evidence": ["runtime:typecheck", "runtime:test", "runtime:build", "preflight"]
   },
   "release": {
     "status": "not-authorized",
@@ -143,7 +144,7 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-76.md",
+    "specification": "docs/slices/VS-77.md",
     "implementationPr": null,
     "evidence": []
   },

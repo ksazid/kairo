@@ -9,6 +9,7 @@ import {
   cancelPublishCommand,
   connectChannelAccount,
   createPublishCommand,
+  createVerifiedPublishCommand,
   createPublishedPost,
   reconcilePublishAttempt,
   retryPublishCommand,
@@ -22,6 +23,7 @@ import {
   type PublishOptions,
   type PublishStatus,
   type PublishedPost,
+  type RenderedMediaApproval,
 } from "./publishing";
 
 export interface PublishingRepository {
@@ -36,6 +38,7 @@ export interface PublishingRepository {
   recordDispatch(accountId: string, command: PublishCommand, attempt: PublishAttempt): Promise<PublishAttempt>;
   getLatestAttempt(accountId: string, brandId: string, commandId: string): Promise<PublishAttempt | null>;
   recordOutcome(accountId: string, command: PublishCommand, attempt: PublishAttempt, post?: PublishedPost): Promise<PublishCommand>;
+  getRenderedMediaApproval?(accountId: string, brandId: string, assetId: string): Promise<RenderedMediaApproval | null>;
 }
 
 export class PublishingService {
@@ -101,9 +104,13 @@ export class PublishingService {
       if (!sameScheduleRequest(existing, comparable)) throw new ConcurrencyConflictError("Destination already has a different publish command");
       return existing;
     }
-    return this.publishing.saveCommand(
-      accountId,
-      createPublishCommand({
+    const renderedApproval = request.contentType === "carousel" || request.contentType === "reel"
+      ? await this.publishing.getRenderedMediaApproval?.(accountId, brandId, assetId) ?? null
+      : null;
+    if ((request.contentType === "carousel" || request.contentType === "reel") && !renderedApproval) {
+      throw new ResourceNotFoundError("Approved rendered media not found for Content Asset");
+    }
+    const commandInput = {
         id: randomUUID(),
         approval,
         currentVersionId: version.id,
@@ -113,7 +120,10 @@ export class PublishingService {
         options: request.options,
         scheduledFor: request.scheduledFor,
         createdAt,
-      }),
+      };
+    return this.publishing.saveCommand(
+      accountId,
+      renderedApproval ? createVerifiedPublishCommand({ ...commandInput, renderedApproval }) : createPublishCommand(commandInput),
     );
   }
 
