@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const approvedMigration = "0022_marketing_shadow_evidence_authorizations.sql";
-const approvedRange = "0017_multichannel_approvals.sql..0022_marketing_shadow_evidence_authorizations.sql";
+const approvedRange = "0023_meta_multichannel_connections.sql..0028_performance_pattern_memory.sql";
 const approvedMarketingAuthorization = "vs23-qualification-20260820-d";
 const approvedMarketingEvidenceExport = "vs23-qualification-20260820-d";
 const approvedMarketingQualityAuthorization = "vs65-quality-evaluation-20260820-b";
