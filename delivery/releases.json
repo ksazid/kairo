@@ -6,52 +6,14 @@
       "sliceIds": ["VS-01","VS-02","VS-03","VS-04","VS-05","VS-06","VS-07","VS-08","VS-09","VS-10","VS-11"],
       "status": "approved",
       "commitSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
-      "migrations": [
-        "apps/api/migrations/0001_identity_workspace_brand.sql",
-        "apps/api/migrations/0002_brand_brain_knowledge.sql",
-        "apps/api/migrations/0003_hunter_discover.sql",
-        "apps/api/migrations/0004_research_angles.sql",
-        "apps/api/migrations/0005_campaign_content.sql",
-        "apps/api/migrations/0006_content_review_approval.sql",
-        "apps/api/migrations/0007_channel_calendar_publishing.sql",
-        "apps/api/migrations/0008_performance_tracking.sql",
-        "apps/api/migrations/0009_performance_learning.sql",
-        "apps/api/migrations/0010_pilot_operations.sql",
-        "apps/api/migrations/0011_publishing_operations_projection.sql",
-        "apps/api/migrations/0012_operations_authoritative_time.sql",
-        "apps/api/migrations/0013_operations_safe_retry_dispatch.sql"
-      ],
-      "configurationChanges": [
-        "Neon Frankfurt pilot PostgreSQL DATABASE_URL with backups enabled",
-        "API OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URI",
-        "Web KAIRO_API_URL plus NEON_AUTH_BASE_URL and secret-managed NEON_AUTH_COOKIE_SECRET",
-        "KAIRO_RELEASE_SHA must identify 84b778660f9d0152a7a0aa248317b476f15215d4 on every released component",
-        "Secret-managed provider-neutral model gateway configuration",
-        "Capability-gated Instagram Professional and LinkedIn organization credentials only for explicitly approved pilot accounts"
-      ],
-      "featureFlags": [
-        "External publishing remains capability-gated and human-approval-bound",
-        "Production enablement remains unauthorized until a separate exact-SHA approval",
-        "Commercial use remains disabled for the zero-budget pilot topology"
-      ],
-      "smokeTests": [
-        "CI #330 applied migrations 0001-0013 successfully to clean PostgreSQL 18 on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
-        "CI #330 production dependency audit passed at high severity threshold on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
-        "CI #330 preflight/governance, runtime verification and dashboard build passed on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
-        "During release execution, API /health/live, /health/ready and /version must pass with releaseSha 84b778660f9d0152a7a0aa248317b476f15215d4 before web rollout",
-        "During release execution, authenticated Workspace/Brand flow and cross-tenant denial must pass before release may be marked released",
-        "During release execution, publishing must succeed only through an approved capability or degrade explicitly to manual fallback",
-        "During release execution, Pilot Operations failure/retry paths must remain observable with redacted telemetry"
-      ],
-      "rollbackStrategy": {
-        "summary": "RB-001 is ready. If deployment or smoke verification fails, stop pilot traffic and external publishing, preserve audit state, restore/repoint the database only when required, and redeploy the last known-good certified pilot runtime (cb273c59e83c3043313127f15afc717b33577958) or disable the affected component. Verify health, version provenance, authentication and tenant isolation before reopening pilot traffic."
-      },
+      "migrations": ["apps/api/migrations/0001_identity_workspace_brand.sql","apps/api/migrations/0002_brand_brain_knowledge.sql","apps/api/migrations/0003_hunter_discover.sql","apps/api/migrations/0004_research_angles.sql","apps/api/migrations/0005_campaign_content.sql","apps/api/migrations/0006_content_review_approval.sql","apps/api/migrations/0007_channel_calendar_publishing.sql","apps/api/migrations/0008_performance_tracking.sql","apps/api/migrations/0009_performance_learning.sql","apps/api/migrations/0010_pilot_operations.sql","apps/api/migrations/0011_publishing_operations_projection.sql","apps/api/migrations/0012_operations_authoritative_time.sql","apps/api/migrations/0013_operations_safe_retry_dispatch.sql"],
+      "configurationChanges": ["Neon Frankfurt pilot PostgreSQL DATABASE_URL with backups enabled","API OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URI","Web KAIRO_API_URL plus NEON_AUTH_BASE_URL and secret-managed NEON_AUTH_COOKIE_SECRET","KAIRO_RELEASE_SHA must identify 84b778660f9d0152a7a0aa248317b476f15215d4 on every released component","Secret-managed provider-neutral model gateway configuration","Capability-gated Instagram Professional and LinkedIn organization credentials only for explicitly approved pilot accounts"],
+      "featureFlags": ["External publishing remains capability-gated and human-approval-bound","Production enablement remains unauthorized until a separate exact-SHA approval","Commercial use remains disabled for the zero-budget pilot topology"],
+      "smokeTests": ["CI #330 applied migrations 0001-0013 successfully to clean PostgreSQL 18 on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4","CI #330 production dependency audit passed at high severity threshold on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4","CI #330 preflight/governance, runtime verification and dashboard build passed on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4","During release execution, API /health/live, /health/ready and /version must pass with releaseSha 84b778660f9d0152a7a0aa248317b476f15215d4 before web rollout","During release execution, authenticated Workspace/Brand flow and cross-tenant denial must pass before release may be marked released","During release execution, publishing must succeed only through an approved capability or degrade explicitly to manual fallback","During release execution, Pilot Operations failure/retry paths must remain observable with redacted telemetry"],
+      "rollbackStrategy": {"summary":"RB-001 is ready. If deployment or smoke verification fails, stop pilot traffic and external publishing, preserve audit state, restore/repoint the database only when required, and redeploy the last known-good certified pilot runtime (cb273c59e83c3043313127f15afc717b33577958) or disable the affected component. Verify health, version provenance, authentication and tenant isolation before reopening pilot traffic."},
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-14T03:10:00+02:00",
-      "productionVerification": {
-        "status": "not-started",
-        "evidence": []
-      }
+      "productionVerification": {"status":"not-started","evidence":[]}
     },
     {
       "id": "REL-002",
@@ -59,28 +21,13 @@
       "status": "approved",
       "commitSha": "5ec2ab1108ee1db79b818de121db0101e0f293f3",
       "migrations": [],
-      "configurationChanges": [
-        "Set KAIRO_RELEASE_SHA to 5ec2ab1108ee1db79b818de121db0101e0f293f3 on the Kairo API during release execution; no database, provider, credential or web configuration change is required."
-      ],
-      "featureFlags": [
-        "No new feature flag is introduced by VS-72; existing capability gates, human approval controls and publishing safeguards remain unchanged."
-      ],
-      "smokeTests": [
-        "Exact merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 is tree-identical to checked PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd, which passed Product Intake #685, Security #785 and CI #928.",
-        "After API deployment, /health/live, /health/ready and /version must pass and /version must report releaseSha 5ec2ab1108ee1db79b818de121db0101e0f293f3.",
-        "Authenticated TheDukeMan research smoke must no longer admit clearly off-topic firm-innovation or state-owned-enterprise evidence for the motorcycle-mod Idea.",
-        "Research must either persist at least two materially relevant evidence items and grounded candidate Angles or fail safely before model persistence when the minimum relevance threshold is not met.",
-        "No Vercel rollout is required for VS-72 because this slice changes API/worker research relevance logic and no apps/web file."
-      ],
-      "rollbackStrategy": {
-        "summary": "If the VS-72 API deployment, health/version checks or authenticated Research smoke fails, stop the release, preserve Research/audit state, and redeploy the previously live Kairo API runtime (VS-71 lineage) without any database rollback because VS-72 contains no migrations. Restore the prior release SHA provenance and verify health plus the existing Idea-to-Research path before resuming traffic."
-      },
+      "configurationChanges": ["Set KAIRO_RELEASE_SHA to 5ec2ab1108ee1db79b818de121db0101e0f293f3 on the Kairo API during release execution; no database, provider, credential or web configuration change is required."],
+      "featureFlags": ["No new feature flag is introduced by VS-72; existing capability gates, human approval controls and publishing safeguards remain unchanged."],
+      "smokeTests": ["Exact merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 is tree-identical to checked PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd, which passed Product Intake #685, Security #785 and CI #928.","After API deployment, /health/live, /health/ready and /version must pass and /version must report releaseSha 5ec2ab1108ee1db79b818de121db0101e0f293f3.","Authenticated TheDukeMan research smoke must no longer admit clearly off-topic firm-innovation or state-owned-enterprise evidence for the motorcycle-mod Idea.","Research must either persist at least two materially relevant evidence items and grounded candidate Angles or fail safely before model persistence when the minimum relevance threshold is not met.","No Vercel rollout is required for VS-72 because this slice changes API/worker research relevance logic and no apps/web file."],
+      "rollbackStrategy": {"summary":"If the VS-72 API deployment, health/version checks or authenticated Research smoke fails, stop the release, preserve Research/audit state, and redeploy the previously live Kairo API runtime (VS-71 lineage) without any database rollback because VS-72 contains no migrations. Restore the prior release SHA provenance and verify health plus the existing Idea-to-Research path before resuming traffic."},
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-20T23:46:00+02:00",
-      "productionVerification": {
-        "status": "not-started",
-        "evidence": []
-      }
+      "productionVerification": {"status":"not-started","evidence":[]}
     },
     {
       "id": "REL-003",
@@ -88,83 +35,55 @@
       "status": "released",
       "commitSha": "d19c471a11ec30ca717870dc8ca4021ffac5fd5b",
       "migrations": [],
-      "configurationChanges": [
-        "KAIRO_RELEASE_SHA set to d19c471a11ec30ca717870dc8ca4021ffac5fd5b on the Render API service.",
-        "Instagram publisher remains explicitly enabled with the existing capability-gated Meta configuration; no new scopes, credentials, migrations or web configuration are introduced by the closeout release.",
-        "No Vercel rollout is required for the closeout commit because Git compare from the last verified web release lineage to d19c471a11ec30ca717870dc8ca4021ffac5fd5b contains no apps/web changes."
-      ],
-      "featureFlags": [
-        "Instagram publishing remains destination-bound, approval-bound and capability-gated.",
-        "Concurrent Research production verification is deferred to issue #142 and is not a VS-73 release gate."
-      ],
-      "smokeTests": [
-        "Product Intake #708, Security #854 and CI #1017 passed on PR #143 exact head 41ce3656df74f2c00e042fee7ca3ba743b1ce596, merged as d19c471a11ec30ca717870dc8ca4021ffac5fd5b with only VS-73 governance documentation changes.",
-        "Render deploy dep-da4emu3bc2fs73cvrc20 is live on exact commit d19c471a11ec30ca717870dc8ca4021ffac5fd5b.",
-        "Exact deployment logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED using Meta Graph v24.0.",
-        "Git compare bb901c2e04549ffcf1d621e33567ce488839d4c1..d19c471a11ec30ca717870dc8ca4021ffac5fd5b changes only delivery/context/VS-73.md, delivery/current-slice.json and docs/slices/VS-73.md, so the runtime is identical to the provider-confirmed production publish build.",
-        "Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical production build.",
-        "The previously verified web deployment remains applicable because there are no apps/web changes after the verified web release lineage."
-      ],
-      "rollbackStrategy": {
-        "summary": "If the VS-73 closeout deployment regresses, disable the Instagram publisher if necessary and redeploy the last provider-confirmed runtime bb901c2e04549ffcf1d621e33567ce488839d4c1. No database rollback is required because the closeout release contains no migrations. Preserve publish/audit state and re-verify API startup, release provenance, authentication, tenant isolation and destination-bound approval behavior before reopening publishing."
-      },
+      "configurationChanges": ["KAIRO_RELEASE_SHA set to d19c471a11ec30ca717870dc8ca4021ffac5fd5b on the Render API service.","Instagram publisher remains explicitly enabled with the existing capability-gated Meta configuration; no new scopes, credentials, migrations or web configuration are introduced by the closeout release.","No Vercel rollout is required for the closeout commit because Git compare from the last verified web release lineage to d19c471a11ec30ca717870dc8ca4021ffac5fd5b contains no apps/web changes."],
+      "featureFlags": ["Instagram publishing remains destination-bound, approval-bound and capability-gated.","Concurrent Research production verification is deferred to issue #142 and is not a VS-73 release gate."],
+      "smokeTests": ["Product Intake #708, Security #854 and CI #1017 passed on PR #143 exact head 41ce3656df74f2c00e042fee7ca3ba743b1ce596, merged as d19c471a11ec30ca717870dc8ca4021ffac5fd5b with only VS-73 governance documentation changes.","Render deploy dep-da4emu3bc2fs73cvrc20 is live on exact commit d19c471a11ec30ca717870dc8ca4021ffac5fd5b.","Exact deployment logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED using Meta Graph v24.0.","Git compare bb901c2e04549ffcf1d621e33567ce488839d4c1..d19c471a11ec30ca717870dc8ca4021ffac5fd5b changes only delivery/context/VS-73.md, delivery/current-slice.json and docs/slices/VS-73.md, so the runtime is identical to the provider-confirmed production publish build.","Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical build.","The previously verified web deployment remains applicable because there are no apps/web changes after the verified web release lineage."],
+      "rollbackStrategy": {"summary":"If the VS-73 closeout deployment regresses, disable the Instagram publisher if necessary and redeploy the last provider-confirmed runtime bb901c2e04549ffcf1d621e33567ce488839d4c1. No database rollback is required because the closeout release contains no migrations. Preserve publish/audit state and re-verify API startup, release provenance, authentication, tenant isolation and destination-bound approval behavior before reopening publishing."},
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-22T02:23:00+02:00",
-      "productionVerification": {
-        "status": "passed",
-        "evidence": [
-          "Render deploy dep-da4emu3bc2fs73cvrc20 reached live status on d19c471a11ec30ca717870dc8ca4021ffac5fd5b.",
-          "Exact deployment startup logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening successfully.",
-          "Runtime equivalence from bb901c2e04549ffcf1d621e33567ce488839d4c1 to d19c471a11ec30ca717870dc8ca4021ffac5fd5b is proven by Git compare: only VS-73 delivery/specification documentation changed.",
-          "Real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 was provider-confirmed published with Calendar and Performance verification on the runtime-identical build.",
-          "Concurrent Research verification is explicitly deferred to follow-up issue #142."
-        ]
-      }
+      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da4emu3bc2fs73cvrc20 reached live status on d19c471a11ec30ca717870dc8ca4021ffac5fd5b.","Exact deployment startup logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening successfully.","Runtime equivalence from bb901c2e04549ffcf1d621e33567ce488839d4c1 to d19c471a11ec30ca717870dc8ca4021ffac5fd5b is proven by Git compare: only VS-73 delivery/specification documentation changed.","Real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 was provider-confirmed published with Calendar and Performance verification on the runtime-identical build.","Concurrent Research verification is explicitly deferred to follow-up issue #142."]}
     },
     {
       "id": "REL-004",
       "sliceIds": ["VS-82"],
       "status": "released",
       "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
-      "migrations": [
-        "0023_meta_multichannel_connections.sql",
-        "0024_carousel_studio_persistence.sql",
-        "0025_content_asset_connections.sql",
-        "0026_instagram_content_insights.sql",
-        "0027_asset_thumbnails.sql",
-        "0028_performance_pattern_memory.sql"
-      ],
-      "configurationChanges": [
-        "KAIRO_RELEASE_SHA set to ec01d4b08bc58e92a615f90a8e18c221f2c45610 on the Render API service.",
-        "The bounded startup migration range was enabled for one deployment and cleared immediately after successful application.",
-        "Instagram publishing remained explicitly enabled; Reel execution no longer depends on carousel-only object storage."
-      ],
-      "featureFlags": [
-        "Instagram publishing remains destination-bound, exact-version approved and media-fingerprint locked.",
-        "Carousel publishing continues to fail closed unless approved rendered media delivery is configured."
-      ],
-      "smokeTests": [
-        "All CI and Security checks passed on PRs #155 through #160 before exact-SHA merge approvals.",
-        "Fresh-Idea concurrent Research verification persisted one dossier and exactly two candidate Angles.",
-        "Render deploy dep-da4tf8v40ujc73a0p8tg reached live on the final runtime SHA.",
-        "Instagram publisher logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and processed the pending Reel command.",
-        "Reel command 95783df8-11df-4e6f-8143-857b63c5d791 displayed Published in Calendar for @_dukeman390.",
-        "Results displayed six available Instagram observations with fresh provider evidence."
-      ],
-      "rollbackStrategy": {
-        "summary": "If the final publisher runtime regresses, disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED and redeploy ec01d4b08bc58e92a615f90a8e18c221f2c45610 or the preceding certified runtime. Do not roll back applied migrations; preserve publish commands, provider IDs, audit lineage and metric snapshots before recovery."
-      },
+      "migrations": ["0023_meta_multichannel_connections.sql","0024_carousel_studio_persistence.sql","0025_content_asset_connections.sql","0026_instagram_content_insights.sql","0027_asset_thumbnails.sql","0028_performance_pattern_memory.sql"],
+      "configurationChanges": ["KAIRO_RELEASE_SHA set to ec01d4b08bc58e92a615f90a8e18c221f2c45610 on the Render API service.","The bounded startup migration range was enabled for one deployment and cleared immediately after successful application.","Instagram publishing remained explicitly enabled; Reel execution no longer depends on carousel-only object storage."],
+      "featureFlags": ["Instagram publishing remains destination-bound, exact-version approved and media-fingerprint locked.","Carousel publishing continues to fail closed unless approved rendered media delivery is configured."],
+      "smokeTests": ["All CI and Security checks passed on PRs #155 through #160 before exact-SHA merge approvals.","Fresh-Idea concurrent Research verification persisted one dossier and exactly two candidate Angles.","Render deploy dep-da4tf8v40ujc73a0p8tg reached live on the final runtime SHA.","Instagram publisher logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and processed the pending Reel command.","Reel command 95783df8-11df-4e6f-8143-857b63c5d791 displayed Published in Calendar for @_dukeman390.","Results displayed six available Instagram observations with fresh provider evidence."],
+      "rollbackStrategy": {"summary":"If the final publisher runtime regresses, disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED and redeploy ec01d4b08bc58e92a615f90a8e18c221f2c45610 or the preceding certified runtime. Do not roll back applied migrations; preserve publish commands, provider IDs, audit lineage and metric snapshots before recovery."},
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-22T19:07:00+02:00",
-      "productionVerification": {
-        "status": "passed",
-        "evidence": [
-          "Final Render deployment is live at ec01d4b08bc58e92a615f90a8e18c221f2c45610.",
-          "Provider-backed Reel command reached Published after one deterministic worker attempt.",
-          "Calendar and Results verification passed in the authenticated TheDukeMan Brand scope.",
-          "Temporary PR #141 and issue #142 were closed after evidence preservation."
-        ]
-      }
+      "productionVerification": {"status":"passed","evidence":["Final Render deployment is live at ec01d4b08bc58e92a615f90a8e18c221f2c45610.","Provider-backed Reel command reached Published after one deterministic worker attempt.","Calendar and Results verification passed in the authenticated TheDukeMan Brand scope.","Temporary PR #141 and issue #142 were closed after evidence preservation."]}
+    },
+    {
+      "id": "REL-005",
+      "sliceIds": ["VS-84"],
+      "status": "deploying",
+      "commitSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
+      "migrations": [],
+      "configurationChanges": ["Release the certified VS-84 web/API candidate at exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867; no database migration or provider-scope change is required.","Keep existing authenticated social-channel credentials and publishing capability gates unchanged; onboarding public URLs remain evidence only."],
+      "featureFlags": ["Simplified onboarding is URL → Learn → Confirm → Home.","Channel connection remains post-onboarding through Home Needs Attention / Brand.","Production enablement was approved on the exact certified SHA before rollout."],
+      "smokeTests": ["Product Intake run 32659123567, Security baseline run 32659123631 and CI run 32659123574 passed for exact certified runtime candidate c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.","CI preflight, runtime verification and dashboard build passed for the certified candidate.","Vercel preview passed for the certified candidate.","Existing-user additional-Brand production flow created a Brand from one public URL, reached confirmation, confirmed and reached Home.","A public Instagram URL remained evidence-only and did not create authenticated publishing/Insights authority.","First-time zero-Workspace production onboarding remains an observation item before final VS-84 validation."],
+      "rollbackStrategy": {"summary":"RB-005 is ready. If VS-84 rollout verification fails, stop the rollout, preserve Brand/source/audit state, and restore the last known-good runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components. No database rollback is required."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-23T20:54:00+02:00",
+      "productionVerification": {"status":"not-started","evidence":["Vercel production deployment dpl_2V32YeeKPXeeBjvjtKWGZfembkjA is READY on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.","Render API deployment dep-da5k8mqjobas73f0mo40 is live on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 and API/publisher startup succeeded.","Authenticated production additional-Brand flow: POST /brands/new 200, GET confirmation 200, POST confirmation 200, followed by Home GET / 200.","API created Brand f5c99a6e-caf2-428c-8ebd-e9f87f2ad044 in existing Workspace f7ab356b-b93c-4022-8f32-435acebb3787 with POST Brand 201 and Brand Brain bootstrap 200.","The Instagram public URL was persisted as one active Knowledge Source; zero channel_accounts were created, preserving the evidence-only boundary.","The Instagram public reader returned limited content, so the accepted limited-learning fallback was used and the Brand remained usable; this is explicitly allowed by VS-84.","First-time zero-Workspace live onboarding has not yet been observed; REL-005 remains in post-release observation and is not marked fully production-verified/validated."]}
+    },
+    {
+      "id": "REL-006",
+      "sliceIds": ["VS-85"],
+      "status": "approved",
+      "commitSha": "a7659179c93299c6dfb2541583a113a96060cde2",
+      "migrations": [],
+      "configurationChanges": ["Release the certified VS-85 web/API runtime at exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","No database migration, provider-scope, credential or publishing-capability change is required."],
+      "featureFlags": ["Home uses Needs Attention, My Idea, For You, Up Next, What's Working and Continue.","My Idea recommends a supported format before durable creation and preserves the existing Idea → Research → Angle → Campaign lineage.","Publishing remains human-approval-bound and capability-gated."],
+      "smokeTests": ["Product Intake run 32663228553 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.","Security baseline run 32663228456 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.","CI run 32663228443 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2, including preflight, runtime verification and dashboard build.","Vercel preview passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.","Production smoke must verify Home renders the six approved sections, My Idea recommendation precedes durable creation, and Brand-scoped navigation remains intact before REL-006 may be marked released."],
+      "rollbackStrategy": {"summary":"RB-006 is ready. If VS-85 rollout or production smoke fails, stop the rollout, preserve Brand/content/audit state, and restore the last known-good production runtime c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 for affected components. No database rollback is required."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-23T22:14:00+02:00",
+      "productionVerification": {"status":"not-started","evidence":[]}
     }
   ]
 }

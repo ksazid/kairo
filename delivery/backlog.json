@@ -96,6 +96,38 @@
       "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":"The exact approved private carousel asset publishes to Instagram and appears in Calendar and Results.","metrics":["published carousel command","provider media ID","Calendar Published state","Instagram Results observations"]},
       "links": {"specification":"docs/slices/VS-83.md","implementationPr":null,"evidence":["docs/slices/VS-83.md"]},
       "maxAttempts": 3
+    },
+    {
+      "schemaVersion": 2,
+      "sliceId": "VS-84",
+      "title": "Guided Brand Onboarding and Shared Brand Memory Initialization",
+      "status": "inactive",
+      "lifecycle": "released",
+      "riskLevel": "medium",
+      "implementationMode": "production-enabled",
+      "requirements": ["FR-02", "FR-03", "FR-04", "FR-05"],
+      "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
+      "dependencies": [],
+      "blockers": [],
+      "allowedPaths": [".agents/skills/**","apps/web/**","apps/api/src/**","apps/worker/**","packages/contracts/**","packages/domain/**","product/**","planning/**","decisions/**","docs/slices/VS-84.md","docs/plans/VS-84-implementation.md","delivery/**","scripts/**","README.md",".engineering/STATE.json"],
+      "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
+      "impact": {"areas":["frontend","api","authentication","sensitive-data","customer-flow"],"notes":["Production runtime is enabled on certified SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.","Authenticated additional-Brand onboarding passed in production.","First-time zero-Workspace production observation remains pending in issue #175.","REL-005 remains deploying until full production verification is passed."]},
+      "approvals": [
+        {"type":"scope","status":"approved","version":"VS-84@1.1","commitSha":null,"by":"Sazid Khan","at":"2026-08-23T20:07:00+02:00","rationale":"The Product Owner approved simplifying onboarding to one public URL and moving authenticated channel connection to Home/Brand after onboarding."},
+        {"type":"policy","status":"not-required","version":"VS-84@1.1","commitSha":null,"by":null,"at":null,"rationale":"Existing source-removal, Meta connection, Brand Learning and publishing policies remain unchanged; a public URL is evidence only and grants no channel authority."},
+        {"type":"implementation","status":"approved","version":"VS-84@1.1","commitSha":null,"by":"Sazid Khan","at":"2026-08-23T20:07:00+02:00","rationale":"The Product Owner explicitly instructed installation of the approved UI skills and runtime implementation, including purposeful motion where required."},
+        {"type":"certification","status":"approved","version":"VS-84@1.1","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","by":"Sazid Khan","at":"2026-08-23T20:52:00+02:00","rationale":"The Product Owner explicitly approved certification of the exact immutable VS-84 implementation candidate after Product Intake, Security baseline, CI, preflight, runtime verification, dashboard build and Vercel preview all passed."},
+        {"type":"release","status":"approved","version":"VS-84@1.1","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","by":"Sazid Khan","at":"2026-08-23T20:54:00+02:00","rationale":"The Product Owner explicitly approved release of the exact certified VS-84 candidate."},
+        {"type":"production-enable","status":"approved","version":"VS-84@1.1","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","by":"Sazid Khan","at":"2026-08-23T21:02:00+02:00","rationale":"The Product Owner explicitly instructed production deployment of the exact certified VS-84 candidate."}
+      ],
+      "decisionIds": ["DEC-010","DEC-011"],
+      "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":90,"validation":75},
+      "certification": {"status":"passed","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","evidence":["GitHub Actions Product Intake run 32659123567","GitHub Actions Security baseline run 32659123631","GitHub Actions CI run 32659123574","Vercel preview passed"]},
+      "release": {"status":"deploying","releaseId":"REL-005"},
+      "rollback": {"status":"ready","rollbackId":"RB-005"},
+      "postRelease": {"status":"observing","reviewAt":"2026-08-24T09:00:00+02:00","expectedOutcome":"A first-time or additional Brand can complete public-URL onboarding and reach Home without channel authentication.","metrics":["additional-Brand production smoke passed","public social URL remained evidence-only","first-time zero-Workspace smoke pending issue #175"]},
+      "links": {"specification":"docs/slices/VS-84.md","implementationPr":"https://github.com/ksazid/kairo/pull/174","evidence":["https://github.com/ksazid/kairo/issues/175","Vercel deployment dpl_2V32YeeKPXeeBjvjtKWGZfembkjA","Render deployment dep-da5k8mqjobas73f0mo40"]},
+      "maxAttempts": 3
     }
   ]
 }

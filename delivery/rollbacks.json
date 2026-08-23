@@ -63,6 +63,70 @@
       ],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-005",
+      "releaseId": "REL-005",
+      "status": "ready",
+      "reason": "Rollback readiness for the medium-risk VS-84 onboarding and navigation release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
+      "lastKnownGoodSha": "e7c8e59787e574d5a9209ba65812027d227c554c",
+      "triggers": [
+        "Onboarding cannot create or confirm a Brand",
+        "Brand learning from a public URL causes a runtime regression",
+        "Authenticated users cannot reach Home after onboarding",
+        "Primary navigation or tenant-scoped Brand access regresses",
+        "Vercel or API health checks fail on the released candidate"
+      ],
+      "procedure": [
+        "Stop the VS-84 rollout and preserve Brand/source/audit state.",
+        "Redeploy the last known-good web/API runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components.",
+        "Do not delete Brands or inferred Brand Brain fields created during the failed rollout; use forward recovery for data cleanup if required.",
+        "Keep social publishing capability gates and human approval controls unchanged.",
+        "Verify authentication, tenant isolation, existing Brand access and the prior Home/navigation flow before reopening pilot traffic."
+      ],
+      "verification": [
+        "Web and API health are green",
+        "Authentication/session bootstrap succeeds",
+        "Cross-tenant access remains denied",
+        "Existing Brands remain accessible",
+        "Publishing remains capability-gated and approval-bound"
+      ],
+      "initiatedBy": null,
+      "initiatedAt": null
+    },
+    {
+      "id": "RB-006",
+      "releaseId": "REL-006",
+      "status": "ready",
+      "reason": "Rollback readiness for the medium-risk VS-85 simplified Home intelligence and creation release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "a7659179c93299c6dfb2541583a113a96060cde2",
+      "lastKnownGoodSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
+      "triggers": [
+        "Home fails to render or loses Brand-scoped navigation",
+        "My Idea creates durable state before the user confirms a recommended format",
+        "Existing Idea, Research, Angle or Campaign lineage regresses",
+        "Needs Attention, For You, Up Next, What's Working or Continue exposes incorrect or cross-Brand data",
+        "Vercel or API runtime health fails on the released candidate"
+      ],
+      "procedure": [
+        "Stop the VS-85 rollout and preserve Brand, content, publishing and audit state.",
+        "Redeploy the last known-good production runtime c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 for affected components.",
+        "No database rollback is required because VS-85 adds no migration.",
+        "Keep channel credentials, publishing capability gates and human approval controls unchanged.",
+        "Verify authentication, tenant isolation, prior Home behavior and existing content workflows before reopening traffic."
+      ],
+      "verification": [
+        "Web and API health are green",
+        "Authentication/session bootstrap succeeds",
+        "Cross-tenant access remains denied",
+        "Existing Brands and content workflows remain accessible",
+        "Publishing remains capability-gated and approval-bound"
+      ],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }
