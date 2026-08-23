@@ -32,7 +32,7 @@ export interface BrandBrainProposalInput {
   workspaceId: string;
   brandId: string;
   brandName: string;
-  primaryObjective: string;
+  primaryObjective?: string;
   existingConfirmed: Record<string, string>;
   references: Array<PublicBrandReference & { sourceId: string }>;
 }
@@ -73,6 +73,7 @@ const PROPOSAL_FIELDS = new Map<string, BrandBrainSection>([
   ["content.typography-direction", "content-strategy"],
   ["content.imagery-direction", "content-strategy"],
   ["content.logo-guidance", "content-strategy"],
+  ["goals.objectives", "goals"],
   ["boundaries.claims-to-avoid", "boundaries"],
   ["boundaries.prohibited-subjects", "boundaries"],
   ["boundaries.sensitive-subjects", "boundaries"],
@@ -84,6 +85,7 @@ const SOURCE_REQUIRED_PROPOSAL_FIELDS = new Set([
   "content.typography-direction",
   "content.imagery-direction",
   "content.logo-guidance",
+  "goals.objectives",
 ]);
 
 const VISUAL_DIRECTION_VALUE_LIMIT = 2_000;
@@ -96,18 +98,20 @@ export class BrandBrainBootstrapService {
   ) {}
 
   async build(accountId: string, brandId: string, input: BuildBrandBrainRequest): Promise<BrandBrainBuildResponse> {
-    const objective = objectiveLabel(input.primaryObjective);
+    const objective = input.primaryObjective ? objectiveLabel(input.primaryObjective) : undefined;
     const brand = await this.repository.getBrandForAccount(accountId, brandId);
     if (!brand) throw new DomainValidationError("Brand is not available for guided setup");
 
     const before = await this.repository.listBrandBrainFields(accountId, brandId);
     const existingByKey = new Map(before.map((field) => [field.fieldKey, field]));
 
-    await this.repository.putConfirmedBrandBrainField(accountId, brandId, "goals.objectives", {
-      section: "goals",
-      value: objective,
-      ...(existingByKey.get("goals.objectives") ? { expectedVersion: existingByKey.get("goals.objectives")!.version } : {}),
-    });
+    if (objective) {
+      await this.repository.putConfirmedBrandBrainField(accountId, brandId, "goals.objectives", {
+        section: "goals",
+        value: objective,
+        ...(existingByKey.get("goals.objectives") ? { expectedVersion: existingByKey.get("goals.objectives")!.version } : {}),
+      });
+    }
 
     const ownerBoundary = optionalText(input.ownerBoundary, 4_000);
     if (ownerBoundary) {
@@ -145,7 +149,7 @@ export class BrandBrainBootstrapService {
         workspaceId: brand.workspaceId,
         brandId: brand.id,
         brandName: brand.name,
-        primaryObjective: objective,
+        ...(objective ? { primaryObjective: objective } : {}),
         existingConfirmed: confirmed,
         references: successfulReferences,
       });
@@ -173,7 +177,7 @@ export class BrandBrainBootstrapService {
       if (!value || value.length > valueLimit) throw new DomainValidationError("Brand Brain proposal value is invalid");
       const proposalSourceIds = [...new Set(proposal.sourceIds.map((sourceId) => sourceId.trim()).filter(Boolean))];
       if (SOURCE_REQUIRED_PROPOSAL_FIELDS.has(proposal.fieldKey) && proposalSourceIds.length === 0) {
-        throw new DomainValidationError("Imported visual direction requires active source provenance");
+        throw new DomainValidationError("Source-backed Brand Brain proposals require active source provenance");
       }
       if (proposalSourceIds.some((sourceId) => !inspectedSources.has(sourceId))) {
         throw new DomainValidationError("Brand Brain proposal provenance is invalid");
@@ -238,7 +242,7 @@ export class BrandBrainBootstrapService {
         const source = await this.ensureSource(accountId, brandId, reference, existingSources);
         result.push({ ...reference, sourceId: source.id });
       } catch {
-        // Public-reference failure is isolated. Owner-confirmed context can still bootstrap provisional suggestions.
+        // Public-reference failure is isolated. Existing Brand context can still remain available.
       }
     }
     return result;
