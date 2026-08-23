@@ -3,9 +3,9 @@
   "sliceId": "VS-83",
   "title": "VS-83 — Production Object Storage and Live Carousel Verification",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "observed",
   "riskLevel": "high",
-  "implementationMode": "runtime-disabled",
+  "implementationMode": "production-enabled",
   "requirements": [
     "FR-02",
     "FR-03",
@@ -32,7 +32,9 @@
     "VS-81",
     "VS-82"
   ],
-  "blockers": [],
+  "blockers": [
+    "Final provider-backed carousel validation requires an authenticated Kairo OIDC bearer session. Connected Render/GitHub tooling intentionally does not expose the user's production bearer token, so the exact recovered carousel project cannot be replayed autonomously without bypassing authentication."
+  ],
   "allowedPaths": [
     "apps/api/**",
     "apps/web/**",
@@ -67,7 +69,7 @@
       "Completes bounded Instagram source analysis, Brand asset rendering and Performance Memory.",
       "Extends existing provider-neutral and private-object boundaries instead of coupling domain code to Meta or storage.",
       "Production verification remains credential-safe, exact-SHA bound and human controlled.",
-      "No release, deployment or production enablement is authorized."
+      "Exact SHA e794cf7207be793db888990f0029f4155d6f193a is released to the Render API; the final provider-backed carousel outcome remains under observation until the authenticated replay is completed."
     ]
   },
   "approvals": [
@@ -100,30 +102,30 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-83@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "commitSha": "e794cf7207be793db888990f0029f4155d6f193a",
+      "by": "Sazid Khan",
+      "at": "2026-08-23T14:18:00+02:00",
+      "rationale": "The Product Owner explicitly approved certification for the exact squash-merge release SHA after the tree-identical PR candidate passed CI, Security, preflight/governance, workspace tests/builds and review."
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-83@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "commitSha": "e794cf7207be793db888990f0029f4155d6f193a",
+      "by": "Sazid Khan",
+      "at": "2026-08-23T14:18:00+02:00",
+      "rationale": "The Product Owner explicitly approved release of exact SHA e794cf7207be793db888990f0029f4155d6f193a."
     },
     {
       "type": "production-enable",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-83@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "commitSha": "e794cf7207be793db888990f0029f4155d6f193a",
+      "by": "Sazid Khan",
+      "at": "2026-08-23T14:18:00+02:00",
+      "rationale": "The Product Owner explicitly approved production enablement for exact SHA e794cf7207be793db888990f0029f4155d6f193a."
     }
   ],
   "decisionIds": [],
@@ -132,32 +134,36 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
-    "release": 0,
+    "certification": 100,
+    "release": 100,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "e794cf7207be793db888990f0029f4155d6f193a",
+    "evidence": [
+      "PR #167 exact head 3be431034eb58bd53885d2bf9a68f391116d98eb passed CI #1083, Security #895, governance/preflight, workspace typecheck/tests/builds and Vercel status checks.",
+      "Merge SHA e794cf7207be793db888990f0029f4155d6f193a has the identical Git tree 9eec892d5f3a1790e0f8700c4a54f84ff509ebb1 as the certified PR head.",
+      "Product Owner exact-SHA certification approval recorded 2026-08-23T14:18:00+02:00."
+    ]
   },
   "release": {
-    "status": "not-authorized",
-    "releaseId": null
+    "status": "released",
+    "releaseId": "REL-005"
   },
   "rollback": {
-    "status": "not-applicable",
-    "rollbackId": null
+    "status": "ready",
+    "rollbackId": "RB-005"
   },
   "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
+    "status": "observing",
+    "reviewAt": "2026-08-24T14:20:00+02:00",
     "expectedOutcome": "The exact approved private carousel asset publishes to Instagram and appears in Calendar and Results.",
     "metrics": ["published carousel command", "provider media ID", "Calendar Published state", "Instagram Results observations"]
   },
   "links": {
     "specification": "docs/slices/VS-83.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/167",
     "evidence": ["docs/slices/VS-83.md"]
   },
   "maxAttempts": 3
