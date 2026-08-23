@@ -88,7 +88,7 @@ export type GuidedBrandObjective =
   | "promote-offer";
 
 export interface BuildBrandBrainRequest {
-  primaryObjective: GuidedBrandObjective;
+  primaryObjective?: GuidedBrandObjective;
   publicReferenceUrl?: string;
   ownerBoundary?: string;
 }
