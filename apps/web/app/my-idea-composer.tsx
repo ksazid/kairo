@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { HomeCreationFormat, MyIdeaRecommendation } from "../src/lib/home-intelligence";
 import styles from "./home-vs85.module.css";
@@ -28,8 +28,6 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
   const [format, setFormat] = useState<HomeCreationFormat | "">("");
   const [state, setState] = useState<"idle" | "analysing" | "creating">("idle");
   const [error, setError] = useState("");
-
-  const inputSignature = useMemo(() => `${idea.trim()}\n${source.trim()}`, [idea, source]);
   const canAnalyse = idea.trim().length >= 4 || isHttpUrl(source.trim());
 
   useEffect(() => {
@@ -69,7 +67,7 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [brandId, inputSignature, canAnalyse, idea, source]);
+  }, [brandId, idea, source, canAnalyse]);
 
   async function create() {
     if (!recommendation || !format || state === "creating") return;
@@ -129,7 +127,6 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
           <span aria-hidden="true">↗</span>
           Link
         </button>
-        <span className={styles.mediaNote}>Photo, video and Media appear when they can be carried into generation end to end.</span>
       </div>
 
       <div className={styles.recommendationSlot} aria-live="polite" aria-atomic="true">
