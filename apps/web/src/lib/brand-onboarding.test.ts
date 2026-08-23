@@ -6,10 +6,15 @@ describe("Brand onboarding URL helpers", () => {
     expect(normalizeBrandReferenceUrl("instagram.com/thedukeman")).toBe("https://instagram.com/thedukeman");
   });
 
-  it("infers a social Brand name from the public profile path", () => {
+  it("infers a social Brand name from a public profile path", () => {
     expect(brandNameFromReference("https://www.instagram.com/the_duke_man/")).toBe("The Duke Man");
     expect(brandNameFromReference("https://www.linkedin.com/company/kairo-ai/")).toBe("Kairo Ai");
     expect(brandNameFromReference("https://www.youtube.com/@thedukeman")).toBe("Thedukeman");
+  });
+
+  it("does not mistake a social post identifier for the Brand name", () => {
+    expect(brandNameFromReference("https://www.instagram.com/p/CODE123/")).toBe("Instagram");
+    expect(brandNameFromReference("https://www.youtube.com/watch?v=abc123")).toBe("Youtube");
   });
 
   it("falls back to the public website host for ordinary Brand sites", () => {
