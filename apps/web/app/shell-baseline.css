@@ -1,13 +1,94 @@
-/* Approved product shell baseline — DESIGN.md v1.2 */
+/* Approved product shell baseline — DESIGN.md v1.3.
+   This file owns shell chrome. Legacy globals may continue styling older pages,
+   but the authenticated shell uses k-shell-* selectors so old shell CSS cannot leak in. */
 
-.shell-account-footer {
-  grid-template-columns: 44px 44px;
-  align-items: end;
-  justify-content: start;
+.k-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  background: var(--k-neutral-50);
+  color: var(--k-neutral-900);
+}
+
+.k-shell-sidebar {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--k-space-5);
+  padding: 24px 16px;
+  background: var(--k-surface);
+  border-right: 1px solid var(--k-neutral-200);
+}
+
+.k-shell-identity {
+  padding: 0 4px;
+}
+
+.k-shell-caption {
+  margin: 6px 0 0 38px;
+  color: var(--k-neutral-400);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.k-shell-nav {
+  display: grid;
+  gap: 4px;
+}
+
+.k-shell-nav-item {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: var(--k-radius-sm);
+  color: var(--k-neutral-700);
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  transition: background-color 150ms ease, color 150ms ease, transform 120ms var(--k-ease-out);
+}
+
+.k-shell-nav-item > svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.k-shell-nav-item > span {
+  flex: 1;
+}
+
+.k-shell-nav-item > small {
+  margin-left: auto;
+  color: var(--k-neutral-400);
+  font-size: 10px;
+}
+
+.k-shell-nav-item.active {
+  background: color-mix(in srgb, var(--k-primary) 7%, var(--k-surface));
+  color: var(--k-primary);
+}
+
+.k-shell-nav-item.disabled {
+  color: var(--k-neutral-400);
+  cursor: default;
+}
+
+.k-shell-sidebar-footer {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 44px 76px 44px;
+  align-items: center;
   gap: 8px;
 }
 
-.shell-account-footer > div > button,
+.k-shell-sidebar-footer > div > button,
 .profile-menu > summary {
   width: 44px;
   height: 44px;
@@ -22,6 +103,47 @@
   list-style: none;
 }
 
+.k-shell-sidebar-footer > div > button > svg,
+.profile-menu > summary > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.k-shell-theme-toggle {
+  height: 44px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--k-neutral-200);
+  border-radius: var(--k-radius-sm);
+  background: var(--k-neutral-50);
+}
+
+.k-shell-theme-toggle button {
+  min-width: 32px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--k-neutral-400);
+  cursor: pointer;
+}
+
+.k-shell-theme-toggle button.active {
+  background: var(--k-surface);
+  color: var(--k-primary);
+  box-shadow: 0 1px 2px var(--k-overlay);
+}
+
+.k-shell-theme-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
 .profile-menu {
   position: relative;
 }
@@ -30,14 +152,9 @@
   display: none;
 }
 
-.profile-menu > summary > svg,
-.shell-account-footer > div > button > svg {
-  width: 20px;
-  height: 20px;
-}
-
 .profile-menu[open] > summary,
-.profile-menu > summary:hover {
+.profile-menu > summary:hover,
+.k-shell-sidebar-footer > div > button:hover {
   color: var(--k-neutral-900);
   background: var(--k-neutral-50);
 }
@@ -66,23 +183,9 @@
   font-size: 14px;
 }
 
-.profile-menu-heading span,
-.profile-menu-label {
+.profile-menu-heading span {
   color: var(--k-neutral-400);
   font-size: 11px;
-}
-
-.profile-menu-section {
-  display: grid;
-  gap: 8px;
-  padding: 12px 4px;
-  border-bottom: 1px solid var(--k-neutral-200);
-}
-
-.profile-menu-section .shell-controls {
-  display: grid;
-  gap: 8px;
-  padding: 0;
 }
 
 .profile-menu-panel nav {
@@ -124,38 +227,65 @@
   font-size: 10px;
 }
 
-/* Desktop shell: one quiet navigation rail, exactly five destinations. */
-.sidebar {
-  width: auto;
-  background: var(--k-surface);
+.k-shell-content {
+  min-width: 0;
 }
 
-.nav-list {
-  gap: 4px;
+.k-shell-breadcrumbs {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px clamp(24px, 4vw, 64px) 0;
+  color: var(--k-neutral-400);
+  font-size: 12px;
 }
 
-.nav-item.active {
-  background: color-mix(in srgb, var(--k-primary) 6%, var(--k-surface));
+.k-shell-breadcrumbs a {
+  text-decoration: none;
+}
+
+.k-shell-breadcrumbs a:hover {
   color: var(--k-primary);
 }
 
-.nav-item > svg {
-  width: 19px;
-  height: 19px;
-  flex: none;
+.k-shell-breadcrumbs svg {
+  width: 12px;
+  height: 12px;
 }
 
-.nav-item > span {
-  flex: 1;
+.k-shell-breadcrumbs [aria-current="page"] {
+  color: var(--k-neutral-700);
+  font-weight: 650;
 }
 
-/* Mobile shell: Brand + page on the left, Notifications + Profile on the right. */
+.k-shell-mobile-header,
+.k-shell-mobile-nav {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .k-shell-nav-item:not(.disabled):hover {
+    background: var(--k-neutral-50);
+    color: var(--k-neutral-900);
+  }
+
+  .k-shell-nav-item:active {
+    transform: scale(.98);
+  }
+}
+
 @media (max-width: 820px) {
-  .app-shell {
+  .k-shell {
+    display: block;
     padding-bottom: calc(68px + env(safe-area-inset-bottom));
   }
 
-  .mobile-app-header {
+  .k-shell-sidebar {
+    display: none;
+  }
+
+  .k-shell-mobile-header {
     position: sticky;
     z-index: 30;
     top: 0;
@@ -163,14 +293,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 8px 14px;
+    gap: 8px;
+    padding: 8px 12px;
     background: var(--k-surface);
     border-bottom: 1px solid var(--k-neutral-200);
-    backdrop-filter: none;
   }
 
-  .mobile-app-context {
+  .k-shell-mobile-context {
     min-width: 0;
     display: flex;
     align-items: center;
@@ -178,27 +307,27 @@
     flex: 1;
   }
 
-  .mobile-app-context .brand-switcher {
+  .k-shell-mobile-context .brand-switcher {
     min-width: 0;
     flex: 0 1 auto;
   }
 
-  .mobile-app-context .brand-switcher > summary {
+  .k-shell-mobile-context .brand-switcher > summary {
     min-height: 44px;
-    gap: 10px;
+    gap: 8px;
     padding: 0;
     border: 0;
     background: transparent;
   }
 
-  .mobile-app-context .brand-switcher-copy small,
-  .mobile-app-context .brand-switcher > summary > svg {
+  .k-shell-mobile-context .brand-switcher-copy small,
+  .k-shell-mobile-context .brand-switcher > summary > svg {
     display: none;
   }
 
-  .mobile-app-context .brand-switcher-copy strong {
+  .k-shell-mobile-context .brand-switcher-copy strong {
     display: block;
-    max-width: min(42vw, 180px);
+    max-width: min(29vw, 120px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -208,8 +337,17 @@
     font-weight: 700;
   }
 
-  .mobile-page-label {
-    flex: none;
+  .k-shell-mobile-context .brand-switcher-menu {
+    width: min(320px, calc(100vw - 24px));
+  }
+
+  .k-shell-mobile-page {
+    min-width: 0;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 0 1 auto;
     padding-left: 8px;
     border-left: 1px solid var(--k-neutral-200);
     color: var(--k-neutral-400);
@@ -218,15 +356,15 @@
     font-weight: 600;
   }
 
-  .mobile-header-actions {
+  .k-shell-mobile-actions {
     flex: none;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
-  .mobile-header-actions > div > button,
-  .mobile-header-actions .profile-menu > summary {
+  .k-shell-mobile-actions > div > button,
+  .k-shell-mobile-actions .profile-menu > summary {
     width: 40px;
     height: 40px;
     display: grid;
@@ -238,59 +376,111 @@
     color: var(--k-neutral-700);
   }
 
-  .mobile-header-actions > div > button > svg,
-  .mobile-header-actions .profile-menu > summary > svg {
+  .k-shell-mobile-actions > div > button > svg,
+  .k-shell-mobile-actions .profile-menu > summary > svg {
     width: 19px;
     height: 19px;
   }
 
-  .mobile-header-actions .profile-menu-panel {
+  .k-shell-mobile-actions .k-shell-theme-toggle {
+    width: 70px;
+    height: 40px;
+    padding: 3px;
+  }
+
+  .k-shell-mobile-actions .k-shell-theme-toggle button {
+    min-width: 0;
+    height: 32px;
+  }
+
+  .k-shell-mobile-actions .profile-menu-panel {
     position: fixed;
-    left: 14px;
-    right: 14px;
+    left: 12px;
+    right: 12px;
     top: 70px;
     bottom: auto;
     width: auto;
   }
 
-  .mobile-header-actions .profile-menu-section .density-toggle,
-  .mobile-header-actions .profile-menu-section .sidebar-toggle {
+  .k-shell-breadcrumbs {
     display: none;
   }
 
-  .mobile-header-actions .profile-menu-section .theme-toggle {
-    width: 108px;
-  }
-
-  .breadcrumbs {
-    display: none;
-  }
-
-  .mobile-nav {
+  .k-shell-mobile-nav {
+    position: fixed;
+    z-index: 20;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     min-height: 68px;
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--k-surface);
     border-top: 1px solid var(--k-neutral-200);
-    backdrop-filter: none;
   }
 
-  .mobile-nav-item {
+  .k-shell-mobile-nav-item {
     min-height: 60px;
+    display: grid;
+    place-items: center;
+    align-content: center;
     gap: 4px;
     padding: 8px 4px;
     color: var(--k-neutral-400);
+    text-decoration: none;
     font-size: 11px;
     line-height: 14px;
     font-weight: 600;
   }
 
-  .mobile-nav-item > svg {
+  .k-shell-mobile-nav-item > svg {
     width: 20px;
     height: 20px;
   }
 
-  .mobile-nav-item.active {
+  .k-shell-mobile-nav-item.active {
     color: var(--k-primary);
+  }
+
+  .k-shell-mobile-nav-item.disabled {
+    color: var(--k-neutral-400);
+  }
+
+  .product-guide {
+    right: 16px;
+    bottom: 82px;
+  }
+}
+
+@media (max-width: 390px) {
+  .k-shell-mobile-header {
+    padding-inline: 10px;
+  }
+
+  .k-shell-mobile-context .brand-switcher-copy strong {
+    max-width: 96px;
+  }
+
+  .k-shell-mobile-page {
+    max-width: 58px;
+  }
+
+  .k-shell-mobile-actions {
+    gap: 4px;
+  }
+
+  .k-shell-mobile-actions .k-shell-theme-toggle {
+    width: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k-shell *,
+  .k-shell *::before,
+  .k-shell *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
