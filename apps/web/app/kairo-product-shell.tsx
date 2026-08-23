@@ -22,7 +22,7 @@ type ProductShellProps = {
   children: ReactNode;
 };
 
-const destinationIcons:Record<string,KairoIconName>={Home:"home",Create:"create",Library:"library",Calendar:"calendar",Results:"results",Brand:"brain"};
+const destinationIcons:Record<string,KairoIconName>={Home:"home",Content:"library",Calendar:"calendar",Results:"results",Brand:"brain"};
 
 export async function KairoProductShell({
   brandId,
