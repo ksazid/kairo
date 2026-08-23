@@ -23,7 +23,7 @@
   ],
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":50,"validation":0},
-  "certification": {"status":"passed","commitSha":"a7659179c93299c6dfb2541583a113a96060cde2","evidence":["GitHub Actions Product Intake run 32663228553 passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","GitHub Actions Security baseline run 32663228456 passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","GitHub Actions CI run 32663228443 passed, including preflight, runtime verification and dashboard build, for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","Vercel preview status passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2."]},
+  "certification": {"status":"passed","commitSha":"a7659179c93299c6dfb2541583a113a96060cde2","evidence":["GitHub Actions Product Intake run 32663228553 passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","GitHub Actions Security baseline run 32663228456 passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","GitHub Actions CI run 32663228443 passed, including preflight, runtime verification and dashboard build, for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","Vercel preview status passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","Production enablement approved by Product Owner on 2026-08-23T22:27:00+02:00 for the same exact certified SHA."]},
   "release": {"status":"approved","releaseId":"REL-006"},
   "rollback": {"status":"ready","rollbackId":"RB-006"},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
