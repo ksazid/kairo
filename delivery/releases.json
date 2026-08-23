@@ -102,7 +102,7 @@
         "Render deploy dep-da4emu3bc2fs73cvrc20 is live on exact commit d19c471a11ec30ca717870dc8ca4021ffac5fd5b.",
         "Exact deployment logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED using Meta Graph v24.0.",
         "Git compare bb901c2e04549ffcf1d621e33567ce488839d4c1..d19c471a11ec30ca717870dc8ca4021ffac5fd5b changes only delivery/context/VS-73.md, delivery/current-slice.json and docs/slices/VS-73.md, so the runtime is identical to the provider-confirmed production publish build.",
-        "Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical production build.",
+        "Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical build.",
         "The previously verified web deployment remains applicable because there are no apps/web changes after the verified web release lineage."
       ],
       "rollbackStrategy": {
@@ -169,7 +169,7 @@
     {
       "id": "REL-005",
       "sliceIds": ["VS-84"],
-      "status": "released",
+      "status": "deploying",
       "commitSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
       "migrations": [],
       "configurationChanges": [
