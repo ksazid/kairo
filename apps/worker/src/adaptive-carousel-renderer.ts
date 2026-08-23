@@ -12,7 +12,7 @@ import {
   type RenderedCreativeArtifact,
 } from "./creative-renderer";
 
-export const ADAPTIVE_CAROUSEL_RENDERER_VERSION = "kairo-bitmap-adaptive-v1";
+export const ADAPTIVE_CAROUSEL_RENDERER_VERSION = "kairo-bitmap-adaptive-v2";
 
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 type Rgb = readonly [number, number, number];
@@ -178,8 +178,8 @@ class Canvas {
 }
 
 function fitText(input: string, maxWidth: number, preferredScale: number, maxLines: number, maxHeight: number): { lines: string[]; scale: number } {
-  const start = Math.max(2, Math.floor(preferredScale));
-  for (let scale = start; scale >= 2; scale--) {
+  const start = Math.max(1, Math.floor(preferredScale));
+  for (let scale = start; scale >= 1; scale--) {
     const maxChars = Math.max(1, Math.floor(maxWidth / (4 * scale)));
     const lines = wrap(input, maxChars, maxLines);
     if (lines && lines.length * 7 * scale <= maxHeight) return { lines, scale };
