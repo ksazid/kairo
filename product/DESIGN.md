@@ -1,10 +1,10 @@
 ---
 title: Content Intelligence Engine Design Baseline
 document_id: CIE-DESIGN-001
-version: 1.0
+version: 1.1
 status: Approved
 owner: Product Design
-last_updated: 2026-08-12
+last_updated: 2026-08-23
 depends_on:
   - CIE-PRD-001
   - CIE-TRD-001
@@ -14,21 +14,21 @@ used_by:
   - future CIE mobile implementation
 ---
 
-# Content Intelligence Engine Design Baseline v1.0
+# Content Intelligence Engine Design Baseline v1.1
 
 ## Design authority
 
-This document is the approved visual and interaction baseline for CIE. PES may refine implementation details and responsive behaviour but may not silently replace the visual language, navigation hierarchy or core interaction principles. Material changes require an approved design decision.
+This document is the approved visual and interaction baseline for CIE/Kairo. PES may refine implementation details and responsive behaviour but may not silently replace the visual language, navigation hierarchy or core interaction principles. Material changes require an approved design decision.
 
-The approved reference is the user-selected CIE Design Baseline board from 2026-08-12. The source image supplied during approval is 1536x1024 pixels and has SHA-256 fingerprint:
+The approved visual reference is the user-selected CIE Design Baseline board from 2026-08-12. The source image supplied during approval is 1536x1024 pixels and has SHA-256 fingerprint:
 
 `dac322756cfd9606ce0941332e83fbcf0fdbbfda76d4b254cd10a10adbe689f1`
 
-The reference board is the visual source of truth; this document translates it into implementation rules.
+The 2026-08-23 product simplification approval updates information architecture and onboarding while preserving that visual language. This document is the implementation authority for the combined direction.
 
 ## Design intent
 
-CIE should feel like a calm, intelligent editorial workspace rather than a dense enterprise social-media dashboard.
+Kairo should feel like a calm, intelligent editorial workspace rather than a dense enterprise social-media dashboard.
 
 The design language is:
 
@@ -48,7 +48,7 @@ Web and mobile must look like the same product. They share typography, colour, s
 Focus attention on the next useful decision. Remove decorative UI that does not improve understanding or action.
 
 ### Content first
-Ideas, Opportunities, Research, Content, Campaigns and Performance Intelligence take visual priority over controls and dashboards.
+Ideas, recommendations, Content, Calendar and Results take visual priority over technical workflow controls.
 
 ### Calm and minimal
 Use whitespace, neutral surfaces, thin borders and restrained elevation. Avoid excessive cards, gradients, glow effects, glassmorphism and ornamental AI visuals.
@@ -57,18 +57,19 @@ Use whitespace, neutral surfaces, thin borders and restrained elevation. Avoid e
 The same design tokens and component semantics apply across web and mobile. Platform-native interaction may differ, but the visual DNA remains stable.
 
 ### Purposeful colour
-CIE uses one restrained primary accent. Semantic colours communicate status or meaning; they are not decoration.
+Kairo uses one restrained primary accent. Semantic colours communicate status or meaning; they are not decoration.
 
 ### Human + intelligent
-AI supports the user. The interface preserves human authority, explicit approval, evidence and controllability.
+AI should reduce decisions and configuration. The user sees useful outcomes, one recommended next action and human checkpoints only when judgment is genuinely required.
 
 ## Product values expressed by the UI
 
-- **AI power, human control:** AI generates and recommends; the user decides.
-- **Trust and truth:** evidence, provenance and unsupported-claim warnings are visible when relevant.
+- **AI power, human control:** AI generates and recommends; the user decides at meaningful checkpoints.
+- **Trust and truth:** evidence, provenance and unsupported-claim warnings remain available when relevant without becoming default workflow steps.
 - **Brand first:** every output visibly belongs to the selected Brand context.
 - **Privacy and security:** Workspace/Brand scope and connected-account state are understandable.
 - **Performance driven:** the product connects actions to measured outcomes and future recommendations.
+- **Progressive disclosure:** technical details stay under the hood until the user needs them.
 
 ## Colour system
 
@@ -118,6 +119,8 @@ Recommended core steps: 4, 8, 12, 16, 24, 32, 40 and 48px.
 
 Large desktop surfaces should retain generous whitespace. Information density may increase on specialist pages but should remain visually grouped and scannable.
 
+Home sections must be visually distinct through spacing, hierarchy and restrained surface treatment rather than becoming one long wall of identical cards.
+
 ## Radius and elevation
 
 Use modest rounded corners and subtle elevation. Cards should feel like contained working surfaces, not floating decorative tiles.
@@ -141,74 +144,109 @@ Avoid mixed icon families in the same product surface.
 
 ## Web information architecture
 
-The approved board establishes the following primary working areas:
+Primary navigation contains exactly five product destinations:
 
-- Today;
-- Discover;
-- Ideas;
-- Campaigns;
-- Content Studio;
-- Calendar;
-- Performance;
-- Brand Brain;
-- Settings;
-- Help/Support where applicable.
+- **Home**;
+- **Content**;
+- **Calendar**;
+- **Results**;
+- **Brand**.
 
-Exact route naming may be normalised against the approved PRD during PES intake, but the product must preserve this simple, content-centric hierarchy rather than expand into enterprise-style navigation.
+Creation is not a separate primary destination. `My Idea` and `For You` begin creation from Home. Historical Campaign, Research, Critic, rendering and publishing workflow objects remain available behind user-facing Content/detail surfaces where needed but do not expand primary navigation.
 
-Desktop uses a persistent left navigation rail/sidebar with clear selected state and Workspace/Brand context.
+Desktop uses a persistent left navigation rail/sidebar with clear selected state and Workspace/Brand context. Settings, help, operations and other management functions remain secondary utilities rather than primary destinations.
 
 ## Mobile information architecture
 
-Mobile uses a maximum of five primary bottom-navigation destinations.
+Mobile uses the same five conceptual destinations in bottom navigation:
 
-Approved baseline:
-
-- Today;
-- Discover;
-- Ideas/Create as appropriate to the final route model;
+- Home;
+- Content;
 - Calendar;
-- More.
+- Results;
+- Brand.
 
-More may contain Performance, Brand Brain, Settings and secondary management flows.
+The mobile product must not recreate the entire desktop sidebar as a cramped phone menu. Secondary management remains inside the relevant destination or contextual menus.
 
-The mobile product must not recreate the entire desktop sidebar as a cramped phone menu.
+## Home
 
-## Today
+Home is the visual and behavioural anchor of the product. It answers:
 
-Today is the visual and behavioural anchor of the product.
+> What needs me, what can I create, and what is Kairo doing next?
 
-It should answer:
+Home is composed of six distinct sections:
 
-> What deserves my attention now?
+1. **Needs Attention** — shown only when Kairo cannot safely continue without the user; one dominant item and at most two smaller extras.
+2. **My Idea** — user-led creation from text, URL, image, video or existing media; Kairo recommends format after understanding the input.
+3. **For You** — one ranked spotlight recommendation plus up to three compact alternatives; discovery/research stays under the hood.
+4. **Up Next** — one spotlight upcoming item plus up to two compact rows for scheduled or pending work.
+5. **What’s Working** — compact proof, interpretation and one useful next action such as `Create similar`.
+6. **Continue** — the most relevant unfinished item plus up to two smaller recent items.
 
-The baseline screen contains:
+Needs Attention is not an inbox. Empty sections that have no useful content may disappear. Each item presents one obvious primary action; secondary actions use progressive disclosure.
 
-- concise daily briefing language;
-- a short ranked list of meaningful Opportunities;
-- clear relevance/evidence status;
-- short `Why now` explanation;
-- one obvious development action;
-- lightweight save/bookmark behaviour;
-- upcoming work/approvals;
-- a compact performance signal.
+A newly onboarded Brand without an authenticated publishing destination should show a `Connect a channel` Needs Attention item on Home. Once an appropriate channel is connected, that item disappears.
 
-The product should prefer three strong Opportunities over a wall of weak recommendations.
+## Brand onboarding
 
-## Opportunity cards
+Onboarding should feel like one handoff to Kairo, not a technical setup wizard.
 
-Opportunity cards prioritise:
+Approved first-run flow:
 
-1. signal strength/status;
+```text
+Paste one public Brand URL
+  → Kairo learns
+  → concise Brand confirmation
+  → Home
+```
+
+Rules:
+
+- one labelled public URL field is the default input;
+- the URL may be a website, public social profile/content URL, product page, blog or another supported public page;
+- Kairo infers the Brand name, audience, voice, positioning, content direction and provisional goals where evidence supports them;
+- inferred goals stay under the hood during onboarding;
+- do not show channel OAuth choices, provider scopes, adapter terminology, research controls or technical progress details in onboarding;
+- a public social URL is evidence only and never implies authenticated publishing or private Insights access;
+- channel authentication happens after onboarding from Home Needs Attention or Brand;
+- if public-reference learning is limited, preserve the created Brand and let the user continue rather than forcing setup to restart;
+- confirmation shows only a concise useful summary such as What you do, Who you serve, Your style and Main topics;
+- the primary confirmation action is `Looks right`; deeper editing remains available later under Brand.
+
+Do not use a multi-step progress stepper for this flow. During analysis, show one truthful calm learning state rather than simulated technical stages.
+
+## Smart Item interaction grammar
+
+Reusable working items share a consistent interaction grammar without forcing every section into identical cards:
+
+- optional useful visual/icon;
+- title;
+- one-line context or insight;
+- status/type where needed;
+- one obvious primary action;
+- `•••` for uncommon actions;
+- tapping the item inspects it;
+- consistent status placement;
+- no more than two or three metadata points by default.
+
+Variants are Spotlight, Standard Item and Compact Item. Thumbnail imagery appears only when it adds decision value.
+
+Context-aware primary actions include `Continue`, `Review`, `Publish`, `View`, `See results`, `Fix` and `Use idea`.
+
+## Opportunity / recommendation items
+
+Recommendation items prioritise:
+
+1. signal strength/status where useful;
 2. title;
 3. concise rationale;
-4. why now;
-5. primary action;
+4. why it matters now;
+5. one primary action;
 6. optional save/secondary actions.
 
 Images are optional supporting context, not mandatory decoration.
 
-Statuses use restrained semantic text/chips such as High relevance, Medium relevance, Strong evidence, Growing or New.
+The product should prefer one strong recommendation plus a few alternatives over a wall of equal choices.
 
 ## Buttons
 
@@ -218,7 +256,7 @@ Three action levels:
 - **Secondary:** neutral/outlined control.
 - **Tertiary:** text or low-emphasis action.
 
-Do not fill every card with a purple button. Primary emphasis is scarce.
+Do not fill every item with a purple button. Primary emphasis is scarce.
 
 All controls require hover/focus/pressed/disabled states appropriate to platform.
 
@@ -232,11 +270,11 @@ Validation messages use semantic colours plus text/icon indication; colour alone
 
 ## Chips and tags
 
-Chips represent compact metadata such as relevance, status, channel and approval state.
+Chips represent compact metadata such as status, format, channel and approval state.
 
 They should be short, low-noise and semantically consistent.
 
-Channel chips may use channel identity cues sparingly, but CIE should not visually fragment into multiple external brand systems.
+Channel chips may use channel identity cues sparingly, but Kairo should not visually fragment into multiple external brand systems.
 
 ## Cards and panels
 
@@ -244,25 +282,27 @@ Use cards only when a real conceptual grouping or interaction boundary exists.
 
 Avoid the anti-pattern of turning every metric and paragraph into its own card.
 
-Performance pages should favour narrative intelligence plus a few relevant charts rather than a dense tile dashboard.
+Results pages should favour narrative intelligence plus a few relevant charts rather than a dense tile dashboard.
 
-## Content Studio
+## Content
 
-The editor should be a calm, content-first workspace.
+Content is the user-facing home for everything Kairo has created. Campaigns, asset versions, render lineage and technical workflow state remain implementation detail unless a specialist view genuinely needs them.
 
-Primary content remains central. AI controls should be contextual and secondary rather than occupying permanent visual prominence.
+Default filters should use user language such as All, Needs you, Ready, Scheduled and Published. Primary actions are state-aware: Continue, Review, Publish, View or See results.
 
-Research evidence, version history, Critic findings and approval state should be accessible without crowding the writing surface.
+The content editor remains calm and content-first. AI controls are contextual and secondary rather than occupying permanent visual prominence.
 
-## Brand Brain
+## Brand
 
-Brand Brain should read as a structured profile/knowledge workspace, not a developer configuration screen.
+Brand should read as a structured profile and source workspace, not a developer configuration screen.
 
-User-confirmed and AI-inferred information must be distinguishable where material, consistent with the PRD.
+User-confirmed and AI-inferred information must be distinguishable where material. Shared Brand Memory is an internal intelligence layer, not a separate Business Intelligence dashboard.
 
-## Performance
+Source connection, health and recovery controls live here after onboarding. Provider-specific technical details are progressively disclosed.
 
-Performance design answers:
+## Results
+
+Results answers:
 
 1. What happened?
 2. Why might it have happened?
@@ -272,25 +312,7 @@ Use a small number of charts when they improve interpretation. Narrative recomme
 
 ## Web/mobile consistency
 
-The same task should retain the same conceptual hierarchy across platforms.
-
-Example:
-
-```text
-Web Today
-  Opportunity title
-  Relevance/evidence
-  Why now
-  Develop
-
-Mobile Today
-  Opportunity title
-  Relevance/evidence
-  condensed Why now
-  Develop
-```
-
-Mobile may collapse supporting detail, use sheets, gestures or native navigation, but the hierarchy and wording remain familiar.
+The same task should retain the same conceptual hierarchy across platforms. Mobile may collapse supporting detail, use sheets, gestures or native navigation, but hierarchy and wording remain familiar.
 
 ## Responsive behaviour
 
@@ -298,28 +320,38 @@ Web layouts should progressively collapse rather than abruptly change product st
 
 Desktop may use a main content column plus a narrow secondary context column. Tablet may stack or partially collapse the secondary column. Mobile becomes a single primary flow.
 
-Important controls must remain reachable without horizontal scrolling.
+Important controls must remain reachable without horizontal scrolling. Primary touch targets should remain comfortably usable at phone widths.
 
 ## Motion
 
-Motion is purposeful and restrained.
+Motion is purposeful, restrained and subordinate to task speed.
 
 Use it for:
 
-- navigation continuity;
 - pressed/selected feedback;
 - state changes;
 - opening/closing contextual surfaces;
 - list insertion/removal;
-- publishing/progress feedback where useful.
+- publishing/progress feedback where useful;
+- rare first-run/onboarding continuity when it clarifies what just happened.
 
-Avoid ornamental motion, long easing sequences and animation that delays work.
+Interaction guidance:
 
-Respect `prefers-reduced-motion` on web and equivalent accessibility settings on mobile.
+- button press feedback: roughly 100-160ms;
+- small state/popover transitions: roughly 125-200ms;
+- onboarding/panel entrances: roughly 180-260ms;
+- ordinary product UI should remain below 300ms;
+- use responsive ease-out for enter/exit and immediate feedback; avoid slow ease-in interactions;
+- prefer CSS/native transitions before adding animation dependencies;
+- never delay a frequent task merely to show animation.
+
+Onboarding may use subtle opacity/translation for surface continuity and a restrained progress indicator while Kairo learns. Do not use theatrical AI effects, confetti, large-scale morphs or looping decorative motion.
+
+Respect `prefers-reduced-motion` on web and equivalent accessibility settings on mobile. Reduced-motion mode must preserve understandable state changes without movement.
 
 ## AI presentation
 
-CIE must not use generic AI tropes such as constant sparkle icons, glowing gradients, animated robots or excessive assistant bubbles.
+Kairo must not use generic AI tropes such as constant sparkle icons, glowing gradients, animated robots or excessive assistant bubbles.
 
 AI should appear through useful outcomes, recommendations, evidence and contextual actions.
 
@@ -332,7 +364,7 @@ Implementation must support:
 - WCAG-oriented colour contrast;
 - keyboard navigation on web;
 - visible focus states;
-- screen-reader labels;
+- screen-reader labels and live regions for meaningful asynchronous state;
 - semantic headings;
 - sufficient touch targets;
 - non-colour status indicators;
@@ -347,7 +379,7 @@ Dark mode is not required by this baseline. The approved visual source is light-
 
 ## Brand imagery
 
-CIE may use editorial imagery, thumbnails and generated/connected Brand media where context benefits from it. Product chrome should remain neutral so customer Brand content can stand out.
+Kairo may use editorial imagery, thumbnails and generated/connected Brand media where context benefits from it. Product chrome should remain neutral so customer Brand content can stand out.
 
 ## Design anti-patterns
 
@@ -362,12 +394,14 @@ Do not introduce without a separately approved design change:
 - oversized hero areas inside the authenticated product;
 - inconsistent web/mobile styling;
 - desktop UI embedded in a mobile WebView;
-- arbitrary external-brand visual styles leaking into CIE chrome;
+- arbitrary external-brand visual styles leaking into Kairo chrome;
+- technical workflow steps the user does not need to perform;
+- onboarding channel/provider setup before first value;
 - motion for decoration rather than feedback.
 
 ## Implementation source of truth
 
-At PES handoff, the product repository should convert this baseline into shared design tokens and reusable components. Web and future mobile implementations should consume the same semantic token definitions where technically appropriate.
+The product repository should maintain shared design tokens and reusable components. Web and future mobile implementations should consume the same semantic token definitions where technically appropriate.
 
 Design-system implementation should cover at minimum:
 
@@ -379,9 +413,8 @@ Design-system implementation should cover at minimum:
 - Button;
 - Input/TextArea/Select;
 - Chip/Tag;
-- Card/Panel;
+- Smart Item variants;
 - Navigation;
-- Opportunity card;
 - Status treatment;
 - Empty/loading/error states;
 - content editor surfaces;
@@ -390,7 +423,7 @@ Design-system implementation should cover at minimum:
 
 ## Design QA
 
-PES implementation should validate the product against this baseline through responsive screenshots, accessibility checks and visual review. Design/motion review skills may improve implementation quality but may not independently redefine this approved baseline.
+PES implementation should validate the product against this baseline through responsive screenshots, accessibility checks and visual review. UI UX Pro Max owns product-flow/accessibility structure; Impeccable may perform bounded refinement; Emil Design Engineering principles may be used selectively for purposeful motion; Ponytail should keep React/Next.js implementation minimal; UI Review remains the final design/accessibility/responsive quality gate. None of these skills may independently redefine this approved baseline.
 
 ## Reopening conditions
 
