@@ -1,31 +1,3 @@
-const SOCIAL_HOSTS = new Set([
-  "instagram.com",
-  "www.instagram.com",
-  "linkedin.com",
-  "www.linkedin.com",
-  "youtube.com",
-  "www.youtube.com",
-  "facebook.com",
-  "www.facebook.com",
-  "tiktok.com",
-  "www.tiktok.com",
-]);
-
-const RESERVED_SEGMENTS = new Set([
-  "company",
-  "companies",
-  "channel",
-  "c",
-  "user",
-  "users",
-  "p",
-  "reel",
-  "reels",
-  "posts",
-  "watch",
-  "shorts",
-]);
-
 export function normalizeBrandReferenceUrl(raw: string): string {
   const value = raw.trim();
   if (!value) throw new Error("Paste a public Brand URL");
@@ -43,17 +15,33 @@ export function normalizeBrandReferenceUrl(raw: string): string {
 
 export function brandNameFromReference(referenceUrl: string): string {
   const url = new URL(referenceUrl);
-  const host = url.hostname.toLowerCase();
+  const host = url.hostname.toLowerCase().replace(/^www\./, "");
   const segments = url.pathname.split("/").map((part) => decodeURIComponent(part).trim()).filter(Boolean);
+  const socialName = socialProfileName(host, segments);
+  if (socialName) return humanize(socialName.replace(/^@/, ""));
 
-  if (SOCIAL_HOSTS.has(host)) {
-    const candidate = [...segments].reverse().find((segment) => !RESERVED_SEGMENTS.has(segment.toLowerCase()));
-    if (candidate) return humanize(candidate.replace(/^@/, ""));
+  const stem = host.split(".")[0] ?? host;
+  return humanize(stem) || host;
+}
+
+function socialProfileName(host: string, segments: string[]): string | undefined {
+  const [first, second] = segments;
+  if (!first) return undefined;
+
+  if (host === "instagram.com" || host === "facebook.com") {
+    return new Set(["p", "reel", "reels", "stories", "watch", "share"]).has(first.toLowerCase()) ? undefined : first;
   }
-
-  const hostname = host.replace(/^www\./, "");
-  const stem = hostname.split(".")[0] ?? hostname;
-  return humanize(stem) || hostname;
+  if (host === "linkedin.com") {
+    if (["company", "in", "school"].includes(first.toLowerCase())) return second;
+    return ["posts", "feed", "pulse"].includes(first.toLowerCase()) ? undefined : first;
+  }
+  if (host === "youtube.com") {
+    if (first.startsWith("@")) return first;
+    if (["channel", "c", "user"].includes(first.toLowerCase())) return second;
+    return undefined;
+  }
+  if (host === "tiktok.com") return first.startsWith("@") ? first : undefined;
+  return undefined;
 }
 
 function humanize(value: string): string {
