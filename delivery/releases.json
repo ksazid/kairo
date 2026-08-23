@@ -169,7 +169,7 @@
     {
       "id": "REL-005",
       "sliceIds": ["VS-83"],
-      "status": "released",
+      "status": "deploying",
       "commitSha": "e794cf7207be793db888990f0029f4155d6f193a",
       "migrations": [],
       "configurationChanges": [
@@ -200,7 +200,7 @@
         "evidence": [
           "Exact release deployment dep-da5ea964a6sc73fa0fmg is live on e794cf7207be793db888990f0029f4155d6f193a.",
           "API startup and Instagram publisher startup are healthy on the exact release.",
-          "Authenticated replay of carousel-acd92c95-5308-4b81-9bf5-92d3c8b17809 is still required before VS-83 may be marked validated."
+          "Authenticated replay of carousel-acd92c95-5308-4b81-9bf5-92d3c8b17809 is still required before VS-83 may be marked released and validated."
         ]
       }
     }
