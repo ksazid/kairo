@@ -3,9 +3,9 @@
   "sliceId": "VS-84",
   "title": "Guided Brand Onboarding and Shared Brand Memory Initialization",
   "status": "active",
-  "lifecycle": "release-pending",
+  "lifecycle": "released",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04", "FR-05"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
   "dependencies": [],
@@ -22,11 +22,11 @@
     {"type":"production-enable","status":"approved","version":"VS-84@1.1","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","by":"Sazid Khan","at":"2026-08-23T21:02:00+02:00","rationale":"The Product Owner explicitly instructed deployment to production of the exact certified and release-approved VS-84 candidate. Existing rollback readiness and publishing safeguards remain in force."}
   ],
   "decisionIds": ["DEC-010","DEC-011"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":75},
   "certification": {"status":"passed","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","evidence":["GitHub Actions Product Intake run 32659123567","GitHub Actions Security baseline run 32659123631","GitHub Actions CI run 32659123574","CI: npm run preflight passed","CI: npm run runtime:verify passed","CI: dashboard build/artifact passed","Vercel preview check passed for c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867"]},
-  "release": {"status":"approved","releaseId":"REL-005"},
+  "release": {"status":"released","releaseId":"REL-005"},
   "rollback": {"status":"ready","rollbackId":"RB-005"},
-  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":"A user gives Kairo one public Brand URL, reviews Kairo's concise understanding, reaches Home, and can connect publishing channels later without repeating Brand setup.","metrics":["public URL accepted","Brand Memory suggestions generated","onboarding confirmation reached","Home reached","channel connection prompt shown when no channel is connected"]},
-  "links": {"specification":"docs/slices/VS-84.md","implementationPr":"https://github.com/ksazid/kairo/pull/174","evidence":["docs/slices/VS-84.md","docs/plans/VS-84-implementation.md","GitHub Actions Product Intake run 32659123567","GitHub Actions Security baseline run 32659123631","GitHub Actions CI run 32659123574","REL-005","RB-005"]},
+  "postRelease": {"status":"observing","reviewAt":"2026-08-24T09:00:00+02:00","expectedOutcome":"A user gives Kairo one public Brand URL, reviews Kairo's concise understanding or the approved limited-learning fallback, reaches Home, and can connect publishing channels later without repeating Brand setup.","metrics":["production web exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 READY","production API exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 live","authenticated additional-Brand creation reached confirmation and Home","public Instagram URL persisted as evidence without granting channel authority","zero-channel Brand reached Home and channel-account check returned none","first-time zero-Workspace production onboarding remains to be observed before final validation"]},
+  "links": {"specification":"docs/slices/VS-84.md","implementationPr":"https://github.com/ksazid/kairo/pull/174","evidence":["docs/slices/VS-84.md","docs/plans/VS-84-implementation.md","GitHub Actions Product Intake run 32659123567","GitHub Actions Security baseline run 32659123631","GitHub Actions CI run 32659123574","REL-005","RB-005","Vercel deployment dpl_2V32YeeKPXeeBjvjtKWGZfembkjA","Render deployment dep-da5k8mqjobas73f0mo40","Production additional-Brand f5c99a6e-caf2-428c-8ebd-e9f87f2ad044"]},
   "maxAttempts": 3
 }
