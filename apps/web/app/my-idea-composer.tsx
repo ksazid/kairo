@@ -90,19 +90,21 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
 
   return (
     <div className={styles.ideaComposer}>
-      <label className={styles.srOnly} htmlFor="home-my-idea">What do you have in mind?</label>
-      <textarea
-        id="home-my-idea"
-        value={idea}
-        onChange={(event) => setIdea(event.target.value)}
-        placeholder="A topic, thought, offer or rough idea…"
-        rows={4}
-        maxLength={4000}
-      />
+      <div className={styles.ideaField}>
+        <label className={styles.fieldLabel} htmlFor="home-my-idea">Your idea</label>
+        <textarea
+          id="home-my-idea"
+          value={idea}
+          onChange={(event) => setIdea(event.target.value)}
+          placeholder="A topic, thought, offer or rough idea…"
+          rows={4}
+          maxLength={4000}
+        />
+      </div>
 
       {showLink ? (
         <label className={styles.linkField}>
-          <span>Link</span>
+          <span>Public link</span>
           <input
             type="url"
             value={source}
@@ -125,7 +127,7 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
           }}
         >
           <span aria-hidden="true">↗</span>
-          Link
+          {showLink ? "Remove link" : "Add link"}
         </button>
       </div>
 
