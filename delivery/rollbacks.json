@@ -63,6 +63,38 @@
       ],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-005",
+      "releaseId": "REL-005",
+      "status": "ready",
+      "reason": "Rollback readiness for the high-risk VS-83 adaptive carousel renderer production release while provider-backed carousel validation is still observing.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "e794cf7207be793db888990f0029f4155d6f193a",
+      "lastKnownGoodSha": "57447bb607a4bc278cde992a95727376dde7a4ce",
+      "triggers": [
+        "API startup, readiness or exact release provenance regresses",
+        "The recovered carousel project still fails render before quality evaluation",
+        "Rendered media hashes, dimensions, tenant lineage or approved-version binding regress",
+        "Instagram carousel publishing bypasses approval or fails provider delivery after an approved retry",
+        "Calendar or Results loses provider-confirmed carousel lineage"
+      ],
+      "procedure": [
+        "Disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED if the failure affects publishing while preserving commands, attempts, provider IDs and audit state.",
+        "Redeploy last-known-good API SHA 57447bb607a4bc278cde992a95727376dde7a4ce if the adaptive renderer release itself is implicated.",
+        "Do not roll back VS-83 storage migrations; this renderer fix introduces no new migration and schema recovery should remain forward-only.",
+        "Preserve the exact Brand, Campaign, Asset and Carousel Project lineage plus Render logs before recovery.",
+        "Verify API startup, authentication, tenant isolation, private-object delivery and publishing safeguards before re-enabling the affected flow."
+      ],
+      "verification": [
+        "API health and exact release provenance are green",
+        "Authentication and Brand tenant isolation pass",
+        "Carousel rendering either succeeds or fails only through the configured quality policy rather than text-layout overflow",
+        "Approved media remains immutable, private and destination-bound",
+        "Calendar and Results preserve existing provider evidence"
+      ],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }
