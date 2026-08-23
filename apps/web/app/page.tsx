@@ -5,6 +5,7 @@ import { KairoProductShell, KairoScopePicker } from "./kairo-product-shell";
 import { OpportunityList } from "./opportunity-list";
 import {
   getBrands,
+  getChannelAccounts,
   getLearnings,
   getOpportunities,
   getPerformance,
@@ -13,6 +14,7 @@ import {
 import { buildPerformanceFeedback } from "../src/lib/performance-feedback-view-model";
 import { PerformanceFeedback } from "./performance-feedback";
 import { NextStepBar } from "./next-step-bar";
+import homeStyles from "./home-vs84.module.css";
 
 type SearchParams = Promise<{
   workspace?: string;
@@ -42,6 +44,7 @@ export default async function Home({
   let opportunities: BrandOpportunityDto[] = [];
   let opportunityError: string | null = null;
   let feedback = buildPerformanceFeedback([], []);
+  let channelState: "connected" | "none" | "unknown" = "unknown";
   if (brand) {
     try {
       opportunities = await getOpportunities(brand.id);
@@ -58,6 +61,12 @@ export default async function Home({
     } catch {
       /* Recommendations remain available when feedback cannot be read. */
     }
+    try {
+      const channels = await getChannelAccounts(brand.id);
+      channelState = channels.some((channel) => channel.status === "connected") ? "connected" : "none";
+    } catch {
+      /* Do not show a potentially incorrect connection prompt when channel state cannot be verified. */
+    }
   }
 
   const today = opportunities
@@ -69,6 +78,9 @@ export default async function Home({
     : "/";
   const createHref = brand
     ? `/brands/${encodeURIComponent(brand.id)}/create`
+    : "/onboarding";
+  const connectHref = brand
+    ? `/brands/${encodeURIComponent(brand.id)}/brain#source-heading`
     : "/onboarding";
 
   return (
@@ -112,6 +124,18 @@ export default async function Home({
             {opportunityError}
           </p>
         ) : null}
+
+        {brand && channelState === "none" ? (
+          <section className={homeStyles.attention} aria-labelledby="connect-channel-title">
+            <div className={homeStyles.copy}>
+              <span className={homeStyles.label}>Needs attention</span>
+              <strong id="connect-channel-title">Connect a channel</strong>
+              <p>Connect a publishing channel so Kairo can publish your approved content and learn from performance.</p>
+            </div>
+            <Link className={`${homeStyles.action} primary-button`} href={connectHref}>Connect</Link>
+          </section>
+        ) : null}
+
         <section className="goal-first" aria-labelledby="goal-first-title">
           <div className="goal-first-heading">
             <div>
