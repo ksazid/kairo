@@ -3,7 +3,7 @@
   "sliceId": "VS-83",
   "title": "VS-83 — Production Object Storage and Live Carousel Verification",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "blocked",
   "riskLevel": "high",
   "implementationMode": "runtime-disabled",
   "requirements": [
@@ -32,7 +32,9 @@
     "VS-81",
     "VS-82"
   ],
-  "blockers": [],
+  "blockers": [
+    "Product Owner deferred the remaining provider-backed Instagram publish verification on 2026-08-23 so onboarding simplification can proceed; the unverified acceptance item remains open and must not be represented as passed."
+  ],
   "allowedPaths": [
     "apps/api/**",
     "apps/web/**",
@@ -67,7 +69,8 @@
       "Completes bounded Instagram source analysis, Brand asset rendering and Performance Memory.",
       "Extends existing provider-neutral and private-object boundaries instead of coupling domain code to Meta or storage.",
       "Production verification remains credential-safe, exact-SHA bound and human controlled.",
-      "No release, deployment or production enablement is authorized."
+      "No release, deployment or production enablement is authorized.",
+      "The final provider-backed publish verification is deferred, not passed."
     ]
   },
   "approvals": [
