@@ -8,5 +8,7 @@
 6. Route approved carousel publishing through the same object signer.
 7. Add isolation, hash, expiry, configuration, render and publishing regressions.
 8. Extend the smoke harness for an exact approved carousel and provider result.
-9. Run full runtime and governance verification and open a draft PR.
-10. Stop for exact-SHA merge approval before release or provider-backed verification.
+9. Expose the existing immediate-publish action in Content Studio for a matching connected Instagram carousel-capable destination, while preserving LinkedIn text behavior and failing closed for unsupported combinations.
+10. Cover the immediate-publish capability decision with deterministic web tests.
+11. Run full runtime and governance verification and open a PR.
+12. Stop for exact-SHA certification, merge, release and production-enable approval before production deployment or provider-backed verification.
