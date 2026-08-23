@@ -96,15 +96,19 @@ export function renderCarouselReview(
   );
 }
 export async function ensureCarouselReview(b: string, c: string, a: string) {
+  let review: CarouselReview;
   try {
-    return await getCarouselReview(b, c, a);
+    review = await getCarouselReview(b, c, a);
   } catch (error) {
     if (!(error instanceof CarouselReviewApiError) || error.status !== 404)
       throw error;
-    const draft = await bootstrapCarouselReview(b, c, a);
-    await renderCarouselReview(b, draft.id, draft.assetVersion);
+    review = await bootstrapCarouselReview(b, c, a);
+  }
+  if (review.status === "draft" || review.status === "failed") {
+    await renderCarouselReview(b, review.id, review.assetVersion);
     return getCarouselReview(b, c, a);
   }
+  return review;
 }
 export function editCarouselSlide(
   b: string,
