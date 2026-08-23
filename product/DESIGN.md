@@ -1,10 +1,10 @@
 ---
 title: Content Intelligence Engine Design Baseline
 document_id: CIE-DESIGN-001
-version: 1.1
+version: 1.3
 status: Approved
 owner: Product Design
-last_updated: 2026-08-23
+last_updated: 2026-08-24
 depends_on:
   - CIE-PRD-001
   - CIE-TRD-001
@@ -14,7 +14,7 @@ used_by:
   - future CIE mobile implementation
 ---
 
-# Content Intelligence Engine Design Baseline v1.1
+# Content Intelligence Engine Design Baseline v1.3
 
 ## Design authority
 
@@ -24,7 +24,7 @@ The approved visual reference is the user-selected CIE Design Baseline board fro
 
 `dac322756cfd9606ce0941332e83fbcf0fdbbfda76d4b254cd10a10adbe689f1`
 
-The 2026-08-23 product simplification approval updates information architecture and onboarding while preserving that visual language. This document is the implementation authority for the combined direction.
+The 2026-08-23 product simplification approval updates information architecture and onboarding while preserving that visual language. The 2026-08-23 shell clarification fixes the Header, Desktop Sidebar and Mobile Bottom Navigation contract. The 2026-08-24 appearance clarification permits one compact light/dark control in shell chrome while keeping all other settings inside Profile. This document is the implementation authority for the combined direction.
 
 ## Design intent
 
@@ -166,7 +166,85 @@ Mobile uses the same five conceptual destinations in bottom navigation:
 - Results;
 - Brand.
 
+There is no sixth `More` destination. Settings and account utilities live inside Profile, not primary navigation.
+
 The mobile product must not recreate the entire desktop sidebar as a cramped phone menu. Secondary management remains inside the relevant destination or contextual menus.
+
+## Product shell: Header, Sidebar and Bottom Navigation
+
+The authenticated product shell is a shared design-system surface. Individual pages may not replace or restyle it independently.
+
+### Mobile header
+
+The mobile header is a quiet, compact Brand-context bar approximately 60-64px high.
+
+Left side:
+
+- current Brand accent/mark;
+- current Brand name;
+- current product destination/page label.
+
+Right side contains exactly three persistent utilities:
+
+1. **Notifications**;
+2. **Light / Dark appearance toggle**;
+3. **Profile / Settings**.
+
+Rules:
+
+- Settings live inside the Profile menu/sheet;
+- the only appearance control permitted in persistent shell chrome is a compact two-state **sun / moon** light-dark toggle;
+- do not expose a third `system` theme state in the persistent shell;
+- account actions and sign-out remain Profile-level utilities;
+- search, density and desktop/sidebar controls must not occupy persistent mobile header chrome;
+- do not show both a mobile page label and a redundant breadcrumb trail;
+- the header uses the dominant neutral surface, one thin divider and no decorative gradient, glass treatment or oversized control group;
+- controls use simple outline icons and comfortable touch targets.
+
+### Desktop sidebar
+
+Desktop uses one persistent left navigation rail approximately 240-248px wide.
+
+Order:
+
+1. Kairo wordmark/product identity;
+2. current Brand switcher/context;
+3. the five primary destinations: Home, Content, Calendar, Results, Brand;
+4. flexible whitespace;
+5. Notifications, Light/Dark toggle and Profile / Settings utilities.
+
+Rules:
+
+- selected navigation uses restrained primary emphasis;
+- the sidebar must not become a secondary dashboard;
+- Add Brand belongs to Brand switching/profile context rather than primary navigation;
+- Settings, help and sign-out remain inside Profile or another secondary utility surface;
+- the compact light/dark control is the only permanent appearance utility;
+- system-theme, density and sidebar-collapse controls must not appear as a permanent row of shell controls;
+- technical workflow destinations never expand the five primary destinations.
+
+### Mobile bottom navigation
+
+Mobile bottom navigation contains exactly five equal-width destinations in this order:
+
+1. Home;
+2. Content;
+3. Calendar;
+4. Results;
+5. Brand.
+
+Each destination uses one outline icon plus a text label. The active destination uses the primary accent; inactive destinations use muted neutral treatment.
+
+The bar uses a solid dominant surface, a thin top divider and safe-area padding. It must not use glassmorphism, gradients, a floating capsule container or a sixth `More` item.
+
+### Shell consistency rules
+
+- Header, Sidebar and Bottom Navigation must use shared reusable components and shared shell tokens.
+- Responsive behaviour changes placement, not navigation meaning.
+- Shell controls must not inherit page-specific card, gradient or experimental CSS.
+- Legacy/global page CSS must not be able to redefine the authenticated shell; shell selectors/components should be isolated from old page-level shell selectors.
+- The shell is visually quieter than page content so Brand work remains the focus.
+- Any material shell change requires an explicit update to this document before implementation can be certified.
 
 ## Home
 
@@ -375,7 +453,7 @@ Accessibility failures are implementation defects, not optional polish.
 
 ## Dark mode
 
-Dark mode is not required by this baseline. The approved visual source is light-first. If dark mode is introduced later, it must preserve hierarchy and semantics rather than simply invert colours.
+Kairo supports explicit light and dark appearance modes through the approved compact sun/moon shell control. Dark mode must preserve hierarchy and semantics rather than simply invert colours. A persistent third `system` option is not part of the approved shell control.
 
 ## Brand imagery
 
@@ -424,6 +502,17 @@ Design-system implementation should cover at minimum:
 ## Design QA
 
 PES implementation should validate the product against this baseline through responsive screenshots, accessibility checks and visual review. UI UX Pro Max owns product-flow/accessibility structure; Impeccable may perform bounded refinement; Emil Design Engineering principles may be used selectively for purposeful motion; Ponytail should keep React/Next.js implementation minimal; UI Review remains the final design/accessibility/responsive quality gate. None of these skills may independently redefine this approved baseline.
+
+Shell QA must additionally verify:
+
+- desktop sidebar contains exactly five primary destinations;
+- mobile bottom navigation contains exactly five equal-width destinations;
+- mobile header shows Brand/page context plus Notifications, the compact sun/moon toggle and Profile;
+- Settings remain inside Profile;
+- no system-theme, density or sidebar-collapse control is visible in persistent shell chrome;
+- no redundant mobile breadcrumbs;
+- no shell gradient/glass treatment or inherited page-specific decorative CSS;
+- legacy global page CSS cannot override the isolated shell selectors/components.
 
 ## Reopening conditions
 
