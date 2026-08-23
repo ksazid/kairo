@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getBrand, getBrandBrain, getSession } from "../../../../../src/lib/kairo-api";
 import { KairoLogo } from "../../../../kairo-icons";
 import styles from "../../../../onboarding/onboarding.module.css";
+import confirmStyles from "./confirm.module.css";
 import { confirmOnboardingBrandAction } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -45,9 +46,9 @@ export default async function ConfirmBrandPage({ params, searchParams }: { param
         </header>
 
         {summaries.length ? (
-          <div className={styles.brandSummary} aria-label="Kairo Brand understanding">
+          <div className={confirmStyles.summary} aria-label="Kairo Brand understanding">
             {summaries.map(([label, value]) => (
-              <div className={styles.brandSummaryRow} key={label}>
+              <div className={confirmStyles.row} key={label}>
                 <span>{label}</span>
                 <p>{value}</p>
               </div>
@@ -55,14 +56,14 @@ export default async function ConfirmBrandPage({ params, searchParams }: { param
           </div>
         ) : null}
 
-        <form action={action} className={styles.confirmForm}>
+        <form action={action} className={confirmStyles.confirmForm}>
           <button className={`${styles.primaryAction} primary-button`} type="submit">
             <span>{summaries.length ? "Looks right" : "Continue to Home"}</span>
             <span className={styles.buttonArrow} aria-hidden="true">→</span>
           </button>
         </form>
 
-        <p className={styles.confirmFootnote}>Goals and technical setup stay under the hood. You can edit Brand details later.</p>
+        <p className={confirmStyles.footnote}>Goals and technical setup stay under the hood. You can edit Brand details later.</p>
       </section>
     </main>
   );
