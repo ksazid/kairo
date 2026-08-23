@@ -1,10 +1,10 @@
 ---
 title: Content Intelligence Engine Product Requirements Document
 document_id: CIE-PRD-001
-version: 1.0
+version: 1.1
 status: Approved
 owner: Product
-last_updated: 2026-08-22
+last_updated: 2026-08-23
 used_by:
   - CIE TRD
   - CIE Design Baseline
@@ -12,11 +12,11 @@ used_by:
   - CIE pilot
 ---
 
-# Content Intelligence Engine Product Requirements Document v1.0
+# Content Intelligence Engine Product Requirements Document v1.1
 
 ## Product authority
 
-This document is the approved product authority for Content Intelligence Engine v1.0.
+This document is the approved product authority for Content Intelligence Engine v1.1.
 
 Stable functional requirements are `FR-01` through `FR-20`.
 
@@ -165,6 +165,8 @@ Potential later segments include agencies, venture studios, multi-brand organisa
 16. **Provider-neutral AI infrastructure.**
 17. **Explain recommendations rather than exposing hidden reasoning traces.**
 18. **Never mix one Brand's private intelligence with another Brand.**
+19. **AI should reduce user decisions, not expose technical workflow.**
+20. **Primary user outcomes should remain within four clicks where the product can safely do the rest itself.**
 
 ## Core domain model
 
@@ -263,12 +265,16 @@ CIE must be allowed to say: `No strong opportunity found.` It must never manufac
 Users can register, sign in, sign out, recover access, create or join a Workspace, manage Account preferences, request data export and delete the Account subject to applicable retention requirements. V1 may support one primary owner per Workspace. Complex enterprise access control is deferred.
 
 ### FR-02 — Brand creation
-The user can create multiple Brands. Minimum creation should remain extremely lightweight. Initial inputs may be Brand name, Website or social profile, and what the Brand does. Where possible, CIE may research supplied public sources and propose an initial Brand Brain. The user confirms or corrects material information before it becomes authoritative Brand context.
+The user can create multiple Brands. First-Brand and additional-Brand onboarding should default to one public Brand reference rather than a manual questionnaire or provider setup wizard. The reference may be a Website, public social profile/content URL, product page, blog or another supported public HTTP(S) page.
 
-Brand onboarding keeps both sources available in Brand Brain permanently and offers four combinable choices: Connect Instagram (recommended, Professional account through Instagram Login without requiring a Facebook Page), Connect Facebook + Instagram, Connect Facebook only, and Paste Website (optional). Website and channel adapters used during onboarding are the same replaceable adapters used for later refresh, reconnect, replacement and removal.
+Where possible, CIE infers the Brand name and proposes initial Brand Brain context from the supplied evidence, including identity, audience, positioning, voice, content direction, visual direction and provisional goals. The user sees a concise confirmation and may correct important Brand information later. If public-reference learning is limited or unavailable, the created Brand must be preserved and the user may continue rather than restarting setup.
+
+A public social URL is evidence only. It never grants publishing authority, private Insights access or authenticated channel permissions. Channel authentication happens after first value from Home or Brand. The supplied public source remains available through the normal Brand Brain/Knowledge Source lifecycle for later refresh, replacement, disabling or removal.
 
 ### FR-03 — Brand Brain
 The user can inspect and modify positioning, audience, goals, voice, content pillars, preferred topics, prohibited subjects, examples, language, geography, channels and Brand knowledge. AI-inferred and user-confirmed information must remain distinguishable where material.
+
+Brand Brain may infer provisional Brand goals from evidence without asking the user to choose goals during onboarding. Those goals are ranking context, not immutable truth; the user can inspect and adjust them later. User-confirmed Brand facts remain authoritative and cannot be silently overwritten by imported or learned context.
 
 Brand Brain also presents source health and accepted Performance Memory. Connection health includes granted permissions, last verification/synchronisation, expiry, failures and one recovery action without exposing credentials. Imported Instagram profile/content and bounded visual analysis may propose positioning, audience, voice, palette, imagery or typography directions, but these remain evidence-linked suggestions until the owner confirms them.
 
@@ -277,6 +283,8 @@ Users can add approved knowledge using supported sources including URLs, website
 
 ### FR-05 — Channels
 The product model must support multiple content channels. Primary pilot targets are Instagram and LinkedIn. The architecture must permit later support for X, TikTok, YouTube, Facebook, blogs, newsletters and other authorised channels. Unsupported channels may initially be represented through manual publishing and metric entry/import. Channel support must degrade safely when third-party APIs are unavailable.
+
+Channel authentication is not required to complete Brand onboarding. Once the Brand reaches Home, CIE should request a channel connection only when authenticated publishing or provider Insights require it, using plain-language recovery/action surfaces such as Home `Needs Attention` or Brand. Existing least-privilege scopes, capability checks and human publishing approval remain mandatory.
 
 ### FR-06 — Hunter / Discover
 CIE continuously or periodically searches approved public and connected sources for potential content signals. Signals may include industry developments, news, audience questions, emerging discussions, evergreen opportunities, competitor/public content, product developments, user-supplied ideas and previous high-performing themes. The Hunter should operate globally where safe so common research does not need to be repeated separately for every Brand. Brand-specific scoring then determines relevance. The Discover experience includes Opportunity title, reason it matters, Brand relevance, source/evidence summary, novelty, suggested angle, Opportunity score or qualitative strength, Develop, Save and Ignore.
@@ -335,37 +343,29 @@ Authorised internal operators can inspect Brand setup failures, Hunter failures,
 
 The **web application is the primary V1 product**.
 
-Primary navigation should remain approximately:
+Primary navigation is:
 
 ```text
-Today
-
-Discover
-Ideas
+Home
 Content
 Calendar
-Performance
-
-────────
-
-Brands
-
-+ Add Brand
-
-────────
-
-Settings
+Results
+Brand
 ```
 
-The exact information architecture is frozen later in the Design Baseline.
+Creation is not a separate primary destination. User-led creation begins from `My Idea` on Home; Kairo-led discovery begins from `For You`. Campaign, Research, Critic, rendering, versioning and provider workflow remain available under the hood or through contextual detail where genuinely needed.
 
-## Today
+## Home
 
-Today is the default intelligence briefing. It should prioritise actions, not statistics, and answer: **What deserves my attention now?**
+Home is the default intelligence and action surface. It answers: **What needs me, what can I create, and what is Kairo doing next?**
+
+Home contains six distinct sections where useful: Needs Attention, My Idea, For You, Up Next, What's Working and Continue. Empty sections may disappear. Each item should expose one obvious primary action; technical workflow stays progressively disclosed.
+
+A newly onboarded Brand without an authenticated publishing destination should show `Connect a channel` in Needs Attention rather than forcing OAuth during onboarding.
 
 ## Mobile product direction
 
-Mobile is not required to prove the first web-based intelligence loop. The eventual native mobile companion should focus on Today, Discover, Create, Calendar and Me. Primary mobile jobs include capturing an Idea, recording a voice thought, pasting a URL, uploading media, reviewing an Opportunity, approving/rejecting content, receiving intelligence alerts, inspecting exceptional performance and pausing automation. Mobile should not replicate every web configuration screen.
+Mobile is not required to prove the first web-based intelligence loop. The eventual native mobile companion should use the same conceptual primary destinations: Home, Content, Calendar, Results and Brand. Primary mobile jobs include capturing an Idea from Home, recording a voice thought, pasting a URL, uploading media, reviewing recommendations, approving/rejecting content, receiving intelligence alerts and inspecting exceptional performance. Mobile should not replicate every web configuration screen.
 
 ## Capture
 
@@ -522,7 +522,7 @@ Mobile work follows after the primary web intelligence loop is validated unless 
 
 ## Final product decision
 
-Content Intelligence Engine v1.0 will prove whether users managing active Brands value a system that:
+Content Intelligence Engine v1.1 will prove whether users managing active Brands value a system that:
 
 > **finds worthwhile content opportunities, creates and quality-checks the resulting content, tracks what happens and uses Brand-specific performance memory to make the next recommendation better.**
 
