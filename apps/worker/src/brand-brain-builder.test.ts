@@ -65,13 +65,37 @@ describe("BrandBrainBuilder", () => {
     expect(JSON.stringify(runtime.request?.task.instruction)).toContain("sourceIds must be an empty array");
   });
 
-  it("rejects proposal keys outside the guided Brand Brain allow-list", async () => {
+  it("infers a provisional source-backed Brand objective when the owner did not select one", async () => {
     const runtime = new FakeRuntime({ proposals: [
-      { section: "goals", fieldKey: "goals.objectives", value: "Replace the owner's goal", sourceIds: ["source-1"] },
+      { section: "goals", fieldKey: "goals.objectives", value: "Grow an engaged Duke ownership audience", sourceIds: ["source-1"] },
     ] });
     const builder = new BrandBrainBuilder(runtime);
 
-    await expect(builder.propose(input)).rejects.toThrow(/allow-list/i);
+    const result = await builder.propose({ ...input, primaryObjective: undefined });
+
+    expect(result).toEqual([{ section: "goals", fieldKey: "goals.objectives", value: "Grow an engaged Duke ownership audience", sourceIds: ["source-1"] }]);
+    expect(runtime.request?.task.context).not.toHaveProperty("primaryObjective");
+  });
+
+  it("keeps an owner-selected objective authoritative", async () => {
+    const runtime = new FakeRuntime({ proposals: [
+      { section: "goals", fieldKey: "goals.objectives", value: "Replace the owner's goal", sourceIds: ["source-1"] },
+      { section: "audience", fieldKey: "audience.primary", value: "Duke riders", sourceIds: ["source-1"] },
+    ] });
+    const builder = new BrandBrainBuilder(runtime);
+
+    const result = await builder.propose(input);
+
+    expect(result).toEqual([{ section: "audience", fieldKey: "audience.primary", value: "Duke riders", sourceIds: ["source-1"] }]);
+  });
+
+  it("rejects source-backed goals without provenance", async () => {
+    const runtime = new FakeRuntime({ proposals: [
+      { section: "goals", fieldKey: "goals.objectives", value: "Grow audience", sourceIds: [] },
+    ] });
+    const builder = new BrandBrainBuilder(runtime);
+
+    await expect(builder.propose({ ...input, primaryObjective: undefined })).rejects.toThrow(/active source provenance/i);
   });
 
   it("rejects source IDs that were not supplied as inspected references", async () => {
