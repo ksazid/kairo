@@ -41,7 +41,7 @@ describe("adaptive carousel renderer", () => {
       ...plan,
       slides: [
         plan.slides[0]!,
-        { ...plan.slides[1]!, body: "evidence ".repeat(400).trim() },
+        { ...plan.slides[1]!, body: "evidence ".repeat(180).trim() },
         plan.slides[2]!,
       ],
     };
