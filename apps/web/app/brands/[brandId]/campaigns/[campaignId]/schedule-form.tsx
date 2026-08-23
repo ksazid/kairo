@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import type { ChannelAccountView } from "../../../../../src/lib/kairo-api";
+import { immediatePublishContentType } from "../../../../../src/lib/immediate-publish";
 
 type WebPublishContentType = "text" | "image" | "video" | "carousel";
 
@@ -9,7 +10,7 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
   const local = useRef<HTMLInputElement>(null);
   const iso = useRef<HTMLInputElement>(null);
   const capabilities = account.capabilities.map((value) => value.replace("publish-", "") as WebPublishContentType);
-  const canPublishNow = account.channel === "linkedin" && capabilities.includes("text");
+  const publishNowContentType = immediatePublishContentType(account.channel, capabilities);
 
   return (
     <div className="schedule-form">
@@ -18,10 +19,10 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
         <p>{account.displayName} · {account.channel} · {account.accountRef}</p>
       </div>
 
-      {canPublishNow ? (
+      {publishNowContentType ? (
         <form action={action} aria-label={`Publish now to ${account.displayName}`}>
           <input type="hidden" name="channelAccountId" value={account.id} />
-          <input type="hidden" name="contentType" value="text" />
+          <input type="hidden" name="contentType" value={publishNowContentType} />
           <input type="hidden" name="publishMode" value="now" />
           <button className="success-button" type="submit">Publish now</button>
           <p>The approved version is queued immediately through Kairo's normal publishing worker. Success is shown only after the channel confirms publication.</p>
