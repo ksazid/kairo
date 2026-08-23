@@ -2,10 +2,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { getBrandNotifications, getBrands, getSession } from "../src/lib/kairo-api";
 import { KairoIcon, KairoLogo, type KairoIconName } from "./kairo-icons";
-import { ShellControls } from "./shell-controls";
 import { BrandSwitcher } from "./brand-switcher";
-import { CommandPalette } from "./command-palette";
-import { ProductGuide, ReplayGuideButton } from "./product-guide";
+import { ProductGuide } from "./product-guide";
+import { ProfileMenu } from "./profile-menu";
 import { NotificationCentre, type ProductNotification } from "./ui-states";
 import {
   buildProductNavigation,
@@ -37,7 +36,6 @@ export async function KairoProductShell({
   const brands=workspace?await getBrands(workspace.id):[];
   const currentBrand=brands.find(item=>item.id===brandId)??null;
   const notificationResult=brandId?await getBrandNotifications(brandId).catch(()=>null):null;
-  const commandItems=[...navigation.desktop.filter(item=>item.href).map(item=>({label:item.label,detail:currentBrand?.name??"Kairo",href:item.href!,icon:(destinationIcons[item.label]??"brand") as KairoIconName})),...brands.map(brand=>({label:brand.name,detail:"Switch Brand",href:`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}`,icon:"brand" as KairoIconName}))];
   const notifications:ProductNotification[]=(notificationResult?.items??[]).map(item=>notificationView(item));
   const resolvedActive = active ? simpleDestinationFor(active) : null;
   const resolvedMobileActive = simpleDestinationFor(
@@ -83,27 +81,23 @@ export async function KairoProductShell({
             ),
           )}
         </nav>
-        <div className="sidebar-footer">
-          <div className="sidebar-utilities"><NotificationCentre notifications={notifications}/><CommandPalette items={commandItems} brandId={brandId}/></div>
-          <ShellControls />
-          <Link className="nav-item" href={addBrandHref}>
-            <KairoIcon name="plus"/><span>Add Brand</span>
-          </Link>
-          <ReplayGuideButton />
-          <span className="nav-item disabled" aria-disabled="true">
-            <KairoIcon name="settings"/><span>Settings</span><small>Later</small>
-          </span>
-          <a className="nav-item" href="/auth/logout">
-            <KairoIcon name="logout"/><span>Sign out</span>
-          </a>
+        <div className="sidebar-footer shell-account-footer">
+          <NotificationCentre notifications={notifications}/>
+          <ProfileMenu addBrandHref={addBrandHref}/>
         </div>
       </aside>
-      <div className="mobile-brand-bar">
-        <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} compact/>
-        <NotificationCentre notifications={notifications}/>
-        <CommandPalette items={commandItems} brandId={brandId}/>
-        <ShellControls />
-      </div>
+
+      <header className="mobile-brand-bar mobile-app-header">
+        <div className="mobile-app-context">
+          <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} compact/>
+          <span className="mobile-page-label">{resolvedMobileActive}</span>
+        </div>
+        <div className="mobile-header-actions" aria-label="Account utilities">
+          <NotificationCentre notifications={notifications}/>
+          <ProfileMenu addBrandHref={addBrandHref}/>
+        </div>
+      </header>
+
       <div className="shell-content">
         <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/">Kairo</Link><KairoIcon name="chevron"/>{currentBrand?<Link href={`/?workspace=${encodeURIComponent(currentBrand.workspaceId)}&brand=${encodeURIComponent(currentBrand.id)}`}>{currentBrand.name}</Link>:<span>Brand</span>}<KairoIcon name="chevron"/><span aria-current="page">{resolvedActive??"Home"}</span></nav>
         <ProductGuide />
@@ -139,7 +133,6 @@ export async function KairoProductShell({
 }
 
 function notificationView(item:{id:string;kind:string;occurredAt:string;context:{campaignId?:string;assetId?:string;channel?:string;accountRef?:string;failureReason?:string};brandId:string}):ProductNotification{const base=`/brands/${encodeURIComponent(item.brandId)}`;if(item.kind==="publishing-failed")return{id:item.id,title:"Publishing failed",detail:item.context.failureReason??"Open Calendar to review the failed publish.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:`${base}/calendar`,unread:true};if(item.kind==="connection-reconnect-required")return{id:item.id,title:`${item.context.channel??"Channel"} needs reconnection`,detail:item.context.accountRef??"Reconnect the publishing destination.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:`${base}/performance`,unread:true};return{id:item.id,title:"Content ready for approval",detail:"A reviewed asset is waiting for your decision.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:item.context.campaignId?`${base}/campaigns/${encodeURIComponent(item.context.campaignId)}`:`${base}/campaigns`,unread:true}}
-
 
 export function KairoScopePicker({
   brandName,
