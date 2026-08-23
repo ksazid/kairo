@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import type { BrandBrainSection } from "@kairo/contracts";
-import { getBrand, getBrandBrain, putBrandBrainField } from "../../../../../src/lib/kairo-api";
+import { getBrand, getBrandBrain, putBrandBrainField } from "../../../../src/lib/kairo-api";
 
 const CONFIRMABLE_SECTIONS = new Set<BrandBrainSection>([
   "identity",
