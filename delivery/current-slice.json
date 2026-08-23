@@ -3,7 +3,7 @@
   "sliceId": "VS-84",
   "title": "Guided Brand Onboarding and Shared Brand Memory Initialization",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "release-pending",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04", "FR-05"],
@@ -44,7 +44,7 @@
     {"type":"policy","status":"not-required","version":"VS-84@1.1","commitSha":null,"by":null,"at":null,"rationale":"Existing source-removal, Meta connection, Brand Learning and publishing policies remain unchanged; a public URL is evidence only and grants no channel authority."},
     {"type":"implementation","status":"approved","version":"VS-84@1.1","commitSha":null,"by":"Sazid Khan","at":"2026-08-23T20:07:00+02:00","rationale":"The Product Owner explicitly instructed installation of the approved UI skills and runtime implementation, including purposeful motion where required."},
     {"type":"certification","status":"approved","version":"VS-84@1.1","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","by":"Sazid Khan","at":"2026-08-23T20:52:00+02:00","rationale":"The Product Owner explicitly approved certification of the exact immutable VS-84 implementation candidate after Product Intake, Security baseline, CI, preflight, runtime verification, dashboard build and Vercel preview all passed."},
-    {"type":"release","status":"pending","version":"VS-84@1.1","commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
+    {"type":"release","status":"approved","version":"VS-84@1.1","commitSha":"c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867","by":"Sazid Khan","at":"2026-08-23T20:54:00+02:00","rationale":"The Product Owner explicitly approved release of the exact certified VS-84 candidate. REL-005 is prepared with RB-005 rollback readiness; production enablement remains a separate gate."},
     {"type":"production-enable","status":"pending","version":"VS-84@1.1","commitSha":null,"by":null,"at":null,"rationale":"Not authorized."}
   ],
   "decisionIds": ["DEC-010", "DEC-011"],
@@ -62,9 +62,9 @@
       "Vercel preview check passed for c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867"
     ]
   },
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
+  "release": {"status":"approved","releaseId":"REL-005"},
+  "rollback": {"status":"ready","rollbackId":"RB-005"},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":"A user gives Kairo one public Brand URL, reviews Kairo's concise understanding, reaches Home, and can connect publishing channels later without repeating Brand setup.","metrics":["public URL accepted","Brand Memory suggestions generated","onboarding confirmation reached","Home reached","channel connection prompt shown when no channel is connected"]},
-  "links": {"specification":"docs/slices/VS-84.md","implementationPr":"https://github.com/ksazid/kairo/pull/174","evidence":["docs/slices/VS-84.md","docs/plans/VS-84-implementation.md","GitHub Actions Product Intake run 32659123567","GitHub Actions Security baseline run 32659123631","GitHub Actions CI run 32659123574"]},
+  "links": {"specification":"docs/slices/VS-84.md","implementationPr":"https://github.com/ksazid/kairo/pull/174","evidence":["docs/slices/VS-84.md","docs/plans/VS-84-implementation.md","GitHub Actions Product Intake run 32659123567","GitHub Actions Security baseline run 32659123631","GitHub Actions CI run 32659123574","REL-005","RB-005"]},
   "maxAttempts": 3
 }
