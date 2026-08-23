@@ -5,6 +5,7 @@ import { KairoIcon, KairoLogo, type KairoIconName } from "./kairo-icons";
 import { BrandSwitcher } from "./brand-switcher";
 import { ProductGuide } from "./product-guide";
 import { ProfileMenu } from "./profile-menu";
+import { ThemeToggle } from "./theme-toggle";
 import { NotificationCentre, type ProductNotification } from "./ui-states";
 import {
   buildProductNavigation,
@@ -21,7 +22,13 @@ type ProductShellProps = {
   children: ReactNode;
 };
 
-const destinationIcons:Record<string,KairoIconName>={Home:"home",Content:"library",Calendar:"calendar",Results:"results",Brand:"brain"};
+const destinationIcons: Record<string, KairoIconName> = {
+  Home: "home",
+  Content: "library",
+  Calendar: "calendar",
+  Results: "results",
+  Brand: "brain",
+};
 
 export async function KairoProductShell({
   brandId,
@@ -31,99 +38,101 @@ export async function KairoProductShell({
   children,
 }: ProductShellProps) {
   const navigation = buildProductNavigation({ brandId, workspaceId });
-  const session=await getSession();
-  const workspace=session?.workspaces.find(item=>item.id===workspaceId)??session?.workspaces[0];
-  const brands=workspace?await getBrands(workspace.id):[];
-  const currentBrand=brands.find(item=>item.id===brandId)??null;
-  const notificationResult=brandId?await getBrandNotifications(brandId).catch(()=>null):null;
-  const notifications:ProductNotification[]=(notificationResult?.items??[]).map(item=>notificationView(item));
+  const session = await getSession();
+  const workspace = session?.workspaces.find(item => item.id === workspaceId) ?? session?.workspaces[0];
+  const brands = workspace ? await getBrands(workspace.id) : [];
+  const currentBrand = brands.find(item => item.id === brandId) ?? null;
+  const notificationResult = brandId ? await getBrandNotifications(brandId).catch(() => null) : null;
+  const notifications: ProductNotification[] = (notificationResult?.items ?? []).map(item => notificationView(item));
   const resolvedActive = active ? simpleDestinationFor(active) : null;
-  const resolvedMobileActive = simpleDestinationFor(
-    mobileActive ?? active ?? "Brand",
-  );
+  const resolvedMobileActive = simpleDestinationFor(mobileActive ?? active ?? "Brand");
   const addBrandHref = workspaceId
     ? `/brands/new?workspace=${encodeURIComponent(workspaceId)}`
     : "/brands/new";
 
   return (
-    <div className="app-shell">
-      <a className="skip-link" href="#kairo-main-content">
-        Skip to content
-      </a>
-      <aside className="sidebar" aria-label="Primary navigation">
-        <div>
+    <div className="k-shell">
+      <a className="skip-link" href="#kairo-main-content">Skip to content</a>
+
+      <aside className="k-shell-sidebar" aria-label="Primary navigation">
+        <div className="k-shell-identity">
           <Link href="/" className="wordmark"><KairoLogo /></Link>
-          <p className="sidebar-caption">Content Intelligence</p>
+          <p className="k-shell-caption">Content Intelligence</p>
         </div>
-        <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref}/>
-        <nav className="nav-list">
-          {navigation.desktop.map((item) =>
+
+        <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} />
+
+        <nav className="k-shell-nav">
+          {navigation.desktop.map(item =>
             item.href ? (
               <Link
                 key={item.label}
-                className={`nav-item ${item.label === resolvedActive ? "active" : ""}`}
+                className={`k-shell-nav-item ${item.label === resolvedActive ? "active" : ""}`}
                 href={item.href}
-                aria-current={
-                  item.label === resolvedActive ? "page" : undefined
-                }
+                aria-current={item.label === resolvedActive ? "page" : undefined}
               >
-                <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
+                <KairoIcon name={destinationIcons[item.label] ?? "brand"} />
+                <span>{item.label}</span>
               </Link>
             ) : (
-              <span
-                key={item.label}
-                className="nav-item disabled"
-                aria-disabled="true"
-              >
-                <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
+              <span key={item.label} className="k-shell-nav-item disabled" aria-disabled="true">
+                <KairoIcon name={destinationIcons[item.label] ?? "brand"} />
+                <span>{item.label}</span>
                 <small>Select Brand</small>
               </span>
             ),
           )}
         </nav>
-        <div className="sidebar-footer shell-account-footer">
-          <NotificationCentre notifications={notifications}/>
-          <ProfileMenu addBrandHref={addBrandHref}/>
+
+        <div className="k-shell-sidebar-footer" aria-label="Account utilities">
+          <NotificationCentre notifications={notifications} />
+          <ThemeToggle />
+          <ProfileMenu addBrandHref={addBrandHref} />
         </div>
       </aside>
 
-      <header className="mobile-brand-bar mobile-app-header">
-        <div className="mobile-app-context">
-          <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} compact/>
-          <span className="mobile-page-label">{resolvedMobileActive}</span>
+      <header className="k-shell-mobile-header">
+        <div className="k-shell-mobile-context">
+          <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} compact />
+          <span className="k-shell-mobile-page">{resolvedMobileActive}</span>
         </div>
-        <div className="mobile-header-actions" aria-label="Account utilities">
-          <NotificationCentre notifications={notifications}/>
-          <ProfileMenu addBrandHref={addBrandHref}/>
+        <div className="k-shell-mobile-actions" aria-label="Account utilities">
+          <NotificationCentre notifications={notifications} />
+          <ThemeToggle />
+          <ProfileMenu addBrandHref={addBrandHref} />
         </div>
       </header>
 
-      <div className="shell-content">
-        <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/">Kairo</Link><KairoIcon name="chevron"/>{currentBrand?<Link href={`/?workspace=${encodeURIComponent(currentBrand.workspaceId)}&brand=${encodeURIComponent(currentBrand.id)}`}>{currentBrand.name}</Link>:<span>Brand</span>}<KairoIcon name="chevron"/><span aria-current="page">{resolvedActive??"Home"}</span></nav>
+      <div className="k-shell-content">
+        <nav className="k-shell-breadcrumbs" aria-label="Breadcrumb">
+          <Link href="/">Kairo</Link>
+          <KairoIcon name="chevron" />
+          {currentBrand
+            ? <Link href={`/?workspace=${encodeURIComponent(currentBrand.workspaceId)}&brand=${encodeURIComponent(currentBrand.id)}`}>{currentBrand.name}</Link>
+            : <span>Brand</span>}
+          <KairoIcon name="chevron" />
+          <span aria-current="page">{resolvedActive ?? "Home"}</span>
+        </nav>
         <ProductGuide />
         {children}
       </div>
 
-      <nav className="mobile-nav" aria-label="Mobile navigation">
-        {navigation.mobile.map((item) =>
+      <nav className="k-shell-mobile-nav" aria-label="Mobile navigation">
+        {navigation.mobile.map(item =>
           item.href ? (
             <Link
               key={item.label}
               href={item.href}
-              className={`mobile-nav-item ${item.label === resolvedMobileActive ? "active" : ""}`}
-              aria-current={
-                item.label === resolvedMobileActive ? "page" : undefined
-              }
+              className={`k-shell-mobile-nav-item ${item.label === resolvedMobileActive ? "active" : ""}`}
+              aria-current={item.label === resolvedMobileActive ? "page" : undefined}
             >
-              <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
+              <KairoIcon name={destinationIcons[item.label] ?? "brand"} />
+              <span>{item.label}</span>
             </Link>
           ) : (
-            <span
-              key={item.label}
-              className="mobile-nav-item disabled"
-              aria-disabled="true"
-            >
-              <KairoIcon name={destinationIcons[item.label] ?? "brand"}/><span>{item.label}</span>
+            <span key={item.label} className="k-shell-mobile-nav-item disabled" aria-disabled="true">
+              <KairoIcon name={destinationIcons[item.label] ?? "brand"} />
+              <span>{item.label}</span>
             </span>
           ),
         )}
@@ -132,7 +141,45 @@ export async function KairoProductShell({
   );
 }
 
-function notificationView(item:{id:string;kind:string;occurredAt:string;context:{campaignId?:string;assetId?:string;channel?:string;accountRef?:string;failureReason?:string};brandId:string}):ProductNotification{const base=`/brands/${encodeURIComponent(item.brandId)}`;if(item.kind==="publishing-failed")return{id:item.id,title:"Publishing failed",detail:item.context.failureReason??"Open Calendar to review the failed publish.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:`${base}/calendar`,unread:true};if(item.kind==="connection-reconnect-required")return{id:item.id,title:`${item.context.channel??"Channel"} needs reconnection`,detail:item.context.accountRef??"Reconnect the publishing destination.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:`${base}/performance`,unread:true};return{id:item.id,title:"Content ready for approval",detail:"A reviewed asset is waiting for your decision.",occurredAt:new Date(item.occurredAt).toLocaleString(),href:item.context.campaignId?`${base}/campaigns/${encodeURIComponent(item.context.campaignId)}`:`${base}/campaigns`,unread:true}}
+function notificationView(item: {
+  id: string;
+  kind: string;
+  occurredAt: string;
+  context: { campaignId?: string; assetId?: string; channel?: string; accountRef?: string; failureReason?: string };
+  brandId: string;
+}): ProductNotification {
+  const base = `/brands/${encodeURIComponent(item.brandId)}`;
+  if (item.kind === "publishing-failed") {
+    return {
+      id: item.id,
+      title: "Publishing failed",
+      detail: item.context.failureReason ?? "Open Calendar to review the failed publish.",
+      occurredAt: new Date(item.occurredAt).toLocaleString(),
+      href: `${base}/calendar`,
+      unread: true,
+    };
+  }
+  if (item.kind === "connection-reconnect-required") {
+    return {
+      id: item.id,
+      title: `${item.context.channel ?? "Channel"} needs reconnection`,
+      detail: item.context.accountRef ?? "Reconnect the publishing destination.",
+      occurredAt: new Date(item.occurredAt).toLocaleString(),
+      href: `${base}/performance`,
+      unread: true,
+    };
+  }
+  return {
+    id: item.id,
+    title: "Content ready for approval",
+    detail: "A reviewed asset is waiting for your decision.",
+    occurredAt: new Date(item.occurredAt).toLocaleString(),
+    href: item.context.campaignId
+      ? `${base}/campaigns/${encodeURIComponent(item.context.campaignId)}`
+      : `${base}/campaigns`,
+    unread: true,
+  };
+}
 
 export function KairoScopePicker({
   brandName,
@@ -147,12 +194,8 @@ export function KairoScopePicker({
     <div className="scope-picker" aria-label="Current Brand scope">
       <span className="scope-label">Brand</span>
       <strong>{brandName}</strong>
-      <span className="scope-meta">
-        {workspaceName ?? meta ?? "Private Brand context"}
-      </span>
-      <Link className="context-summary-action" href="/brands/new">
-        Add Brand
-      </Link>
+      <span className="scope-meta">{workspaceName ?? meta ?? "Private Brand context"}</span>
+      <Link className="context-summary-action" href="/brands/new">Add Brand</Link>
     </div>
   );
 }
