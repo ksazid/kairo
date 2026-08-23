@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { createBrandAction } from "../../actions";
 import { getSession } from "../../../src/lib/kairo-api";
 import styles from "../../onboarding/onboarding.module.css";
-import { BrandSourceOptions } from "../../source-options";
 import { KairoLogo } from "../../kairo-icons";
+import { BrandOnboardingForm } from "../../onboarding/brand-onboarding-form";
 
 export const dynamic = "force-dynamic";
 
@@ -20,33 +20,24 @@ export default async function NewBrandPage({ searchParams }: { searchParams: Sea
 
   return (
     <main className={styles.page}>
-      <section className={styles.surface} aria-labelledby="new-brand-title">
+      <section className={`${styles.surface} ${styles.onboardingSurface}`} aria-labelledby="new-brand-title">
         <div className={styles.topline}>
           <div className="wordmark"><KairoLogo /></div>
-          <span className={styles.step}>New Brand</span>
+          <span className={styles.quietStatus}>New Brand</span>
         </div>
 
-        <header className={styles.header}>
-          <p className={styles.eyebrow}>Workspace · {workspace.name}</p>
-          <h1 id="new-brand-title">Add another Brand.</h1>
-          <p>Each Brand keeps its own Brand Brain, Ideas, Research, Campaigns and publishing context.</p>
+        <header className={`${styles.header} ${styles.onboardingHeader}`}>
+          <p className={styles.eyebrow}>{workspace.name}</p>
+          <h1 id="new-brand-title">Tell Kairo about this Brand.</h1>
+          <p>Paste one public link. Kairo will infer the Brand context and keep it isolated from your other Brands.</p>
         </header>
 
-        {query.error ? <p className="notice error" role="alert">{query.error}</p> : null}
+        <BrandOnboardingForm action={action} error={query.error} submitLabel="Build this Brand" />
 
-        <form action={action} className={styles.form}>
-          <label>
-            <span>Brand name</span>
-            <input name="brandName" required maxLength={120} placeholder="My next Brand" autoComplete="off" />
-          </label>
-          <label>
-            <span>Paste your website <em>optional</em></span>
-            <input name="websiteUrl" type="url" placeholder="https://yourbrand.com" inputMode="url" />
-            <small>Kairo will use readable public pages as evidence, never automatic Brand truth.</small>
-          </label>
-          <BrandSourceOptions />
-          <button className="primary-button" type="submit">Create Brand and continue</button>
-        </form>
+        <div className={styles.referenceNote}>
+          <strong>No channel connection required.</strong>
+          <p>You can connect publishing channels from Home or Brand after setup.</p>
+        </div>
 
         <Link className={styles.signOut} href="/">Cancel</Link>
       </section>
