@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import { buildApp } from "./app";
 import { OidcJwtVerifier } from "./auth";
-import { PgDiscoveryRepository } from "./discovery-postgres-store";
+import { PgDiscoveryRepository } from"./discovery-postgres-store";
 import { PgKairoRepository } from "./postgres-store";
 import { PgResearchRepository } from "./research-postgres-store";
 import { PgCampaignRepository } from "./campaign-postgres-store";
@@ -407,5 +407,5 @@ function googleDriveConfig(){
   if(names.every(name=>!values[name]))return null;
   const missing=names.filter(name=>!values[name]);
   if(missing.length)throw new Error(`Google Drive Content Asset configuration is incomplete: ${missing.join(", ")}`);
-  return{clientId:values.GOOGLE_DRIVE_CLIENT_ID,clientSecret:values.GOOGLE_DRIVE_CLIENT_SECRET,redirectUri:values.GOOGLE_DRIVE_OAUTH_REDIRECT_URI,pickerApiKey:values.GOOGLE_DRIVE_PICKER_API_KEY,appId:values.GOOGLE_DRIVE_PICKER_APP_ID,encryptionKey:values.CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY};
+  return{clientId:values.GOOGLE_DRIVE_CLIENT_ID,clientSecret:values.GOOGLE_DRIVE_CLIENT_SECRET,redirectUri:values.GOOGLE_DRIVE_OAUTH_REDIRECT_URI,pickerApiKey:values.GOOGLE_DRIVE_PICKER_API_KEY,pickerAppId:values.GOOGLE_DRIVE_PICKER_APP_ID,encryptionKey:values.CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY};
 }
