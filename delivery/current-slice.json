@@ -3,7 +3,7 @@
   "sliceId": "VS-83",
   "title": "VS-83 — Production Object Storage and Live Carousel Verification",
   "status": "active",
-  "lifecycle": "observed",
+  "lifecycle": "release-pending",
   "riskLevel": "high",
   "implementationMode": "production-enabled",
   "requirements": [
@@ -33,7 +33,7 @@
     "VS-82"
   ],
   "blockers": [
-    "Final provider-backed carousel validation requires an authenticated Kairo OIDC bearer session. Connected Render/GitHub tooling intentionally does not expose the user's production bearer token, so the exact recovered carousel project cannot be replayed autonomously without bypassing authentication."
+    "Final provider-backed carousel production verification requires an authenticated Kairo OIDC bearer session. Connected Render/GitHub tooling intentionally does not expose the user's production bearer token, so the exact recovered carousel project cannot be replayed autonomously without bypassing authentication."
   ],
   "allowedPaths": [
     "apps/api/**",
@@ -69,7 +69,7 @@
       "Completes bounded Instagram source analysis, Brand asset rendering and Performance Memory.",
       "Extends existing provider-neutral and private-object boundaries instead of coupling domain code to Meta or storage.",
       "Production verification remains credential-safe, exact-SHA bound and human controlled.",
-      "Exact SHA e794cf7207be793db888990f0029f4155d6f193a is released to the Render API; the final provider-backed carousel outcome remains under observation until the authenticated replay is completed."
+      "Exact SHA e794cf7207be793db888990f0029f4155d6f193a is physically live on the Render API, while governance release completion remains pending the authenticated provider-backed carousel verification required by REL-005."
     ]
   },
   "approvals": [
@@ -135,7 +135,7 @@
     "implementation": 100,
     "testing": 100,
     "certification": 100,
-    "release": 100,
+    "release": 90,
     "validation": 0
   },
   "certification": {
@@ -148,7 +148,7 @@
     ]
   },
   "release": {
-    "status": "released",
+    "status": "approved",
     "releaseId": "REL-005"
   },
   "rollback": {
@@ -156,7 +156,7 @@
     "rollbackId": "RB-005"
   },
   "postRelease": {
-    "status": "observing",
+    "status": "not-started",
     "reviewAt": "2026-08-24T14:20:00+02:00",
     "expectedOutcome": "The exact approved private carousel asset publishes to Instagram and appears in Calendar and Results.",
     "metrics": ["published carousel command", "provider media ID", "Calendar Published state", "Instagram Results observations"]
