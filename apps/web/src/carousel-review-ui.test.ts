@@ -18,6 +18,14 @@ describe("VS-77 visual carousel review", () => {
     ])
       expect(api).toContain(part);
   });
+  it("rerenders recoverable existing carousel drafts instead of leaving them stuck", () => {
+    const api = source("./lib/carousel-review-api.ts");
+    expect(api).toContain('review.status === "draft"');
+    expect(api).toContain('review.status === "failed"');
+    expect(api).toContain(
+      "renderCarouselReview(b, review.id, review.assetVersion)",
+    );
+  });
   it("previews and edits every slide without hiding quality findings", () => {
     const page = source(
       "../app/brands/[brandId]/campaigns/[campaignId]/carousel/[assetId]/page.tsx",
