@@ -19,10 +19,10 @@
     {"type":"implementation","status":"approved","version":"VS-85@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-23T21:28:00+02:00","rationale":"The Product Owner said Go ahead after the exact next implementation sequence was presented. This authorises runtime implementation but not certification, merge, release or production enablement."},
     {"type":"certification","status":"approved","version":"VS-85@1.0","commitSha":"a7659179c93299c6dfb2541583a113a96060cde2","by":"Sazid Khan","at":"2026-08-23T22:10:00+02:00","rationale":"The Product Owner explicitly approved certification of exact SHA a7659179c93299c6dfb2541583a113a96060cde2 after Product Intake, Security baseline, CI, preflight, runtime verification, dashboard build and Vercel preview passed."},
     {"type":"release","status":"approved","version":"VS-85@1.0","commitSha":"a7659179c93299c6dfb2541583a113a96060cde2","by":"Sazid Khan","at":"2026-08-23T22:14:00+02:00","rationale":"The Product Owner explicitly approved release of the exact certified VS-85 candidate."},
-    {"type":"production-enable","status":"pending","version":"VS-85@1.0","commitSha":null,"by":null,"at":null,"rationale":"Production enablement remains the next separate gate and has not yet been authorized."}
+    {"type":"production-enable","status":"approved","version":"VS-85@1.0","commitSha":"a7659179c93299c6dfb2541583a113a96060cde2","by":"Sazid Khan","at":"2026-08-23T22:27:00+02:00","rationale":"The Product Owner explicitly approved production enablement of the exact certified and release-approved VS-85 candidate."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":25,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":50,"validation":0},
   "certification": {"status":"passed","commitSha":"a7659179c93299c6dfb2541583a113a96060cde2","evidence":["GitHub Actions Product Intake run 32663228553 passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","GitHub Actions Security baseline run 32663228456 passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","GitHub Actions CI run 32663228443 passed, including preflight, runtime verification and dashboard build, for exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","Vercel preview status passed for exact SHA a7659179c93299c6dfb2541583a113a96060cde2."]},
   "release": {"status":"approved","releaseId":"REL-006"},
   "rollback": {"status":"ready","rollbackId":"RB-006"},
