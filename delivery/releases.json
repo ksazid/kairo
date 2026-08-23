@@ -169,7 +169,7 @@
     {
       "id": "REL-005",
       "sliceIds": ["VS-84"],
-      "status": "approved",
+      "status": "released",
       "commitSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
       "migrations": [],
       "configurationChanges": [
@@ -179,16 +179,15 @@
       "featureFlags": [
         "Simplified onboarding is URL → Learn → Confirm → Home.",
         "Channel connection remains post-onboarding through Home Needs Attention / Brand.",
-        "Production enablement remains separately gated."
+        "Production enablement was approved on the exact certified SHA before rollout."
       ],
       "smokeTests": [
         "Product Intake run 32659123567, Security baseline run 32659123631 and CI run 32659123574 passed for exact certified runtime candidate c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.",
         "CI preflight, runtime verification and dashboard build passed for the certified candidate.",
         "Vercel preview passed for the certified candidate.",
-        "Before production enablement, verify first-Brand URL onboarding reaches concise Brand confirmation and Home.",
-        "Verify an existing user can add another Brand without recreating the Workspace.",
-        "Verify a public social URL does not grant publishing/Insights authority and Home prompts channel connection when no authenticated channel exists.",
-        "Verify existing Brand access, authentication and tenant isolation remain intact."
+        "Existing-user additional-Brand production flow created a Brand from one public URL, reached confirmation, confirmed and reached Home.",
+        "A public Instagram URL remained evidence-only and did not create authenticated publishing/Insights authority.",
+        "First-time zero-Workspace production onboarding remains an observation item before final VS-84 validation."
       ],
       "rollbackStrategy": {
         "summary": "RB-005 is ready. If VS-84 rollout verification fails, stop the rollout, preserve Brand/source/audit state, and restore the last known-good runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components. No database rollback is required."
@@ -197,7 +196,15 @@
       "approvedAt": "2026-08-23T20:54:00+02:00",
       "productionVerification": {
         "status": "not-started",
-        "evidence": []
+        "evidence": [
+          "Vercel production deployment dpl_2V32YeeKPXeeBjvjtKWGZfembkjA is READY on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.",
+          "Render API deployment dep-da5k8mqjobas73f0mo40 is live on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 and API/publisher startup succeeded.",
+          "Authenticated production additional-Brand flow: POST /brands/new 200, GET confirmation 200, POST confirmation 200, followed by Home GET / 200.",
+          "API created Brand f5c99a6e-caf2-428c-8ebd-e9f87f2ad044 in existing Workspace f7ab356b-b93c-4022-8f32-435acebb3787 with POST Brand 201 and Brand Brain bootstrap 200.",
+          "The Instagram public URL was persisted as one active Knowledge Source; zero channel_accounts were created, preserving the evidence-only boundary.",
+          "The Instagram public reader returned limited content, so the accepted limited-learning fallback was used and the Brand remained usable; this is explicitly allowed by VS-84.",
+          "First-time zero-Workspace live onboarding has not yet been observed; REL-005 remains in post-release observation and is not marked fully production-verified/validated."
+        ]
       }
     }
   ]
