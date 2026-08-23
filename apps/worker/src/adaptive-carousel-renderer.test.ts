@@ -36,20 +36,38 @@ describe("adaptive carousel renderer", () => {
     expect(slides.at(-1)?.layoutMetrics?.text.at(-1)).toMatchObject({ characterCount: cta.length });
   });
 
-  it("still fails closed when copy cannot fit even at the minimum deterministic scale", async () => {
-    const crowded: CarouselPlan = {
+  it("preserves contract-valid body and CTA copy through rendering so quality policy can decide whether it is publishable", async () => {
+    const maxBody = "evidence ".repeat(222).trim();
+    const maxCta = "save ".repeat(100).trim();
+    const contractSized: CarouselPlan = {
       ...plan,
       slides: [
         plan.slides[0]!,
-        { ...plan.slides[1]!, body: "evidence ".repeat(180).trim() },
-        plan.slides[2]!,
+        { ...plan.slides[1]!, body: maxBody },
+        { ...plan.slides[2]!, body: "Review the evidence." },
       ],
+      cta: maxCta,
     };
+    const store: CreativeObjectStorePort = { putPrivateObject: vi.fn(async (input) => ({ objectId: input.objectKey })) };
+    const produced = await new CreativeAssetProductionService(store, { carouselRenderer: new AdaptiveBitmapCarouselRenderer() }).produce(
+      { workspaceId: "ws-1", brandId: "brand-1" },
+      contractSized,
+    );
+
+    const slides = produced.assets.filter((asset) => asset.role === "carousel-slide");
+    expect(maxBody.length).toBeLessThanOrEqual(2_000);
+    expect(maxCta.length).toBeLessThanOrEqual(500);
+    expect(slides[1]?.layoutMetrics?.text.at(-1)).toMatchObject({ role: "body", characterCount: maxBody.length });
+    expect(slides[2]?.layoutMetrics?.text.at(-1)).toMatchObject({ role: "cta", characterCount: maxCta.length });
+  });
+
+  it("still fails closed when copy cannot fit even at the minimum deterministic scale", async () => {
     const store: CreativeObjectStorePort = { putPrivateObject: vi.fn(async (input) => ({ objectId: input.objectKey })) };
     await expect(
       new CreativeAssetProductionService(store, { carouselRenderer: new AdaptiveBitmapCarouselRenderer() }).produce(
         { workspaceId: "ws-1", brandId: "brand-1" },
-        crowded,
+        plan,
+        { width: 64, height: 64 },
       ),
     ).rejects.toThrow(/does not fit/i);
     expect(store.putPrivateObject).not.toHaveBeenCalled();
