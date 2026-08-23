@@ -1,15 +1,13 @@
 export const DESKTOP_PRODUCT_DESTINATIONS = [
   "Home",
-  "Create",
-  "Library",
+  "Content",
   "Calendar",
   "Results",
   "Brand",
 ] as const;
 export const MOBILE_PRODUCT_DESTINATIONS = [
   "Home",
-  "Create",
-  "Library",
+  "Content",
   "Calendar",
   "Results",
   "Brand",
@@ -18,6 +16,8 @@ export type SimpleProductDestination =
   (typeof DESKTOP_PRODUCT_DESTINATIONS)[number];
 export type DesktopProductDestination =
   | SimpleProductDestination
+  | "Create"
+  | "Library"
   | "Today"
   | "Discover"
   | "Ideas"
@@ -29,6 +29,8 @@ export type DesktopProductDestination =
   | "Operations";
 export type MobileProductDestination =
   | (typeof MOBILE_PRODUCT_DESTINATIONS)[number]
+  | "Create"
+  | "Library"
   | "Today"
   | "Discover"
   | "Ideas"
@@ -49,8 +51,7 @@ export function buildProductNavigation({
     today = buildTodayHref(workspaceId, brandId);
   const items: ProductNavigationItem[] = [
     { label: "Home", href: today },
-    { label: "Create", href: base ? `${base}/create` : null },
-    { label: "Library", href: base ? `${base}/campaigns` : null },
+    { label: "Content", href: base ? `${base}/campaigns` : null },
     { label: "Calendar", href: base ? `${base}/calendar` : null },
     { label: "Results", href: base ? `${base}/performance` : null },
     { label: "Brand", href: base ? `${base}/brain` : null },
@@ -60,12 +61,10 @@ export function buildProductNavigation({
 export function simpleDestinationFor(
   active: DesktopProductDestination | MobileProductDestination,
 ): SimpleProductDestination {
-  if (active === "Today" || active === "Discover") return "Home";
-  if (active === "Ideas" || active === "Formats") return "Create";
-  if (active === "Campaigns" || active === "Content Studio") return "Library";
+  if (active === "Today" || active === "Discover" || active === "Create" || active === "Ideas" || active === "Formats") return "Home";
+  if (active === "Library" || active === "Campaigns" || active === "Content Studio") return "Content";
   if (active === "Performance") return "Results";
-  if (active === "Brand Brain" || active === "More" || active === "Operations")
-    return "Brand";
+  if (active === "Brand Brain" || active === "More" || active === "Operations") return "Brand";
   return active as SimpleProductDestination;
 }
 function buildTodayHref(workspaceId?: string | null, brandId?: string | null) {
