@@ -125,6 +125,22 @@
       "decidedBy": "Sazid Khan",
       "decidedAt": "2026-08-14T22:17:00+02:00",
       "blocks": []
+    },
+    {
+      "id": "DEC-010",
+      "sliceId": "VS-84",
+      "question": "Should Kairo create a separate Business Intelligence feature or connect existing Brand Brain, Hunter/Research and Performance Learning through one shared Brand Memory layer?",
+      "status": "approved",
+      "options": [
+        "Create a separate Business Intelligence page and parallel intelligence model",
+        "Use one shared Brand Memory/intelligence layer across existing Kairo workflows"
+      ],
+      "decision": "Do not create a separate Business Intelligence feature, page or parallel source of truth. Treat Brand Brain facts, active knowledge and channel sources, accepted Performance Memory, current Brand priorities and evidence-linked learnings as one shared Brand-scoped memory/intelligence layer. Onboarding initializes that layer; Hunter, Research, My Idea/Create, content strategy and Performance should consume the same approved Brand context through Kairo-owned application contracts. User-confirmed facts remain authoritative, learned signals remain evidence-linked, and only accepted Learnings may influence later recommendations. No workflow may silently overwrite confirmed Brand facts or read another Brand's private intelligence.",
+      "ownerRole": "product-and-architecture",
+      "rationale": "Kairo already implements the major intelligence components separately. Connecting them avoids duplicate UI and data models, strengthens the closed learning loop, and focuses differentiation on the quality of the next Brand decision rather than adding another dashboard.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-23T19:37:00+02:00",
+      "blocks": []
     }
   ]
 }
