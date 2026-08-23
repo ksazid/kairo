@@ -318,11 +318,30 @@ export function buildContinue(
 }
 
 function inferGoal(text: string): HomeCreationGoal {
-  if (/\b(buy|sale|sell|offer|discount|launch|product|service|book now|shop|price)\b/i.test(text)) return "Promote an offer";
-  if (/\b(lead|leads|demo|book a call|contact|enquir|inquir|sign up|consultation)\b/i.test(text)) return "Generate leads";
-  if (/\b(comment|community|discuss|conversation|question|poll|share your|tell me)\b/i.test(text)) return "Build community";
-  if (/\b(explain|teach|guide|how to|why|breakdown|expert|technical|learn)\b/i.test(text)) return "Build authority";
-  return "Grow audience";
+  const scores: Record<HomeCreationGoal, number> = {
+    "Grow audience": 1,
+    "Build authority": 0,
+    "Generate leads": 0,
+    "Build community": 0,
+    "Promote an offer": 0,
+  };
+
+  if (/\b(buy|sale|sell|offer|discount|launch|shop|order|purchase|book now|limited time)\b/i.test(text)) scores["Promote an offer"] += 5;
+  if (/\b(product|service)\b/i.test(text)) scores["Promote an offer"] += 1;
+  if (/\b(price|pricing|cost)\b/i.test(text)) scores["Promote an offer"] += 1;
+  if (/\b(lead|leads|book a call|contact|enquir\w*|inquir\w*|sign up|consultation|request a demo|get a quote)\b/i.test(text)) scores["Generate leads"] += 5;
+  if (/\b(comment|community|discuss|conversation|question|poll|share your|tell me)\b/i.test(text)) scores["Build community"] += 4;
+  if (/\b(explain|teach|guide|how to|why|breakdown|expert|technical|learn)\b/i.test(text)) scores["Build authority"] += 3;
+  if (/\b(compare|comparison|tradeoffs?|pros and cons|versus|vs\.?)\b/i.test(text)) scores["Build authority"] += 2;
+
+  const order: HomeCreationGoal[] = [
+    "Generate leads",
+    "Promote an offer",
+    "Build community",
+    "Build authority",
+    "Grow audience",
+  ];
+  return order.sort((a, b) => scores[b] - scores[a])[0]!;
 }
 
 function inferFormatFromText(value: string): HomeCreationFormat | undefined {
