@@ -22,11 +22,11 @@
     {"type":"production-enable","status":"pending","version":"VS-85@1.0","commitSha":null,"by":null,"at":null,"rationale":"Not authorised by implementation approval."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":70,"testing":10,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-85.md","implementationPr":null,"evidence":["docs/plans/VS-85-implementation.md","https://github.com/ksazid/kairo/issues/175"]},
+  "links": {"specification":"docs/slices/VS-85.md","implementationPr":"https://github.com/ksazid/kairo/pull/176","evidence":["docs/plans/VS-85-implementation.md","https://github.com/ksazid/kairo/issues/175"]},
   "maxAttempts": 3
 }
