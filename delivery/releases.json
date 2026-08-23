@@ -206,6 +206,38 @@
           "First-time zero-Workspace live onboarding has not yet been observed; REL-005 remains in post-release observation and is not marked fully production-verified/validated."
         ]
       }
+    },
+    {
+      "id": "REL-006",
+      "sliceIds": ["VS-85"],
+      "status": "approved",
+      "commitSha": "a7659179c93299c6dfb2541583a113a96060cde2",
+      "migrations": [],
+      "configurationChanges": [
+        "Release the certified VS-85 web/API runtime at exact SHA a7659179c93299c6dfb2541583a113a96060cde2.",
+        "No database migration, provider-scope, credential or publishing-capability change is required."
+      ],
+      "featureFlags": [
+        "Home uses Needs Attention, My Idea, For You, Up Next, What's Working and Continue.",
+        "My Idea recommends a supported format before durable creation and preserves the existing Idea → Research → Angle → Campaign lineage.",
+        "Publishing remains human-approval-bound and capability-gated."
+      ],
+      "smokeTests": [
+        "Product Intake run 32663228553 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.",
+        "Security baseline run 32663228456 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.",
+        "CI run 32663228443 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2, including preflight, runtime verification and dashboard build.",
+        "Vercel preview passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.",
+        "Production smoke must verify Home renders the six approved sections, My Idea recommendation precedes durable creation, and Brand-scoped navigation remains intact before REL-006 may be marked released."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-006 is ready. If VS-85 rollout or production smoke fails, stop the rollout, preserve Brand/content/audit state, and restore the last known-good production runtime c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 for affected components. No database rollback is required."
+      },
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-23T22:14:00+02:00",
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": []
+      }
     }
   ]
 }
