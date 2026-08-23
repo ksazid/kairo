@@ -59,4 +59,34 @@ describe("VS-26 guided Brand Brain API", () => {
 
     await app.close();
   });
+
+  it("allows onboarding to bootstrap without asking the owner to select a goal", async () => {
+    const store = new MemoryKairoRepository();
+    const verifier = new Verifier();
+    const app = buildApp({ store, identityVerifier: verifier });
+    registerGuidedBrandBrainRoutes(app, { store, identityVerifier: verifier });
+
+    const setup = await app.inject({
+      method: "POST",
+      url: "/api/v1/workspaces",
+      headers: { authorization: "Bearer test:alice" },
+      payload: { workspaceName: "Dukeman", brandName: "Dukeman" },
+    });
+    const brandId = setup.json().brand.id as string;
+
+    const bootstrap = await app.inject({
+      method: "POST",
+      url: `/api/v1/brands/${brandId}/brain/bootstrap`,
+      headers: { authorization: "Bearer test:alice" },
+      payload: {},
+    });
+
+    expect(bootstrap.statusCode).toBe(200);
+    expect(bootstrap.json()).toMatchObject({ generatorStatus: "unavailable", proposedCount: 0, sourceIds: [] });
+    expect(bootstrap.json().brain).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ fieldKey: "goals.objectives", state: "confirmed" }),
+    ]));
+
+    await app.close();
+  });
 });
