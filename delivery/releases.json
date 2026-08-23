@@ -165,6 +165,40 @@
           "Temporary PR #141 and issue #142 were closed after evidence preservation."
         ]
       }
+    },
+    {
+      "id": "REL-005",
+      "sliceIds": ["VS-84"],
+      "status": "approved",
+      "commitSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
+      "migrations": [],
+      "configurationChanges": [
+        "Release the certified VS-84 web/API candidate at exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867; no database migration or provider-scope change is required.",
+        "Keep existing authenticated social-channel credentials and publishing capability gates unchanged; onboarding public URLs remain evidence only."
+      ],
+      "featureFlags": [
+        "Simplified onboarding is URL → Learn → Confirm → Home.",
+        "Channel connection remains post-onboarding through Home Needs Attention / Brand.",
+        "Production enablement remains separately gated."
+      ],
+      "smokeTests": [
+        "Product Intake run 32659123567, Security baseline run 32659123631 and CI run 32659123574 passed for exact certified runtime candidate c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.",
+        "CI preflight, runtime verification and dashboard build passed for the certified candidate.",
+        "Vercel preview passed for the certified candidate.",
+        "Before production enablement, verify first-Brand URL onboarding reaches concise Brand confirmation and Home.",
+        "Verify an existing user can add another Brand without recreating the Workspace.",
+        "Verify a public social URL does not grant publishing/Insights authority and Home prompts channel connection when no authenticated channel exists.",
+        "Verify existing Brand access, authentication and tenant isolation remain intact."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-005 is ready. If VS-84 rollout verification fails, stop the rollout, preserve Brand/source/audit state, and restore the last known-good runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components. No database rollback is required."
+      },
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-23T20:54:00+02:00",
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": []
+      }
     }
   ]
 }
