@@ -171,7 +171,8 @@ registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibrar
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 const privateCarouselStorage=s3PrivateObjectStorageConfigFromEnv(process.env),legacyCarouselStorage=carouselObjectStorageConfig();
 const carouselSigner=privateCarouselStorage?new S3TemporaryObjectSigner(privateCarouselStorage):legacyCarouselStorage?new HmacObjectStorageTemporarySigner(legacyCarouselStorage.publicBaseUrl,legacyCarouselStorage.signingSecret):undefined;
-if(carouselSigner){const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner),renderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:carouselStore,...(renderer?{renderer}:{})});}
+const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner),carouselRenderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;
+registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:carouselStore,...(carouselRenderer?{renderer:carouselRenderer}:{})});
 registerSimplePublishFlowRoutes(app,{coreStore,identityVerifier,service:new SimplePublishFlowService(new PgSimplePublishFlowRepository(pool,carouselSigner))});
 registerBrandNotificationRoutes(app,{coreStore,identityVerifier,repository:new PgBrandNotificationRepository(pool)});
 
@@ -406,5 +407,5 @@ function googleDriveConfig(){
   if(names.every(name=>!values[name]))return null;
   const missing=names.filter(name=>!values[name]);
   if(missing.length)throw new Error(`Google Drive Content Asset configuration is incomplete: ${missing.join(", ")}`);
-  return{clientId:values.GOOGLE_DRIVE_CLIENT_ID,clientSecret:values.GOOGLE_DRIVE_CLIENT_SECRET,redirectUri:values.GOOGLE_DRIVE_OAUTH_REDIRECT_URI,pickerApiKey:values.GOOGLE_DRIVE_PICKER_API_KEY,pickerAppId:values.GOOGLE_DRIVE_PICKER_APP_ID,encryptionKey:values.CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY};
+  return{clientId:values.GOOGLE_DRIVE_CLIENT_ID,clientSecret:values.GOOGLE_DRIVE_CLIENT_SECRET,redirectUri:values.GOOGLE_DRIVE_OAUTH_REDIRECT_URI,pickerApiKey:values.GOOGLE_DRIVE_PICKER_API_KEY,appId:values.GOOGLE_DRIVE_PICKER_APP_ID,encryptionKey:values.CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY};
 }
