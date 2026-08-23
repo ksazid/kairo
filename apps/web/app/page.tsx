@@ -1,326 +1,313 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import type { BrandOpportunityDto } from "@kairo/contracts";
 import { KairoProductShell, KairoScopePicker } from "./kairo-product-shell";
-import { OpportunityList } from "./opportunity-list";
+import { MyIdeaComposer } from "./my-idea-composer";
 import {
+  getBrandNotifications,
   getBrands,
+  getCalendar,
+  getCampaigns,
   getChannelAccounts,
+  getIdeas,
   getLearnings,
   getOpportunities,
   getPerformance,
   getSession,
 } from "../src/lib/kairo-api";
-import { buildPerformanceFeedback } from "../src/lib/performance-feedback-view-model";
-import { PerformanceFeedback } from "./performance-feedback";
-import { NextStepBar } from "./next-step-bar";
-import homeStyles from "./home-vs84.module.css";
+import {
+  buildAttentionItems,
+  buildContinue,
+  buildForYou,
+  buildUpNext,
+  buildWhatsWorking,
+  type HomeContinueItem,
+  type HomeForYouItem,
+  type HomeUpNextItem,
+} from "../src/lib/home-intelligence";
+import styles from "./home-vs85.module.css";
 
 type SearchParams = Promise<{
   workspace?: string;
   brand?: string;
   notice?: string;
   error?: string;
+  idea?: string;
 }>;
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
+export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const session = await getSession();
   if (!session) redirect("/auth/login?returnTo=/");
   if (session.workspaces.length === 0) redirect("/onboarding");
 
   const params = await searchParams;
-  const workspace =
-    session.workspaces.find((item) => item.id === params.workspace) ??
-    session.workspaces[0];
+  const workspace = session.workspaces.find((item) => item.id === params.workspace) ?? session.workspaces[0];
   if (!workspace) redirect("/onboarding");
   const brands = await getBrands(workspace.id);
-  const brand =
-    brands.find((item) => item.id === params.brand) ?? brands[0] ?? null;
+  const brand = brands.find((item) => item.id === params.brand) ?? brands[0] ?? null;
 
-  let opportunities: BrandOpportunityDto[] = [];
-  let opportunityError: string | null = null;
-  let feedback = buildPerformanceFeedback([], []);
-  let channelState: "connected" | "none" | "unknown" = "unknown";
-  if (brand) {
-    try {
-      opportunities = await getOpportunities(brand.id);
-    } catch (error) {
-      opportunityError =
-        error instanceof Error ? error.message : "Unable to load Opportunities";
-    }
-    try {
-      const [metrics, learnings] = await Promise.all([
-        getPerformance(brand.id),
-        getLearnings(brand.id),
-      ]);
-      feedback = buildPerformanceFeedback(metrics, learnings);
-    } catch {
-      /* Recommendations remain available when feedback cannot be read. */
-    }
-    try {
-      const channels = await getChannelAccounts(brand.id);
-      channelState = channels.some((channel) => channel.status === "connected") ? "connected" : "none";
-    } catch {
-      /* Do not show a potentially incorrect connection prompt when channel state cannot be verified. */
-    }
+  if (!brand) {
+    return (
+      <KairoProductShell workspaceId={workspace.id} active="Home">
+        <main id="kairo-main-content" tabIndex={-1} className={`${styles.home} workspace-main`}>
+          <header className={styles.header}>
+            <div><p className="eyebrow">Home</p><h1>Start with your Brand.</h1><p>Kairo needs one Brand before it can recommend what to create.</p></div>
+            <KairoScopePicker brandName="No Brand yet" workspaceName={workspace.name} />
+          </header>
+          <section className={styles.emptyBrand}>
+            <span className={styles.sectionLabel}>First step</span>
+            <h2>Give Kairo something to learn from.</h2>
+            <p>One public Brand URL is enough to start.</p>
+            <Link className="primary-button" href={`/brands/new?workspace=${encodeURIComponent(workspace.id)}`}>Add Brand</Link>
+          </section>
+        </main>
+      </KairoProductShell>
+    );
   }
 
-  const today = opportunities
-    .filter((item) => item.status !== "ignored")
+  const now = Date.now();
+  const calendarFrom = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+  const calendarTo = new Date(now + 31 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [opportunities, campaigns, ideas, commands, performance, learnings, notificationResult, channelResult] = await Promise.all([
+    getOpportunities(brand.id).catch(() => []),
+    getCampaigns(brand.id).catch(() => []),
+    getIdeas(brand.id).catch(() => []),
+    getCalendar(brand.id, calendarFrom, calendarTo).catch(() => []),
+    getPerformance(brand.id).catch(() => []),
+    getLearnings(brand.id).catch(() => []),
+    getBrandNotifications(brand.id).catch(() => ({ brandId: brand.id, items: [] })),
+    getChannelAccounts(brand.id).then((items) => ({ available: true as const, items })).catch(() => ({ available: false as const, items: [] })),
+  ]);
+
+  const hasConnectedChannel = channelResult.available
+    ? channelResult.items.some((channel) => channel.status === "connected")
+    : true;
+  const attention = buildAttentionItems({
+    brandId: brand.id,
+    notifications: notificationResult.items,
+    hasConnectedChannel,
+  });
+  const forYou = buildForYou(opportunities);
+  const campaignNames = new Map(campaigns.map((campaign) => [campaign.id, campaign.name]));
+  const upNext = buildUpNext(commands, campaignNames, now);
+  const working = buildWhatsWorking(performance, learnings);
+  const scheduledOrPublishedCampaignIds = new Set(
+    commands
+      .filter((command) => ["scheduled", "dispatching", "published"].includes(command.status))
+      .map((command) => command.campaignId),
+  );
+  const continueItems = buildContinue(brand.id, campaigns, ideas)
+    .filter((item) => item.kind !== "campaign" || !scheduledOrPublishedCampaignIds.has(item.id))
     .slice(0, 3);
-  const returnTo = `/?workspace=${encodeURIComponent(workspace.id)}${brand ? `&brand=${encodeURIComponent(brand.id)}` : ""}`;
-  const discoverHref = brand
-    ? `/brands/${encodeURIComponent(brand.id)}/discover`
-    : "/";
-  const createHref = brand
-    ? `/brands/${encodeURIComponent(brand.id)}/create`
-    : "/onboarding";
-  const connectHref = brand
-    ? `/brands/${encodeURIComponent(brand.id)}/brain#source-heading`
-    : "/onboarding";
 
   return (
-    <KairoProductShell
-      brandId={brand?.id}
-      workspaceId={workspace.id}
-      active="Today"
-    >
-      <main
-        id="kairo-main-content"
-        tabIndex={-1}
-        className="workspace-main discovery-main"
-      >
-        <header className="topbar">
+    <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Home">
+      <main id="kairo-main-content" tabIndex={-1} className={`${styles.home} workspace-main`}>
+        <header className={styles.header}>
           <div>
             <p className="eyebrow">Home</p>
-            <h1>What do you want to achieve?</h1>
-            <p className="lede">
-              Choose a goal. Kairo will recommend what to create, then keep the
-              deeper research available when you need it.
-            </p>
+            <h1>{brand.name}</h1>
+            <p>What needs you, what to create next, and what Kairo is handling.</p>
           </div>
-          <KairoScopePicker
-            brandName={brand?.name ?? "No Brand yet"}
-            workspaceName={workspace.name}
-          />
+          <KairoScopePicker brandName={brand.name} workspaceName={workspace.name} />
         </header>
 
-        {params.notice ? (
-          <p className="notice success" role="status">
-            {params.notice}
-          </p>
-        ) : null}
-        {params.error ? (
-          <p className="notice error" role="alert">
-            {params.error}
-          </p>
-        ) : null}
-        {opportunityError ? (
-          <p className="notice error" role="alert">
-            {opportunityError}
-          </p>
-        ) : null}
+        {params.notice ? <p className="notice success" role="status">{params.notice}</p> : null}
+        {params.error ? <p className="notice error" role="alert">{params.error}</p> : null}
 
-        {brand && channelState === "none" ? (
-          <section className={homeStyles.attention} aria-labelledby="connect-channel-title">
-            <div className={homeStyles.copy}>
-              <span className={homeStyles.label}>Needs attention</span>
-              <strong id="connect-channel-title">Connect a channel</strong>
-              <p>Connect a publishing channel so Kairo can publish your approved content and learn from performance.</p>
+        {attention.length ? (
+          <section className={`${styles.section} ${styles.attentionSection}`} aria-labelledby="home-attention-title">
+            <SectionHeading label="Needs Attention" title="Only the things Kairo cannot finish without you." id="home-attention-title" />
+            <div className={styles.attentionLayout}>
+              <AttentionSpotlight item={attention[0]!} />
+              {attention.length > 1 ? (
+                <div className={styles.compactStack}>
+                  {attention.slice(1).map((item) => (
+                    <Link className={styles.attentionCompact} href={item.href} key={item.id}>
+                      <div><strong>{item.title}</strong><span>{item.detail}</span></div>
+                      <b>{item.actionLabel} →</b>
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
             </div>
-            <Link className={`${homeStyles.action} primary-button`} href={connectHref}>Connect</Link>
           </section>
         ) : null}
 
-        <section className="goal-first" aria-labelledby="goal-first-title">
-          <div className="goal-first-heading">
-            <div>
-              <p className="eyebrow">Create from a goal</p>
-              <h2 id="goal-first-title">
-                Start with the outcome, not the workflow
-              </h2>
-            </div>
-            <Link className="primary-button" href={createHref}>
-              Create content
-            </Link>
-          </div>
-          <div className="goal-options">
-            {[
-              ["Grow my audience", "grow-audience"],
-              ["Build authority", "build-authority"],
-              ["Generate leads", "generate-leads"],
-              ["Promote an offer", "promote-offer"],
-            ].map(([label, goal]) => (
-              <Link
-                key={goal}
-                href={`${createHref}${createHref.includes("?") ? "&" : "?"}goal=${goal}`}
-              >
-                <strong>{label}</strong>
-                <span>Get a recommended angle and format →</span>
-              </Link>
-            ))}
-          </div>
+        <section id="my-idea" className={`${styles.section} ${styles.ideaSection}`} aria-labelledby="home-my-idea-title">
+          <SectionHeading label="My Idea" title="Have something in mind?" id="home-my-idea-title" detail="Give Kairo the thought. It will recommend the format before it creates anything." />
+          <MyIdeaComposer brandId={brand.id} initialText={params.idea ?? ""} />
         </section>
 
-        <section
-          className="today-opportunity-section today-primary"
-          aria-labelledby="today-opportunities-title"
-        >
-          <div className="today-section-heading">
-            <div>
-              <p className="eyebrow">
-                {brand ? `Ranked for ${brand.name}` : "Brand required"}
-              </p>
-              <h2 id="today-opportunities-title">Today&apos;s Opportunities</h2>
-              <p>
-                {brand
-                  ? "Up to three strong options. Develop one when it deserves deeper research."
-                  : "Add a Brand before Kairo can rank Opportunities for you."}
-              </p>
-            </div>
-            {brand ? (
-              <Link className="secondary-button" href={discoverHref}>
-                Open Discover
-              </Link>
-            ) : (
-              <Link className="primary-button" href="/onboarding">
-                Add a Brand
-              </Link>
-            )}
-          </div>
-
-          {brand ? (
-            <OpportunityList
-              brandId={brand.id}
-              opportunities={today}
-              returnTo={returnTo}
-            />
-          ) : (
-            <div className="opportunity-empty" aria-live="polite">
-              <p className="eyebrow">No Brand selected</p>
-              <h3>Start with one Brand context.</h3>
-              <p>
-                Kairo keeps Brand intelligence isolated. Add or select a Brand
-                before it recommends what deserves attention.
-              </p>
-            </div>
-          )}
-        </section>
-
-        <section
-          className="today-secondary-context"
-          aria-label="Workspace and recommendation context"
-        >
-          <details className="context-disclosure">
-            <summary>
-              <span>
-                <strong>Advanced details</strong>
-                <small>Performance, research logic and evidence</small>
-              </span>
-              <span className="context-summary-action">Open</span>
-            </summary>
-            <div className="context-disclosure-body advanced-context">
-              {brand ? (
-                <PerformanceFeedback
-                  brandId={brand.id}
-                  feedback={feedback}
-                  compact
-                />
+        {forYou.length ? (
+          <section className={`${styles.section} ${styles.forYouSection}`} aria-labelledby="home-for-you-title">
+            <SectionHeading label="For You" title="Not sure what to create? Start here." id="home-for-you-title" detail="Kairo has already ranked the strongest current ideas for this Brand." />
+            <div className={styles.forYouLayout}>
+              <ForYouSpotlight item={forYou[0]!} workspaceId={workspace.id} brandId={brand.id} />
+              {forYou.length > 1 ? (
+                <div className={styles.alternativeList}>
+                  {forYou.slice(1).map((item) => <ForYouCompact key={item.id} item={item} workspaceId={workspace.id} brandId={brand.id} />)}
+                </div>
               ) : null}
-              <p className="muted">
-                Research, Claims and evidence remain available from each
-                Opportunity and Idea. Kairo never hides provenance; the simple
-                journey only keeps it out of the default path.
-              </p>
-              <div className="advanced-links">
-                {brand ? (
-                  <Link href={discoverHref}>
-                    Explore research-backed Opportunities
-                  </Link>
-                ) : null}
-                {brand ? (
-                  <Link
-                    href={`/brands/${encodeURIComponent(brand.id)}/performance`}
-                  >
-                    Inspect Results and Learnings
-                  </Link>
-                ) : null}
-              </div>
             </div>
-          </details>
-          <details className="context-disclosure">
-            <summary>
-              <span>
-                <strong>{brand?.name ?? "Choose a Brand"}</strong>
-                <small>
-                  {workspace.name} · {workspace.role}
-                </small>
-              </span>
-              <span className="context-summary-action">Switch Brand</span>
-            </summary>
-            <div className="context-disclosure-body">
-              <p className="muted">
-                Brand context stays private to this Workspace. Switching changes
-                relevance ranking without changing the underlying public
-                signals.
-              </p>
-              <div className="brand-list" aria-label="Available Brands">
-                {brands.map((item) => (
-                  <Link
-                    key={item.id}
-                    className={
-                      item.id === brand?.id
-                        ? "brand-option selected"
-                        : "brand-option"
-                    }
-                    href={`/?workspace=${encodeURIComponent(workspace.id)}&brand=${encodeURIComponent(item.id)}`}
-                  >
-                    <span>{item.name}</span>
-                    <small>
-                      {item.id === brand?.id ? "Current" : "Switch"}
-                    </small>
-                  </Link>
-                ))}
-                {brands.length === 0 ? (
-                  <Link className="secondary-button" href="/onboarding">
-                    Add your first Brand
-                  </Link>
-                ) : null}
-              </div>
+            <div className={styles.sectionFooter}>
+              <Link className={styles.textLink} href={`/brands/${encodeURIComponent(brand.id)}/discover`}>More ideas →</Link>
             </div>
-          </details>
+          </section>
+        ) : null}
 
-          <details className="context-disclosure">
-            <summary>
-              <span>
-                <strong>Why these Opportunities?</strong>
-                <small>How Today stays selective</small>
-              </span>
-              <span className="context-summary-action">View criteria</span>
-            </summary>
-            <div className="context-disclosure-body">
-              <ul className="context-points">
-                <li>
-                  Public signals may be reused globally, but Brand relevance
-                  stays private.
-                </li>
-                <li>
-                  Evidence, novelty and audience fit must clear the current
-                  thresholds.
-                </li>
-                <li>
-                  Weak recommendations are suppressed instead of used as filler.
-                </li>
-              </ul>
+        {upNext.length ? (
+          <section className={`${styles.section} ${styles.upNextSection}`} aria-labelledby="home-up-next-title">
+            <SectionHeading label="Up Next" title="What Kairo is handling next." id="home-up-next-title" />
+            <div className={styles.upNextLayout}>
+              <UpNextSpotlight item={upNext[0]!} brandId={brand.id} />
+              {upNext.length > 1 ? (
+                <div className={styles.compactStack}>
+                  {upNext.slice(1).map((item) => <UpNextCompact item={item} brandId={brand.id} key={item.id} />)}
+                </div>
+              ) : null}
             </div>
-          </details>
-        </section>
-        <NextStepBar href={createHref} />
+          </section>
+        ) : null}
+
+        {working.kpis.length || working.learning ? (
+          <section className={`${styles.section} ${styles.workingSection}`} aria-labelledby="home-working-title">
+            <SectionHeading label="What's Working" title="See your growth and what's driving it." id="home-working-title" />
+            {working.kpis.length ? (
+              <div className={styles.kpis} aria-label="Latest available Brand performance">
+                {working.kpis.map((kpi) => (
+                  <div className={styles.kpi} key={kpi.name}>
+                    <span>{kpi.name}</span>
+                    <strong>{formatNumber(kpi.value)}</strong>
+                    <small>Latest observed</small>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {working.learning ? (
+              <div className={styles.learningPanel}>
+                <span className={styles.sectionLabel}>What Kairo learned</span>
+                <h3>{working.learning.statement}</h3>
+                <p>{working.learning.interpretation}</p>
+                <div className={styles.inlineActions}>
+                  <Link className="primary-button" href={seedIdeaHref(workspace.id, brand.id, `Create a new piece inspired by this proven pattern: ${working.learning.statement}`)}>Create similar</Link>
+                  <Link className={styles.textLink} href={`/brands/${encodeURIComponent(brand.id)}/performance`}>View Results →</Link>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.sectionFooter}><Link className={styles.textLink} href={`/brands/${encodeURIComponent(brand.id)}/performance`}>View Results →</Link></div>
+            )}
+          </section>
+        ) : null}
+
+        {continueItems.length ? (
+          <section className={`${styles.section} ${styles.continueSection}`} aria-labelledby="home-continue-title">
+            <SectionHeading label="Continue" title="Pick up where you left off." id="home-continue-title" />
+            <div className={styles.continueLayout}>
+              <ContinueSpotlight item={continueItems[0]!} />
+              {continueItems.length > 1 ? (
+                <div className={styles.compactStack}>
+                  {continueItems.slice(1).map((item) => <ContinueCompact item={item} key={`${item.kind}:${item.id}`} />)}
+                </div>
+              ) : null}
+            </div>
+            <div className={styles.sectionFooter}><Link className={styles.textLink} href={`/brands/${encodeURIComponent(brand.id)}/campaigns`}>View Content →</Link></div>
+          </section>
+        ) : null}
       </main>
     </KairoProductShell>
   );
+}
+
+function SectionHeading({ label, title, detail, id }: { label: string; title: string; detail?: string; id: string }) {
+  return (
+    <div className={styles.sectionHeading}>
+      <span className={styles.sectionLabel}>{label}</span>
+      <h2 id={id}>{title}</h2>
+      {detail ? <p>{detail}</p> : null}
+    </div>
+  );
+}
+
+function AttentionSpotlight({ item }: { item: ReturnType<typeof buildAttentionItems>[number] }) {
+  return (
+    <article className={styles.attentionSpotlight}>
+      <div><span className={styles.statusPill}>Needs you</span><h3>{item.title}</h3><p>{item.detail}</p></div>
+      <Link className="primary-button" href={item.href}>{item.actionLabel}</Link>
+    </article>
+  );
+}
+
+function ForYouSpotlight({ item, workspaceId, brandId }: { item: HomeForYouItem; workspaceId: string; brandId: string }) {
+  return (
+    <article className={styles.forYouSpotlight}>
+      <div className={styles.spotlightTopline}><span className={styles.topPick}>Top pick</span>{item.format ? <span className={styles.formatPill}>{formatLabel(item.format)}</span> : null}</div>
+      <h3>{item.title}</h3>
+      <p>{item.reason}</p>
+      {item.direction ? <span className={styles.direction}>{item.direction}</span> : null}
+      <Link className="primary-button" href={seedIdeaHref(workspaceId, brandId, item.title)}>Use idea</Link>
+    </article>
+  );
+}
+
+function ForYouCompact({ item, workspaceId, brandId }: { item: HomeForYouItem; workspaceId: string; brandId: string }) {
+  return (
+    <article className={styles.forYouCompact}>
+      <div><div className={styles.compactMeta}>{item.format ? formatLabel(item.format) : "Idea"}</div><strong>{item.title}</strong><span>{item.reason}</span></div>
+      <Link href={seedIdeaHref(workspaceId, brandId, item.title)} aria-label={`Use idea: ${item.title}`}>Use →</Link>
+    </article>
+  );
+}
+
+function UpNextSpotlight({ item, brandId }: { item: HomeUpNextItem; brandId: string }) {
+  const href = item.actionLabel === "Fix" ? `/brands/${encodeURIComponent(brandId)}/calendar` : `/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(item.campaignId)}`;
+  return (
+    <article className={styles.upNextSpotlight}>
+      <div className={styles.spotlightTopline}><span className={styles.statusPill}>{item.state}</span><span>{item.channel}</span></div>
+      <h3>{item.title}</h3>
+      <time dateTime={item.scheduledFor}>{formatDate(item.scheduledFor)}</time>
+      <Link className="secondary-button" href={href}>{item.actionLabel}</Link>
+    </article>
+  );
+}
+
+function UpNextCompact({ item, brandId }: { item: HomeUpNextItem; brandId: string }) {
+  const href = item.actionLabel === "Fix" ? `/brands/${encodeURIComponent(brandId)}/calendar` : `/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(item.campaignId)}`;
+  return (
+    <Link className={styles.upNextCompact} href={href}>
+      <div><span>{item.state} · {item.channel}</span><strong>{item.title}</strong><time dateTime={item.scheduledFor}>{formatDate(item.scheduledFor)}</time></div><b>{item.actionLabel} →</b>
+    </Link>
+  );
+}
+
+function ContinueSpotlight({ item }: { item: HomeContinueItem }) {
+  return (
+    <article className={styles.continueSpotlight}>
+      <div><span className={styles.statusPill}>{item.kind === "campaign" ? "Content" : "Idea"}</span><h3>{item.title}</h3><p>{item.context}</p></div>
+      <Link className="secondary-button" href={item.href}>{item.actionLabel}</Link>
+    </article>
+  );
+}
+
+function ContinueCompact({ item }: { item: HomeContinueItem }) {
+  return <Link className={styles.continueCompact} href={item.href}><div><span>{item.kind === "campaign" ? "Content" : "Idea"}</span><strong>{item.title}</strong><small>{item.context}</small></div><b>{item.actionLabel} →</b></Link>;
+}
+
+function seedIdeaHref(workspaceId: string, brandId: string, idea: string) {
+  const query = new URLSearchParams({ workspace: workspaceId, brand: brandId, idea });
+  return `/?${query.toString()}#my-idea`;
+}
+
+function formatLabel(format: "carousel" | "reel" | "image") {
+  return format === "image" ? "Post" : format.charAt(0).toUpperCase() + format.slice(1);
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "Time unavailable";
+  return `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }).format(date)} UTC`;
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en", { notation: Math.abs(value) >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }).format(value);
 }
