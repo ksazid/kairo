@@ -141,6 +141,22 @@
       "decidedBy": "Sazid Khan",
       "decidedAt": "2026-08-23T19:37:00+02:00",
       "blocks": []
+    },
+    {
+      "id": "DEC-011",
+      "sliceId": "VS-84",
+      "question": "Should authenticated social-channel connection remain inside Brand onboarding or happen after Kairo has learned the Brand from one public reference?",
+      "status": "approved",
+      "options": [
+        "Require Website/social connection choices during onboarding",
+        "Start from one public URL and move authenticated channel connection to Home/Brand after onboarding"
+      ],
+      "decision": "Brand onboarding accepts one supported public HTTP(S) URL, lets Kairo infer Brand identity, audience, voice, positioning, content direction and provisional goals from evidence, shows a concise confirmation, and then enters Home. A public social URL is evidence only and grants no publishing, private Insights or authenticated channel authority. OAuth/channel connection moves after onboarding to Home Needs Attention and Brand connection surfaces; publishing and provider Insights still require the existing capability-checked authenticated connection. Existing channel adapters, scopes, tenant isolation and human publishing approval remain unchanged.",
+      "ownerRole": "product-and-architecture",
+      "rationale": "Channel authentication is not required to understand enough about a Brand to deliver first value. Moving OAuth after first value removes setup complexity without weakening publishing or data-access controls, and preserves one shared Brand Memory rather than coupling onboarding to provider workflows.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-23T20:07:00+02:00",
+      "blocks": []
     }
   ]
 }
