@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import { buildApp } from "./app";
 import { OidcJwtVerifier } from "./auth";
-import { PgDiscoveryRepository } from "./discovery-postgres-store";
+import { PgDiscoveryRepository } from"./discovery-postgres-store";
 import { PgKairoRepository } from "./postgres-store";
 import { PgResearchRepository } from "./research-postgres-store";
 import { PgCampaignRepository } from "./campaign-postgres-store";
@@ -171,7 +171,8 @@ registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibrar
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 const privateCarouselStorage=s3PrivateObjectStorageConfigFromEnv(process.env),legacyCarouselStorage=carouselObjectStorageConfig();
 const carouselSigner=privateCarouselStorage?new S3TemporaryObjectSigner(privateCarouselStorage):legacyCarouselStorage?new HmacObjectStorageTemporarySigner(legacyCarouselStorage.publicBaseUrl,legacyCarouselStorage.signingSecret):undefined;
-if(carouselSigner){const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner),renderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:carouselStore,...(renderer?{renderer}:{})});}
+const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner),carouselRenderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;
+registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:carouselStore,...(carouselRenderer?{renderer:carouselRenderer}:{})});
 registerSimplePublishFlowRoutes(app,{coreStore,identityVerifier,service:new SimplePublishFlowService(new PgSimplePublishFlowRepository(pool,carouselSigner))});
 registerBrandNotificationRoutes(app,{coreStore,identityVerifier,repository:new PgBrandNotificationRepository(pool)});
 
