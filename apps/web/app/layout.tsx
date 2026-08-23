@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "@kairo/design-tokens/tokens.css";
 import "./globals.css";
+import "./shell-baseline.css";
 import "./interaction-review.css";
 import "./discovery.css";
 import "./ideas.css";
