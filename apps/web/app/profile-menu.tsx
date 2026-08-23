@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { KairoIcon } from "./kairo-icons";
-import { ShellControls } from "./shell-controls";
 
 export function ProfileMenu({ addBrandHref }: { addBrandHref: string }) {
   return (
@@ -14,10 +13,6 @@ export function ProfileMenu({ addBrandHref }: { addBrandHref: string }) {
         <div className="profile-menu-heading">
           <strong>Profile</strong>
           <span>Settings and account</span>
-        </div>
-        <div className="profile-menu-section">
-          <span className="profile-menu-label">Appearance</span>
-          <ShellControls />
         </div>
         <nav aria-label="Profile actions">
           <Link href={addBrandHref}><KairoIcon name="plus" /><span>Add Brand</span></Link>
