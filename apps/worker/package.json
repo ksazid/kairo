@@ -25,6 +25,7 @@
     "./performance-patterns": "./src/performance-patterns.ts",
     "./learner": "./src/learner.ts",
     "./creative-renderer": "./src/creative-renderer.ts",
+    "./adaptive-carousel-renderer": "./src/adaptive-carousel-renderer.ts",
     "./carousel-quality-adapter": "./src/carousel-quality-adapter.ts",
     "./marketing-shadow": "./src/marketing-shadow.ts",
     "./marketing-shadow-qualification": "./src/marketing-shadow-qualification.ts",
