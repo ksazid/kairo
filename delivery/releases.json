@@ -165,6 +165,44 @@
           "Temporary PR #141 and issue #142 were closed after evidence preservation."
         ]
       }
+    },
+    {
+      "id": "REL-005",
+      "sliceIds": ["VS-83"],
+      "status": "released",
+      "commitSha": "e794cf7207be793db888990f0029f4155d6f193a",
+      "migrations": [],
+      "configurationChanges": [
+        "KAIRO_RELEASE_SHA set to e794cf7207be793db888990f0029f4155d6f193a on the Render API service.",
+        "No database migration, Meta scope, credential or web deployment change is introduced by the adaptive renderer release.",
+        "Instagram publisher remains enabled under the existing destination-bound and approval-bound production configuration."
+      ],
+      "featureFlags": [
+        "Carousel rendering uses deterministic adaptive layout identity kairo-bitmap-adaptive-v2.",
+        "Contract-valid oversized copy is routed through the existing blocking quality policy instead of failing prematurely in text layout.",
+        "Publishing remains exact-version approved, private-object backed and capability-gated."
+      ],
+      "smokeTests": [
+        "PR #167 exact head 3be431034eb58bd53885d2bf9a68f391116d98eb passed CI #1083, Security #895, governance/preflight, workspace typecheck/tests/builds and Vercel checks.",
+        "Squash merge SHA e794cf7207be793db888990f0029f4155d6f193a has the identical Git tree 9eec892d5f3a1790e0f8700c4a54f84ff509ebb1 as the checked PR head.",
+        "Render deploy dep-da5ea964a6sc73fa0fmg reached live on exact commit e794cf7207be793db888990f0029f4155d6f193a and startup logged KAIRO_INSTAGRAM_PUBLISHER_STARTED.",
+        "Production logs recover the original failed lineage: Brand f00f0ec6-53bb-40da-ac20-f4c2ecb381d7, Campaign e5e2b57b-3b78-45a8-a4f1-a95ddc686198, Asset 964bf2ac-a190-40c1-b886-af17fd265640, Carousel Project carousel-acd92c95-5308-4b81-9bf5-92d3c8b17809.",
+        "The original project bootstrapped successfully and then failed on the prior runtime with Creative text does not fit the configured render area; the adaptive renderer release specifically covers this failure class.",
+        "Final provider-backed Render → Review → Approval → Instagram Publish → Calendar/Results verification remains pending because the production route requires the user's OIDC bearer session and connected infrastructure tooling intentionally does not expose that credential."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-005 is ready. If the adaptive renderer release regresses, preserve the exact carousel/project/publish lineage, disable Instagram publishing when required, and redeploy last-known-good API SHA 57447bb607a4bc278cde992a95727376dde7a4ce. No database rollback is required because this renderer fix contains no migration."
+      },
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-23T14:18:00+02:00",
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": [
+          "Exact release deployment dep-da5ea964a6sc73fa0fmg is live on e794cf7207be793db888990f0029f4155d6f193a.",
+          "API startup and Instagram publisher startup are healthy on the exact release.",
+          "Authenticated replay of carousel-acd92c95-5308-4b81-9bf5-92d3c8b17809 is still required before VS-83 may be marked validated."
+        ]
+      }
     }
   ]
 }
