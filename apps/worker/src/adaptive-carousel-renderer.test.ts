@@ -36,6 +36,28 @@ describe("adaptive carousel renderer", () => {
     expect(slides.at(-1)?.layoutMetrics?.text.at(-1)).toMatchObject({ characterCount: cta.length });
   });
 
+  it("renders Instagram-style @handles with underscores without changing approved copy length", async () => {
+    const socialCta = "Follow @_dukeman390 for more practical KTM Duke notes.";
+    const socialPlan: CarouselPlan = {
+      ...plan,
+      slides: [
+        plan.slides[0]!,
+        plan.slides[1]!,
+        { ...plan.slides[2]!, body: "Keep this rider-focused checklist handy." },
+      ],
+      cta: socialCta,
+    };
+    const store: CreativeObjectStorePort = { putPrivateObject: vi.fn(async (input) => ({ objectId: input.objectKey })) };
+    const produced = await new CreativeAssetProductionService(store, { carouselRenderer: new AdaptiveBitmapCarouselRenderer() }).produce(
+      { workspaceId: "ws-1", brandId: "brand-1" },
+      socialPlan,
+    );
+
+    const finalSlide = produced.assets.filter((asset) => asset.role === "carousel-slide").at(-1);
+    expect(finalSlide?.layoutMetrics?.text.at(-1)).toMatchObject({ role: "cta", characterCount: socialCta.length });
+    expect(store.putPrivateObject).toHaveBeenCalled();
+  });
+
   it("preserves contract-valid body and CTA copy through rendering so quality policy can decide whether it is publishable", async () => {
     const maxBody = "evidence ".repeat(222).trim();
     const maxCta = "save ".repeat(100).trim();
