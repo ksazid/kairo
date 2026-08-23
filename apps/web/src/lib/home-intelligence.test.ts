@@ -87,6 +87,18 @@ describe("VS-85 Home intelligence", () => {
     expect(result.reason.length).toBeGreaterThan(10);
   });
 
+  it("does not mistake price comparison for sales intent", () => {
+    const result = recommendMyIdea({
+      text: "Explain why these two suspension kits cost different amounts and compare the tradeoffs for daily riders.",
+    });
+    expect(result.goal).toBe("Build authority");
+  });
+
+  it("still recognises explicit commercial and lead intent", () => {
+    expect(recommendMyIdea({ text: "Limited time launch offer: buy the new service package today." }).goal).toBe("Promote an offer");
+    expect(recommendMyIdea({ text: "Explain the migration approach and invite teams to book a call for a consultation." }).goal).toBe("Generate leads");
+  });
+
   it("lets accepted Brand learning influence format ranking without becoming the only signal", () => {
     const result = recommendMyIdea({
       text: "A short technical note about suspension setup",
