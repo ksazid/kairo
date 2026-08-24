@@ -23,7 +23,7 @@ export default async function CreatePage({
     brand = await getBrand(brandId);
   if (!brand) redirect("/");
   const presenter = await getBrandPresenter(brandId)
-    .then((value) => value.presenter?.status === "ready" ? value.presenter : null)
+    .then((value) => value.eligibility?.status === "eligible" ? value.presenter : null)
     .catch(() => null);
   return (
     <KairoProductShell brandId={brandId} active="Create">
@@ -119,7 +119,7 @@ export default async function CreatePage({
                   <option value={presenter.id}>{presenter.displayName}</option>
                 </select>
                 <small>
-                  None is the default. Selecting {presenter.displayName} records presenter intent for this creation; avatar rendering is enabled only when a governed provider is configured.
+                  None is the default. Selecting {presenter.displayName} records presenter intent for this creation.
                 </small>
               </label>
               <Link className="tertiary-button" href={`/brands/${encodeURIComponent(brandId)}/avatar`}>Manage presenter</Link>
