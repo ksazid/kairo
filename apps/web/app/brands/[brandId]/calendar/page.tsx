@@ -276,7 +276,7 @@ function Agenda({ grouped, brandId }: { grouped: Map<string, CalendarEntry[]>; b
       {[...grouped].map(([date, items]) => (
         <section className="kcal-agenda-day" id={`agenda-${date}`} key={date}>
           <time dateTime={date}>{dayLabel(date)}</time>
-          <div>{items.map((item) => <CalendarItem key={item.id} item={item} brandId={brandId} />)}</div>
+          <div>{items.map((item) => <CalendarItem key={item.id} item={item} brandId={item.brandId} />)}</div>
         </section>
       ))}
     </section>
