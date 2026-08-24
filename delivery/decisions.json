@@ -58,7 +58,7 @@
       "sliceId": "VS-03",
       "question": "How should Kairo use Agent Reach for public discovery and research?",
       "status": "approved",
-      "options": ["Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo ToolGateway","Call Agent Reach directly from Hermes with unrestricted shell access","Do not use Agent Reach"],
+      "options": ["Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo-owned ToolGateway","Call Agent Reach directly from Hermes with unrestricted shell access","Do not use Agent Reach"],
       "decision": "Adopt Agent Reach as a replaceable Dynamic Skill and DiscoverySourceProvider behind Kairo-owned ToolGateway. Pin and evaluate an approved upstream revision; Hermes may invoke only Kairo-scoped capabilities, never unrestricted Agent Reach shell access. Kairo remains authoritative for Brand isolation, permissions, provenance, normalization, secrets, budgets, policy and stored domain state.",
       "ownerRole": "product-and-architecture",
       "rationale": "Agent Reach provides useful multi-source public discovery across web, RSS, YouTube, GitHub and configurable social sources while preserving Kairo's architecture if it is wrapped behind a provider boundary. Direct unrestricted agent execution would weaken tenant isolation, auditability, provenance and secret controls. The provider remains replaceable and source-specific official APIs may supersede it where required.",
@@ -97,11 +97,7 @@
       "sliceId": "VS-11",
       "question": "Which pilot deployment topology and providers should host the certified Kairo V1 release?",
       "status": "approved",
-      "options": [
-        "Split topology: managed Next.js frontend + container API + managed PostgreSQL",
-        "Single-provider topology with compatible Next.js, container/API and PostgreSQL capabilities",
-        "Another provider-neutral topology supported by current official capability, pricing and operational evidence"
-      ],
+      "options": ["Split topology: managed Next.js frontend + container API + managed PostgreSQL","Single-provider topology with compatible Next.js, container/API and PostgreSQL capabilities","Another provider-neutral topology supported by current official capability, pricing and operational evidence"],
       "decision": "Use a split non-production pilot topology: Vercel Hobby for the Next.js web application, Render Free Web Service in Frankfurt for the containerized Node.js/Fastify API, and Neon Free Postgres in AWS Europe (Frankfurt) with pgvector. Keep provider boundaries and exact-SHA release provenance. Before commercial use or production enablement, reassess and approve paid plans appropriate to the workload; Vercel Hobby is non-commercial and Render Free is not approved by Render for production applications.",
       "ownerRole": "product-architecture-and-operations",
       "rationale": "This matches Kairo's current pilot profile: non-commercial use, zero-dollar monthly target, low traffic, accepted cold starts, Next.js previews, container API, PostgreSQL with pooling, and no PITR requirement. Vercel is the strongest fit for the existing Next.js frontend; Render supports Docker web services and Frankfurt deployment; Neon provides persistent serverless Postgres in Frankfurt and supports Postgres 18 with pgvector. The free tiers satisfy the bounded non-production pilot constraints without coupling Kairo domain boundaries to any provider. Production enablement remains a separate exact-SHA human gate and must include a plan/capacity reassessment.",
@@ -114,11 +110,7 @@
       "sliceId": "VS-13",
       "question": "Which public discovery provider and credential boundaries are approved for the free-source Hunter expansion?",
       "status": "approved",
-      "options": [
-        "Official/public provider APIs and approved RSS/Atom feeds behind Kairo-owned adapters, with optional secret-scoped YouTube API key",
-        "Third-party aggregation/search SaaS for all discovery sources",
-        "Unrestricted scraping, browser sessions or user-cookie based discovery"
-      ],
+      "options": ["Official/public provider APIs and approved RSS/Atom feeds behind Kairo-owned adapters, with optional secret-scoped YouTube API key","Third-party aggregation/search SaaS for all discovery sources","Unrestricted scraping, browser sessions or user-cookie based discovery"],
       "decision": "Use official/public discovery interfaces only: approved RSS/Atom feeds, the official Hacker News v0 API, Bluesky public AppView endpoints, and the YouTube Data API. Each provider stays behind a Kairo-owned DiscoverySourceProvider/ToolGateway boundary with deterministic request ceilings, timeouts, provenance, normalization and provider-isolated failure. YouTube credentials are optional infrastructure secrets resolved outside agent/domain context; when absent or quota-exhausted, the adapter disables/degrades without failing the Hunter. Do not use unrestricted scraping, browser cookies, private sessions or agent-visible provider credentials.",
       "ownerRole": "product-security-and-architecture",
       "rationale": "This implements the approved zero-subscription public-signal strategy while preserving provider replaceability, auditability and Brand isolation. Hacker News and Bluesky provide public unauthenticated reads; RSS/Atom is feed-driven; YouTube requires an API key and quota controls, so its credential must remain outside prompts and domain state. Provider failures must not collapse a multi-source Hunter run.",
@@ -131,10 +123,7 @@
       "sliceId": "VS-84",
       "question": "Should Kairo create a separate Business Intelligence feature or connect existing Brand Brain, Hunter/Research and Performance Learning through one shared Brand Memory layer?",
       "status": "approved",
-      "options": [
-        "Create a separate Business Intelligence page and parallel intelligence model",
-        "Use one shared Brand Memory/intelligence layer across existing Kairo workflows"
-      ],
+      "options": ["Create a separate Business Intelligence page and parallel intelligence model","Use one shared Brand Memory/intelligence layer across existing Kairo workflows"],
       "decision": "Do not create a separate Business Intelligence feature, page or parallel source of truth. Treat Brand Brain facts, active knowledge and channel sources, accepted Performance Memory, current Brand priorities and evidence-linked learnings as one shared Brand-scoped memory/intelligence layer. Onboarding initializes that layer; Hunter, Research, My Idea/Create, content strategy and Performance should consume the same approved Brand context through Kairo-owned application contracts. User-confirmed facts remain authoritative, learned signals remain evidence-linked, and only accepted Learnings may influence later recommendations. No workflow may silently overwrite confirmed Brand facts or read another Brand's private intelligence.",
       "ownerRole": "product-and-architecture",
       "rationale": "Kairo already implements the major intelligence components separately. Connecting them avoids duplicate UI and data models, strengthens the closed learning loop, and focuses differentiation on the quality of the next Brand decision rather than adding another dashboard.",
@@ -147,15 +136,25 @@
       "sliceId": "VS-84",
       "question": "Should authenticated social-channel connection remain inside Brand onboarding or happen after Kairo has learned the Brand from one public reference?",
       "status": "approved",
-      "options": [
-        "Require Website/social connection choices during onboarding",
-        "Start from one public URL and move authenticated channel connection to Home/Brand after onboarding"
-      ],
+      "options": ["Require Website/social connection choices during onboarding","Start from one public URL and move authenticated channel connection to Home/Brand after onboarding"],
       "decision": "Brand onboarding accepts one supported public HTTP(S) URL, lets Kairo infer Brand identity, audience, voice, positioning, content direction and provisional goals from evidence, shows a concise confirmation, and then enters Home. A public social URL is evidence only and grants no publishing, private Insights or authenticated channel authority. OAuth/channel connection moves after onboarding to Home Needs Attention and Brand connection surfaces; publishing and provider Insights still require the existing capability-checked authenticated connection. Existing channel adapters, scopes, tenant isolation and human publishing approval remain unchanged.",
       "ownerRole": "product-and-architecture",
       "rationale": "Channel authentication is not required to understand enough about a Brand to deliver first value. Moving OAuth after first value removes setup complexity without weakening publishing or data-access controls, and preserves one shared Brand Memory rather than coupling onboarding to provider workflows.",
       "decidedBy": "Sazid Khan",
       "decidedAt": "2026-08-23T20:07:00+02:00",
+      "blocks": []
+    },
+    {
+      "id": "DEC-012",
+      "sliceId": "VS-90",
+      "question": "How should Kairo persist and execute optional Brand Avatar / Presenter functionality without coupling domain state, tenancy, credentials or publishing authority to one media provider?",
+      "status": "approved",
+      "options": ["Kairo-owned Presenter state plus replaceable AvatarProvider","Provider-owned Presenter profile","Frontend-only Presenter preferences until provider work arrives"],
+      "decision": "Use a Kairo-owned, Brand-scoped PresenterProfile as authoritative PostgreSQL state, private S3-compatible storage for reference/generated media, and a replaceable server-side AvatarProvider capability boundary. Provider SDKs, credentials and endpoint details remain outside domain/web code. Presenter eligibility fails closed unless the saved profile and configured provider binding are healthy. Generated presenter media enters normal immutable Content/Asset Version lineage before exact Preview and human approval; deterministic publishing receives only the exact approved final asset.",
+      "ownerRole": "product-security-and-architecture",
+      "rationale": "This follows the approved TRD dependency rules, preserves Workspace/Brand isolation and private-media policy, keeps providers replaceable, avoids fake frontend readiness, and retains exact asset/version approval and publishing guarantees.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-08-24T21:47:00+02:00",
       "blocks": []
     }
   ]
