@@ -27,10 +27,21 @@ export interface ContentListSummary {
   counts: Record<ContentFilter, number>;
 }
 
-function latestCommandFor(assetId: string, commands: PublishCommandView[]) {
+function latestCommandFor(assetId: string, currentVersionId: string | undefined, commands: PublishCommandView[]) {
   return commands
-    .filter((command) => command.assetId === assetId)
+    .filter((command) => command.assetId === assetId && (!currentVersionId || command.versionId === currentVersionId))
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))[0] ?? null;
+}
+
+function currentReviewStatus(
+  currentVersionId: string | undefined,
+  status: ContentReviewStatusView | null,
+): ContentReviewStatusView | null {
+  if (!status || !currentVersionId) return status;
+  return {
+    review: status.review?.versionId === currentVersionId ? status.review : null,
+    approval: status.approval?.versionId === currentVersionId ? status.approval : null,
+  };
 }
 
 function stateFor(
@@ -77,8 +88,9 @@ export function buildContentList(
   const items = details.flatMap((detail) =>
     detail.assets.map(({ asset, versions }) => {
       const current = versions.at(-1);
-      const command = latestCommandFor(asset.id, commands);
-      const state = stateFor(reviewStatuses.get(asset.id) ?? null, command);
+      const status = currentReviewStatus(current?.id, reviewStatuses.get(asset.id) ?? null);
+      const command = latestCommandFor(asset.id, current?.id, commands);
+      const state = stateFor(status, command);
       return {
         assetId: asset.id,
         campaignId: detail.campaign.id,
