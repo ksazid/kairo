@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { BrandBrainFieldDto } from "@kairo/contracts";
-import type { BrandPresenterDto } from "@kairo/contracts/presenter";
+import type {
+  BrandPresenterDto,
+  BrandPresenterEligibilityStatus,
+} from "@kairo/contracts/presenter";
 import { getBrand, getBrandBrain, getSession } from "../../../../src/lib/kairo-api";
 import { getBrandPresenter } from "../../../../src/lib/presenter-api";
 import { KairoProductShell } from "../../../kairo-product-shell";
@@ -36,8 +39,11 @@ export default async function AvatarPage({
   ]);
 
   const presenter = presenterResult.value?.presenter ?? null;
+  const eligibility = presenterResult.value?.eligibility ?? null;
+  const capabilities = presenterResult.value?.capabilities ?? null;
   const suggestions = presenter ?? suggestedPresenter(brand.name, brain);
   const encoded = encodeURIComponent(brand.id);
+  const providerReady = eligibility?.status === "eligible";
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand" pageLabel="Avatar">
@@ -62,7 +68,9 @@ export default async function AvatarPage({
           </div>
         ) : null}
 
-        {presenter ? <PresenterSummary presenter={presenter} /> : (
+        {presenter ? (
+          <PresenterSummary presenter={presenter} eligibility={eligibility?.status ?? null} />
+        ) : (
           <section className="avatar-suggestion" aria-labelledby="avatar-suggestion-title">
             <div>
               <p className="eyebrow">Suggested from Brand context</p>
@@ -100,13 +108,15 @@ export default async function AvatarPage({
                   <small>Hybrid explainer is the recommended default for technical or mixed visual content.</small>
                 </label>
                 <label>
-                  Availability
+                  Profile state
                   <select name="status" defaultValue={presenter?.status ?? "ready"}>
-                    <option value="ready">Ready to select</option>
+                    <option value="ready">Enabled</option>
                     <option value="draft">Draft</option>
                     <option value="disabled">Disabled</option>
                   </select>
-                  <small>Only a Ready presenter appears in the creation flow.</small>
+                  <small>
+                    Enabled means the profile may be used when a verified Avatar provider is available. Provider readiness is checked separately.
+                  </small>
                 </label>
               </div>
             </section>
@@ -170,12 +180,18 @@ export default async function AvatarPage({
             <section className="avatar-capability" aria-labelledby="avatar-capability-title">
               <div>
                 <p className="eyebrow">Rendering capability</p>
-                <h2 id="avatar-capability-title">Profile intent is available; avatar rendering is not enabled yet</h2>
+                <h2 id="avatar-capability-title">
+                  {providerReady ? "Presenter is ready for creation" : "Profile can be saved; rendering is not available yet"}
+                </h2>
                 <p>
-                  Saving this profile lets creation record presenter intent. Kairo will not show a Test Clip button or claim generated avatar media until a governed Avatar provider is configured and verified.
+                  {providerReady
+                    ? "Kairo has verified the Avatar provider for this Brand. The Presenter selector may appear during creation, with None remaining the default."
+                    : capabilities?.reason ?? "Kairo will not show a Presenter selector or Test Clip action until a governed Avatar provider is configured and verified."}
                 </p>
               </div>
-              <span className="avatar-capability-state">Provider not configured</span>
+              <span className="avatar-capability-state">
+                {providerReady ? "Eligible" : capabilities?.providerConfigured ? "Provider unavailable" : "Provider not configured"}
+              </span>
             </section>
 
             <div className="avatar-actions">
@@ -191,13 +207,19 @@ export default async function AvatarPage({
   );
 }
 
-function PresenterSummary({ presenter }: { presenter: BrandPresenterDto }) {
+function PresenterSummary({
+  presenter,
+  eligibility,
+}: {
+  presenter: BrandPresenterDto;
+  eligibility: BrandPresenterEligibilityStatus | null;
+}) {
   return (
     <section className="avatar-summary" aria-labelledby="avatar-summary-title">
       <div>
         <p className="eyebrow">Saved presenter</p>
         <h2 id="avatar-summary-title">{presenter.displayName}</h2>
-        <p>{modeLabel(presenter.mode)} · {statusLabel(presenter.status)}</p>
+        <p>{modeLabel(presenter.mode)} · {statusLabel(presenter.status, eligibility)}</p>
       </div>
       <dl>
         <div><dt>Voice</dt><dd>{presenter.voiceStyle ?? "Not set"}</dd></div>
@@ -243,8 +265,12 @@ function modeLabel(mode: BrandPresenterDto["mode"]) {
   return "Basic presenter";
 }
 
-function statusLabel(status: BrandPresenterDto["status"]) {
-  if (status === "ready") return "Ready to select";
-  if (status === "disabled") return "Disabled";
-  return "Draft";
+function statusLabel(
+  status: BrandPresenterDto["status"],
+  eligibility: BrandPresenterEligibilityStatus | null,
+) {
+  if (status === "disabled" || eligibility === "disabled") return "Disabled";
+  if (status === "draft" || eligibility === "draft") return "Draft";
+  if (eligibility === "eligible") return "Ready to select";
+  return "Enabled · provider unavailable";
 }
