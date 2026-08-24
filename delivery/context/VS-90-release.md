@@ -1,57 +1,58 @@
-# VS-90 release preparation
+# VS-90 release observation
 
-Status: release authorized; production enable pending.
+Status: released; post-release observation active.
 
 Certified runtime SHA: `1da4665fa430468516f79e38984638369552b6e7`
-Merge commit: `6598d7898551a9518ef2e807f77e2fed4e9ee2e7`
+Implementation merge commit: `6598d7898551a9518ef2e807f77e2fed4e9ee2e7`
+Release/production-enable governance merge: `f4bd21753e406ecb82252b0aac50d8711007c348`
+Release ID: `REL-008`
+Rollback ID: `RB-008`
 
-## Release intent
+## Production rollout completed
 
-Prepare the certified VS-90 Brand Avatar / Optional Presenter foundation for a separately authorized production rollout. This preparation does not enable or deploy production.
-
-## Planned release record
-
-Proposed release ID: `REL-008`.
-
-- Slice: VS-90
-- Risk: medium
-- Runtime: web + API
+- Neon project: `bitter-firefly-55924620`
+- Production branch: `br-broad-dew-asjbqglh`
+- Database: `kairo`
 - Migration: `apps/api/migrations/0029_brand_presenters.sql`
-- Provider configuration: none
-- Avatar rendering: unavailable/fail-closed until a governed provider adapter is configured
-- Publishing/approval/channel behavior: unchanged
+- Neon migration ID: `2e7c3721-aa35-4243-973e-e97c68fdf14f`
+- Temporary verification branch: `br-quiet-band-assqm76z` (deleted after successful commit)
+- Render API deployment: `dep-da6ch3ek1f9s73fetht0`
+- Render deployed commit: `f4bd21753e406ecb82252b0aac50d8711007c348`
+- Vercel production deployment: `dpl_5VBJbgVj25vfUxqYrE7ipuXWhhqQ`
+- Vercel deployed commit: `3ac634f337653fce92e5ae177c2d534d80d11d5e`
+- Canonical production domain: `kairo-two-plum.vercel.app`
+- Avatar provider configuration: none; runtime remains fail-closed
 
-## Planned rollback record
+## Proven production evidence
 
-Proposed rollback ID: `RB-008`.
+1. Migration 0029 was first applied on the temporary Neon branch and verified for the Presenter table, creation Presenter reference, scoped foreign key and supporting index.
+2. The same tested migration was committed successfully to the production `kairo` database and the temporary branch was deleted.
+3. A direct production schema query confirmed the expected Presenter persistence and scoped linkage exist.
+4. Render API deployment `dep-da6ch3ek1f9s73fetht0` reached `live`; startup logs show the API server listening and the existing Instagram publisher starting normally.
+5. Render returned no error/fatal application logs in the new deployment window from `2026-08-24T22:41:17Z` through `2026-08-24T22:46:00Z`.
+6. Vercel production deployment `dpl_5VBJbgVj25vfUxqYrE7ipuXWhhqQ` reached `READY`; its build completed successfully and explicitly includes `/brands/[brandId]/avatar`.
+7. Canonical production `/api/version` returned HTTP 200 with web release SHA `3ac634f337653fce92e5ae177c2d534d80d11d5e`.
+8. Canonical production `/` returned the expected Auth0 HTTP 307 authorization redirect with callback to the production domain.
+9. Vercel runtime error aggregation returned no errors in the immediate post-deploy window.
+10. Git comparison proves the Render deployment differs from the certified runtime only by VS-90 governance files. The Vercel deployed tree differs only by those governance files plus the controlled web deployment gate file.
+11. Root and `apps/web` Vercel Git deployment gates were restored to `deploymentEnabled=false` after the controlled production build.
 
-The migration is additive. If the rollout fails, prefer forward recovery and redeploy the last known-good production web/API runtime. Do not delete Presenter rows or existing Brand/content/channel state as a rollback mechanism.
+Direct HTTP responses from the Render `/health/live`, `/health/ready` and `/version` endpoints were not captured by the available release tooling, so they are not represented as passed evidence here. Render's live deployment state, clean startup and deployment-window logs are the available API runtime evidence.
 
-Rollback triggers include:
+## Remaining authenticated observation — issue #192
 
-- migration 0029 fails or API readiness does not recover;
-- authenticated Brand → Avatar cannot load or violates Brand scoping;
-- a provider-unavailable Presenter becomes selectable;
-- existing simple creation without a Presenter regresses;
-- cross-Brand Presenter access succeeds;
-- existing publishing, approval or channel behavior regresses;
-- production health/version provenance fails.
+The following checks require a real authenticated Auth0 browser/session and remain open:
 
-## Required production smoke after production-enable
+1. Brand → Avatar loads for the intended Brand.
+2. Presenter create/update preserves exact-version behavior.
+3. With no Avatar provider configured, runtime eligibility remains `provider-unavailable` and no Presenter selector appears in creation.
+4. A forged or non-eligible Presenter ID is rejected before durable creation begins.
+5. Existing creation with `None` remains unchanged.
+6. Cross-Brand Presenter read/write/selection remains denied.
+7. Desktop/mobile Avatar UI matches `product/DESIGN.md`.
 
-1. Apply migration 0029 successfully to the production database.
-2. API `/health/live`, `/health/ready` and version provenance pass.
-3. Authenticated Brand → Avatar loads for the intended Brand.
-4. With no Avatar provider configured, runtime eligibility is `provider-unavailable` and no Presenter selector is offered during creation.
-5. A forged/non-eligible Presenter ID is rejected before durable creation begins.
-6. Existing creation with `None` behaves unchanged.
-7. Cross-Brand Presenter read/write/selection remains denied.
-8. Existing Content → Preview → Approve & Lock → publish/schedule safeguards remain unchanged.
-9. Web production route `/brands/{brandId}/avatar` renders without runtime errors on desktop/mobile.
-10. If any required smoke fails, stop rollout and execute RB-008 recovery.
+These checks are tracked in GitHub issue #192. VS-90 must remain `observed`, not `validated`, until they pass.
 
-## Authorization boundary
+## Rollback boundary
 
-Product Owner release approval was given at `2026-08-24T23:02:00+02:00` for exact SHA `1da4665fa430468516f79e38984638369552b6e7`.
-
-Production-enable remains pending. No Render/Vercel deploy, migration execution, provider secret change or production traffic change is authorized by this release preparation.
+RB-008 is ready. Migration 0029 is additive; do not delete Presenter rows or reverse the migration as the default rollback mechanism. Prefer forward recovery and restore the previous known-good API/web runtime for the affected component while preserving Brand, Presenter, content, publishing and audit state. Existing publishing, approval and channel safeguards remain unchanged.
