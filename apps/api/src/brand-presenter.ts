@@ -1,10 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { ConcurrencyConflictError, DomainValidationError } from "@kairo/domain";
 import type {
+  BrandPresenterCapabilitiesDto,
   BrandPresenterDto,
+  BrandPresenterEligibilityDto,
   BrandPresenterResponse,
   PutBrandPresenterRequest,
 } from "@kairo/contracts/presenter";
+import { UnavailableAvatarProvider, type AvatarProvider } from "./avatar-provider";
 
 export interface BrandPresenterStore {
   getPresenter(workspaceId: string, brandId: string): Promise<BrandPresenterDto | null>;
@@ -12,12 +15,21 @@ export interface BrandPresenterStore {
 }
 
 export class BrandPresenterService {
-  constructor(private store: BrandPresenterStore, private now = () => new Date()) {}
+  constructor(
+    private store: BrandPresenterStore,
+    private now = () => new Date(),
+    private avatarProvider: AvatarProvider = new UnavailableAvatarProvider(),
+  ) {}
 
   async get(workspaceId: string, brandId: string): Promise<BrandPresenterResponse> {
+    const [presenter, capabilities] = await Promise.all([
+      this.store.getPresenter(workspaceId, brandId),
+      this.avatarProvider.getCapabilities({ workspaceId, brandId }),
+    ]);
     return {
-      presenter: await this.store.getPresenter(workspaceId, brandId),
-      capabilities: { avatarRendering: false, testClip: false },
+      presenter,
+      capabilities,
+      eligibility: presenter ? presenterEligibility(presenter, capabilities) : null,
     };
   }
 
@@ -53,19 +65,45 @@ export class BrandPresenterService {
       createdAt: current?.createdAt ?? at,
       updatedAt: at,
     };
+    const presenter = await this.store.putPresenter(value, raw.expectedVersion);
+    const capabilities = await this.avatarProvider.getCapabilities({ workspaceId, brandId });
     return {
-      presenter: await this.store.putPresenter(value, raw.expectedVersion),
-      capabilities: { avatarRendering: false, testClip: false },
+      presenter,
+      capabilities,
+      eligibility: presenterEligibility(presenter, capabilities),
     };
   }
 
-  async requireReady(workspaceId: string, brandId: string, presenterId: string): Promise<BrandPresenterDto> {
+  async requireEligible(workspaceId: string, brandId: string, presenterId: string): Promise<BrandPresenterDto> {
     const presenter = await this.store.getPresenter(workspaceId, brandId);
     if (!presenter || presenter.id !== presenterId || presenter.status !== "ready") {
       throw new DomainValidationError("Presenter is not available for this Brand");
     }
+    const capabilities = await this.avatarProvider.getCapabilities({ workspaceId, brandId });
+    if (presenterEligibility(presenter, capabilities).status !== "eligible") {
+      throw new DomainValidationError("Presenter rendering is not available for this Brand");
+    }
     return presenter;
   }
+}
+
+function presenterEligibility(
+  presenter: BrandPresenterDto,
+  capabilities: BrandPresenterCapabilitiesDto,
+): BrandPresenterEligibilityDto {
+  if (presenter.status === "disabled") {
+    return { status: "disabled", reason: "Presenter is disabled" };
+  }
+  if (presenter.status !== "ready") {
+    return { status: "draft", reason: "Presenter profile is still a draft" };
+  }
+  if (!capabilities.providerConfigured || !capabilities.avatarRendering) {
+    return {
+      status: "provider-unavailable",
+      reason: capabilities.reason ?? "Avatar rendering provider is not available",
+    };
+  }
+  return { status: "eligible" };
 }
 
 function requiredText(value: unknown, field: string, max: number) {
