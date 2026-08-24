@@ -1,34 +1,34 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-87",
-  "title": "Content Library and Canonical Preview",
+  "sliceId": "VS-88",
+  "title": "Calendar and Insights",
   "status": "active",
   "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-10", "FR-11", "FR-12", "FR-13", "FR-14", "FR-15"],
+  "requirements": ["FR-14", "FR-16", "FR-17", "FR-18"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-86", "VS-70", "VS-07"],
+  "dependencies": ["VS-87", "VS-07", "VS-08", "VS-09"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**", "docs/slices/VS-87.md", "docs/plans/VS-87-implementation.md", "delivery/**", "README.md", ".engineering/STATE.json", "scripts/**"],
+  "allowedPaths": ["apps/web/**", "docs/slices/VS-88.md", "docs/plans/VS-88-implementation.md", "delivery/**", "README.md", ".engineering/STATE.json", "scripts/**"],
   "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
   "impact": {
-    "areas": ["frontend", "customer-flow"],
+    "areas": ["frontend", "customer-flow", "analytics"],
     "notes": [
-      "Adds the approved user-facing Content library and state filters while preserving Campaign/asset identifiers as internal lineage.",
-      "Reframes the existing exact-version asset workspace as Content Detail / Preview and keeps AI/research/version machinery progressively disclosed.",
-      "Reuses existing review, approval, immediate publish, scheduling, carousel review and video project contracts; no publishing-worker, provider, database, authentication or tenant-boundary change is authorized.",
-      "Presenter controls remain hidden because Brand Avatar configuration is not yet implemented; this is the approved empty capability state, not a missing mandatory control.",
-      "No production deployment is authorized in this slice while Vercel capacity is deferred."
+      "Reframes Calendar around the approved week-first desktop and agenda-first mobile experience while preserving existing publishing state truth.",
+      "Reframes the existing performance route as Insights with What happened, Why might it have happened, and What should we try next as the dominant hierarchy.",
+      "Removes channel connection management from Insights; existing connection contracts and routes are preserved for the future Brand Channels slice.",
+      "No API, worker, migration, authentication, provider, tenant-boundary, publishing or analytics-collection change is authorized.",
+      "No production deployment is authorized while Vercel capacity remains deferred."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-87@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T15:11:00+02:00","rationale":"The Product Owner approved proceeding with UI-02 Content + Preview after the exact scope was presented: Content library, state filters, content detail, channel-specific preview, exact-version approval, Publish now and Schedule for later, without production deployment."},
-    {"type":"policy","status":"not-required","version":"VS-87@1.0","commitSha":null,"by":null,"at":null,"rationale":"Existing human approval, scheduling, publishing, tenant isolation and provider policies are reused unchanged."},
-    {"type":"implementation","status":"approved","version":"VS-87@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T15:11:00+02:00","rationale":"The Product Owner said Go after the bounded UI-02 scope and no-deployment boundary were stated, authorizing runtime frontend implementation only."},
-    {"type":"certification","status":"pending","version":"VS-87@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires deterministic verification and explicit exact-SHA approval."},
+    {"type":"scope","status":"approved","version":"VS-88@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T16:03:00+02:00","rationale":"The Product Owner said Go next after UI-03 Calendar + Insights was identified as the next bounded frontend slice with week-first Calendar, agenda-first mobile and narrative Insights."},
+    {"type":"policy","status":"not-required","version":"VS-88@1.0","commitSha":null,"by":null,"at":null,"rationale":"Existing publishing, analytics, Brand Learning and evidence policies are reused unchanged."},
+    {"type":"implementation","status":"approved","version":"VS-88@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T16:03:00+02:00","rationale":"The Product Owner instructed the work to proceed after the no-deployment, frontend-only boundary was stated."},
+    {"type":"certification","status":"pending","version":"VS-88@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires deterministic exact-SHA verification and explicit Product Owner approval."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized; production deployment is deferred."}
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized; deployment is deferred."}
   ],
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
@@ -36,6 +36,6 @@
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-87.md","implementationPr":null,"evidence":["docs/plans/VS-87-implementation.md","delivery/context/VS-87.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md"]},
+  "links": {"specification":"docs/slices/VS-88.md","implementationPr":null,"evidence":["docs/plans/VS-88-implementation.md","delivery/context/VS-88.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md"]},
   "maxAttempts": 3
 }
