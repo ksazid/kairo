@@ -8,12 +8,13 @@ const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 describe("VS-89 Brand UI contract", () => {
   it("uses Brand terminology and the approved user-facing section structure", () => {
     const page = read("app/brands/[brandId]/brain/page.tsx");
+    const profile = read("src/lib/brand-profile-view-model.ts");
 
     expect(page).toContain('pageLabel="Brand"');
-    expect(page).toContain('Identity');
-    expect(page).toContain('Audience');
-    expect(page).toContain('Voice & Style');
-    expect(page).toContain('Content Pillars');
+    expect(profile).toContain('title: "Identity"');
+    expect(profile).toContain('title: "Audience"');
+    expect(profile).toContain('title: "Voice & Style"');
+    expect(profile).toContain('title: "Content Pillars"');
     expect(page).toContain('Sources');
     expect(page).toContain('Channels');
     expect(page).not.toContain('Review & Control');
@@ -27,7 +28,8 @@ describe("VS-89 Brand UI contract", () => {
     expect(editor).toContain('setEditing(true)');
     expect(editor).toContain('setEditing(false)');
     expect(editor).toContain('>Cancel</button>');
-    expect(editor).toContain('>Save</button>');
+    expect(editor).toContain('"Save"');
+    expect(editor).toContain('expectedVersion');
     expect(compatibility).toContain('/brain');
     expect(compatibility).not.toContain('textarea');
   });
@@ -44,6 +46,14 @@ describe("VS-89 Brand UI contract", () => {
     expect(channels).not.toContain('grantedScopes');
     expect(channels).not.toContain('tokenExpiresAt');
     expect(channels).not.toContain('appId');
+  });
+
+  it("fails closed instead of treating unavailable channel state as disconnected", () => {
+    const channels = read("app/brands/[brandId]/channels/page.tsx");
+
+    expect(channels).toContain('Kairo is not treating missing status as a disconnected account');
+    expect(channels).toContain('Connection changes are unavailable until Kairo can verify the current destination list.');
+    expect(channels).toContain('accountsResult.available ?');
   });
 
   it("keeps account groups progressive and inside Brand Channels language", () => {
