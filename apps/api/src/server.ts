@@ -66,6 +66,7 @@ import{RepositoryInstagramPublishingOperations,StoredInstagramInsightsReader}fro
 import{MetaMcpToolHandler}from"./meta-mcp-tools";
 import{registerMetaMcpRoutes}from"./meta-mcp-routes";
 import{SimpleCreationService}from"./simple-creation";import{PgSimpleCreationStore}from"./simple-creation-postgres";import{registerSimpleCreationRoutes}from"./simple-creation-routes";
+import{BrandPresenterService}from"./brand-presenter";import{registerBrandPresenterRoutes}from"./brand-presenter-routes";
 import{SimplePublishFlowService}from"@kairo/domain/simple-publish-flow";import{PgSimplePublishFlowRepository}from"./simple-publish-flow-postgres";import{registerSimplePublishFlowRoutes}from"./simple-publish-flow-routes";
 import{PgCommandSearchRepository}from"./command-search-postgres";import{registerCommandSearchRoutes}from"./command-search-routes";
 import{PgBrandNotificationRepository}from"./brand-notifications-postgres";import{registerBrandNotificationRoutes}from"./brand-notifications-routes";
@@ -160,8 +161,10 @@ const app = buildApp({
   identityVerifier,
   logger: true,
 });
+const simpleCreationStore=new PgSimpleCreationStore(pool);
+registerBrandPresenterRoutes(app,{coreStore,identityVerifier,service:new BrandPresenterService(simpleCreationStore)});
 let simpleCreationService:SimpleCreationService|undefined;let simpleCreationRunning=false;
-if(ideaDeveloper){simpleCreationService=new SimpleCreationService(new PgSimpleCreationStore(pool),researchStore,campaignStore,ideaDeveloper);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,trigger:()=>void collectSimpleCreationTick()});}
+if(ideaDeveloper){simpleCreationService=new SimpleCreationService(simpleCreationStore,researchStore,campaignStore,ideaDeveloper);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,trigger:()=>void collectSimpleCreationTick()});}
 registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier});
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
@@ -407,5 +410,5 @@ function googleDriveConfig(){
   if(names.every(name=>!values[name]))return null;
   const missing=names.filter(name=>!values[name]);
   if(missing.length)throw new Error(`Google Drive Content Asset configuration is incomplete: ${missing.join(", ")}`);
-  return{clientId:values.GOOGLE_DRIVE_CLIENT_ID,clientSecret:values.GOOGLE_DRIVE_CLIENT_SECRET,redirectUri:values.GOOGLE_DRIVE_OAUTH_REDIRECT_URI,pickerApiKey:values.GOOGLE_DRIVE_PICKER_API_KEY,pickerAppId:values.GOOGLE_DRIVE_PICKER_APP_ID,encryptionKey:values.CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY};
+  return{clientId:values.GOOGLE_DRIVE_CLIENT_ID,clientSecret:values.GOOGLE_DRIVE_CLIENT_SECRET,redirectUri:values.GOOGLE_DRIVE_OAUTH_REDIRECT_URI,pickerApiKey:values.GOOGLE_DRIVE_PICKER_API_KEY,appId:values.GOOGLE_DRIVE_PICKER_APP_ID,pickerAppId:values.GOOGLE_DRIVE_PICKER_APP_ID,encryptionKey:values.CONTENT_ASSET_CREDENTIAL_ENCRYPTION_KEY};
 }
