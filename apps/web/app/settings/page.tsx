@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   const brand = brands[0] ?? null;
 
   return (
-    <KairoProductShell brandId={brand?.id} workspaceId={workspace.id}>
+    <KairoProductShell brandId={brand?.id} workspaceId={workspace.id} pageLabel="Settings">
       <main id="kairo-main-content" tabIndex={-1} className={`${styles.settings} workspace-main`}>
         <header className={styles.header}>
           <p className="eyebrow">Profile</p>
