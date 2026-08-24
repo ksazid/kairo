@@ -1,25 +1,34 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-86",
-  "title": "Shell Normalization and Recovery Navigation",
+  "sliceId": "VS-87",
+  "title": "Content Library and Canonical Preview",
   "status": "active",
   "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-01","FR-05","FR-13","FR-14","FR-17"],
+  "requirements": ["FR-10", "FR-11", "FR-12", "FR-13", "FR-14", "FR-15"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-85"],
+  "dependencies": ["VS-86", "VS-70", "VS-07"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**","product/**","docs/slices/VS-86.md","docs/plans/VS-86-implementation.md","delivery/**","scripts/**","README.md",".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml","infrastructure/**","apps/api/migrations/**"],
-  "impact": {"areas":["frontend","customer-flow","notifications"],"notes":["Normalizes user-facing primary navigation to Home, Content, Calendar, Insights and Brand while preserving internal Results/Performance compatibility.","Corrects notification recovery routing so failures open useful content/channel contexts rather than generic Calendar/Performance destinations.","Enables a real secondary Settings route without implementing AI/media provider configuration in this slice.","No database, provider scope, authentication, tenant isolation, publishing worker or approval-policy change is planned.","Production deployment and production-dependent validation are intentionally deferred until deployment capacity is available."]},
+  "allowedPaths": ["apps/web/**", "docs/slices/VS-87.md", "docs/plans/VS-87-implementation.md", "delivery/**", "README.md", ".engineering/STATE.json", "scripts/**"],
+  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
+  "impact": {
+    "areas": ["frontend", "customer-flow"],
+    "notes": [
+      "Adds the approved user-facing Content library and state filters while preserving Campaign/asset identifiers as internal lineage.",
+      "Reframes the existing exact-version asset workspace as Content Detail / Preview and keeps AI/research/version machinery progressively disclosed.",
+      "Reuses existing review, approval, immediate publish, scheduling, carousel review and video project contracts; no publishing-worker, provider, database, authentication or tenant-boundary change is authorized.",
+      "Presenter controls remain hidden because Brand Avatar configuration is not yet implemented; this is the approved empty capability state, not a missing mandatory control.",
+      "No production deployment is authorized in this slice while Vercel capacity is deferred."
+    ]
+  },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-86@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T14:00:00+02:00","rationale":"The Product Owner approved proceeding with the previously presented sequence: cleanup stale work, lock design authority, then start UI-01 Shell Normalization while production deployment is deferred."},
-    {"type":"policy","status":"not-required","version":"VS-86@1.0","commitSha":null,"by":null,"at":null,"rationale":"VS-86 changes presentation/navigation and recovery routing only; existing authentication, Brand isolation, provider permissions, approval and publishing policies remain unchanged."},
-    {"type":"implementation","status":"approved","version":"VS-86@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T14:00:00+02:00","rationale":"The Product Owner said Go ahead after the exact no-deployment implementation sequence was presented. This authorises bounded runtime implementation but not certification, merge, release, production-enable or deployment."},
-    {"type":"certification","status":"pending","version":"VS-86@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires an immutable verified candidate and explicit exact-SHA approval."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorised."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorised; production deployment is currently deferred."}
+    {"type":"scope","status":"approved","version":"VS-87@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T15:11:00+02:00","rationale":"The Product Owner approved proceeding with UI-02 Content + Preview after the exact scope was presented: Content library, state filters, content detail, channel-specific preview, exact-version approval, Publish now and Schedule for later, without production deployment."},
+    {"type":"policy","status":"not-required","version":"VS-87@1.0","commitSha":null,"by":null,"at":null,"rationale":"Existing human approval, scheduling, publishing, tenant isolation and provider policies are reused unchanged."},
+    {"type":"implementation","status":"approved","version":"VS-87@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T15:11:00+02:00","rationale":"The Product Owner said Go after the bounded UI-02 scope and no-deployment boundary were stated, authorizing runtime frontend implementation only."},
+    {"type":"certification","status":"pending","version":"VS-87@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires deterministic verification and explicit exact-SHA approval."},
+    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized; production deployment is deferred."}
   ],
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
@@ -27,6 +36,6 @@
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-86.md","implementationPr":null,"evidence":["docs/plans/VS-86-implementation.md","delivery/context/VS-86.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md"]},
+  "links": {"specification":"docs/slices/VS-87.md","implementationPr":null,"evidence":["docs/plans/VS-87-implementation.md","delivery/context/VS-87.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md"]},
   "maxAttempts": 3
 }
