@@ -1,5 +1,6 @@
 export type BrandPresenterStatus = "draft" | "ready" | "disabled";
 export type BrandPresenterMode = "basic" | "talking-avatar" | "hybrid-explainer";
+export type BrandPresenterEligibilityStatus = "eligible" | "draft" | "provider-unavailable" | "disabled";
 
 export interface BrandPresenterDto {
   id: string;
@@ -41,13 +42,21 @@ export interface PutBrandPresenterRequest {
 }
 
 export interface BrandPresenterCapabilitiesDto {
+  providerConfigured: boolean;
   avatarRendering: boolean;
   testClip: boolean;
+  reason?: string;
+}
+
+export interface BrandPresenterEligibilityDto {
+  status: BrandPresenterEligibilityStatus;
+  reason?: string;
 }
 
 export interface BrandPresenterResponse {
   presenter: BrandPresenterDto | null;
   capabilities: BrandPresenterCapabilitiesDto;
+  eligibility: BrandPresenterEligibilityDto | null;
 }
 
 export interface SimpleCreationPresenterDto {
