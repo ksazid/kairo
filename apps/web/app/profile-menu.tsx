@@ -16,7 +16,7 @@ export function ProfileMenu({ addBrandHref }: { addBrandHref: string }) {
         </div>
         <nav aria-label="Profile actions">
           <Link href={addBrandHref}><KairoIcon name="plus" /><span>Add Brand</span></Link>
-          <span className="profile-menu-item disabled" aria-disabled="true"><KairoIcon name="settings" /><span>Settings</span><small>Later</small></span>
+          <Link href="/settings"><KairoIcon name="settings" /><span>Settings</span></Link>
           <a href="/auth/logout"><KairoIcon name="logout" /><span>Sign out</span></a>
         </nav>
       </div>

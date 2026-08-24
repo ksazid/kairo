@@ -61,21 +61,44 @@ describe("approved product shell navigation and themes", () => {
     expect(shellCss).not.toContain("transition: all");
   });
 
-  it("keeps the authenticated shell to five destinations without persistent search density or collapse controls", () => {
+  it("renders the approved five user-facing destinations without changing stable Results compatibility", () => {
     const shell = read("app/kairo-product-shell.tsx");
     const shellCss = read("app/shell-baseline.css");
     const navigation = read("src/lib/product-navigation.ts");
 
-    expect(navigation).toContain('"Home"');
-    expect(navigation).toContain('"Content"');
-    expect(navigation).toContain('"Calendar"');
-    expect(navigation).toContain('"Results"');
-    expect(navigation).toContain('"Brand"');
+    expect(navigation).toContain('{ label: "Home", displayLabel: "Home"');
+    expect(navigation).toContain('{ label: "Content", displayLabel: "Content"');
+    expect(navigation).toContain('{ label: "Calendar", displayLabel: "Calendar"');
+    expect(navigation).toContain('{ label: "Results", displayLabel: "Insights"');
+    expect(navigation).toContain('{ label: "Brand", displayLabel: "Brand"');
+    expect(shell).toContain("item.displayLabel");
     expect(shellCss).toContain("grid-template-columns: repeat(5, minmax(0, 1fr))");
     expect(shell).not.toContain("CommandPalette");
     expect(shell).not.toContain("density-toggle");
     expect(shell).not.toContain("sidebar-toggle");
     expect(shell).not.toContain("ShellControls");
     expect(shell).not.toContain("mobile-brand-bar");
+  });
+
+  it("normalizes legacy navigation helpers to the same five destinations and removes More", () => {
+    const desktop = read("app/legacy-pilot-navigation.tsx");
+    const mobile = read("app/pilot-mobile-nav.tsx");
+
+    for (const label of ["Home", "Content", "Calendar", "Insights", "Brand"]) {
+      expect(desktop).toContain(`label: "${label}"`);
+      expect(mobile).toContain(`label: "${label}"`);
+    }
+    expect(mobile).not.toContain('{ label: "More"');
+    expect(desktop).not.toContain('const items = ["Today"');
+  });
+
+  it("keeps Settings secondary under Profile and makes it a real route", () => {
+    const profile = read("app/profile-menu.tsx");
+    const settings = read("app/settings/page.tsx");
+
+    expect(profile).toContain('href="/settings"');
+    expect(profile).not.toContain("Settings</span><small>Later");
+    expect(settings).toContain("<h1>Settings</h1>");
+    expect(settings).toContain("<ThemeToggle />");
   });
 });
