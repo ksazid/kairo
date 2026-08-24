@@ -3,9 +3,9 @@
   "sliceId": "VS-90",
   "title": "Brand Avatar and Optional Presenter",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certified",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": ["FR-03", "FR-11", "FR-13"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
   "dependencies": ["VS-84", "VS-85", "VS-89"],
@@ -23,23 +23,39 @@
       "Avatar is a Brand sub-surface only and follows product/DESIGN.md before repository design skills.",
       "No production Avatar provider adapter, worker/media-orchestrator change, provider credential/configuration change or generated test clip is authorized in this foundation slice.",
       "Existing tenant isolation, human approval, exact Preview, publishing and channel credential boundaries remain unchanged.",
-      "VS-89 remains released and inactive in post-release observation. Issue #187 is explicitly deferred but open; authenticated Brand/Channels visual smoke must not be represented as validated."
+      "Migration 0029 is additive and is authorized only as part of the controlled VS-90 production rollout.",
+      "VS-89 remains released and inactive in post-release observation. Issue #187 is deferred but open and must not be represented as validated."
     ]
   },
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-90@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T19:19:00+02:00","rationale":"The Product Owner said Go after the bounded next sequence was stated: preserve truthful VS-89 observation, then start the approved Avatar / Presenter work under DESIGN.md and existing provider boundaries."},
     {"type":"policy","status":"approved","version":"DEC-012","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T21:47:00+02:00","rationale":"The Product Owner approved Option A: Kairo-owned Brand-scoped Presenter state, private media, replaceable server-side AvatarProvider boundary, fail-closed eligibility and unchanged exact approval/publishing guarantees."},
     {"type":"implementation","status":"approved","version":"VS-90@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T21:55:00+02:00","rationale":"The Product Owner said Go after approving DEC-012 and after the sequence to defer #187 as an open observation, hand off VS-89 and activate VS-90 was restated."},
-    {"type":"certification","status":"pending","version":"VS-90@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires one immutable candidate with Product Intake, Security, CI, migration, preflight and design-quality evidence plus explicit Product Owner certification approval."},
-    {"type":"release","status":"pending","version":"VS-90@1.0","commitSha":null,"by":null,"at":null,"rationale":"No release is authorized by the implementation Go."},
-    {"type":"production-enable","status":"pending","version":"VS-90@1.0","commitSha":null,"by":null,"at":null,"rationale":"No production deployment is authorized by the implementation Go."}
+    {"type":"certification","status":"approved","version":"VS-90@1.0","commitSha":"1da4665fa430468516f79e38984638369552b6e7","by":"Sazid Khan","at":"2026-08-24T23:00:00+02:00","rationale":"Product Intake #876, Security #1051 and CI #1266 passed on the exact candidate, including migration 0029, governance/preflight, runtime verification, fail-closed provider eligibility tests and production build."},
+    {"type":"release","status":"approved","version":"VS-90@1.0","commitSha":"1da4665fa430468516f79e38984638369552b6e7","by":"Sazid Khan","at":"2026-08-24T23:02:00+02:00","rationale":"The Product Owner said Go to the explicitly stated VS-90 release-authorization gate. This authorizes release preparation for the certified candidate only and does not authorize production enablement or deployment."},
+    {"type":"production-enable","status":"approved","version":"VS-90@1.0","commitSha":"1da4665fa430468516f79e38984638369552b6e7","by":"Sazid Khan","at":"2026-08-25T00:06:00+02:00","rationale":"The Product Owner said Go ahead to the explicitly stated VS-90 production-enable gate. This authorizes the controlled production rollout of the certified candidate, including additive migration 0029, with rollback readiness and production smoke verification required."}
   ],
   "decisionIds": ["DEC-012"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":60,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
-  "release": {"status":"not-authorized","releaseId":null},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":30,"validation":0},
+  "certification": {
+    "status":"passed",
+    "commitSha":"1da4665fa430468516f79e38984638369552b6e7",
+    "evidence":[
+      "Product Intake #876 passed on exact candidate 1da4665fa430468516f79e38984638369552b6e7.",
+      "Security baseline #1051 passed on the exact candidate.",
+      "CI #1266 passed with clean PostgreSQL 18 migrations through 0029, zero production dependency vulnerabilities, governance/preflight, runtime typecheck/tests/build and dashboard build.",
+      "API tests: 70 files / 218 passed; Web: 21 files / 104 passed; Worker: 39 files / 249 passed; Domain: 30 files / 169 passed; Hermes: 25 passed.",
+      "Next.js production build included /brands/[brandId]/avatar.",
+      "Provider-unavailable Presenter selection fails closed in both UI projection and API service tests."
+    ]
+  },
+  "release": {"status":"pending","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-90.md","implementationPr":"https://github.com/ksazid/kairo/pull/186","evidence":["delivery/context/VS-90.md","docs/plans/VS-90-implementation.md","docs/plans/VS-90-architecture-decision.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","https://github.com/ksazid/kairo/issues/187","https://github.com/ksazid/kairo/issues/188"]},
+  "links": {
+    "specification":"docs/slices/VS-90.md",
+    "implementationPr":"https://github.com/ksazid/kairo/pull/186",
+    "evidence":["delivery/context/VS-90.md","docs/plans/VS-90-implementation.md","docs/plans/VS-90-architecture-decision.md","delivery/context/VS-90-release.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","https://github.com/ksazid/kairo/issues/187","https://github.com/ksazid/kairo/issues/188"]
+  },
   "maxAttempts": 3
 }
