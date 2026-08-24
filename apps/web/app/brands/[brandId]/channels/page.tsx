@@ -56,7 +56,7 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
         {!accountsResult.available ? (
           <div className="channels-v2-status" role="alert">
             <strong>Channel status is temporarily unavailable.</strong>
-            <span>Kairo is not treating missing status as a disconnected account. Try again before changing a connection.</span>
+            <span>Kairo is not treating missing status as a disconnected account. Connection changes stay unavailable until current account state can be read.</span>
           </div>
         ) : null}
 
@@ -73,10 +73,15 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
             {accountsResult.accounts.length ? accountsResult.accounts.map((account) => {
               const health = healthById.get(account.id) ?? healthByRef.get(`${account.channel}:${account.accountRef}`);
               return <ChannelRow key={account.id} brandId={brand.id} account={account} health={health} returnTo={channelsPath} />;
-            }) : (
+            }) : accountsResult.available ? (
               <div className="channels-v2-empty">
                 <strong>No connected destinations yet.</strong>
                 <p>Choose one of the supported connection paths below. Kairo will only show eligible destinations during authorization.</p>
+              </div>
+            ) : (
+              <div className="channels-v2-empty">
+                <strong>Current destinations cannot be read right now.</strong>
+                <p>Existing connections are left unchanged. Try again before reconnecting or adding another destination.</p>
               </div>
             )}
           </div>
@@ -91,10 +96,14 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
             </div>
           </header>
           <div className="channels-v2-connect-list">
-            {!existingModes.has("instagram") ? <ConnectOption brandId={brand.id} mode="instagram" title="Instagram" description="Instagram Professional account using Instagram Login." returnTo={channelsPath} /> : null}
-            {!existingModes.has("facebook-instagram") ? <ConnectOption brandId={brand.id} mode="facebook-instagram" title="Facebook + Instagram" description="Choose a Facebook Page and its linked Instagram Professional account." returnTo={channelsPath} /> : null}
-            {!existingModes.has("facebook") ? <ConnectOption brandId={brand.id} mode="facebook" title="Facebook" description="Connect an eligible Facebook Page for publishing." returnTo={channelsPath} /> : null}
-            {existingModes.size >= 3 ? <p className="channels-v2-empty-copy">All currently supported Meta connection paths are already represented.</p> : null}
+            {!accountsResult.available ? <p className="channels-v2-empty-copy">Connection changes are unavailable until Kairo can verify the current destination list.</p> : (
+              <>
+                {!existingModes.has("instagram") ? <ConnectOption brandId={brand.id} mode="instagram" title="Instagram" description="Instagram Professional account using Instagram Login." returnTo={channelsPath} /> : null}
+                {!existingModes.has("facebook-instagram") ? <ConnectOption brandId={brand.id} mode="facebook-instagram" title="Facebook + Instagram" description="Choose a Facebook Page and its linked Instagram Professional account." returnTo={channelsPath} /> : null}
+                {!existingModes.has("facebook") ? <ConnectOption brandId={brand.id} mode="facebook" title="Facebook" description="Connect an eligible Facebook Page for publishing." returnTo={channelsPath} /> : null}
+                {existingModes.size >= 3 ? <p className="channels-v2-empty-copy">All currently supported Meta connection paths are already represented.</p> : null}
+              </>
+            )}
           </div>
         </section>
 
