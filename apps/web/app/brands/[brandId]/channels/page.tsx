@@ -45,8 +45,12 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
             <p>Manage the accounts Kairo can publish to and use for provider-backed Insights. Credentials remain behind the connection boundary.</p>
           </div>
           <div className="channels-v2-summary" aria-label="Channel connection summary">
-            <span><strong>{connectedCount}</strong> Connected</span>
-            <span><strong>{attentionCount}</strong> Need attention</span>
+            {accountsResult.available ? (
+              <>
+                <span><strong>{connectedCount}</strong> Connected</span>
+                <span><strong>{attentionCount}</strong> Need attention</span>
+              </>
+            ) : <span><strong>—</strong> Status unavailable</span>}
           </div>
         </header>
 
@@ -64,7 +68,7 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
           <header>
             <div>
               <p className="eyebrow">Destinations</p>
-              <h2 id="connected-channels-title">Connected accounts</h2>
+              <h2 id="connected-channels-title">Channel accounts</h2>
               <p>Each destination keeps its own approval and publishing authority.</p>
             </div>
           </header>
