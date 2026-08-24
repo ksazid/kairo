@@ -2,29 +2,34 @@ import { randomUUID } from "node:crypto";
 import { DomainValidationError, ResourceNotFoundError } from "@kairo/domain";
 import { ResearchService, type ResearchRepository } from "@kairo/domain/research-service";
 import { CampaignService, type CampaignRepository } from "@kairo/domain/campaign-service";
+import type { PutBrandPresenterRequest, SimpleCreationPresenterDto } from "@kairo/contracts/presenter";
 import type { IdeaDevelopmentPort } from "./app";
+import { BrandPresenterService, type BrandPresenterStore } from "./brand-presenter";
 
 export type SimpleCreationStatus = "queued"|"understanding-goal"|"researching"|"choosing-angle"|"building-campaign"|"ready"|"needs-attention";
 export type ContentPreference = "auto"|"carousel"|"reel"|"image"|"campaign";
-export interface SimpleCreationRequest { id:string; accountId:string; workspaceId:string; brandId:string; goal:string; input?:string; source?:string; contentPreference:ContentPreference; status:SimpleCreationStatus; ideaId?:string; recommendedAngleId?:string; campaignId?:string; recommendation?:Record<string,unknown>; failureReason?:string; attempt:number; createdAt:string; updatedAt:string }
-export interface SimpleCreationStore {
+export interface SimpleCreationRequest { id:string; accountId:string; workspaceId:string; brandId:string; goal:string; input?:string; source?:string; contentPreference:ContentPreference; presenterId?:string; status:SimpleCreationStatus; ideaId?:string; recommendedAngleId?:string; campaignId?:string; recommendation?:Record<string,unknown>; failureReason?:string; attempt:number; createdAt:string; updatedAt:string }
+export interface SimpleCreationStore extends BrandPresenterStore {
   create(value:SimpleCreationRequest):Promise<SimpleCreationRequest>;
   get(accountId:string,brandId:string,id:string):Promise<SimpleCreationRequest|null>;
   claim(workerId:string,leaseSeconds:number):Promise<SimpleCreationRequest|null>;
   advance(id:string,workerId:string,status:SimpleCreationStatus,patch?:Partial<SimpleCreationRequest>):Promise<void>;
 }
-export interface StartSimpleCreationInput { goal:string; input?:string; source?:string; contentPreference?:ContentPreference }
+export interface StartSimpleCreationInput { goal:string; input?:string; source?:string; contentPreference?:ContentPreference; presenterId?:string }
 
 export class SimpleCreationService {
-  private research:ResearchService; private campaigns:CampaignService;
-  constructor(private store:SimpleCreationStore,researchRepo:ResearchRepository,campaignRepo:CampaignRepository,private developer:IdeaDevelopmentPort,private now=()=>new Date()) { this.research=new ResearchService(researchRepo,now); this.campaigns=new CampaignService(campaignRepo,researchRepo,undefined,now); }
+  private research:ResearchService; private campaigns:CampaignService; private presenters:BrandPresenterService;
+  constructor(private store:SimpleCreationStore,researchRepo:ResearchRepository,campaignRepo:CampaignRepository,private developer:IdeaDevelopmentPort,private now=()=>new Date()) { this.research=new ResearchService(researchRepo,now); this.campaigns=new CampaignService(campaignRepo,researchRepo,undefined,now); this.presenters=new BrandPresenterService(store,now); }
   async start(accountId:string,workspaceId:string,brandId:string,raw:StartSimpleCreationInput){
-    const goal=text(raw?.goal,"goal",500), input=optional(raw?.input,4000), source=optional(raw?.source,2000), preference=raw?.contentPreference??"auto";
+    const goal=text(raw?.goal,"goal",500), input=optional(raw?.input,4000), source=optional(raw?.source,2000), preference=raw?.contentPreference??"auto", presenterId=optional(raw?.presenterId,200);
     if(!(["auto","carousel","reel","image","campaign"] as string[]).includes(preference))throw new DomainValidationError("contentPreference must be auto, carousel, reel, image, or campaign");
+    if(presenterId)await this.presenters.requireReady(workspaceId,brandId,presenterId);
     const at=this.now().toISOString();
-    return this.store.create({id:randomUUID(),accountId,workspaceId,brandId,goal,...(input?{input}:{}),...(source?{source}:{}),contentPreference:preference,status:"queued",attempt:0,createdAt:at,updatedAt:at});
+    return this.store.create({id:randomUUID(),accountId,workspaceId,brandId,goal,...(input?{input}:{}),...(source?{source}:{}),contentPreference:preference,...(presenterId?{presenterId}:{}),status:"queued",attempt:0,createdAt:at,updatedAt:at});
   }
-  async get(accountId:string,brandId:string,id:string){const value=await this.store.get(accountId,brandId,id);if(!value)throw new ResourceNotFoundError("Creation request not found");return publicView(value);}
+  async get(accountId:string,brandId:string,id:string){const value=await this.store.get(accountId,brandId,id);if(!value)throw new ResourceNotFoundError("Creation request not found");const presenter=value.presenterId?await this.store.getPresenter(value.workspaceId,value.brandId):null;return publicView(value,presenter&&presenter.id===value.presenterId?{id:presenter.id,displayName:presenter.displayName,mode:presenter.mode}:undefined);}
+  getPresenter(workspaceId:string,brandId:string){return this.presenters.get(workspaceId,brandId)}
+  savePresenter(workspaceId:string,brandId:string,input:PutBrandPresenterRequest){return this.presenters.save(workspaceId,brandId,input)}
   async runOnce(workerId:string){const job=await this.store.claim(workerId,900);if(!job)return false;try{
     await this.store.advance(job.id,workerId,"understanding-goal");
     let ideaId=job.ideaId;
@@ -44,7 +49,7 @@ export class SimpleCreationService {
     await this.store.advance(job.id,workerId,"ready",{ideaId,recommendedAngleId:preferred.id,campaignId,recommendation});return true;
   }catch(error){await this.store.advance(job.id,workerId,"needs-attention",{failureReason:safeError(error)});return true;}}
 }
-function publicView(v:SimpleCreationRequest){return {id:v.id,status:v.status,progress:{stage:v.status,message:messages[v.status]},contentPreference:v.contentPreference,...(v.recommendation?{recommendation:v.recommendation}:{}),...(v.campaignId?{campaignId:v.campaignId}:{}),...(v.status==="needs-attention"?{canRetry:true}:{}),createdAt:v.createdAt,updatedAt:v.updatedAt};}
+function publicView(v:SimpleCreationRequest,presenter?:SimpleCreationPresenterDto){return {id:v.id,status:v.status,progress:{stage:v.status,message:messages[v.status]},contentPreference:v.contentPreference,...(presenter?{presenter}:{}),...(v.recommendation?{recommendation:v.recommendation}:{}),...(v.campaignId?{campaignId:v.campaignId}:{}),...(v.status==="needs-attention"?{canRetry:true}:{}),createdAt:v.createdAt,updatedAt:v.updatedAt};}
 const messages:Record<SimpleCreationStatus,string>={queued:"Getting your creation ready", "understanding-goal":"Understanding your goal",researching:"Finding evidence and useful directions","choosing-angle":"Choosing the strongest direction","building-campaign":"Building your recommendation",ready:"Your recommendation is ready","needs-attention":"We could not finish this creation yet"};
 function creationTitle(job:Pick<SimpleCreationRequest,"goal"|"input">,max:number){return (job.input?.trim()||job.goal).slice(0,max)}
 function text(v:unknown,n:string,max:number){const x=typeof v==="string"?v.trim():"";if(!x)throw new DomainValidationError(`${n} is required`);if(x.length>max)throw new DomainValidationError(`${n} is too long`);return x;} function optional(v:unknown,max:number){if(v==null)return undefined;const x=typeof v==="string"?v.trim():"";if(x.length>max)throw new DomainValidationError("Input is too long");return x||undefined;} function safeError(e:unknown){return e instanceof Error?e.message.slice(0,500):"Creation failed";}
