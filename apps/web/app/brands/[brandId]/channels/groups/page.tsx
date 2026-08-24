@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getBrand, getChannelAccounts } from "../../../../../src/lib/kairo-api";
 import { getChannelAccountGroups } from "../../../../../src/lib/channel-account-groups-api";
-import { KairoProductShell, KairoScopePicker } from "../../../../kairo-product-shell";
+import { KairoProductShell } from "../../../../kairo-product-shell";
 import { createGroupAction, deleteGroupAction, updateGroupAction } from "./actions";
 import "../../../../channels.css";
 
@@ -20,17 +20,17 @@ export default async function AccountGroupsPage({ params, searchParams }: { para
 
   const available = accounts.filter((account) => account.status !== "disabled");
   const connected = available.filter((account) => account.status === "connected");
+  const channelsHref = `/brands/${encodeURIComponent(brand.id)}/channels`;
 
   return (
-    <KairoProductShell brandId={brand.id} active="Content Studio" mobileActive="More">
+    <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Brand" pageLabel="Account groups">
       <main id="kairo-main-content" tabIndex={-1} className="workspace-main channels-main">
         <div className="channels-toolbar">
-          <div><Link className="back-link" href={`/brands/${encodeURIComponent(brand.id)}/campaigns`}>← Content Studio</Link><Link className="back-link" href={`/brands/${encodeURIComponent(brand.id)}/performance`}>Performance</Link></div>
-          <KairoScopePicker brandName={brand.name} meta="Channel destination management" />
+          <div><Link className="back-link" href={channelsHref}>← Channels</Link></div>
         </div>
 
         <header className="channels-hero">
-          <div><p className="eyebrow">Channel management</p><h1>Account groups</h1><p className="lede">Save repeated destination sets without changing approval authority. Every account still receives its own approval and publish command.</p></div>
+          <div><p className="eyebrow">Brand · Channels</p><h1>Account groups</h1><p className="lede">Save repeated destination sets without changing approval authority. Every account still receives its own approval and publish command.</p></div>
           <span className="channel-count">{connected.length} connected · {groups.length} group{groups.length === 1 ? "" : "s"}</span>
         </header>
 
@@ -39,7 +39,7 @@ export default async function AccountGroupsPage({ params, searchParams }: { para
 
         <section className="channels-section" aria-labelledby="destinations-title">
           <div className="channels-section-heading"><div><p className="eyebrow">Available destinations</p><h2 id="destinations-title">Accounts this Brand can target</h2><p>Reconnect-required accounts stay visible but are never presented as healthy destinations.</p></div><span className="channel-count">{available.length} available</span></div>
-          {available.length ? <div className="destination-list">{available.map((account) => <div className="destination-row" key={account.id}><div><span className={`destination-state ${account.status === "connected" ? "connected" : "attention"}`}>{label(account.status)}</span><strong>{account.displayName}</strong><small>{label(account.channel)} · {account.accountRef}</small></div><span className="destination-capabilities">{account.capabilities.length ? account.capabilities.map(label).join(" · ") : "No publish capabilities"}</span></div>)}</div> : <div className="channels-empty"><strong>No channel destinations available.</strong><p>Connect a supported channel before creating a reusable group.</p><Link className="primary-button" href={`/brands/${encodeURIComponent(brand.id)}/performance`}>Manage connections</Link></div>}
+          {available.length ? <div className="destination-list">{available.map((account) => <div className="destination-row" key={account.id}><div><span className={`destination-state ${account.status === "connected" ? "connected" : "attention"}`}>{label(account.status)}</span><strong>{account.displayName}</strong><small>{label(account.channel)} · {account.accountRef}</small></div><span className="destination-capabilities">{account.capabilities.length ? account.capabilities.map(label).join(" · ") : "No publish capabilities"}</span></div>)}</div> : <div className="channels-empty"><strong>No channel destinations available.</strong><p>Connect a supported channel before creating a reusable group.</p><Link className="primary-button" href={channelsHref}>Open Channels</Link></div>}
         </section>
 
         <section className="channels-section" aria-labelledby="groups-title">
