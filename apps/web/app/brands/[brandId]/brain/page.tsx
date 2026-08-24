@@ -1,323 +1,245 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import type { BrandBrainFieldDto } from "@kairo/contracts";
+import type { KnowledgeSourceDto } from "@kairo/contracts";
 import { getBrand, getBrandBrain, getKnowledgeSources, getLearnings, getSession } from "../../../../src/lib/kairo-api";
-import { getMetaConnectionHealth, type MetaConnectionHealth } from "../../../../src/lib/meta-connection-api";
+import { getMetaConnectionHealth } from "../../../../src/lib/meta-connection-api";
+import { buildBrandProfileSections, brandSummary } from "../../../../src/lib/brand-profile-view-model";
+import { fieldAnchor } from "../../../../src/lib/brand-brain-view-model";
+import { KairoProductShell } from "../../../kairo-product-shell";
+import { InlineBrandField } from "./inline-brand-field";
 import {
-  buildBrandBrainOverview,
-  fieldEvidenceLabel,
-  fieldStateLabel,
-  findFieldDefinition,
-} from "../../../../src/lib/brand-brain-view-model";
-import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
-import { buildBrandBrainAction } from "./guided-actions";
-import { connectionStartPath } from "../../../../src/lib/brand-connection-plan";
-import { disconnectMetaConnectionAction } from "../connections/actions";
+  addKnowledgeSourceAction,
+  removeKnowledgeSourceAction,
+  setKnowledgeSourceEnabledAction,
+} from "../brand-brain-control/actions";
+import "./brand-v2.css";
 
 type Params = Promise<{ brandId: string }>;
-type SearchParams = Promise<{ notice?: string; error?: string; setup?: string }>;
+type SearchParams = Promise<{ notice?: string; error?: string }>;
 
-export default async function BrandBrainPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+export default async function BrandPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const session = await getSession();
   if (!session) redirect("/");
+
   const { brandId } = await params;
   const brand = await getBrand(brandId);
   if (!brand) redirect("/");
   const workspace = session.workspaces.find((item) => item.id === brand.workspaceId);
   if (!workspace) redirect("/");
 
-  const [brain, sources, accountResult, learnings, messages] = await Promise.all([
+  const [brain, sources, learnings, metaResult, messages] = await Promise.all([
     getBrandBrain(brand.id),
     getKnowledgeSources(brand.id),
-    getMetaConnectionHealth(brand.id).then((accounts) => ({ accounts, available: true as const })).catch(() => ({ accounts: [], available: false as const })),
     getLearnings(brand.id).catch(() => []),
+    getMetaConnectionHealth(brand.id)
+      .then((accounts) => ({ available: true as const, accounts }))
+      .catch(() => ({ available: false as const, accounts: [] })),
     searchParams,
   ]);
-  const overview = buildBrandBrainOverview(brain);
-  const activePublicSource = sources.find((source) => source.status === "active" && source.sourceUrl)?.sourceUrl;
-  const publicReference = brand.publicProfileUrl ?? brand.publicSourceUrl ?? activePublicSource;
-  const existingObjective = overview.fieldMap.get("goals.objectives")?.value;
-  const ownerDirective = overview.fieldMap.get("boundaries.owner-directive")?.value ?? "";
-  const activeSources = sources.filter((source) => source.status === "active");
+
+  const sections = buildBrandProfileSections(brain);
+  const summary = brandSummary(brain);
+  const acceptedLearnings = learnings.filter((learning) => learning.status === "accepted");
   const sourceIssues = sources.filter((source) => source.status === "failed" || source.status === "quarantined");
+  const activeSources = sources.filter((source) => source.status === "active");
+  const instagramSource = metaResult.accounts.find((account) => account.channel === "instagram");
   const encoded = encodeURIComponent(brand.id);
-  const controlHref = `/brands/${encoded}/brand-brain-control`;
-  const usableAccounts = accountResult.accounts;
-  const instagram = usableAccounts.find((account) => account.channel === "instagram" && authMethod(account) === "instagram-login");
-  const facebookInstagram = usableAccounts.find((account) => account.channel === "instagram" && authMethod(account) !== "instagram-login");
-  const facebook = usableAccounts.find((account) => String(account.channel) === "facebook");
-  const brainReturn = `/brands/${encoded}/brain`;
-  const acceptedLearnings=learnings.filter((learning)=>learning.status==="accepted");
+  const channelsHref = `/brands/${encoded}/channels`;
 
   return (
-    <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand Brain" mobileActive="More">
-      <main id="kairo-main-content" className="workspace-main brand-brain-workspace">
-        <header className="topbar brain-page-header">
-          <div>
-            <p className="eyebrow">Brand Brain</p>
+    <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand" pageLabel="Brand">
+      <main id="kairo-main-content" tabIndex={-1} className="workspace-main brand-v2-main">
+        <header className="brand-v2-header">
+          <div className="brand-v2-title">
+            <p className="eyebrow">Brand</p>
             <h1>{brand.name}</h1>
-            <p className="lede">The Brand context Kairo uses when it researches, recommends and creates. Suggestions remain visible as suggestions until you confirm them.</p>
+            <p>Keep the Brand context Kairo uses for research, recommendations and creation accurate. Select any value to edit it in place.</p>
           </div>
-          <KairoScopePicker brandName={brand.name} workspaceName={workspace.name} />
+          <div className="brand-v2-state" aria-label="Brand context state">
+            <span><strong>{summary.confirmed}</strong> Confirmed</span>
+            <span><strong>{summary.suggested}</strong> Suggested</span>
+            <span><strong>{summary.stale}</strong> Needs refresh</span>
+          </div>
         </header>
 
         {messages.notice ? <div className="notice success" role="status">{messages.notice}</div> : null}
         {messages.error ? <div className="notice error" role="alert">{messages.error}</div> : null}
 
-        <section className="brain-profile-panel" aria-labelledby="brand-profile-heading">
-          <div className="brain-profile-heading">
-            <div>
-              <p className="eyebrow">Profile</p>
-              <h2 id="brand-profile-heading">What Kairo knows</h2>
-              <p>Confirmed owner context and Kairo suggestions stay deliberately distinct.</p>
-            </div>
-            <div className="brain-state-summary" aria-label="Brand Brain states">
-              <span><strong>{overview.confirmedCount}</strong> confirmed</span>
-              <span><strong>{overview.suggestedCount}</strong> suggested</span>
-              <span><strong>{overview.staleCount}</strong> need refresh</span>
-            </div>
+        <section className="brand-summary" aria-labelledby="brand-summary-title">
+          <div>
+            <p className="eyebrow">At a glance</p>
+            <h2 id="brand-summary-title">What Kairo should understand</h2>
           </div>
-
-          <div className="brain-profile-list">
-            {overview.summaries.map(({ title, field }) => (
-              <article className="brain-profile-row" key={title}>
-                <div className="brain-profile-label">
-                  <h3>{title}</h3>
-                  <FieldState field={field} />
-                </div>
-                <div className="brain-profile-value">
-                  <p>{field?.value ?? "Not learned yet."}</p>
-                  <span>{fieldEvidenceLabel(field)}</span>
-                </div>
-              </article>
-            ))}
-          </div>
+          <dl>
+            <SummaryFact label="Category" value={summary.category} />
+            <SummaryFact label="Positioning" value={summary.positioning} />
+            <SummaryFact label="Audience" value={summary.audience} />
+            <SummaryFact label="Voice" value={summary.tone} />
+          </dl>
         </section>
 
-        {overview.reviewItems.length ? (
-          <section className="brain-attention-panel" aria-labelledby="review-heading">
-            <div className="brain-attention-heading">
-              <div>
-                <p className="eyebrow">Your review</p>
-                <h2 id="review-heading">{overview.reviewItems.length} {overview.reviewItems.length === 1 ? "item needs" : "items need"} a decision</h2>
-                <p>Kairo will not silently turn these suggestions into confirmed Brand truth.</p>
-              </div>
-              <Link className="primary-button" href={controlHref}>Review suggestions</Link>
+        {(summary.suggested > 0 || summary.stale > 0) ? (
+          <div className="brand-review-note" role="status">
+            <div>
+              <strong>{summary.suggested + summary.stale} field{summary.suggested + summary.stale === 1 ? "" : "s"} could use your review.</strong>
+              <span>Suggested information stays distinct from owner-confirmed Brand truth until you save it.</span>
             </div>
-            <div className="brain-attention-list">
-              {overview.reviewItems.slice(0, 4).map((field) => {
-                const definition = findFieldDefinition(field.fieldKey);
-                return (
-                  <div className="brain-attention-row" key={field.id}>
-                    <div>
-                      <strong>{definition?.label ?? friendlyFieldName(field.fieldKey)}</strong>
-                      <span>{field.value}</span>
-                    </div>
-                    <FieldState field={field} />
+            <a className="secondary-button" href="#identity">Review Brand</a>
+          </div>
+        ) : null}
+
+        <nav className="brand-section-nav" aria-label="Brand sections">
+          {sections.map((section) => <a href={`#${section.id}`} key={section.id}>{section.title}</a>)}
+          <a href="#sources">Sources</a>
+          <Link href={channelsHref}>Channels</Link>
+        </nav>
+
+        <div className="brand-v2-stack">
+          {sections.map((section) => (
+            <section className="brand-profile-section" id={section.id} key={section.id} aria-labelledby={`${section.id}-title`}>
+              <header>
+                <div>
+                  <p className="eyebrow">Brand context</p>
+                  <h2 id={`${section.id}-title`}>{section.title}</h2>
+                  <p>{section.description}</p>
+                </div>
+              </header>
+              <div className="brand-field-list">
+                {section.fields.map(({ section: sourceSection, definition, field }) => (
+                  <div id={fieldAnchor(definition.key)} key={definition.key}>
+                    <InlineBrandField brandId={brand.id} section={sourceSection} definition={definition} field={field} />
                   </div>
-                );
-              })}
-            </div>
-            {overview.reviewItems.length > 4 ? <p className="brain-more-count">+ {overview.reviewItems.length - 4} more in Review &amp; Control</p> : null}
-          </section>
-        ) : (
-          <section className="brain-ready-note" aria-label="Brand Brain review status">
-            <div>
-              <strong>Nothing needs your attention right now.</strong>
-              <span>Confirmed owner context remains authoritative. You can still inspect or edit the full Brand Brain.</span>
-            </div>
-            <Link className="secondary-button" href={controlHref}>Review &amp; control</Link>
-          </section>
-        )}
-
-        <details className="brain-disclosure brand-setup-disclosure" open={brain.length === 0 || messages.setup === "open"}>
-          <summary>
-            <div>
-              <span className="eyebrow">Setup</span>
-              <strong>{brain.length ? "Update Brand Brain" : "Build my Brand Brain"}</strong>
-              <span>Change the owner goal, add an optional public reference, or refresh Kairo's suggestions.</span>
-            </div>
-            <span className="disclosure-action" aria-hidden="true">Open</span>
-          </summary>
-          <div className="brain-setup-body">
-            <div className="guided-setup-copy">
-              <h2>{brain.length ? "Refresh what Kairo should optimise for" : "Give Kairo a useful starting point"}</h2>
-              <p>Kairo can start from your Brand and owner decisions. A public website, social profile, article, blog, product page or text-based PDF is optional evidence—not a prerequisite for suggestions.</p>
-              {publicReference ? (
-                <div className="reference-chip">
-                  <span>Public reference configured</span>
-                  <strong>{publicReference}</strong>
-                </div>
-              ) : null}
-            </div>
-
-            <form action={buildBrandBrainAction.bind(null, brand.id)} className="guided-setup-form">
-              {!publicReference ? (
-                <label>
-                  Public Brand reference <span>optional</span>
-                  <span>Website, social profile, article, blog, product page or public PDF.</span>
-                  <input name="publicReferenceUrl" type="url" inputMode="url" placeholder="https://yourbrand.com/about" />
-                </label>
-              ) : null}
-              <label>
-                What matters most right now?
-                <span>This is an owner decision. Kairo will optimise suggestions around it.</span>
-                <select name="primaryObjective" defaultValue={objectiveValue(existingObjective)} required>
-                  <option value="grow-audience">Grow audience</option>
-                  <option value="build-authority">Build authority</option>
-                  <option value="generate-leads">Generate leads</option>
-                  <option value="build-community">Build community</option>
-                  <option value="promote-offer">Promote an offer</option>
-                </select>
-              </label>
-              <label>
-                Anything Kairo must never say or do? <span>optional</span>
-                <textarea name="ownerBoundary" rows={3} maxLength={4000} defaultValue={ownerDirective} placeholder="For example: never imply dangerous street riding is something to imitate." />
-              </label>
-              <button className="primary-button" type="submit">{brain.length ? "Refresh suggestions" : "Build my Brand Brain"}</button>
-            </form>
-          </div>
-        </details>
-
-        <section className="brain-source-panel performance-memory-panel" aria-labelledby="performance-memory-heading">
-          <div>
-            <p className="eyebrow">Performance Memory</p>
-            <h2 id="performance-memory-heading">What this Brand has learned</h2>
-            <p>Only Learnings you accepted appear here and influence later recommendations.</p>
-          </div>
-          {acceptedLearnings.length?<div className="performance-memory-list">{acceptedLearnings.slice(0,6).map((learning)=><article className="performance-memory-item" key={learning.id}>
-            <div><strong>{learning.statement}</strong><span>{Math.round(learning.confidence*100)}% confidence · {learning.evidence.length} evidence {learning.evidence.length===1?"group":"groups"}</span></div>
-            {(learning.patterns??[]).length?<ul>{learning.patterns.map((pattern)=><li key={`${pattern.dimension}:${pattern.value}`}><b>{friendlyDimension(pattern.dimension)}</b><span>{pattern.value}</span><small>{pattern.observation}</small></li>)}</ul>:null}
-          </article>)}</div>:<p className="brain-memory-empty">No accepted performance Learnings yet. Candidate findings remain in Results until you approve them.</p>}
-          <Link className="tertiary-button" href={`/brands/${encoded}/performance`}>Review performance Learnings</Link>
-        </section>
-
-        <section className="brain-source-panel brain-source-hub" aria-labelledby="source-heading">
-          <div>
-            <p className="eyebrow">Sources</p>
-            <h2 id="source-heading">Evidence &amp; Knowledge</h2>
-            <p>{sourceSummary(activeSources.length, sourceIssues.length, publicReference)}</p>
-          </div>
-          <div className="brain-source-cards">
-            <article className="brain-source-card">
-              <div><span className="source-kind">Website</span><strong>{brand.publicSourceUrl ? safeHost(brand.publicSourceUrl) : "No website added"}</strong><small>{brand.publicSourceUrl ? "Available to Brand Brain as public evidence" : "Add a readable public website or Brand page"}</small></div>
-              <Link className="tertiary-button" href={`${controlHref}#knowledge-sources`}>{brand.publicSourceUrl ? "Manage" : "Add website"}</Link>
-            </article>
-            <article className="brain-source-card">
-              <div><span className="source-kind">Instagram · Recommended</span><strong>{instagram?.displayName ?? (accountResult.available ? "Not connected" : "Status unavailable")}</strong><small>{instagram ? `Professional account · ${healthLabel(instagram)}` : accountResult.available ? "Instagram Login; no Facebook Page required" : "Kairo could not verify the connection right now; existing Brand Brain context is unchanged"}</small>{instagram ? <ConnectionHealthDetails account={instagram} /> : null}</div>
-              <div className="brain-source-card-actions">
-                {instagram ? <form action={disconnectMetaConnectionAction.bind(null,brand.id,instagram.id)}><button className="tertiary-button" type="submit">Disconnect</button></form> : null}
-                <Link className={instagram?.status === "connected" ? "tertiary-button" : "secondary-button"} href={instagram || !accountResult.available ? `/brands/${encoded}/performance` : connectionStartPath(brand.id, "instagram", brainReturn)}>{instagram || !accountResult.available ? "Manage" : "Connect"}</Link>
+                ))}
               </div>
-            </article>
-            <ConnectionSourceCard
-              kind="Facebook + Instagram"
-              account={facebookInstagram}
-              available={accountResult.available}
-              help="Facebook Login, Page selection and its linked Instagram Professional account"
-              connectHref={connectionStartPath(brand.id, "facebook-instagram", brainReturn)}
-              manageHref={`/brands/${encoded}/performance`}
-              brandId={brand.id}
-            />
-            <ConnectionSourceCard
-              kind="Facebook"
-              account={facebook}
-              available={accountResult.available}
-              help="Connect a Facebook Page for publishing"
-              connectHref={connectionStartPath(brand.id, "facebook", brainReturn)}
-              manageHref={`/brands/${encoded}/performance`}
-              brandId={brand.id}
-            />
-            <Link className="secondary-button" href={`${controlHref}#knowledge-sources`}>Manage all sources</Link>
-          </div>
-        </section>
+              {section.id === "content-pillars" && acceptedLearnings.length ? (
+                <details className="brand-memory-disclosure">
+                  <summary>Performance memory · {acceptedLearnings.length} accepted Learning{acceptedLearnings.length === 1 ? "" : "s"}</summary>
+                  <div>
+                    <p>Accepted Learnings are advisory evidence for future recommendations. They never overwrite confirmed Brand facts.</p>
+                    <ul>{acceptedLearnings.slice(0, 5).map((learning) => <li key={learning.id}>{learning.statement}</li>)}</ul>
+                    <Link className="tertiary-button" href={`/brands/${encoded}/performance`}>Open Insights</Link>
+                  </div>
+                </details>
+              ) : null}
+            </section>
+          ))}
+
+          <section className="brand-profile-section brand-sources-section" id="sources" aria-labelledby="sources-title">
+            <header>
+              <div>
+                <p className="eyebrow">Sources</p>
+                <h2 id="sources-title">Where Kairo learns this Brand</h2>
+                <p>Sources are evidence used to understand the Brand. Publishing destinations are managed separately in Channels.</p>
+              </div>
+              <span className="brand-section-count">{activeSources.length} active{sourceIssues.length ? ` · ${sourceIssues.length} need attention` : ""}</span>
+            </header>
+
+            <div className="brand-source-snapshots">
+              <article>
+                <span>Website</span>
+                <strong>{brand.publicSourceUrl ? safeHost(brand.publicSourceUrl) : "Not added"}</strong>
+                <small>{brand.publicSourceUrl ? "Public Brand evidence" : "Add the Brand website or another public reference below."}</small>
+              </article>
+              <article>
+                <span>Instagram source</span>
+                <strong>{instagramSource?.displayName ?? (metaResult.available ? "Not connected" : "Status unavailable")}</strong>
+                <small>{instagramSource
+                  ? `${instagramSource.sourceStatus ?? "Source available"}${instagramSource.lastSourceSyncAt ? ` · synced ${friendlyDate(instagramSource.lastSourceSyncAt)}` : ""}`
+                  : metaResult.available
+                    ? "Connect Instagram from Channels when you want Kairo to learn from the account."
+                    : "Existing Brand context is unchanged while connection health is unavailable."}</small>
+                <Link className="tertiary-button" href={channelsHref}>{instagramSource ? "Manage in Channels" : "Open Channels"}</Link>
+              </article>
+            </div>
+
+            <details className="brand-add-source">
+              <summary className="secondary-button">Add source</summary>
+              <div className="brand-add-source-grid">
+                <form action={addKnowledgeSourceAction.bind(null, brand.id)}>
+                  <input type="hidden" name="type" value="url" />
+                  <label>Public link<input name="url" type="url" required inputMode="url" placeholder="https://example.com/about" /></label>
+                  <label>Title <span>optional</span><input name="title" maxLength={200} placeholder="Brand story" /></label>
+                  <button className="secondary-button" type="submit">Add link</button>
+                </form>
+                <form action={addKnowledgeSourceAction.bind(null, brand.id)}>
+                  <input type="hidden" name="type" value="note" />
+                  <label>Private Brand note<textarea name="content" required rows={4} maxLength={100000} placeholder="Approved positioning, product context or operating guidance…" /></label>
+                  <label>Title <span>optional</span><input name="title" maxLength={200} placeholder="Owner notes" /></label>
+                  <button className="secondary-button" type="submit">Add private note</button>
+                </form>
+              </div>
+              <p className="brand-source-safety">File uploads remain behind Kairo's quarantine and malware-scan boundary; this surface does not bypass that control.</p>
+            </details>
+
+            <div className="brand-source-list">
+              {sources.length ? sources.map((source) => <KnowledgeSourceRow key={source.id} brandId={brand.id} source={source} />) : (
+                <p className="brand-empty-copy">No additional sources yet.</p>
+              )}
+            </div>
+          </section>
+
+          <section className="brand-profile-section brand-channels-entry" id="channels" aria-labelledby="channels-entry-title">
+            <header>
+              <div>
+                <p className="eyebrow">Channels</p>
+                <h2 id="channels-entry-title">Publishing &amp; Insights destinations</h2>
+                <p>Connect and manage the accounts Kairo can publish to and read provider Insights from. Credentials stay behind the connection boundary.</p>
+              </div>
+              <Link className="primary-button" href={channelsHref}>Open Channels</Link>
+            </header>
+          </section>
+        </div>
       </main>
     </KairoProductShell>
   );
 }
 
-function ConnectionSourceCard({ kind, account, available, help, connectHref, manageHref, brandId }: {
-  kind: string;
-  account?: MetaConnectionHealth;
-  available: boolean;
-  help: string;
-  connectHref: string;
-  manageHref: string;
-  brandId: string;
-}) {
-  const connected = account?.status === "connected";
+function SummaryFact({ label, value }: { label: string; value?: string }) {
+  return <div><dt>{label}</dt><dd>{value ?? "Not set"}</dd></div>;
+}
+
+function KnowledgeSourceRow({ brandId, source }: { brandId: string; source: KnowledgeSourceDto }) {
+  const terminal = ["removed", "replaced"].includes(source.status);
   return (
-    <article className="brain-source-card">
+    <article className={`brand-source-row ${terminal ? "terminal" : ""}`}>
       <div>
-        <span className="source-kind">{kind}</span>
-        <strong>{account?.displayName ?? (available ? "Not connected" : "Status unavailable")}</strong>
-        <small>{account ? `${help} · ${healthLabel(account)}` : available ? help : "Connection health is temporarily unavailable; saved Brand context is unchanged"}</small>
-        {account ? <ConnectionHealthDetails account={account} /> : null}
+        <span>{friendlySourceType(source.type)}</span>
+        <strong>{source.title ?? source.sourceUrl ?? "Private Brand knowledge"}</strong>
+        {source.sourceUrl ? <small>{source.sourceUrl}</small> : source.hasPrivateContent ? <small>Private content retained inside this Brand.</small> : null}
       </div>
-      <div className="brain-source-card-actions">
-        {account ? <form action={disconnectMetaConnectionAction.bind(null,brandId,account.id)}><button className="tertiary-button" type="submit">Disconnect</button></form> : null}
-        <Link className={connected ? "tertiary-button" : "secondary-button"} href={account || !available ? manageHref : connectHref}>{account || !available ? "Manage" : "Connect"}</Link>
+      <div className="brand-source-row-actions">
+        <span className={`brand-source-status ${source.status}`}>{friendlySourceStatus(source.status)}</span>
+        {!terminal && source.status === "active" ? <form action={setKnowledgeSourceEnabledAction.bind(null, brandId, source.id, false)}><button className="tertiary-button" type="submit">Disable</button></form> : null}
+        {!terminal && source.status === "disabled" ? <form action={setKnowledgeSourceEnabledAction.bind(null, brandId, source.id, true)}><button className="tertiary-button" type="submit">Enable</button></form> : null}
+        {!terminal && !["quarantined", "failed"].includes(source.status) ? <form action={removeKnowledgeSourceAction.bind(null, brandId, source.id)}><button className="tertiary-button" type="submit">Remove</button></form> : null}
       </div>
     </article>
   );
 }
 
-function ConnectionHealthDetails({account}:{account:MetaConnectionHealth}) {
-  const recovery=account.issue==="token-expired"||account.issue==="reconnect-required"?"Reconnect to restore publishing and refresh access.":account.issue==="source-sync-failed"?"Refresh the Instagram source; reconnect if the failure continues.":undefined;
-  return <dl className="connection-health-details">
-    <div><dt>Permissions</dt><dd>{account.grantedScopes?.length ? `${account.grantedScopes.length} granted` : "None reported"}</dd></div>
-    <div><dt>Last verified</dt><dd>{friendlyDate(account.lastVerifiedAt)}</dd></div>
-    {account.channel==="instagram"?<div><dt>Brand sync</dt><dd>{friendlyDate(account.lastSourceSyncAt)}{account.sourceStatus?` · ${account.sourceStatus}`:""}</dd></div>:null}
-    {account.tokenExpiresAt?<div><dt>Access expires</dt><dd>{friendlyDate(account.tokenExpiresAt)}</dd></div>:null}
-    {recovery?<div className="connection-health-recovery"><dt>Action</dt><dd>{recovery}</dd></div>:null}
-  </dl>;
+function friendlySourceType(type: KnowledgeSourceDto["type"]) {
+  if (type === "url" || type === "website") return "Public link";
+  if (type === "note" || type === "pasted") return "Private note";
+  if (type === "document") return "File";
+  if (type === "product") return "Product context";
+  return "Research";
 }
 
-function healthLabel(account:MetaConnectionHealth){return account.healthy?"Healthy":account.issue==="source-sync-failed"?"Source refresh needs attention":"Reconnect required"}
-function friendlyDate(value?:string){if(!value)return"Not yet";const parsed=new Date(value);return Number.isFinite(parsed.getTime())?new Intl.DateTimeFormat("en",{dateStyle:"medium",timeStyle:"short"}).format(parsed):"Unavailable"}
-
-function authMethod(account: unknown): string | undefined {
-  if (!account || typeof account !== "object" || !("authMethod" in account)) return undefined;
-  const value = (account as { authMethod?: unknown }).authMethod;
-  return typeof value === "string" ? value : undefined;
-}
-
-function FieldState({ field }: { field?: BrandBrainFieldDto }) {
-  const state = field?.state ?? "unset";
-  return (
-    <span className={`field-state ${state}`}>
-      <i className={`state-dot ${field?.state ?? ""}`} aria-hidden="true" />
-      {fieldStateLabel(field)}
-    </span>
-  );
-}
-
-function objectiveValue(value?: string) {
-  if (value === "Build authority") return "build-authority";
-  if (value === "Generate leads") return "generate-leads";
-  if (value === "Build community") return "build-community";
-  if (value === "Promote an offer") return "promote-offer";
-  return "grow-audience";
-}
-
-function sourceSummary(activeCount: number, issueCount: number, publicReference?: string) {
-  const parts: string[] = [];
-  if (activeCount) parts.push(`${activeCount} active Knowledge ${activeCount === 1 ? "source" : "sources"}`);
-  else parts.push("No additional Knowledge sources yet");
-  if (publicReference) parts.push("a public Brand reference is configured");
-  if (issueCount) parts.push(`${issueCount} ${issueCount === 1 ? "source needs" : "sources need"} attention`);
-  return `${parts.join(" · ")}.`;
+function friendlySourceStatus(status: KnowledgeSourceDto["status"]) {
+  if (status === "quarantined") return "Needs scan";
+  if (status === "failed") return "Needs attention";
+  if (status === "disabled") return "Disabled";
+  if (status === "removed") return "Removed";
+  if (status === "replaced") return "Replaced";
+  return "Active";
 }
 
 function safeHost(value: string) {
-  try {
-    return new URL(value).hostname.replace(/^www\./, "");
-  } catch {
-    return "Public reference";
-  }
+  try { return new URL(value).hostname.replace(/^www\./, ""); } catch { return value; }
 }
 
-function friendlyFieldName(key: string) {
-  return key.split(".").at(-1)?.replace(/-/g, " ") ?? key;
+function friendlyDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return "recently";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
-function friendlyDimension(value:string){return value.charAt(0).toUpperCase()+value.slice(1)}
