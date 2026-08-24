@@ -3,9 +3,9 @@
   "sliceId": "VS-89",
   "title": "Brand, Sources and Channels",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "observed",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": ["FR-03", "FR-05", "FR-18"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
   "dependencies": ["VS-74", "VS-84", "VS-86", "VS-88"],
@@ -19,26 +19,29 @@
       "Moves ordinary Brand edits to inline-first local Save/Cancel interactions using the existing exact-version field write contract.",
       "Separates evidence Sources from authenticated publishing/Insights Channels.",
       "Adds a dedicated Brand Channels overview using existing channel-account and Meta health/OAuth contracts; no token or raw scope detail is exposed in normal UX.",
-      "Avatar and AI/Media Providers are excluded because no persistence/configuration contract exists yet; they require separate governed slices rather than fake UI.",
-      "No API, worker, migration, provider, tenant-boundary, publishing or analytics-collection change is authorized.",
-      "No production deployment is authorized while Vercel capacity remains deferred.",
-      "VS-88 was certified on 930a6bd8b2dac5092f549b4eea19b4786436a58c and merged as dda4223a191953619768a90a6bc19f25609df495; release and production-enable remain deferred."
+      "Avatar and AI/Media Providers remain excluded because no persistence/configuration contract exists yet; they require separate governed slices rather than fake UI.",
+      "No API, worker, migration, provider, tenant-boundary, publishing or analytics-collection behavior changed in VS-89.",
+      "Certified runtime candidate d7243fea87008e7c5e73a1cb50f87782bf79c418 was merged in PR #184 and released through the approval-only Vercel Git gate.",
+      "Production deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS is READY with deployed provenance d180d18d0166ddbb33bab9ef64e0746a0c9363fa; Git compare from the certified candidate changes only Vercel deployment-control files.",
+      "Public release smoke passed: /api/version 200, expected Auth0 redirect, and no immediate Vercel runtime errors.",
+      "Authenticated Brand/Channels interaction and rendered visual-fidelity smoke remain post-release observations and must not be represented as validated."
     ]
   },
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-89@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T17:38:00+02:00","rationale":"The Product Owner said Go next after VS-88 merged and after the next Brand/Channels work was identified. The bounded frontend-only scope was stated before implementation."},
     {"type":"policy","status":"not-required","version":"VS-89@1.0","commitSha":null,"by":null,"at":null,"rationale":"Existing Brand confirmation, source provenance, Meta OAuth, publishing capability and learning policies are reused unchanged."},
-    {"type":"implementation","status":"approved","version":"VS-89@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T17:38:00+02:00","rationale":"The Product Owner instructed the next approved UI implementation to proceed. Runtime work is limited to existing frontend contracts and no-deployment boundaries."},
-    {"type":"certification","status":"pending","version":"VS-89@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA Product Intake, Security, full CI and explicit Product Owner certification."},
-    {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized; deployment remains deferred."}
+    {"type":"implementation","status":"approved","version":"VS-89@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T17:38:00+02:00","rationale":"The Product Owner instructed the approved Brand/Channels UI implementation to proceed. Runtime work remained limited to existing contracts."},
+    {"type":"certification","status":"approved","version":"VS-89@1.0","commitSha":"d7243fea87008e7c5e73a1cb50f87782bf79c418","by":"Sazid Khan","at":"2026-08-24T18:24:00+02:00","rationale":"The Product Owner instructed the exact-SHA gate to proceed after Product Intake #838, Security #1010 and CI #1217 passed on the immutable candidate."},
+    {"type":"release","status":"approved","version":"VS-89@1.0","commitSha":"d7243fea87008e7c5e73a1cb50f87782bf79c418","by":"Sazid Khan","at":"2026-08-24T18:24:00+02:00","rationale":"The Product Owner instructed the guarded production sequence to proceed for the certified VS-89 candidate, including the controlled approval-only Vercel release path."},
+    {"type":"production-enable","status":"approved","version":"VS-89@1.0","commitSha":"d7243fea87008e7c5e73a1cb50f87782bf79c418","by":"Sazid Khan","at":"2026-08-24T18:24:00+02:00","rationale":"The Product Owner explicitly said Go after the production-enable, merge, Vercel verification and smoke sequence was presented."
+    }
   ],
   "decisionIds": ["DEC-004", "DEC-010", "DEC-011"],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
-  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-89.md","implementationPr":null,"evidence":["delivery/context/VS-89.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md"]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":60},
+  "certification": {"status":"passed","commitSha":"d7243fea87008e7c5e73a1cb50f87782bf79c418","evidence":["GitHub Product Intake #838 passed","GitHub Security baseline #1010 passed","GitHub CI #1217 passed including preflight, migrations, typecheck, tests and production build","PR #184 exact head d7243fea87008e7c5e73a1cb50f87782bf79c418"]},
+  "release": {"status":"released","releaseId":"REL-007"},
+  "rollback": {"status":"ready","rollbackId":"RB-007"},
+  "postRelease": {"status":"observing","reviewAt":"2026-08-25T10:00:00+02:00","expectedOutcome":"An authenticated user can use the approved Brand, Sources and Channels UX in production without losing tenant scoping, exact-version Brand writes, OAuth safety or publishing safeguards.","metrics":["Vercel production READY and /api/version 200","Auth0 production redirect succeeds","Authenticated Brand page loads and inline Save/Cancel persists safely","Sources remain evidence-only and authenticated Channels remain separate","Channels Connect/Manage/Reconnect/Disconnect preserve existing account authority","Desktop/mobile rendered visual-fidelity check matches DESIGN.md"]},
+  "links": {"specification":"docs/slices/VS-89.md","implementationPr":"https://github.com/ksazid/kairo/pull/184","evidence":["delivery/context/VS-89.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md","Vercel deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS","Git compare d7243fea87008e7c5e73a1cb50f87782bf79c418..d180d18d0166ddbb33bab9ef64e0746a0c9363fa"]},
   "maxAttempts": 3
 }
