@@ -22,8 +22,10 @@ import {
   replaceSlideImageAction,
 } from "../actions";
 import styles from "./review.module.css";
+
 type Params = Promise<{ brandId: string; campaignId: string; assetId: string }>;
 type Search = Promise<{ notice?: string; error?: string }>;
+
 export default async function CarouselReviewPage({
   params,
   searchParams,
@@ -45,32 +47,31 @@ export default async function CarouselReviewPage({
   const asset = detail.assets.find((x) => x.asset.id === assetId)?.asset;
   if (!asset || asset.format.toLowerCase() !== "carousel")
     redirect(
-      `/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(campaignId)}`,
+      `/brands/${encodeURIComponent(brandId)}/content/${encodeURIComponent(campaignId)}/${encodeURIComponent(assetId)}`,
     );
   const review = await ensureCarouselReview(brandId, campaignId, assetId);
   const ordered = review.slides.map((x) => x.id),
     blocking = review.qualitySummary.errors > 0 || review.status !== "ready";
+  const contentHref = `/brands/${encodeURIComponent(brandId)}/content/${encodeURIComponent(campaignId)}/${encodeURIComponent(assetId)}`;
+
   return (
     <KairoProductShell
       brandId={brandId}
       workspaceId={workspace.id}
-      active="Campaigns"
-      mobileActive="More"
+      active="Content"
+      mobileActive="Content"
     >
       <main id="kairo-main-content" tabIndex={-1} className={styles.main}>
         <header className={styles.hero}>
           <div>
-            <Link
-              className={styles.back}
-              href={`/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(campaignId)}`}
-            >
-              ← Campaign
+            <Link className={styles.back} href={contentHref}>
+              ← Content preview
             </Link>
-            <p className="eyebrow">Visual carousel review</p>
+            <p className="eyebrow">Carousel preview</p>
             <h1>{asset.topic}</h1>
             <p>
               Review the exact 1080 × 1350 rendered media. Every edit creates a
-              new asset/render version before approval.
+              new asset/render version before the content can be locked.
             </p>
           </div>
           <KairoScopePicker
@@ -291,12 +292,12 @@ export default async function CarouselReviewPage({
         </section>
         <section className={styles.approval} aria-labelledby="approval-title">
           <div>
-            <p className="eyebrow">Final asset lock</p>
-            <h2 id="approval-title">Approve this exact render</h2>
+            <p className="eyebrow">Final render lock</p>
+            <h2 id="approval-title">Lock this exact carousel render</h2>
             <p>
               {blocking
-                ? "Resolve blocking quality findings and wait for rendering before approval."
-                : "Publishing will use this exact approved render version."}
+                ? "Resolve blocking quality findings and wait for rendering before locking this render."
+                : "The Content approval step will reference this exact render version."}
             </p>
             <small>
               Render {review.renderVersionId} · Asset version{" "}
@@ -305,7 +306,7 @@ export default async function CarouselReviewPage({
           </div>
           {review.status === "approved" ? (
             <strong className={styles.approved}>
-              Approved{" "}
+              Render locked{" "}
               {review.approvedAt
                 ? new Date(review.approvedAt).toLocaleString()
                 : ""}
@@ -322,7 +323,7 @@ export default async function CarouselReviewPage({
               )}
             >
               <button className="primary-button" disabled={blocking}>
-                Approve final carousel
+                Lock final render
               </button>
             </form>
           )}
@@ -331,6 +332,7 @@ export default async function CarouselReviewPage({
     </KairoProductShell>
   );
 }
+
 function FindingList({ findings }: { findings: CarouselQualityFinding[] }) {
   return findings.length ? (
     <ul className={styles.findings}>

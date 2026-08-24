@@ -6,7 +6,7 @@ import {
   MOBILE_PRODUCT_DESTINATIONS,
 } from "./product-navigation";
 
-describe("VS-86 product navigation", () => {
+describe("approved product navigation", () => {
   it("keeps stable internal destination keys on desktop and mobile", () => {
     expect(DESKTOP_PRODUCT_DESTINATIONS).toEqual(["Home","Content","Calendar","Results","Brand"]);
     expect(MOBILE_PRODUCT_DESTINATIONS).toEqual(DESKTOP_PRODUCT_DESTINATIONS);
@@ -27,9 +27,9 @@ describe("VS-86 product navigation", () => {
     });
   });
 
-  it("builds Brand-scoped destinations without adding another primary route", () => {
+  it("routes the primary Content destination to the user-facing Content library", () => {
     const navigation = buildProductNavigation({ brandId: "brand-a" });
-    expect(navigation.desktop.find((item) => item.label === "Content")?.href).toBe("/brands/brand-a/campaigns");
+    expect(navigation.desktop.find((item) => item.label === "Content")?.href).toBe("/brands/brand-a/content");
     expect(navigation.desktop.find((item) => item.label === "Results")?.href).toBe("/brands/brand-a/performance");
     expect(navigation.mobile).toHaveLength(5);
   });

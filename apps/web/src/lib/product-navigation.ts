@@ -52,7 +52,7 @@ export function buildProductNavigation({
     today = buildTodayHref(workspaceId, brandId);
   const items: ProductNavigationItem[] = [
     { label: "Home", displayLabel: "Home", href: today },
-    { label: "Content", displayLabel: "Content", href: base ? `${base}/campaigns` : null },
+    { label: "Content", displayLabel: "Content", href: base ? `${base}/content` : null },
     { label: "Calendar", displayLabel: "Calendar", href: base ? `${base}/calendar` : null },
     { label: "Results", displayLabel: "Insights", href: base ? `${base}/performance` : null },
     { label: "Brand", displayLabel: "Brand", href: base ? `${base}/brain` : null },
