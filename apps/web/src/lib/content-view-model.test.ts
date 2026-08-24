@@ -111,6 +111,44 @@ describe("Content list state model", () => {
     expect(result.counts).toEqual({ all: 6, "needs-you": 3, ready: 1, scheduled: 1, published: 1 });
   });
 
+  it("does not reuse approval or publishing state from an older immutable version", () => {
+    const edited = detail("edited", "Edited topic");
+    edited.assets[0]!.asset.currentVersion = 2;
+    edited.assets[0]!.versions.push({
+      id: "version-edited-v2",
+      assetId: "edited",
+      version: 2,
+      parentVersionId: "version-edited",
+      content: "New unapproved copy",
+      supportingClaimIds: [],
+      actor: "user",
+      action: "edit",
+      createdAt: "2026-08-24T12:30:00.000Z",
+    });
+    const staleApproval = status({
+      approval: {
+        id: "old-approval",
+        versionId: "version-edited",
+        version: 1,
+        reviewId: "old-review",
+        approverAccountId: "user-1",
+        destination: { channel: "instagram", accountRef: "ig-1" },
+        approvedAt: "2026-08-24T11:00:00.000Z",
+      },
+    });
+
+    const result = buildContentList(
+      [edited],
+      new Map([["edited", staleApproval]]),
+      [command("edited", "published")],
+    );
+
+    expect(result.items[0]?.version).toBe(2);
+    expect(result.items[0]?.bucket).toBe("needs-you");
+    expect(result.items[0]?.statusLabel).toBe("Draft");
+    expect(result.items[0]?.actionLabel).toBe("Continue");
+  });
+
   it("keeps filter labels and validation deterministic", () => {
     expect(contentFilterLabel("needs-you")).toBe("Needs you");
     expect(contentFilterLabel("published")).toBe("Published");
