@@ -1,41 +1,44 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-88",
-  "title": "Calendar and Insights",
+  "sliceId": "VS-89",
+  "title": "Brand, Sources and Channels",
   "status": "active",
   "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-14", "FR-16", "FR-17", "FR-18"],
+  "requirements": ["FR-03", "FR-05", "FR-18"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-87", "VS-07", "VS-08", "VS-09"],
+  "dependencies": ["VS-74", "VS-84", "VS-86", "VS-88"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**", "docs/slices/VS-88.md", "docs/plans/VS-88-implementation.md", "delivery/**", "README.md", ".engineering/STATE.json", "scripts/**"],
+  "allowedPaths": ["apps/web/**", "docs/slices/VS-89.md", "docs/plans/**", "delivery/**", "README.md", ".engineering/STATE.json", "scripts/**"],
   "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
   "impact": {
-    "areas": ["frontend", "customer-flow", "analytics"],
+    "areas": ["frontend", "customer-flow", "authorization", "analytics"],
     "notes": [
-      "Reframes Calendar around the approved week-first desktop and agenda-first mobile experience while preserving existing publishing state truth.",
-      "Reframes the existing performance route as Insights with What happened, Why might it have happened, and What should we try next as the dominant hierarchy.",
-      "Removes channel connection management from Insights; existing connection contracts and routes are preserved for the future Brand Channels slice.",
-      "No API, worker, migration, authentication, provider, tenant-boundary, publishing or analytics-collection change is authorized.",
-      "No production deployment is authorized while Vercel capacity remains deferred."
+      "Reframes the existing Brand Brain UI as the approved user-facing Brand surface while preserving the Brand Brain domain model underneath.",
+      "Moves ordinary Brand edits to inline-first local Save/Cancel interactions using the existing exact-version field write contract.",
+      "Separates evidence Sources from authenticated publishing/Insights Channels.",
+      "Adds a dedicated Brand Channels overview using existing channel-account and Meta health/OAuth contracts; no token or raw scope detail is exposed in normal UX.",
+      "Avatar and AI/Media Providers are excluded because no persistence/configuration contract exists yet; they require separate governed slices rather than fake UI.",
+      "No API, worker, migration, provider, tenant-boundary, publishing or analytics-collection change is authorized.",
+      "No production deployment is authorized while Vercel capacity remains deferred.",
+      "VS-88 was certified on 930a6bd8b2dac5092f549b4eea19b4786436a58c and merged as dda4223a191953619768a90a6bc19f25609df495; release and production-enable remain deferred."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-88@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T16:03:00+02:00","rationale":"The Product Owner said Go next after UI-03 Calendar + Insights was identified as the next bounded frontend slice with week-first Calendar, agenda-first mobile and narrative Insights."},
-    {"type":"policy","status":"not-required","version":"VS-88@1.0","commitSha":null,"by":null,"at":null,"rationale":"Existing publishing, analytics, Brand Learning and evidence policies are reused unchanged."},
-    {"type":"implementation","status":"approved","version":"VS-88@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T16:03:00+02:00","rationale":"The Product Owner instructed the work to proceed after the no-deployment, frontend-only boundary was stated."},
-    {"type":"certification","status":"pending","version":"VS-88@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires deterministic exact-SHA verification and explicit Product Owner approval."},
+    {"type":"scope","status":"approved","version":"VS-89@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T17:38:00+02:00","rationale":"The Product Owner said Go next after VS-88 merged and after the next Brand/Channels work was identified. The bounded frontend-only scope was stated before implementation."},
+    {"type":"policy","status":"not-required","version":"VS-89@1.0","commitSha":null,"by":null,"at":null,"rationale":"Existing Brand confirmation, source provenance, Meta OAuth, publishing capability and learning policies are reused unchanged."},
+    {"type":"implementation","status":"approved","version":"VS-89@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T17:38:00+02:00","rationale":"The Product Owner instructed the next approved UI implementation to proceed. Runtime work is limited to existing frontend contracts and no-deployment boundaries."},
+    {"type":"certification","status":"pending","version":"VS-89@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA Product Intake, Security, full CI and explicit Product Owner certification."},
     {"type":"release","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized."},
-    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized; deployment is deferred."}
+    {"type":"production-enable","status":"pending","version":null,"commitSha":null,"by":null,"at":null,"rationale":"Not authorized; deployment remains deferred."}
   ],
-  "decisionIds": [],
+  "decisionIds": ["DEC-004", "DEC-010", "DEC-011"],
   "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
-  "links": {"specification":"docs/slices/VS-88.md","implementationPr":null,"evidence":["docs/plans/VS-88-implementation.md","delivery/context/VS-88.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md"]},
+  "links": {"specification":"docs/slices/VS-89.md","implementationPr":null,"evidence":["delivery/context/VS-89.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md"]},
   "maxAttempts": 3
 }

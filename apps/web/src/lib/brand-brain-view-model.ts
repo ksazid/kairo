@@ -64,7 +64,7 @@ export const BRAND_BRAIN_SECTIONS: BrandBrainSectionDefinition[] = [
     fields: [
       { key: "content.pillars", label: "Content pillars", hint: "Recurring areas the Brand has authority to discuss." },
       { key: "content.preferred-topics", label: "Preferred topics", hint: "Topics the Brand wants to cover more often." },
-      { key: "content.channels", label: "Channels", hint: "Relevant channels such as Instagram or LinkedIn." },
+      { key: "content.channels", label: "Preferred channels", hint: "Channels Kairo should plan content for. Connected publishing destinations are managed separately in Channels." },
     ],
   },
   {
