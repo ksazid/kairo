@@ -1,7 +1,9 @@
+create unique index if not exists brands_workspace_id_id_uq on brands(workspace_id, id);
+
 create table brand_presenters (
   id text primary key,
-  workspace_id text not null references workspaces(id),
-  brand_id text not null references brands(id),
+  workspace_id text not null references workspaces(id) on delete cascade,
+  brand_id text not null,
   display_name text not null,
   status text not null default 'draft',
   mode text not null,
@@ -21,6 +23,8 @@ create table brand_presenters (
   constraint brand_presenters_status check (status in ('draft','ready','disabled')),
   constraint brand_presenters_mode check (mode in ('basic','talking-avatar','hybrid-explainer')),
   constraint brand_presenters_version check (version > 0),
+  constraint brand_presenters_brand_scope_fk foreign key (workspace_id, brand_id)
+    references brands(workspace_id, id) on delete cascade,
   constraint brand_presenters_brand_unique unique (workspace_id, brand_id),
   constraint brand_presenters_scoped_id_unique unique (workspace_id, brand_id, id)
 );
