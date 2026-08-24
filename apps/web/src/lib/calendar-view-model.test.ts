@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   addCalendarMonths,
+  addCalendarWeeks,
   applyCalendarFilters,
   buildCalendarMonth,
+  buildCalendarWeek,
+  calendarWeekRangeIso,
+  isCalendarView,
+  parseCalendarDay,
   parseCalendarMonth,
   type CalendarFilterable,
 } from "./calendar-view-model";
@@ -19,17 +24,64 @@ function item(overrides: Partial<CalendarFilterable> = {}): CalendarFilterable {
   };
 }
 
-describe("VS-32 calendar view model", () => {
+describe("calendar view model", () => {
   it("parses a valid month and falls back deterministically for invalid input", () => {
     const fallback = new Date("2026-08-17T12:00:00.000Z");
     expect(parseCalendarMonth("2026-02", fallback).toISOString()).toBe("2026-02-01T00:00:00.000Z");
     expect(parseCalendarMonth("not-a-month", fallback).toISOString()).toBe("2026-08-01T00:00:00.000Z");
   });
 
+  it("parses a valid UTC day and rejects impossible dates", () => {
+    const fallback = new Date("2026-08-19T12:00:00.000Z");
+    expect(parseCalendarDay("2026-08-24", fallback).toISOString()).toBe("2026-08-24T00:00:00.000Z");
+    expect(parseCalendarDay("2026-02-31", fallback).toISOString()).toBe("2026-08-19T00:00:00.000Z");
+    expect(parseCalendarDay("bad", fallback).toISOString()).toBe("2026-08-19T00:00:00.000Z");
+  });
+
+  it("accepts only the three approved Calendar view modes", () => {
+    expect(isCalendarView("week")).toBe(true);
+    expect(isCalendarView("month")).toBe(true);
+    expect(isCalendarView("agenda")).toBe(true);
+    expect(isCalendarView("grid")).toBe(false);
+  });
+
   it("moves between months without day overflow", () => {
     const january = new Date("2026-01-01T00:00:00.000Z");
     expect(addCalendarMonths(january, 1).toISOString()).toBe("2026-02-01T00:00:00.000Z");
     expect(addCalendarMonths(january, -1).toISOString()).toBe("2025-12-01T00:00:00.000Z");
+  });
+
+  it("moves between Monday-first weeks across month boundaries", () => {
+    const anchor = new Date("2026-08-19T12:00:00.000Z");
+    expect(addCalendarWeeks(anchor, 1).toISOString()).toBe("2026-08-24T00:00:00.000Z");
+    expect(addCalendarWeeks(anchor, -1).toISOString()).toBe("2026-08-10T00:00:00.000Z");
+  });
+
+  it("builds a Monday-first week and assigns entries to truthful UTC dates", () => {
+    const week = buildCalendarWeek(new Date("2026-08-19T12:00:00.000Z"), [
+      item({ id: "monday", scheduledFor: "2026-08-17T23:59:59.000Z" }),
+      item({ id: "sunday", scheduledFor: "2026-08-23T00:00:00.000Z" }),
+    ]);
+
+    expect(week.weekKey).toBe("2026-08-17");
+    expect(week.label).toBe("17–23 August 2026");
+    expect(week.days).toHaveLength(7);
+    expect(week.days[0]?.weekday).toBe("Mon");
+    expect(week.days.at(-1)?.weekday).toBe("Sun");
+    expect(week.days[0]?.entries.map((entry) => entry.id)).toEqual(["monday"]);
+    expect(week.days.at(-1)?.entries.map((entry) => entry.id)).toEqual(["sunday"]);
+  });
+
+  it("formats cross-month week labels without losing the year", () => {
+    const week = buildCalendarWeek(new Date("2026-09-02T00:00:00.000Z"), []);
+    expect(week.label).toBe("31 August–6 September 2026");
+  });
+
+  it("creates an inclusive exact week query range", () => {
+    expect(calendarWeekRangeIso(new Date("2026-08-19T00:00:00.000Z"))).toEqual({
+      from: "2026-08-17T00:00:00.000Z",
+      to: "2026-08-23T23:59:59.999Z",
+    });
   });
 
   it("builds a Monday-first six-week grid and assigns entries to truthful UTC dates", () => {
