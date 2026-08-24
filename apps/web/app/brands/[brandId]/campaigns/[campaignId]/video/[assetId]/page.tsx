@@ -30,18 +30,19 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
   ]);
 
   if (!brand) {
-    return <main className="auth-page"><section className="auth-card"><h1>Brand not found.</h1><Link className="primary-button" href="/">Return to Today</Link></section></main>;
+    return <main className="auth-page"><section className="auth-card"><h1>Brand not found.</h1><Link className="primary-button" href="/">Return Home</Link></section></main>;
   }
 
+  const contentHref = `/brands/${encodeURIComponent(brand.id)}/content/${encodeURIComponent(campaignId)}/${encodeURIComponent(assetId)}`;
   const entry = detail.assets.find(({ asset }) => asset.id === assetId);
   if (!entry) {
     return (
-      <KairoProductShell brandId={brand.id} active="Content Studio">
+      <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Content">
         <main id="kairo-main-content" tabIndex={-1} className="workspace-main video-studio-main">
           <section className="video-studio-empty">
-            <p className="eyebrow">Video Studio</p>
-            <h1>Content Asset not found.</h1>
-            <Link className="secondary-button" href={`/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}`}>Back to Content Studio</Link>
+            <p className="eyebrow">Reel editor</p>
+            <h1>Content not found.</h1>
+            <Link className="secondary-button" href={`/brands/${encodeURIComponent(brand.id)}/content`}>Back to Content</Link>
           </section>
         </main>
       </KairoProductShell>
@@ -56,19 +57,18 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
     assetId,
   });
   const isReel = entry.asset.format.toLowerCase() === "reel";
-  const studioHref = `/brands/${encodeURIComponent(brand.id)}/campaigns/${encodeURIComponent(campaignId)}`;
 
   return (
-    <KairoProductShell brandId={brand.id} active="Content Studio">
+    <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Content">
       <main id="kairo-main-content" tabIndex={-1} className="workspace-main video-studio-main">
         <div className="video-studio-topline">
-          <Link className="back-link" href={studioHref}>← Content Studio</Link>
+          <Link className="back-link" href={contentHref}>← Content preview</Link>
           <span className="idea-status">Human controlled</span>
         </div>
 
         <header className="video-studio-header">
           <div>
-            <p className="eyebrow">Video Studio</p>
+            <p className="eyebrow">Reel editor</p>
             <h1>{entry.asset.topic}</h1>
             <p>Edit the Reel as a scene timeline. Every save creates a new immutable Content Version and requires fresh review before approval.</p>
           </div>
@@ -80,9 +80,9 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
 
         {!isReel ? (
           <section className="video-studio-empty">
-            <h2>This editor currently supports Reel Content Assets.</h2>
-            <p>The generic media-transformation pipeline is intentionally separate; VS-54 only edits the existing Kairo Reel plan/timeline contract.</p>
-            <Link className="secondary-button" href={studioHref}>Back to Content Studio</Link>
+            <h2>This editor supports Reel content.</h2>
+            <p>Other media formats keep their own exact preview and editing surfaces so Kairo does not mix incompatible render contracts.</p>
+            <Link className="secondary-button" href={contentHref}>Back to Content preview</Link>
           </section>
         ) : project ? (
           <>
@@ -92,7 +92,7 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
                 <h2 id="video-project-overview-heading">{project.scenes.length} scenes · {project.targetDurationSeconds}s</h2>
                 <p>Source version {project.sourceVersion}. {project.supportingClaimIds.length} supporting Claims remain attached to the project.</p>
               </div>
-              <Link className="primary-button" href={`${studioHref}#review-${encodeURIComponent(entry.asset.id)}`}>Review version {current.version}</Link>
+              <Link className="primary-button" href={`${contentHref}#approval-title`}>Review version {current.version}</Link>
             </section>
 
             <form className="video-copy-panel" action={saveVideoProjectCopyAction.bind(null, brand.id, campaignId, assetId, current.version)}>
@@ -187,7 +187,7 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
               <div>
                 <p className="eyebrow">Render boundary</p>
                 <h2>Uses Kairo's existing Reel renderer</h2>
-                <p>This editor compiles to the existing validated ReelPlan. Storyboard rendering, private MP4 encoding and publishing-media preparation remain owned by the already-certified VS-18/VS-20 pipeline.</p>
+                <p>This editor compiles to Kairo's validated Reel plan. Storyboard rendering, private MP4 encoding and publishing-media preparation stay inside the existing media pipeline.</p>
               </div>
               <span className="review-status passed">Render-contract ready</span>
             </section>
@@ -196,7 +196,7 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
           <section className="video-initialize" aria-labelledby="video-initialize-heading">
             <div className="video-section-heading">
               <div>
-                <p className="eyebrow">Initialize Video Project</p>
+                <p className="eyebrow">Initialize Reel project</p>
                 <h2 id="video-initialize-heading">Start with two purposeful scenes</h2>
                 <p>The existing Content Version remains in history. Initialization saves a new structured version using its existing supporting Claims.</p>
               </div>
@@ -230,7 +230,7 @@ export default async function VideoStudio({ params, searchParams }: { params: Pa
               </label>
               <div className="video-initialize-actions wide">
                 <p>{current.supportingClaimIds.length} supporting Claims from version {current.version} will remain attached; no new claims are created here.</p>
-                <button className="primary-button" type="submit">Initialize Video Project</button>
+                <button className="primary-button" type="submit">Initialize Reel project</button>
               </div>
             </form>
           </section>
