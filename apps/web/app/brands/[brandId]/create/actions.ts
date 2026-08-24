@@ -7,6 +7,7 @@ export async function startSimpleCreationAction(
 ) {
   let creationId:string;
   try {
+    const presenterId = String(form.get("presenterId") ?? "").trim();
     const created = await startSimpleCreation(brandId, {
       goal: String(form.get("goal") ?? ""),
       ...(String(form.get("input") ?? "").trim()
@@ -17,6 +18,7 @@ export async function startSimpleCreationAction(
         : {}),
       contentPreference: String(form.get("contentPreference") ?? "auto") as
         "auto" | "carousel" | "reel" | "image" | "campaign",
+      ...(presenterId ? { presenterId } : {}),
     });
     creationId=created.id;
   } catch (e) {
