@@ -21,6 +21,7 @@ type ProductShellProps = {
   workspaceId?: string | null;
   active?: DesktopProductDestination | null;
   mobileActive?: MobileProductDestination;
+  pageLabel?: string;
   children: ReactNode;
 };
 
@@ -37,6 +38,7 @@ export async function KairoProductShell({
   workspaceId,
   active,
   mobileActive,
+  pageLabel,
   children,
 }: ProductShellProps) {
   const navigation = buildProductNavigation({ brandId, workspaceId });
@@ -47,8 +49,9 @@ export async function KairoProductShell({
   const notificationResult = brandId ? await getBrandNotifications(brandId).catch(() => null) : null;
   const notifications: ProductNotification[] = (notificationResult?.items ?? []).map(productNotificationView);
   const resolvedActive = active ? simpleDestinationFor(active) : null;
-  const mobileSource = mobileActive === "More" && active ? active : mobileActive ?? active ?? "Brand";
-  const resolvedMobileActive = simpleDestinationFor(mobileSource);
+  const mobileSource = mobileActive === "More" && active ? active : mobileActive ?? active;
+  const resolvedMobileActive = mobileSource ? simpleDestinationFor(mobileSource) : pageLabel ? null : "Brand";
+  const visiblePageLabel = pageLabel ?? (resolvedMobileActive ? displayDestination(resolvedMobileActive) : "Home");
   const addBrandHref = workspaceId
     ? `/brands/new?workspace=${encodeURIComponent(workspaceId)}`
     : "/brands/new";
@@ -97,7 +100,7 @@ export async function KairoProductShell({
       <header className="k-shell-mobile-header">
         <div className="k-shell-mobile-context">
           <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} compact />
-          <span className="k-shell-mobile-page">{displayDestination(resolvedMobileActive)}</span>
+          <span className="k-shell-mobile-page">{visiblePageLabel}</span>
         </div>
         <div className="k-shell-mobile-actions" aria-label="Account utilities">
           <NotificationCentre notifications={notifications} />
@@ -114,7 +117,7 @@ export async function KairoProductShell({
             ? <Link href={`/?workspace=${encodeURIComponent(currentBrand.workspaceId)}&brand=${encodeURIComponent(currentBrand.id)}`}>{currentBrand.name}</Link>
             : <span>Brand</span>}
           <KairoIcon name="chevron" />
-          <span aria-current="page">{resolvedActive ? displayDestination(resolvedActive) : "Home"}</span>
+          <span aria-current="page">{pageLabel ?? (resolvedActive ? displayDestination(resolvedActive) : "Home")}</span>
         </nav>
         <ProductGuide />
         {children}
