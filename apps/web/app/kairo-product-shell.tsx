@@ -47,7 +47,8 @@ export async function KairoProductShell({
   const notificationResult = brandId ? await getBrandNotifications(brandId).catch(() => null) : null;
   const notifications: ProductNotification[] = (notificationResult?.items ?? []).map(productNotificationView);
   const resolvedActive = active ? simpleDestinationFor(active) : null;
-  const resolvedMobileActive = simpleDestinationFor(mobileActive ?? active ?? "Brand");
+  const mobileSource = mobileActive === "More" && active ? active : mobileActive ?? active ?? "Brand";
+  const resolvedMobileActive = simpleDestinationFor(mobileSource);
   const addBrandHref = workspaceId
     ? `/brands/new?workspace=${encodeURIComponent(workspaceId)}`
     : "/brands/new";
