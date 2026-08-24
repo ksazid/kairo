@@ -96,7 +96,7 @@ export default async function ContentPage({
         <section className={styles.list} aria-labelledby="content-list-title">
           <div className="sr-only" id="content-list-title">{contentFilterLabel(filter)} content</div>
           {visible.length ? visible.map((item) => {
-            const contentHref = `${base}/campaigns/${encodeURIComponent(item.campaignId)}?asset=${encodeURIComponent(item.assetId)}`;
+            const contentHref = `${base}/content/${encodeURIComponent(item.campaignId)}/${encodeURIComponent(item.assetId)}`;
             const actionHref = item.actionLabel === "See results"
               ? `${base}/performance?asset=${encodeURIComponent(item.assetId)}`
               : contentHref;
