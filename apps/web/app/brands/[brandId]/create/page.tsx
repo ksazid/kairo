@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getBrand, getSession } from "../../../../src/lib/kairo-api";
+import { getBrandPresenter } from "../../../../src/lib/presenter-api";
 import {
   KairoProductShell,
   KairoScopePicker,
@@ -20,6 +22,9 @@ export default async function CreatePage({
     q = await searchParams,
     brand = await getBrand(brandId);
   if (!brand) redirect("/");
+  const presenter = await getBrandPresenter(brandId)
+    .then((value) => value.eligibility?.status === "eligible" ? value.presenter : null)
+    .catch(() => null);
   return (
     <KairoProductShell brandId={brandId} active="Create">
       <main
@@ -105,6 +110,21 @@ export default async function CreatePage({
             </select>
             <small>You can review other formats before publishing.</small>
           </label>
+          {presenter ? (
+            <div>
+              <label>
+                Presenter <span>optional</span>
+                <select name="presenterId" defaultValue="">
+                  <option value="">None</option>
+                  <option value={presenter.id}>{presenter.displayName}</option>
+                </select>
+                <small>
+                  None is the default. Selecting {presenter.displayName} records presenter intent for this creation.
+                </small>
+              </label>
+              <Link className="tertiary-button" href={`/brands/${encodeURIComponent(brandId)}/avatar`}>Manage presenter</Link>
+            </div>
+          ) : null}
           <button className="primary-button simple-create-submit" type="submit">
             Recommend what to create
           </button>

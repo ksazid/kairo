@@ -45,6 +45,7 @@ export default async function BrandPage({ params, searchParams }: { params: Para
   const instagramSource = metaResult.accounts.find((account) => account.channel === "instagram");
   const encoded = encodeURIComponent(brand.id);
   const channelsHref = `/brands/${encoded}/channels`;
+  const avatarHref = `/brands/${encoded}/avatar`;
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand" pageLabel="Brand">
@@ -92,6 +93,7 @@ export default async function BrandPage({ params, searchParams }: { params: Para
           {sections.map((section) => <a href={`#${section.id}`} key={section.id}>{section.title}</a>)}
           <a href="#sources">Sources</a>
           <Link href={channelsHref}>Channels</Link>
+          <Link href={avatarHref}>Avatar</Link>
         </nav>
 
         <div className="brand-v2-stack">
@@ -186,6 +188,17 @@ export default async function BrandPage({ params, searchParams }: { params: Para
                 <p>Connect and manage the accounts Kairo can publish to and read provider Insights from. Credentials stay behind the connection boundary.</p>
               </div>
               <Link className="primary-button" href={channelsHref}>Open Channels</Link>
+            </header>
+          </section>
+
+          <section className="brand-profile-section brand-channels-entry" id="avatar" aria-labelledby="avatar-entry-title">
+            <header>
+              <div>
+                <p className="eyebrow">Avatar</p>
+                <h2 id="avatar-entry-title">Optional Brand presenter</h2>
+                <p>Define how a presenter should look and sound when a creation benefits from one. Presenter use stays optional and rendering providers remain separately governed.</p>
+              </div>
+              <Link className="secondary-button" href={avatarHref}>Open Avatar</Link>
             </header>
           </section>
         </div>

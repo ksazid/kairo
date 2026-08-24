@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import type { SimpleCreationPresenterDto } from "@kairo/contracts/presenter";
 export type CreationStatus =
   | "queued"
   | "understanding-goal"
@@ -12,6 +13,7 @@ export interface SimpleCreationView {
   status: CreationStatus;
   progress: { stage: CreationStatus; message: string };
   contentPreference: "auto" | "carousel" | "reel" | "image" | "campaign";
+  presenter?: SimpleCreationPresenterDto;
   recommendation?: {
     title?: string;
     framing?: string;
@@ -64,6 +66,7 @@ export function startSimpleCreation(
     input?: string;
     source?: string;
     contentPreference?: "auto" | "carousel" | "reel" | "image" | "campaign";
+    presenterId?: string;
   },
 ) {
   return call<SimpleCreationView>(
