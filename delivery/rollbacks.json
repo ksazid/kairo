@@ -70,6 +70,20 @@
       "verification": ["Production /api/version and application health are green","Auth0 login redirect succeeds","Authenticated Brand access remains tenant-scoped","Existing Sources and channel accounts remain intact","Publishing remains capability-gated and human-approval-bound","Vercel Git auto-deploy is disabled after recovery"],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-008",
+      "releaseId": "REL-008",
+      "status": "ready",
+      "reason": "Rollback readiness for the medium-risk VS-90 Brand Avatar and Optional Presenter foundation release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "1da4665fa430468516f79e38984638369552b6e7",
+      "lastKnownGoodSha": "47b6e66ba0a57015cbd97054d33819e2c165cc04",
+      "triggers": ["API startup, readiness or release provenance regresses after VS-90 rollout","Authenticated Brand → Avatar route cannot load or save a Brand-scoped Presenter safely","A provider-unavailable Presenter becomes selectable or forged Presenter selection reaches durable creation","Existing creation with None regresses","Cross-Brand Presenter read, write or selection succeeds","Existing Content, Preview, approval, publishing or channel safeguards regress"],
+      "procedure": ["Keep root and apps/web Vercel Git deploymentEnabled=false while triaging.","Preserve Presenter, Brand, content, publishing and audit state; do not delete Presenter rows as a rollback mechanism.","For API/runtime regression, redeploy the previous known-good API lineage 47b6e66ba0a57015cbd97054d33819e2c165cc04 or disable the affected Presenter path while forward recovery is prepared.","For web regression, restore the prior known-good Vercel production deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS or its equivalent runtime lineage.","Do not reverse additive migration 0029 as the default rollback path; prefer forward recovery and leave nullable Presenter references intact.","Re-verify authentication, Brand scoping, None creation behavior and existing approval/publishing/channel safeguards before reopening the changed flow."],
+      "verification": ["API and web production runtimes are healthy","Auth0 login redirect and authenticated session bootstrap succeed","Presenter remains unavailable for selection without a healthy configured AvatarProvider","Existing creation with None remains functional","Cross-Brand Presenter access remains denied","Existing publishing remains capability-gated and human-approval-bound","Vercel Git auto-deploy is disabled after recovery"],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }
