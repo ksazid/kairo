@@ -111,17 +111,19 @@ export default async function CreatePage({
             <small>You can review other formats before publishing.</small>
           </label>
           {presenter ? (
-            <label>
-              Presenter <span>optional</span>
-              <select name="presenterId" defaultValue="">
-                <option value="">None</option>
-                <option value={presenter.id}>{presenter.displayName}</option>
-              </select>
-              <small>
-                None is the default. Selecting {presenter.displayName} records presenter intent for this creation; avatar rendering is enabled only when a governed provider is configured.{" "}
-                <Link href={`/brands/${encodeURIComponent(brandId)}/avatar`}>Manage presenter</Link>
-              </small>
-            </label>
+            <div>
+              <label>
+                Presenter <span>optional</span>
+                <select name="presenterId" defaultValue="">
+                  <option value="">None</option>
+                  <option value={presenter.id}>{presenter.displayName}</option>
+                </select>
+                <small>
+                  None is the default. Selecting {presenter.displayName} records presenter intent for this creation; avatar rendering is enabled only when a governed provider is configured.
+                </small>
+              </label>
+              <Link className="tertiary-button" href={`/brands/${encodeURIComponent(brandId)}/avatar`}>Manage presenter</Link>
+            </div>
           ) : null}
           <button className="primary-button simple-create-submit" type="submit">
             Recommend what to create
