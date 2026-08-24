@@ -84,6 +84,20 @@
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-23T22:14:00+02:00",
       "productionVerification": {"status":"not-started","evidence":[]}
+    },
+    {
+      "id": "REL-007",
+      "sliceIds": ["VS-89"],
+      "status": "released",
+      "commitSha": "d7243fea87008e7c5e73a1cb50f87782bf79c418",
+      "migrations": [],
+      "configurationChanges": ["Release the certified VS-89 web runtime at exact SHA d7243fea87008e7c5e73a1cb50f87782bf79c418; no API, worker, database, provider or analytics-collection change is included.","Production was triggered through Kairo's existing approval-only Vercel Git gate. Deployed provenance d180d18d0166ddbb33bab9ef64e0746a0c9363fa is runtime-equivalent to the certified candidate: Git compare shows only root vercel.json and apps/web/vercel.json deploymentEnabled controls differ.","After the production deployment entered BUILDING, both Vercel Git deployment gates were restored to false."],
+      "featureFlags": ["Brand uses inline-first Identity, Audience, Voice & Style and Content Pillars editing while preserving the Brand Brain domain model.","Sources remain learning evidence; authenticated publishing and provider Insights are managed under Brand → Channels.","Avatar/Presenter and AI & Media Provider configuration remain deferred to separate governed slices.","Automatic Vercel Git deployment remains disabled outside an explicitly approved release window."],
+      "smokeTests": ["Product Intake #838, Security baseline #1010 and CI #1217 passed on exact certified candidate d7243fea87008e7c5e73a1cb50f87782bf79c418.","Vercel production deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS reached READY from main with deployed provenance d180d18d0166ddbb33bab9ef64e0746a0c9363fa.","Canonical production /api/version returned HTTP 200 with releaseSha d180d18d0166ddbb33bab9ef64e0746a0c9363fa.","Canonical production root returned the expected Auth0 307 authorization redirect with callback to the production domain.","Vercel reported no runtime errors in the 15-minute post-deploy window.","Authenticated Brand/Channels interaction and rendered visual-fidelity smoke remain post-release observation items and are not represented as validated."],
+      "rollbackStrategy": {"summary":"RB-007 is ready. If VS-89 production behavior regresses, restore the previous known-good Vercel production runtime 711e59199d4f84fafa0b8d528a88964901e8926b, preserve Brand/source/channel/audit state, keep Vercel Git auto-deploy disabled, and re-verify authentication plus Brand-scoped access before reopening the changed UX."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-24T18:24:00+02:00",
+      "productionVerification": {"status":"passed","evidence":["Certified VS-89 candidate d7243fea87008e7c5e73a1cb50f87782bf79c418 was merged as 2368209bcae122d6e33eba671b4fa5fc0f24fdc2.","Git compare d7243fea87008e7c5e73a1cb50f87782bf79c418..d180d18d0166ddbb33bab9ef64e0746a0c9363fa changes only vercel.json and apps/web/vercel.json deployment controls.","Vercel deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS is READY and is a rollback candidate.","Production /api/version returned HTTP 200 with releaseSha d180d18d0166ddbb33bab9ef64e0746a0c9363fa.","Production root correctly redirected to Auth0 and no Vercel runtime errors were observed in the immediate post-deploy window.","Both root and apps/web Vercel Git deployment gates were restored to deploymentEnabled=false after the release trigger."]}
     }
   ]
 }
