@@ -2,6 +2,19 @@
   min-width: 0;
 }
 
+:global(html:has(.k-shell--content-reference)) {
+  scrollbar-width: none;
+}
+
+:global(html:has(.k-shell--content-reference)::-webkit-scrollbar) {
+  width: 0;
+  height: 0;
+}
+
+:global(.k-shell--content-reference) {
+  font-family: var(--k-content-inter), Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
 @media (min-width: 821px) and (max-width: 1100px) {
   :global(.k-shell--content-reference) {
     min-height: 100vh;
@@ -24,7 +37,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    padding: 18px 24px 14px;
+    padding: 23px 42px 9px 25px;
     border: 0;
     background: #fff;
   }
@@ -33,7 +46,7 @@
     min-width: 0;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 18px;
     flex: 1;
   }
 
@@ -46,7 +59,7 @@
     min-height: 60px;
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 20px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -67,14 +80,14 @@
   }
 
   :global(.k-shell--content-reference .k-shell-mobile-context .brand-switcher-copy strong) {
-    max-width: 210px;
+    max-width: 230px;
     display: block;
     overflow: hidden;
     color: #101116;
-    font-size: 20px;
-    line-height: 26px;
+    font-size: 23px;
+    line-height: 28px;
     font-weight: 760;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -90,8 +103,8 @@
     padding-left: 17px;
     border-left: 1px solid #dfe2e8;
     color: #6e7380;
-    font-size: 16px;
-    line-height: 22px;
+    font-size: 19px;
+    line-height: 24px;
     font-weight: 600;
   }
 
@@ -99,16 +112,16 @@
     flex: none;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 25px;
   }
 
   :global(.k-shell--content-reference .k-shell-mobile-actions > div > button),
   :global(.k-shell--content-reference .k-shell-mobile-actions .profile-menu > summary),
   :global(.k-shell--content-reference .k-shell-mobile-actions .k-shell-theme-toggle button) {
-    width: 58px;
-    min-width: 58px;
-    height: 58px;
-    min-height: 58px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
     display: grid;
     place-items: center;
     margin: 0;
@@ -117,7 +130,7 @@
     border-radius: 12px;
     background: #fff;
     color: #111318;
-    box-shadow: none;
+    box-shadow: 0 1px 3px rgb(15 17 21 / 2%);
   }
 
   :global(.k-shell--content-reference .k-shell-mobile-actions .k-shell-theme-toggle) {
@@ -132,7 +145,7 @@
   :global(.k-shell--content-reference .k-shell-mobile-actions .k-shell-theme-toggle button.active) {
     color: #111318;
     background: #fff;
-    box-shadow: none;
+    box-shadow: 0 1px 3px rgb(15 17 21 / 2%);
   }
 
   :global(.k-shell--content-reference .k-shell-mobile-actions > div > button > svg),
@@ -146,7 +159,7 @@
   :global(.k-shell--content-reference .k-shell-mobile-actions .profile-menu-panel) {
     position: fixed;
     top: 88px;
-    right: 24px;
+    right: 42px;
     left: auto;
     bottom: auto;
     width: 280px;
