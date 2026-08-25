@@ -7,6 +7,7 @@ import { buildBrandProfileSections, brandSummary } from "../../../../src/lib/bra
 import { fieldAnchor } from "../../../../src/lib/brand-brain-view-model";
 import { KairoProductShell } from "../../../kairo-product-shell";
 import { InlineBrandField } from "./inline-brand-field";
+import { refreshInstagramBrandSourceAction } from "./actions";
 import {
   addKnowledgeSourceAction,
   removeKnowledgeSourceAction,
@@ -141,6 +142,7 @@ export default async function BrandPage({ params, searchParams }: { params: Para
                 <span>Website</span>
                 <strong>{brand.publicSourceUrl ? safeHost(brand.publicSourceUrl) : "Not added"}</strong>
                 <small>{brand.publicSourceUrl ? "Public Brand evidence" : "Add the Brand website or another public reference below."}</small>
+                <a className="tertiary-button" href="#sources">{brand.publicSourceUrl ? "Manage source" : "Add source"}</a>
               </article>
               <article>
                 <span>Instagram source</span>
@@ -150,7 +152,16 @@ export default async function BrandPage({ params, searchParams }: { params: Para
                   : metaResult.available
                     ? "Connect Instagram from Channels when you want Kairo to learn from the account."
                     : "Existing Brand context is unchanged while connection health is unavailable."}</small>
-                <Link className="tertiary-button" href={channelsHref}>{instagramSource ? "Manage in Channels" : "Open Channels"}</Link>
+                {instagramSource ? (
+                  <div className="brand-source-row-actions">
+                    <form action={refreshInstagramBrandSourceAction.bind(null, brand.id, instagramSource.id)}>
+                      <button className="tertiary-button" type="submit">Refresh</button>
+                    </form>
+                    <Link className="tertiary-button" href={channelsHref}>Manage</Link>
+                  </div>
+                ) : (
+                  <Link className="tertiary-button" href={channelsHref}>Open Channels</Link>
+                )}
               </article>
             </div>
 
