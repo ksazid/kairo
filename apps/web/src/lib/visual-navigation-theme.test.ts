@@ -39,12 +39,13 @@ describe("approved product shell navigation and themes", () => {
     expect(toggle).not.toContain("reduced-motion");
   });
 
-  it("provides Brand switching, desktop breadcrumbs and compact mobile Brand context", () => {
+  it("provides Brand switching and compact mobile Brand context without legacy breadcrumb chrome", () => {
     const shell = read("app/kairo-product-shell.tsx");
     const switcher = read("app/brand-switcher.tsx");
 
     expect(shell).toContain("<BrandSwitcher");
-    expect(shell).toContain('className="k-shell-breadcrumbs"');
+    expect(shell).not.toContain('className="k-shell-breadcrumbs"');
+    expect(shell).not.toContain("<ProductGuide");
     expect(shell).toContain('className="k-shell-mobile-header"');
     expect(shell).toContain('className="k-shell-mobile-page"');
     expect(shell).toContain("<ThemeToggle />");
