@@ -37,7 +37,7 @@ export type MobileProductDestination =
   | "More";
 export type ProductNavigationItem = {
   label: SimpleProductDestination;
-  displayLabel: "Home" | "Content" | "Calendar" | "Insights" | "Brand";
+  displayLabel: SimpleProductDestination;
   href: string | null;
 };
 export function buildProductNavigation({
@@ -54,7 +54,7 @@ export function buildProductNavigation({
     { label: "Home", displayLabel: "Home", href: today },
     { label: "Content", displayLabel: "Content", href: base ? `${base}/content` : null },
     { label: "Calendar", displayLabel: "Calendar", href: base ? `${base}/calendar` : null },
-    { label: "Results", displayLabel: "Insights", href: base ? `${base}/performance` : null },
+    { label: "Results", displayLabel: "Results", href: base ? `${base}/performance` : null },
     { label: "Brand", displayLabel: "Brand", href: base ? `${base}/brain` : null },
   ];
   return { desktop: items, mobile: items };
@@ -69,7 +69,7 @@ export function simpleDestinationFor(
   return active as SimpleProductDestination;
 }
 export function displayDestination(destination: SimpleProductDestination) {
-  return destination === "Results" ? "Insights" : destination;
+  return destination;
 }
 function buildTodayHref(workspaceId?: string | null, brandId?: string | null) {
   const params = new URLSearchParams();
