@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { HomeCreationFormat, MyIdeaRecommendation } from "../src/lib/home-intelligence";
-import styles from "./home-vs85.module.css";
+import { KairoIcon } from "./kairo-icons";
+import styles from "./home-frozen.module.css";
 
 type Props = {
   brandId: string;
@@ -30,47 +31,37 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
   const [error, setError] = useState("");
   const canAnalyse = idea.trim().length >= 4 || isHttpUrl(source.trim());
 
-  useEffect(() => {
+  function resetRecommendation() {
     setRecommendation(null);
     setFormat("");
     setError("");
-    if (!canAnalyse) {
+  }
+
+  async function analyse() {
+    if (!canAnalyse || state !== "idle") return;
+    setState("analysing");
+    setError("");
+    try {
+      const response = await fetch("/api/home/my-idea", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ brandId, text: idea.trim(), source: source.trim() || undefined }),
+      });
+      const body = (await response.json().catch(() => ({}))) as RecommendResponse;
+      if (!response.ok || !body.recommendation) throw new Error(body.error ?? "Kairo could not analyse this idea.");
+      setRecommendation(body.recommendation);
+      setFormat(body.recommendation.format);
+    } catch (caught) {
+      setRecommendation(null);
+      setFormat("");
+      setError(caught instanceof Error ? caught.message : "Kairo could not analyse this idea.");
+    } finally {
       setState("idle");
-      return;
     }
-
-    const controller = new AbortController();
-    const timer = window.setTimeout(async () => {
-      setState("analysing");
-      try {
-        const response = await fetch("/api/home/my-idea", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ brandId, text: idea.trim(), source: source.trim() || undefined }),
-          signal: controller.signal,
-        });
-        const body = (await response.json().catch(() => ({}))) as RecommendResponse;
-        if (!response.ok || !body.recommendation) throw new Error(body.error ?? "Kairo could not analyse this idea.");
-        setRecommendation(body.recommendation);
-        setFormat(body.recommendation.format);
-        setState("idle");
-      } catch (caught) {
-        if (controller.signal.aborted) return;
-        setRecommendation(null);
-        setFormat("");
-        setState("idle");
-        setError(caught instanceof Error ? caught.message : "Kairo could not analyse this idea.");
-      }
-    }, 500);
-
-    return () => {
-      window.clearTimeout(timer);
-      controller.abort();
-    };
-  }, [brandId, idea, source, canAnalyse]);
+  }
 
   async function create() {
-    if (!recommendation || !format || state === "creating") return;
+    if (!recommendation || !format || state !== "idle") return;
     setState("creating");
     setError("");
     try {
@@ -90,25 +81,31 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
 
   return (
     <div className={styles.ideaComposer}>
-      <div className={styles.ideaField}>
-        <label className={styles.fieldLabel} htmlFor="home-my-idea">Your idea</label>
+      <label className={styles.ideaField} htmlFor="home-my-idea">
+        <span className={styles.fieldLabel}>Your idea</span>
         <textarea
           id="home-my-idea"
           value={idea}
-          onChange={(event) => setIdea(event.target.value)}
+          onChange={(event) => {
+            setIdea(event.target.value);
+            resetRecommendation();
+          }}
           placeholder="A topic, thought, offer or rough idea…"
-          rows={4}
+          rows={5}
           maxLength={4000}
         />
-      </div>
+      </label>
 
       {showLink ? (
         <label className={styles.linkField}>
-          <span>Public link</span>
+          <span>URL</span>
           <input
             type="url"
             value={source}
-            onChange={(event) => setSource(event.target.value)}
+            onChange={(event) => {
+              setSource(event.target.value);
+              resetRecommendation();
+            }}
             placeholder="https://…"
             maxLength={2000}
             inputMode="url"
@@ -116,57 +113,71 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
         </label>
       ) : null}
 
-      <div className={styles.composerTools}>
+      <div className={styles.composerFooter}>
+        <div className={styles.composerTools} aria-label="Idea inputs">
+          <button
+            className={styles.toolButton}
+            type="button"
+            aria-pressed={showLink}
+            onClick={() => {
+              setShowLink((value) => !value);
+              if (showLink) setSource("");
+              resetRecommendation();
+            }}
+          >
+            <KairoIcon name="link" />
+            <span>URL</span>
+          </button>
+          <button className={styles.toolButton} type="button" disabled title="Photo attachment is not configured yet">
+            <KairoIcon name="photo" />
+            <span>Photo</span>
+          </button>
+          <button className={styles.toolButton} type="button" disabled title="Video attachment is not configured yet">
+            <KairoIcon name="video" />
+            <span>Video</span>
+          </button>
+          <button className={styles.toolButton} type="button" disabled title="Media library attachment is not configured yet">
+            <KairoIcon name="attachment" />
+            <span>+ Media</span>
+          </button>
+        </div>
+
         <button
-          className={styles.toolButton}
+          className={`${styles.recommendButton} primary-button`}
           type="button"
-          aria-pressed={showLink}
-          onClick={() => {
-            setShowLink((value) => !value);
-            if (showLink) setSource("");
-          }}
+          onClick={analyse}
+          disabled={!canAnalyse || state !== "idle"}
         >
-          <span aria-hidden="true">↗</span>
-          {showLink ? "Remove link" : "Add link"}
+          {state === "analysing" ? "Finding the best format…" : "Get recommendations"}
         </button>
       </div>
 
       <div className={styles.recommendationSlot} aria-live="polite" aria-atomic="true">
-        {state === "analysing" ? (
-          <div className={styles.analysing}>
-            <span className={styles.analysisDot} aria-hidden="true" />
-            Kairo is choosing the strongest format…
-          </div>
-        ) : recommendation ? (
+        {recommendation ? (
           <div className={styles.recommendation}>
-            <div>
+            <div className={styles.recommendationCopy}>
               <span className={styles.recommendationLabel}>Kairo recommends</span>
               <strong>{formatLabels[recommendation.format]}</strong>
               <p>{recommendation.reason}</p>
             </div>
-            <label className={styles.formatControl}>
-              <span className={styles.srOnly}>Choose format</span>
-              <select value={format} onChange={(event) => setFormat(event.target.value as HomeCreationFormat)}>
-                {recommendation.choices.map((choice) => (
-                  <option key={choice} value={choice}>{formatLabels[choice]}</option>
-                ))}
-              </select>
-            </label>
+            <div className={styles.recommendationActions}>
+              <label className={styles.formatControl}>
+                <span>Format</span>
+                <select value={format} onChange={(event) => setFormat(event.target.value as HomeCreationFormat)}>
+                  {recommendation.choices.map((choice) => (
+                    <option key={choice} value={choice}>{formatLabels[choice]}</option>
+                  ))}
+                </select>
+              </label>
+              <button className="primary-button" type="button" onClick={create} disabled={!format || state !== "idle"}>
+                {state === "creating" ? "Creating…" : `Create ${format ? formatLabels[format] : "content"}`}
+              </button>
+            </div>
           </div>
         ) : null}
       </div>
 
       {error ? <p className={styles.inlineError} role="alert">{error}</p> : null}
-
-      <button
-        className={`${styles.createButton} primary-button`}
-        type="button"
-        onClick={create}
-        disabled={!recommendation || !format || state !== "idle"}
-      >
-        {state === "creating" ? "Creating…" : recommendation && format ? `Create ${formatLabels[format].toLowerCase()}` : "Add your idea"}
-        <span aria-hidden="true">→</span>
-      </button>
     </div>
   );
 }
