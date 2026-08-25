@@ -8,14 +8,14 @@ import {
 } from "../../../../../../src/lib/kairo-api";
 import { getCarouselReview } from "../../../../../../src/lib/carousel-review-api";
 import { KairoProductShell } from "../../../../../kairo-product-shell";
+import { KairoIcon, type KairoIconName } from "../../../../../kairo-icons";
 import {
   approveContentAction,
-  generateVersionAction,
   reviewContentAction,
-  saveVersionAction,
   scheduleContentAction,
 } from "../../../campaigns/actions";
-import { ScheduleForm } from "../../../campaigns/[campaignId]/schedule-form";
+import { ContentScheduleControl } from "./content-schedule-control";
+import shellStyles from "../../content-reference-shell.module.css";
 import styles from "./content-detail.module.css";
 
 type Params = Promise<{ brandId: string; campaignId: string; assetId: string }>;
@@ -61,12 +61,11 @@ export default async function ContentDetailPage({
   const entry = detail.assets.find(({ asset }) => asset.id === assetId);
   if (!entry) {
     return (
-      <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Content">
-        <main id="kairo-main-content" tabIndex={-1} className={`${styles.main} workspace-main`}>
-          <section className={styles.empty}>
-            <p className="eyebrow">Content</p>
+      <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Content" pageLabel="Content" variant="content-reference">
+        <main id="kairo-main-content" tabIndex={-1} className={`${styles.main} ${shellStyles.shellBoundary}`}>
+          <section className={styles.notFound}>
             <h1>Content not found.</h1>
-            <Link className="secondary-button" href={`/brands/${encodeURIComponent(brand.id)}/content`}>Back to Content</Link>
+            <Link href={`/brands/${encodeURIComponent(brand.id)}/content`}>Back to content</Link>
           </section>
         </main>
       </KairoProductShell>
@@ -79,12 +78,12 @@ export default async function ContentDetailPage({
   const review = status.review?.versionId === current.id ? status.review : null;
   const approval = status.approval?.versionId === current.id ? status.approval : null;
   const isCarousel = asset.format.toLowerCase() === "carousel";
-  const isReel = asset.format.toLowerCase() === "reel";
+  const isMotion = /reel|video|short/i.test(asset.format);
   const contentScope = { workspaceId: detail.campaign.workspaceId, brandId: brand.id, campaignId, assetId: asset.id };
-  const currentDisplay = isReel ? readableContent(current.content, contentScope) : current.content;
-  const carouselReview = isCarousel
-    ? await getCarouselReview(brand.id, campaignId, asset.id).catch(() => null)
-    : null;
+  const currentDisplay = isMotion ? readableContent(current.content, contentScope) : current.content;
+  const caption = extractCaption(current.content) ?? extractCaption(currentDisplay) ?? asset.topic;
+  const carouselReview = isCarousel ? await getCarouselReview(brand.id, campaignId, asset.id).catch(() => null) : null;
+  const renderedSlides = carouselReview?.slides.filter((slide) => Boolean(slide.renderedUrl)) ?? [];
   const eligibleAccounts = channelAccounts.filter((account) => account.channel === asset.channel && account.status === "connected");
   const approvedAccount = approval
     ? channelAccounts.find((account) => account.channel === approval.destination.channel && account.accountRef === approval.destination.accountRef && account.status === "connected")
@@ -92,233 +91,306 @@ export default async function ContentDetailPage({
   const base = `/brands/${encodeURIComponent(brand.id)}`;
   const carouselHref = `${base}/campaigns/${encodeURIComponent(campaignId)}/carousel/${encodeURIComponent(asset.id)}`;
   const videoHref = `${base}/campaigns/${encodeURIComponent(campaignId)}/video/${encodeURIComponent(asset.id)}`;
+  const editorHref = isCarousel ? carouselHref : isMotion ? videoHref : `${base}/campaigns/${encodeURIComponent(campaignId)}`;
+  const displayState = approval
+    ? { label: "Approved", key: "approved" as const, detail: "This exact version is locked for publishing." }
+    : review?.status === "passed"
+      ? { label: "Needs you", key: "needs-you" as const, detail: "Looks good. Approve and lock this content." }
+      : review?.status === "revision-required"
+        ? { label: "Needs you", key: "needs-you" as const, detail: "Make the required changes before approval." }
+        : { label: "Draft", key: "draft" as const, detail: "Run a readiness check before approval." };
+  const uniqueDestinations = Array.from(new Map(detail.assets.map((candidate) => [candidate.asset.channel, candidate])).values());
+  const visibleDestinations = uniqueDestinations.slice(0, 3);
+  const hiddenDestinations = uniqueDestinations.slice(3);
+  const username = brand.name.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 28) || "brand";
+  const cards = isCarousel && carouselReview?.slides.length
+    ? carouselReview.slides.slice(0, 5).map((slide, index) => ({ number: index + 1, label: slide.headline || slide.role || `Card ${index + 1}` }))
+    : [{ number: 1, label: asset.topic }];
 
   return (
-    <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Content">
-      <main id="kairo-main-content" tabIndex={-1} className={`${styles.main} workspace-main`}>
-        <div className={styles.topline}>
-          <Link className="back-link" href={`${base}/content`}>← Content</Link>
-          <span className={styles.version}>Version {current.version}</span>
-        </div>
-
-        <header className={styles.header}>
-          <div>
-            <p className="eyebrow">Content Detail</p>
-            <h1>{asset.topic}</h1>
-            <p>{asset.channel} · {asset.format} · {asset.audience}</p>
-          </div>
-          <details className={styles.context}>
-            <summary>Context</summary>
-            <strong>{detail.campaign.name}</strong>
-            <p>{detail.campaign.objective}</p>
-            <Link href={`${base}/ideas/${encodeURIComponent(detail.campaign.ideaId)}`}>Inspect Research &amp; evidence</Link>
-          </details>
-        </header>
-
-        {messages.notice ? <p className="notice success" role="status">{messages.notice}</p> : null}
-        {messages.error ? <p className="notice error" role="alert">{messages.error}</p> : null}
-
-        <nav className={styles.tabs} aria-label="Content channel previews">
-          {detail.assets.map(({ asset: candidate }) => {
-            const href = `${base}/content/${encodeURIComponent(campaignId)}/${encodeURIComponent(candidate.id)}`;
-            const selected = candidate.id === asset.id;
-            return (
-              <Link key={candidate.id} href={href} aria-current={selected ? "page" : undefined} data-active={selected || undefined}>
-                <span>{candidate.channel}</span>
-                <small>{candidate.format}</small>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <section className={styles.preview} aria-labelledby="preview-title">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className="eyebrow">Preview</p>
-              <h2 id="preview-title">Exact current version</h2>
-            </div>
-            <span>{asset.channel} · {asset.format}</span>
-          </div>
-
-          {isCarousel ? (
-            carouselReview?.slides.some((slide) => slide.renderedUrl) ? (
-              <>
-                <div className={styles.carouselPreview} aria-label="Rendered carousel slides">
-                  {carouselReview.slides.map((slide, index) => slide.renderedUrl ? (
-                    <figure key={slide.id}>
-                      <img src={slide.renderedUrl} alt={`Rendered carousel slide ${index + 1}: ${slide.role}`} />
-                      <figcaption>{index + 1} / {carouselReview.slides.length}</figcaption>
-                    </figure>
-                  ) : null)}
-                </div>
-                <div className={styles.previewFooter}>
-                  <span>Render {carouselReview.renderVersionId} · asset version {carouselReview.assetVersion}</span>
-                  <Link className="secondary-button" href={carouselHref}>Edit rendered carousel</Link>
-                </div>
-              </>
-            ) : (
-              <div className={styles.mediaBoundary}>
-                <div>
-                  <strong>Carousel render is not ready yet.</strong>
-                  <p>Open the renderer to create or refresh the exact visual asset before final approval.</p>
-                </div>
-                <Link className="primary-button" href={carouselHref}>Open carousel preview</Link>
-              </div>
-            )
-          ) : isReel ? (
-            <div className={styles.mediaBoundary}>
+    <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Content" pageLabel="Content" variant="content-reference">
+      <main id="kairo-main-content" tabIndex={-1} className={`${styles.main} ${shellStyles.shellBoundary}`}>
+        <div className={styles.topActions}>
+          <Link className={styles.backLink} href={`${base}/content`}><KairoIcon name="arrow-left" />Back to content</Link>
+          <div className={styles.topActionButtons}>
+            <details className={styles.moreActions}>
+              <summary>More actions <span>⌄</span></summary>
               <div>
-                <strong>Reel project · version {current.version}</strong>
-                <p>{currentDisplay}</p>
-                <small>Kairo will not represent a storyboard as a finished video. Open the Reel surface for scene-level editing and render readiness.</small>
-              </div>
-              <Link className="secondary-button" href={videoHref}>Open Reel preview</Link>
-            </div>
-          ) : (
-            <div className={styles.copyPreview}>
-              <span>{asset.channel}</span>
-              <p>{currentDisplay}</p>
-              <small>CTA · {asset.cta}</small>
-            </div>
-          )}
-        </section>
-
-        <section className={styles.editor} aria-labelledby="edit-title">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className="eyebrow">Edit</p>
-              <h2 id="edit-title">Improve the current version</h2>
-            </div>
-          </div>
-
-          {isReel ? (
-            <div className={styles.editBoundary}>
-              <p>Scene copy, timing and order stay in the Reel editor so the structured video contract remains valid.</p>
-              <Link className="secondary-button" href={videoHref}>Edit Reel</Link>
-            </div>
-          ) : isCarousel ? (
-            <div className={styles.editBoundary}>
-              <p>Slide copy, imagery, order and template stay with the exact carousel render.</p>
-              <Link className="secondary-button" href={carouselHref}>Edit carousel</Link>
-            </div>
-          ) : (
-            <form action={saveVersionAction.bind(null, brand.id, campaignId, asset.id, asset.currentVersion)} className={styles.editForm}>
-              <label htmlFor={`content-${asset.id}`}>Content</label>
-              <textarea id={`content-${asset.id}`} name="content" defaultValue={current.content} required maxLength={50000} rows={10} />
-              <div>
-                <span>Saving creates a new immutable version and clears approval for the changed version.</span>
-                <button className="primary-button" type="submit">Save new version</button>
-              </div>
-            </form>
-          )}
-
-          <details className={styles.disclosure}>
-            <summary>
-              <span><strong>AI assistance</strong><small>Optional transformations for this exact version.</small></span>
-              <span>Open</span>
-            </summary>
-            <div className={styles.aiActions}>
-              {[["simplify", "Simplify"], ["strengthen-opening", "Strengthen opening"], ["alternative", "Alternative"]].map(([action, label]) => (
-                <form action={generateVersionAction.bind(null, brand.id, campaignId, asset.id, asset.currentVersion, action!)} key={action}>
-                  <button className="secondary-button" type="submit">{label}</button>
-                </form>
-              ))}
-            </div>
-          </details>
-
-          <details className={styles.disclosure}>
-            <summary>
-              <span><strong>Versions &amp; evidence</strong><small>{versions.length} versions · {detail.campaign.supportingClaimIds.length} supporting Claims</small></span>
-              <span>Open</span>
-            </summary>
-            <div className={styles.versions}>
-              {[...versions].reverse().map((version) => (
-                <article key={version.id}>
-                  <strong>Version {version.version} · {version.action}</strong>
-                  <p>{isReel ? readableContent(version.content, contentScope) : version.content}</p>
-                  <small>{version.actor} · {new Date(version.createdAt).toLocaleString()}</small>
-                </article>
-              ))}
-            </div>
-          </details>
-        </section>
-
-        <section className={styles.approval} aria-labelledby="approval-title">
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className="eyebrow">Review &amp; approval</p>
-              <h2 id="approval-title">Approve the exact version you see</h2>
-            </div>
-            <span className={styles.reviewState}>
-              {approval ? "Approved & locked" : review?.status === "passed" ? "Ready for approval" : review?.status === "revision-required" ? "Revision required" : "Needs review"}
-            </span>
-          </div>
-
-          {review ? (
-            <details className={styles.disclosure}>
-              <summary>
-                <span>
-                  <strong>Review findings</strong>
-                  <small>{review.truth.passed ? "Truth Gate passed" : "Truth Gate blocked"}{review.critic ? ` · Critic ${review.critic.score}/100` : ""}</small>
-                </span>
-                <span>Inspect</span>
-              </summary>
-              <div className={styles.findings}>
-                <p>{review.truth.passed ? "Truth Gate passed — evidence requirements satisfied." : "Truth Gate blocked approval."}</p>
-                {review.truth.findings.map((finding, index) => <p key={`${finding.code}-${index}`}><strong>{finding.code.replaceAll("-", " ")}</strong> · {finding.message}</p>)}
-                {review.critic?.findings.map((finding, index) => <p key={`${finding.code}-${index}`}><strong>{finding.severity}</strong> · {finding.message}</p>)}
+                <Link href={editorHref}>Edit content</Link>
+                {!review || review.status === "revision-required" ? (
+                  <form action={reviewContentAction.bind(null, brand.id, campaignId, asset.id, current.version)}>
+                    <button type="submit">{review ? "Check again" : "Check readiness"}</button>
+                  </form>
+                ) : null}
+                <Link href={`${base}/calendar`}>Open Calendar</Link>
               </div>
             </details>
-          ) : null}
+            <button className={styles.bookmarkButton} type="button" aria-label="Save content" title="Saving this content is not configured yet"><KairoIcon name="bookmark" /></button>
+          </div>
+        </div>
 
-          {!review || review.status === "revision-required" ? (
-            <form action={reviewContentAction.bind(null, brand.id, campaignId, asset.id, current.version)}>
-              <button className="secondary-button" type="submit">{review ? "Review revised version" : "Review current version"}</button>
-            </form>
-          ) : null}
+        {messages.notice ? <p className={styles.notice} data-kind="success" role="status">{messages.notice}</p> : null}
+        {messages.error ? <p className={styles.notice} data-kind="error" role="alert">{messages.error}</p> : null}
 
-          {review?.status === "passed" && !approval ? (
-            eligibleAccounts.length ? (
-              <form className={styles.approveForm} action={approveContentAction.bind(null, brand.id, campaignId, asset.id, current.version, asset.channel)}>
-                <label>
-                  Publish destination
-                  <select name="accountRef" required defaultValue={eligibleAccounts[0]?.accountRef}>
-                    {eligibleAccounts.map((account) => <option value={account.accountRef} key={account.id}>{account.displayName}</option>)}
-                  </select>
-                </label>
-                <button className="primary-button" type="submit">Approve &amp; Lock</button>
-                <p>This freezes version {current.version} for the selected destination. Editing later creates a new version that needs review again.</p>
+        <div className={styles.contentGrid}>
+          <div className={styles.leftColumn}>
+            <header className={styles.assetHeader}>
+              <div className={styles.titleRow}>
+                <h1>{asset.topic}</h1>
+                <Link href={editorHref} aria-label="Edit content title"><KairoIcon name="edit" /></Link>
+              </div>
+              <p>{summaryLine(currentDisplay, detail.campaign.objective)}</p>
+              <div className={styles.assetMeta}>
+                <span className={styles.platformMeta} data-channel={asset.channel}><KairoIcon name={platformIcon(asset.channel)} />{platformLabel(asset.channel)}</span>
+                <span className={styles.formatMeta}>{formatLabel(asset.format)}</span>
+                <span className={styles.stateMeta} data-state={displayState.key}>{displayState.label}</span>
+                <span className={styles.updatedMeta}>Last updated {relativeTime(current.createdAt)} by {current.actor === "user" ? "You" : "Kairo"}</span>
+              </div>
+            </header>
+
+            <section id="preview" className={styles.previewPanel} aria-labelledby="preview-title">
+              <div className={styles.previewHeading}>
+                <div>
+                  <h2 id="preview-title">Preview</h2>
+                  <p>Review how your content will look across platforms.</p>
+                </div>
+                <div className={styles.deviceToggle} aria-label="Preview device">
+                  <button className={styles.deviceActive} type="button" aria-label="Mobile preview"><KairoIcon name="device-mobile" /></button>
+                  <button type="button" aria-label="Desktop preview" title="Desktop preview is not configured yet"><KairoIcon name="device-desktop" /></button>
+                </div>
+              </div>
+
+              <nav className={styles.destinationTabs} aria-label="Selected destination previews">
+                {visibleDestinations.map(({ asset: candidate }) => {
+                  const selected = candidate.id === asset.id;
+                  return (
+                    <Link
+                      key={candidate.id}
+                      href={`${base}/content/${encodeURIComponent(campaignId)}/${encodeURIComponent(candidate.id)}`}
+                      data-active={selected || undefined}
+                      aria-current={selected ? "page" : undefined}
+                      data-channel={candidate.channel}
+                    >
+                      <KairoIcon name={platformIcon(candidate.channel)} />
+                      <span>{platformLabel(candidate.channel)}</span>
+                    </Link>
+                  );
+                })}
+                {hiddenDestinations.length ? (
+                  <details className={styles.moreDestinations}>
+                    <summary>More <span>⌄</span></summary>
+                    <div>
+                      {hiddenDestinations.map(({ asset: candidate }) => (
+                        <Link key={candidate.id} href={`${base}/content/${encodeURIComponent(campaignId)}/${encodeURIComponent(candidate.id)}`}>{platformLabel(candidate.channel)}</Link>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
+              </nav>
+
+              <div className={styles.socialWrap}>
+                <article className={styles.socialCard} aria-label={`${platformLabel(asset.channel)} social preview`}>
+                  <header className={styles.socialHeader}>
+                    <div className={styles.socialIdentity}>
+                      <span className={styles.brandAvatar}>{brand.name.slice(0, 1).toUpperCase()}</span>
+                      <strong>{username}</strong>
+                    </div>
+                    <KairoIcon name="more" />
+                  </header>
+
+                  <div className={styles.mediaStage} data-format={isMotion ? "motion" : isCarousel ? "carousel" : "text"}>
+                    {isCarousel ? (
+                      renderedSlides.length ? (
+                        <div className={styles.carouselTrack} aria-label="Rendered carousel slides">
+                          {renderedSlides.map((slide, index) => (
+                            <figure key={slide.id}>
+                              <img src={slide.renderedUrl!} alt={`Carousel card ${index + 1}: ${slide.headline || slide.role}`} />
+                              <span className={styles.slideCount}>{index + 1}/{renderedSlides.length}</span>
+                            </figure>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className={styles.unavailableMedia}>
+                          <KairoIcon name="image" />
+                          <strong>Carousel preview not ready</strong>
+                          <p>Render the real carousel to preview it here.</p>
+                          <Link href={carouselHref}>Open carousel editor</Link>
+                        </div>
+                      )
+                    ) : isMotion ? (
+                      <div className={styles.unavailableMedia}>
+                        <KairoIcon name="video" />
+                        <strong>Video preview not ready</strong>
+                        <p>Kairo will show a finished video only after a real render is available.</p>
+                        <Link href={videoHref}>Open video editor</Link>
+                      </div>
+                    ) : (
+                      <div className={styles.textPreview}><p>{currentDisplay}</p></div>
+                    )}
+                    {isCarousel && renderedSlides.length > 1 ? <span className={styles.nextCard} aria-hidden="true"><KairoIcon name="arrow-right" /></span> : null}
+                  </div>
+
+                  <div className={styles.socialActions} aria-hidden="true">
+                    <span><KairoIcon name="heart" /></span>
+                    <span><KairoIcon name="comment" /></span>
+                    <span><KairoIcon name="send" /></span>
+                    <span className={styles.socialBookmark}><KairoIcon name="bookmark" /></span>
+                  </div>
+                  <div className={styles.socialCaption}>
+                    <strong>Likes unavailable</strong>
+                    <p><b>{username}</b> {truncate(caption, 118)}</p>
+                  </div>
+                </article>
+
+                {isCarousel && (carouselReview?.slides.length ?? 0) > 1 ? (
+                  <div className={styles.carouselDots} aria-label="Carousel position">
+                    {carouselReview!.slides.slice(0, 6).map((slide, index) => <span key={slide.id} data-active={index === 0 || undefined} />)}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className={styles.aiSection}>
+                <div>
+                  <h3>AI assistance</h3>
+                  <p>Improve your content with Kairo.</p>
+                </div>
+                <div className={styles.aiActions}>
+                  <Link href={editorHref}><KairoIcon name="sparkles" />Improve copy</Link>
+                  <Link href={editorHref}><KairoIcon name="edit" />Shorten</Link>
+                  <Link href={editorHref}><KairoIcon name="results" />Change tone</Link>
+                  <Link href={editorHref}><KairoIcon name="plus" />More ideas</Link>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <aside className={styles.rightRail} aria-label="Content context">
+            <section className={styles.railCard}>
+              <header><h2>Content details</h2><Link href={editorHref}>Edit</Link></header>
+              <dl className={styles.detailsList}>
+                <div><dt>Type</dt><dd>{formatLabel(asset.format)}</dd></div>
+                <div><dt>Topic</dt><dd>{topicLabel(asset.topic, detail.campaign.name)}</dd></div>
+                <div><dt>Goal</dt><dd>{detail.campaign.objective || "Not set"}</dd></div>
+                <div><dt>Audience</dt><dd>{asset.audience || "Not set"}</dd></div>
+                <div><dt>Language</dt><dd>Not set</dd></div>
+                <div><dt>Tone</dt><dd>Not set</dd></div>
+              </dl>
+            </section>
+
+            <section className={styles.railCard}>
+              <header className={styles.performanceHeader}><h2>Performance potential <KairoIcon name="info" /></h2></header>
+              <div className={styles.performanceRows}>
+                <div><span><KairoIcon name="eye" />Impact</span><strong>Not available</strong></div>
+                <div><span><KairoIcon name="target" />Fit</span><strong>Not available</strong></div>
+              </div>
+              <p className={styles.performanceNote}>Shown only when supported by real Brand and performance evidence.</p>
+            </section>
+
+            <section className={`${styles.railCard} ${styles.cardsRail}`}>
+              <header><h2>{isCarousel ? `Cards (${cards.length})` : "Content"}</h2><Link href={editorHref}>Edit</Link></header>
+              <ol>
+                {cards.map((card, index) => (
+                  <li key={`${card.number}-${card.label}`} data-active={index === 0 || undefined}><span>{card.number}</span><p>{truncate(card.label, 56)}</p></li>
+                ))}
+              </ol>
+            </section>
+          </aside>
+        </div>
+
+        <section className={styles.approvalBar} data-state={displayState.key} aria-label="Approval actions">
+          <div className={styles.approvalState}>
+            <span><KairoIcon name={displayState.key === "approved" ? "lock" : displayState.key === "needs-you" ? "shield" : "warning"} /></span>
+            <div><strong>{approval ? "Approved & locked" : review?.status === "passed" ? "Ready to approve" : review?.status === "revision-required" ? "Changes needed" : "Needs review"}</strong><p>{displayState.detail}</p></div>
+          </div>
+
+          <div className={styles.approvalActions}>
+            {review?.status === "passed" && !approval && eligibleAccounts.length === 1 ? (
+              <form action={approveContentAction.bind(null, brand.id, campaignId, asset.id, current.version, asset.channel)}>
+                <input type="hidden" name="accountRef" value={eligibleAccounts[0]!.accountRef} />
+                <button className={styles.approveButton} type="submit"><KairoIcon name="lock" />Approve &amp; Lock</button>
               </form>
             ) : (
-              <div className={styles.connectionNeeded}>
-                <div>
-                  <strong>Connect a publishing destination before approval.</strong>
-                  <p>Kairo will not ask for raw account references or silently choose another destination.</p>
-                </div>
-                <Link className="secondary-button" href={`${base}/brain#channels`}>Open Brand Channels</Link>
-              </div>
-            )
-          ) : null}
+              <button className={styles.approveButton} type="button" aria-disabled="true" title={approval ? "Already approved" : eligibleAccounts.length > 1 ? "Choose one publishing account before approval" : "Run readiness and connect the destination before approval"}><KairoIcon name="lock" />{approval ? "Approved & Locked" : "Approve & Lock"}</button>
+            )}
 
-          {approval ? (
-            <>
-              <div className={styles.lockRecord}>
-                <strong>Approved &amp; locked</strong>
-                <p>{approval.destination.channel} · {approvedAccount?.displayName ?? approval.destination.accountRef} · {new Date(approval.approvedAt).toLocaleString()}</p>
-                <small>Version {approval.version} is the exact approved version. Publication status changes only after the provider settles.</small>
-              </div>
-              {approvedAccount && approvedAccount.capabilities.length ? (
-                <ScheduleForm account={approvedAccount} action={scheduleContentAction.bind(null, brand.id, campaignId, asset.id)} />
-              ) : (
-                <div className={styles.connectionNeeded}>
-                  <strong>Publishing destination needs attention.</strong>
-                  <p>Reconnect or restore the approved destination before Kairo can publish or schedule this locked version.</p>
-                </div>
-              )}
-            </>
-          ) : null}
+            {approval && approvedAccount ? (
+              <ContentScheduleControl account={approvedAccount} contentType={scheduleType(asset.format)} action={scheduleContentAction.bind(null, brand.id, campaignId, asset.id)} />
+            ) : (
+              <button className={styles.scheduleDisabled} type="button" aria-disabled="true" title="Approve and lock before scheduling"><KairoIcon name="calendar" />Schedule <span>⌄</span></button>
+            )}
+          </div>
         </section>
       </main>
     </KairoProductShell>
   );
+}
+
+function platformIcon(value: string): KairoIconName {
+  if (value === "instagram") return "instagram";
+  if (value === "facebook") return "facebook";
+  if (value === "linkedin") return "linkedin";
+  if (value === "youtube") return "youtube";
+  return "brand";
+}
+
+function platformLabel(value: string) {
+  return value.replace(/[-_]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatLabel(value: string) {
+  if (value.toLowerCase() === "image") return "Post";
+  return platformLabel(value);
+}
+
+function summaryLine(content: string, fallback: string) {
+  const compact = content.replace(/\s+/g, " ").trim();
+  const parsed = extractCaption(compact);
+  const value = parsed || compact || fallback;
+  return truncate(value, 82);
+}
+
+function extractCaption(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+    for (const key of ["caption", "copy", "text", "body", "description"]) {
+      if (typeof parsed[key] === "string" && parsed[key]!.trim()) return parsed[key]!.trim();
+    }
+  } catch {
+    // Plain reviewable copy is already suitable for the destination caption.
+  }
+  return trimmed;
+}
+
+function truncate(value: string, limit: number) {
+  const compact = value.replace(/\s+/g, " ").trim();
+  return compact.length > limit ? `${compact.slice(0, limit - 1).trimEnd()}…` : compact;
+}
+
+function topicLabel(assetTopic: string, campaignName: string) {
+  const campaign = campaignName.trim();
+  if (campaign && campaign.length <= 40) return campaign;
+  return truncate(assetTopic, 40);
+}
+
+function relativeTime(value: string) {
+  const time = Date.parse(value);
+  if (!Number.isFinite(time)) return "recently";
+  const diff = Math.max(0, Date.now() - time);
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function scheduleType(format: string): "text" | "image" | "video" | "carousel" {
+  const normal = format.toLowerCase();
+  if (normal === "carousel") return "carousel";
+  if (/reel|video|short/.test(normal)) return "video";
+  if (/image|post/.test(normal)) return "image";
+  return "text";
 }
