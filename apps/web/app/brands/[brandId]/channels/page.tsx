@@ -29,28 +29,17 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
   const channelsPath = `/brands/${encoded}/channels`;
   const healthById = new Map(healthResult.accounts.map((account) => [account.id, account]));
   const healthByRef = new Map(healthResult.accounts.map((account) => [`${account.channel}:${account.accountRef}`, account]));
-  const connectedCount = accountsResult.accounts.filter((account) => account.status === "connected").length;
-  const attentionCount = accountsResult.accounts.filter((account) => account.status === "reconnect-required").length;
   const existingModes = new Set(accountsResult.accounts.map(connectionModeFor).filter(Boolean) as BrandConnectionOption[]);
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand" pageLabel="Channels">
       <main id="kairo-main-content" tabIndex={-1} className="workspace-main channels-v2-main">
-        <div className="channels-v2-back"><Link href={`/brands/${encoded}/brain`}>← Brand</Link></div>
+        <div className="channels-v2-back"><Link href={`/brands/${encoded}/brain`}>← Back to Brand</Link></div>
 
         <header className="channels-v2-header">
           <div>
-            <p className="eyebrow">Brand · Channels</p>
-            <h1>Publishing &amp; Insights destinations</h1>
-            <p>Manage the accounts Kairo can publish to and use for provider-backed Insights. Credentials remain behind the connection boundary.</p>
-          </div>
-          <div className="channels-v2-summary" aria-label="Channel connection summary">
-            {accountsResult.available ? (
-              <>
-                <span><strong>{connectedCount}</strong> Connected</span>
-                <span><strong>{attentionCount}</strong> Need attention</span>
-              </>
-            ) : <span><strong>—</strong> Status unavailable</span>}
+            <h1>Channels</h1>
+            <p className="lede">Connect the accounts Kairo can publish to and use for results.</p>
           </div>
         </header>
 
@@ -60,16 +49,15 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
         {!accountsResult.available ? (
           <div className="channels-v2-status" role="alert">
             <strong>Channel status is temporarily unavailable.</strong>
-            <span>Kairo is not treating missing status as a disconnected account. Connection changes stay unavailable until current account state can be read.</span>
+            <span>Existing connections are unchanged. Connection actions stay unavailable until Kairo can read the current account state.</span>
           </div>
         ) : null}
 
         <section className="channels-v2-section" aria-labelledby="connected-channels-title">
           <header>
             <div>
-              <p className="eyebrow">Destinations</p>
-              <h2 id="connected-channels-title">Channel accounts</h2>
-              <p>Each destination keeps its own approval and publishing authority.</p>
+              <h2 id="connected-channels-title">Connected accounts</h2>
+              <p>Each account shows a simple connection state and one next action.</p>
             </div>
           </header>
 
@@ -79,13 +67,13 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
               return <ChannelRow key={account.id} brandId={brand.id} account={account} health={health} returnTo={channelsPath} />;
             }) : accountsResult.available ? (
               <div className="channels-v2-empty">
-                <strong>No connected destinations yet.</strong>
-                <p>Choose one of the supported connection paths below. Kairo will only show eligible destinations during authorization.</p>
+                <strong>No channels connected yet.</strong>
+                <p>Choose a supported account below when you’re ready to publish or read results.</p>
               </div>
             ) : (
               <div className="channels-v2-empty">
-                <strong>Current destinations cannot be read right now.</strong>
-                <p>Existing connections are left unchanged. Try again before reconnecting or adding another destination.</p>
+                <strong>Current channels cannot be read right now.</strong>
+                <p>Existing connections are left unchanged.</p>
               </div>
             )}
           </div>
@@ -94,30 +82,21 @@ export default async function ChannelsPage({ params, searchParams }: { params: P
         <section className="channels-v2-section" aria-labelledby="connect-channel-title">
           <header>
             <div>
-              <p className="eyebrow">Connect</p>
-              <h2 id="connect-channel-title">Add a destination</h2>
-              <p>Authorization stays focused: connect, choose a destination only when needed, then return here.</p>
+              <h2 id="connect-channel-title">Connect a channel</h2>
+              <p>Choose an account type. Kairo will return here after connection.</p>
             </div>
           </header>
           <div className="channels-v2-connect-list">
-            {!accountsResult.available ? <p className="channels-v2-empty-copy">Connection changes are unavailable until Kairo can verify the current destination list.</p> : (
+            {!accountsResult.available ? <p className="channels-v2-empty-copy">Connection changes are unavailable until current channel state can be verified.</p> : (
               <>
-                {!existingModes.has("instagram") ? <ConnectOption brandId={brand.id} mode="instagram" title="Instagram" description="Instagram Professional account using Instagram Login." returnTo={channelsPath} /> : null}
-                {!existingModes.has("facebook-instagram") ? <ConnectOption brandId={brand.id} mode="facebook-instagram" title="Facebook + Instagram" description="Choose a Facebook Page and its linked Instagram Professional account." returnTo={channelsPath} /> : null}
-                {!existingModes.has("facebook") ? <ConnectOption brandId={brand.id} mode="facebook" title="Facebook" description="Connect an eligible Facebook Page for publishing." returnTo={channelsPath} /> : null}
-                {existingModes.size >= 3 ? <p className="channels-v2-empty-copy">All currently supported Meta connection paths are already represented.</p> : null}
+                {!existingModes.has("instagram") ? <ConnectOption brandId={brand.id} mode="instagram" title="Instagram" description="Connect an Instagram Professional account." returnTo={channelsPath} /> : null}
+                {!existingModes.has("facebook-instagram") ? <ConnectOption brandId={brand.id} mode="facebook-instagram" title="Facebook + Instagram" description="Connect a Facebook Page and its linked Instagram Professional account." returnTo={channelsPath} /> : null}
+                {!existingModes.has("facebook") ? <ConnectOption brandId={brand.id} mode="facebook" title="Facebook" description="Connect an eligible Facebook Page." returnTo={channelsPath} /> : null}
+                {existingModes.size >= 3 ? <p className="channels-v2-empty-copy">All currently supported channel types are connected.</p> : null}
               </>
             )}
           </div>
         </section>
-
-        <details className="channels-v2-advanced">
-          <summary>Advanced routing</summary>
-          <div>
-            <p>Account groups are optional convenience for repeated multi-destination selections. They never bypass destination-specific review or approval.</p>
-            <Link className="secondary-button" href={`/brands/${encoded}/channels/groups`}>Manage account groups</Link>
-          </div>
-        </details>
       </main>
     </KairoProductShell>
   );
@@ -132,18 +111,17 @@ function ChannelRow({ brandId, account, health, returnTo }: {
   const mode = connectionModeFor(account);
   const reconnect = account.status === "reconnect-required" || health?.status === "reconnect-required";
   const status = account.status === "disabled" ? "Disabled" : reconnect ? "Reconnect required" : "Connected";
-  const insights = insightsLabel(account, health);
 
   return (
     <article className="channels-v2-row">
       <div className="channels-v2-identity">
         <span className="channels-v2-channel">{friendly(account.channel)}</span>
         <strong>{account.displayName}</strong>
-        <small>{publishSummary(account.capabilities)} · {insights}</small>
+        <small>{account.status === "disabled" ? "This account is currently disabled." : "Available to Kairo according to its connected capabilities."}</small>
       </div>
       <div className="channels-v2-row-state">
         <span className={`channels-v2-state ${reconnect ? "attention" : account.status}`}>{status}</span>
-        {health?.lastVerifiedAt ? <small>Verified {friendlyDate(health.lastVerifiedAt)}</small> : null}
+        {health?.lastVerifiedAt ? <small>Checked {friendlyDate(health.lastVerifiedAt)}</small> : null}
       </div>
       <div className="channels-v2-row-action">
         {reconnect && mode ? (
@@ -155,9 +133,7 @@ function ChannelRow({ brandId, account, health, returnTo }: {
               <dl>
                 <div><dt>Account</dt><dd>{account.displayName}</dd></div>
                 <div><dt>Publishing</dt><dd>{publishSummary(account.capabilities)}</dd></div>
-                <div><dt>Insights</dt><dd>{insights}</dd></div>
-                {health?.lastSourceSyncAt ? <div><dt>Brand source sync</dt><dd>{friendlyDate(health.lastSourceSyncAt)}{health.sourceStatus ? ` · ${friendly(health.sourceStatus)}` : ""}</dd></div> : null}
-                <div><dt>Destination reference</dt><dd>{account.accountRef}</dd></div>
+                <div><dt>Results</dt><dd>{resultsLabel(account, health)}</dd></div>
               </dl>
               {health ? (
                 <form action={disconnectMetaConnectionAction.bind(null, brandId, account.id, returnTo)}>
@@ -195,19 +171,20 @@ function connectionModeFor(account: ChannelAccountView): BrandConnectionOption |
 }
 
 function publishSummary(capabilities: ChannelAccountView["capabilities"]) {
-  if (!capabilities.length) return "Publishing unavailable";
+  if (!capabilities.length) return "Not available";
   const names = capabilities.map((capability) => capability.replace("publish-", "")).map(friendly);
-  return `Publish ${names.join(" · ")}`;
+  return names.join(" · ");
 }
 
-function insightsLabel(account: ChannelAccountView, health?: MetaConnectionHealth) {
-  if (account.channel !== "instagram") return "Insights availability not reported";
-  if (!health) return "Insights status unavailable";
-  if (!health.healthy) return "Insights need attention";
-  return "Insights available";
+function resultsLabel(account: ChannelAccountView, health?: MetaConnectionHealth) {
+  if (account.channel !== "instagram") return "Not reported";
+  if (!health) return "Status unavailable";
+  if (!health.healthy) return "Needs attention";
+  return "Available";
 }
 
 function friendly(value: string) {
+  if (value.toLowerCase() === "linkedin") return "LinkedIn";
   return value.replace(/([A-Z])/g, " $1").replaceAll("-", " ").replace(/^./, (character) => character.toUpperCase());
 }
 
