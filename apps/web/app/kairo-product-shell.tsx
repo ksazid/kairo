@@ -32,6 +32,11 @@ const destinationIcons: Record<string, KairoIconName> = {
   Brand: "brand",
 };
 
+const mobileDestinationIcons: Record<string, KairoIconName> = {
+  ...destinationIcons,
+  Brand: "brain",
+};
+
 export async function KairoProductShell({
   brandId,
   workspaceId,
@@ -118,12 +123,12 @@ export async function KairoProductShell({
               className={`k-shell-mobile-nav-item ${item.label === resolvedMobileActive ? "active" : ""}`}
               aria-current={item.label === resolvedMobileActive ? "page" : undefined}
             >
-              <KairoIcon name={destinationIcons[item.label] ?? "brand"} />
+              <KairoIcon name={mobileDestinationIcons[item.label] ?? "brand"} />
               <span>{item.displayLabel}</span>
             </Link>
           ) : (
             <span key={item.label} className="k-shell-mobile-nav-item disabled" aria-disabled="true">
-              <KairoIcon name={destinationIcons[item.label] ?? "brand"} />
+              <KairoIcon name={mobileDestinationIcons[item.label] ?? "brand"} />
               <span>{item.displayLabel}</span>
             </span>
           ),
