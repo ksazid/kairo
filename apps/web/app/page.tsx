@@ -12,6 +12,7 @@ import {
   getSession,
   type PerformanceMetricView,
 } from "../src/lib/kairo-api";
+import { getBrandPresenter } from "../src/lib/presenter-api";
 import {
   buildAttentionItems,
   buildForYou,
@@ -51,11 +52,12 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     );
   }
 
-  const [opportunities, performance, notificationResult, channelResult] = await Promise.all([
+  const [opportunities, performance, notificationResult, channelResult, presenterResult] = await Promise.all([
     getOpportunities(brand.id).catch(() => []),
     getPerformance(brand.id).catch(() => []),
     getBrandNotifications(brand.id).catch(() => ({ brandId: brand.id, items: [] })),
     getChannelAccounts(brand.id).then((items) => ({ available: true as const, items })).catch(() => ({ available: false as const, items: [] })),
+    getBrandPresenter(brand.id).catch(() => null),
   ]);
 
   const hasConnectedChannel = channelResult.available ? channelResult.items.some((channel) => channel.status === "connected") : true;
@@ -63,6 +65,13 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const forYou = buildForYou(opportunities);
   const scores = new Map<string, RecommendationScores>(opportunities.map((item) => [item.id, { overall: item.scores.overall, audienceFit: item.scores.audienceFit, status: item.status }]));
   const metrics = buildHomeMetrics(performance);
+  const eligiblePresenter = presenterResult?.presenter && presenterResult.eligibility.status === "eligible"
+    ? {
+        id: presenterResult.presenter.id,
+        displayName: presenterResult.presenter.displayName,
+        mode: presenterResult.presenter.mode,
+      }
+    : undefined;
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Home">
@@ -96,7 +105,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
             <h2 id="home-my-idea-title">My idea</h2>
             <p>Share your thought and let Kairo recommend the best format.</p>
           </div>
-          <MyIdeaComposer brandId={brand.id} initialText={params.idea ?? ""} />
+          <MyIdeaComposer brandId={brand.id} initialText={params.idea ?? ""} eligiblePresenter={eligiblePresenter} />
         </section>
 
         <section className={styles.forYouSection} aria-labelledby="home-for-you-title">
