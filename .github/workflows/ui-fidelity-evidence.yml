@@ -1,0 +1,94 @@
+name: VS-93 Content fidelity evidence
+
+on:
+  push:
+    branches:
+      - fix/content-approved-pixel-fidelity-2026-08-25
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build web
+        run: npm run build --workspace @kairo/web
+      - name: Start controlled Content fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/vs93-content
+          node scripts/vs93-content-mock-api.mjs >/tmp/vs93-api.log 2>&1 &
+          KAIRO_API_URL=http://127.0.0.1:4000 npm run start --workspace @kairo/web -- -p 3000 >/tmp/vs93-web.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:4000/health >/dev/null && curl -fsS http://127.0.0.1:3000/auth/login >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/vs93-api.log || true
+          cat /tmp/vs93-web.log || true
+          exit 1
+      - name: Capture approved Content surfaces
+        run: node scripts/vs93-content-capture.mjs artifacts/vs93-content
+      - name: Validate fixed geometry
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const evidence = JSON.parse(readFileSync('artifacts/vs93-content/dom-evidence.json','utf8'));
+          const list = evidence.captures.find(c => c.name === 'content-list-1024x1536')?.dom;
+          const detail = evidence.captures.find(c => c.name === 'content-preview-1024x1536')?.dom;
+          const mobileList = evidence.captures.find(c => c.name === 'content-list-mobile-390x844')?.dom;
+          const mobileDetail = evidence.captures.find(c => c.name === 'content-preview-mobile-390x844')?.dom;
+          if (!list || !detail || !mobileList || !mobileDetail) throw new Error('Missing VS-93 evidence capture');
+          const near = (value,target,tolerance,label) => { if (value == null || Math.abs(value-target) > tolerance) throw new Error(`${label}: ${value} not within ${tolerance}px of ${target}`); };
+          for (const [label,dom] of [['list',list],['detail',detail],['mobile-list',mobileList],['mobile-detail',mobileDetail]]) {
+            if (dom.scrollWidth > dom.clientWidth) throw new Error(`${label} horizontal overflow ${dom.scrollWidth}>${dom.clientWidth}`);
+            if (dom.navItems?.length !== 5) throw new Error(`${label}: expected five bottom navigation items`);
+          }
+          near(list.header?.height,100,3,'list tablet header');
+          near(list.bottomNav?.height,88,3,'list bottom nav');
+          near(list.search?.height,50,3,'list search');
+          near(list.tabs?.height,62,3,'list tabs');
+          near(list.tableHeader?.height,49,3,'list table header');
+          if (list.rows.length !== 6) throw new Error(`list: expected 6 fixture rows, got ${list.rows.length}`);
+          for (const [i,row] of list.rows.entries()) near(row.height,153,12,`list row ${i+1}`);
+          for (const [i,thumb] of list.thumbnails.entries()) { near(thumb.width,188,4,`thumbnail ${i+1} width`); near(thumb.height,120,4,`thumbnail ${i+1} height`); }
+          if (!list.text.includes('All your content in one place. Track, review and publish.')) throw new Error('Content tagline drift');
+          if (!list.text.includes('Drafts')) throw new Error('Drafts tab missing');
+
+          near(detail.header?.height,100,3,'detail tablet header');
+          near(detail.bottomNav?.height,88,3,'detail bottom nav');
+          near(detail.topActions?.height,63,3,'detail top actions');
+          near(detail.right?.width,276,5,'detail right rail');
+          near(detail.socialCard?.width,486,6,'detail social card width');
+          near(detail.mediaStage?.height,440,6,'detail media height');
+          near(detail.aiSection?.height,139,14,'detail AI section');
+          if (detail.destinationLinks.length !== 3) throw new Error(`detail: expected 3 destination tabs, got ${detail.destinationLinks.length}`);
+          if (!detail.text.includes('Review how your content will look across platforms.')) throw new Error('Preview guidance drift');
+          if (!detail.text.includes('Content details') || !detail.text.includes('Performance potential')) throw new Error('Right rail content missing');
+          if (!detail.text.includes('Approve & Lock')) throw new Error('Approval action missing');
+          if (detail.text.includes('Truth Gate') || detail.text.includes('Critic') || detail.text.includes('renderVersionId')) throw new Error('Technical machinery leaked into approved Preview');
+          NODE
+      - name: Include logs
+        if: always()
+        run: |
+          cp /tmp/vs93-api.log artifacts/vs93-content/api.log 2>/dev/null || true
+          cp /tmp/vs93-web.log artifacts/vs93-content/web.log 2>/dev/null || true
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vs93-content-fidelity-evidence
+          path: artifacts/vs93-content
+          if-no-files-found: error
+          retention-days: 90
