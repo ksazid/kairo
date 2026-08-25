@@ -4,7 +4,6 @@ import { getBrandNotifications, getBrands, getSession } from "../src/lib/kairo-a
 import { productNotificationView } from "../src/lib/product-notification-view";
 import { KairoIcon, KairoLogo, type KairoIconName } from "./kairo-icons";
 import { BrandSwitcher } from "./brand-switcher";
-import { ProductGuide } from "./product-guide";
 import { ProfileMenu } from "./profile-menu";
 import { ThemeToggle } from "./theme-toggle";
 import { NotificationCentre, type ProductNotification } from "./ui-states";
@@ -119,7 +118,6 @@ export async function KairoProductShell({
           <KairoIcon name="chevron" />
           <span aria-current="page">{pageLabel ?? (resolvedActive ? displayDestination(resolvedActive) : "Home")}</span>
         </nav>
-        <ProductGuide />
         {children}
       </div>
 
