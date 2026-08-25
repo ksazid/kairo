@@ -33,17 +33,6 @@ export interface HomeMediaReference {
   sizeBytes: number;
 }
 
-export interface HomeMediaResolver {
-  requireAssets(accountId: string, brandId: string, ids: string[]): Promise<HomeMediaReference[]>;
-}
-
-const IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
-const VIDEO_MIME = new Set(["video/mp4", "video/quicktime", "video/webm"]);
-const IMAGE_MAX_BYTES = 25 * 1024 * 1024;
-const VIDEO_MAX_BYTES = 512 * 1024 * 1024;
-const SIGNED_URL_SECONDS = 600;
-const MAX_CREATION_MEDIA = 12;
-
 interface PendingUpload {
   id: string;
   accountId: string;
@@ -58,7 +47,26 @@ interface PendingUpload {
   createdAt: string;
 }
 
-export class PgHomeMediaRepository implements HomeMediaResolver {
+interface CompletedUpload extends PendingUpload {
+  completedAt?: string;
+}
+
+export interface HomeMediaRepository {
+  createPending(value: PendingUpload): Promise<void>;
+  getPendingForCompletion(accountId: string, brandId: string, uploadId: string): Promise<PendingUpload | null>;
+  complete(upload: PendingUpload, completedAt: string): Promise<CompletedUpload>;
+  list(accountId: string, brandId: string): Promise<CompletedUpload[]>;
+  requireAssets(accountId: string, brandId: string, ids: string[]): Promise<HomeMediaReference[]>;
+}
+
+const IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+const VIDEO_MIME = new Set(["video/mp4", "video/quicktime", "video/webm"]);
+const IMAGE_MAX_BYTES = 25 * 1024 * 1024;
+const VIDEO_MAX_BYTES = 512 * 1024 * 1024;
+const SIGNED_URL_SECONDS = 600;
+const MAX_CREATION_MEDIA = 12;
+
+export class PgHomeMediaRepository implements HomeMediaRepository {
   constructor(private pool: Pool) {}
 
   async createPending(value: PendingUpload) {
@@ -167,7 +175,7 @@ export class PgHomeMediaRepository implements HomeMediaResolver {
 
 export class HomeMediaService {
   constructor(
-    private repository: PgHomeMediaRepository,
+    private repository: HomeMediaRepository,
     private uploadSigner: S3PrivateUploadSigner,
     private deliverySigner: S3TemporaryObjectSigner,
     private storageProvider: string,
@@ -243,7 +251,7 @@ export class HomeMediaService {
     }
   }
 
-  private async toView(item: ReturnType<typeof mapCompleted>): Promise<HomeMediaAssetView> {
+  private async toView(item: CompletedUpload): Promise<HomeMediaAssetView> {
     const previewUrl = await this.deliverySigner.sign({
       storageProvider: this.storageProvider,
       objectKey: item.objectKey,
@@ -337,7 +345,7 @@ function mapPending(row: any): PendingUpload {
   };
 }
 
-function mapCompleted(row: any) {
+function mapCompleted(row: any): CompletedUpload {
   return {
     ...mapPending(row),
     completedAt: row.completed_at ? new Date(row.completed_at).toISOString() : undefined,
