@@ -16,42 +16,46 @@ Rule: once a page is approved, it is frozen and must not be regenerated or mater
 1. Home — approved master / frozen
 2. Content list — approved / frozen
 3. Content preview / detail — approved / frozen
-4. Calendar — approved previously, REOPENED FOR VERIFICATION / not frozen
+4. Calendar — approved / re-verified / frozen
 5. Insights — approved / frozen
 6. Brand — approved master / frozen
 7. Avatar (Presenter) — approved / frozen
+8. AI Assistant — approved / frozen
+
+### Frozen Calendar refinement
+
+The re-verified Calendar includes:
+- Page title `Calendar` + tagline.
+- `Today` as a jump action.
+- Previous / next date navigation and visible date range.
+- View modes: `Week` / `Month` / `Agenda`.
+- `Week` is the primary desktop view.
+- `Agenda` is a first-class view, not a filter.
+- Separate restrained filter control for Brand / channel / status as supported by real data.
+- Desktop Week uses a calm schedule grid.
+- Agenda uses grouped chronological content rows by date/day.
+- Mobile follows the compact date-strip + grouped agenda pattern.
+- Content items show thumbnail, channel/platform, time, title, format and simple status.
+- Status language: Scheduled / Publishing / Published / Needs attention.
+- Failed items expose a simple `Fix` action.
+- Selecting an item opens the exact Content item / preview.
+- Right-side detail/preview is contextual and optional on desktop rather than permanently consuming space.
+- Calendar does not add a separate `Create content` entry point; creation remains Home → My Idea / For You.
+- No attempt counters, dispatch internals, reconciliation terminology or operational jargon.
 
 ## Settings: AI & Media Providers
 
-8. AI & Media Providers — AI Providers tab — approved / frozen
-9. Manage Image Provider — approved / frozen
-10. Manage Video Provider — approved / frozen
-11. Manage Voice Provider — approved / frozen
-12. Manage Music Provider — approved / frozen
-13. Manage Avatar / Presenter Provider — approved / frozen
-14. Custom / Self-Hosted Providers — approved / frozen
+9. AI & Media Providers — AI Providers tab — approved / frozen
+10. Manage Image Provider — approved / frozen
+11. Manage Video Provider — approved / frozen
+12. Manage Voice Provider — approved / frozen
+13. Manage Music Provider — approved / frozen
+14. Manage Avatar / Presenter Provider — approved / frozen
+15. Custom / Self-Hosted Providers — approved / frozen
 
 ## Settings: account/security
 
-15. Security — approved / frozen
-
-## Reopened for verification
-
-- Calendar — keep the previously approved interaction contract as the reference, but do not treat the visual screen as frozen until the user re-verifies and explicitly re-freezes it.
-
-Approved Calendar contract to verify against:
-- Page title `Calendar` + tagline.
-- Today / previous-next navigation / visible date range.
-- Week is the primary desktop view; Month is secondary.
-- Filters remain available but visually restrained.
-- Calm weekly schedule grid on desktop.
-- Content items show thumbnail, channel, time, title and simple user-facing status.
-- Optional side agenda/details can summarize the selected day/date.
-- Status language: Scheduled / Publishing / Published / Needs attention.
-- Failed items use a simple `Fix` action.
-- No attempt counters, dispatch internals, reconciliation terminology or other operational jargon.
-- Selecting an item opens that exact Content item/preview.
-- Same Kairo design DNA as Home/Content: Inter, white/quiet neutral surfaces, restrained purple, thin borders, low-contrast elevation, consistent outline icons, generous spacing.
+16. Security — approved / frozen
 
 ## Not yet explicitly frozen
 
