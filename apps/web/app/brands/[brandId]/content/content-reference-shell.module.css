@@ -169,6 +169,28 @@
     min-width: 0;
   }
 
+  /* Content List bitmap authority: 34px left / 41px right and toolbar 3px higher. */
+  :global(.k-shell--content-reference #kairo-main-content:has(form[role="search"])) {
+    padding-right: 41px;
+  }
+
+  :global(.k-shell--content-reference #kairo-main-content:has(form[role="search"]) > div:has(> form[role="search"])) {
+    margin-top: 21px;
+  }
+
+  /* Content Preview bitmap authority: right rail ends at x994 and preview card is optically centered at x125. */
+  :global(.k-shell--content-reference #kairo-main-content [class*="contentGrid"]) {
+    width: calc(100% - 55px);
+  }
+
+  :global(.k-shell--content-reference #kairo-main-content [class*="socialCard"]) {
+    transform: translateX(8px);
+  }
+
+  :global(.k-shell--content-reference #kairo-main-content section[aria-label="Approval actions"]) {
+    margin-right: 30px;
+  }
+
   :global(.k-shell--content-reference .k-shell-mobile-nav) {
     position: fixed;
     z-index: 40;
