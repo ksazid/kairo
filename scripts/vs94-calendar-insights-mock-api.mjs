@@ -131,19 +131,39 @@ const performance = [];
 // Controlled evidence only: representative observations mirror the approved Insights
 // reference while exercising the same real-metric code path used in production.
 const dailyRates = [5.3, 6.0, 6.4, 5.7, 6.9, 6.0, 5.4, 6.8, 7.1, 6.7, 6.3, 5.7, 6.5, 7.2, 6.6, 7.4, 8.1, 8.9, 7.0, 6.3, 7.7, 7.2, 7.1, 6.5, 6.2, 6.1, 7.2, 8.3];
+const reachWeights = [8, 10, 9, 11, 8, 12, 9, 10, 13, 11, 8, 10, 12, 9, 13, 11, 10, 14, 9, 12, 10, 13, 9, 11, 12, 10, 13, 15];
+const saveWeights = [7, 8, 9, 7, 10, 8, 7, 9, 11, 8, 9, 7, 10, 9, 11, 8, 10, 12, 8, 9, 11, 10, 9, 8, 10, 9, 11, 12];
+const shareWeights = [5, 6, 5, 7, 6, 5, 6, 7, 8, 6, 5, 6, 7, 6, 8, 7, 6, 9, 5, 7, 8, 6, 7, 6, 5, 7, 8, 9];
+const dailyReach = distribute(12400, reachWeights);
+const dailySaves = distribute(1200, saveWeights);
+const dailyShares = distribute(320, shareWeights);
 for (let i = 0; i < dailyRates.length; i += 1) {
   const date = new Date(Date.UTC(2026, 6, 29 + i, 12, 0, 0)).toISOString();
-  performance.push(metric(`rate-${i}`, "engagement-rate", dailyRates[i], date));
+  performance.push(
+    metric(`reach-${i}`, "reach", dailyReach[i], date),
+    metric(`saves-${i}`, "saves", dailySaves[i], date),
+    metric(`shares-${i}`, "shares", dailyShares[i], date),
+    metric(`rate-${i}`, "engagement-rate", dailyRates[i], date),
+  );
 }
 performance.push(
-  metric("reach-current", "reach", 12400, "2026-08-24T12:00:00.000Z"),
-  metric("saves-current", "saves", 1200, "2026-08-24T12:00:00.000Z"),
-  metric("shares-current", "shares", 320, "2026-08-24T12:00:00.000Z"),
   metric("reach-prev", "reach", 10508.47, "2026-07-10T12:00:00.000Z"),
   metric("saves-prev", "saves", 944.88, "2026-07-10T12:00:00.000Z"),
   metric("shares-prev", "shares", 278.26, "2026-07-10T12:00:00.000Z"),
   metric("rate-prev", "engagement-rate", 6.18, "2026-07-10T12:00:00.000Z"),
 );
+
+function distribute(total, weights) {
+  const weightTotal = weights.reduce((sum, weight) => sum + weight, 0);
+  const raw = weights.map((weight) => total * weight / weightTotal);
+  const result = raw.map(Math.floor);
+  let remaining = total - result.reduce((sum, value) => sum + value, 0);
+  const order = raw
+    .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+    .sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+  for (let i = 0; i < remaining; i += 1) result[order[i].index] += 1;
+  return result;
+}
 
 function metric(id, name, value, capturedAt) {
   return {
