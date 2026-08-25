@@ -32,15 +32,15 @@
     {"type":"production-enable","status":"pending","version":"VS-91@1.1","commitSha":null,"by":null,"at":null,"rationale":"Not authorized by implementation approval."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":8,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":25,"testing":10,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":"All approved/frozen Kairo UI surfaces conform to their latest approved desktop/mobile design while preserving truthful runtime state and existing working behavior.","metrics":["18 frozen surface groups implemented","desktop/mobile evidence matrix passes","five primary destinations in approved order","no rejected or technical-workflow UI drift","all missing behaviors registered rather than fabricated","no auth/data/route regressions"]},
   "links": {
     "specification":"docs/slices/VS-91.md",
-    "implementationPr":"https://github.com/ksazid/kairo/pull/195",
-    "evidence":["docs/plans/VS-91-implementation.md","product/DESIGN.md","product/UI-IMPLEMENTATION-CONTRACT-2026-08-25.md","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/APPROVED-UI-FROZEN-PAGES-2026-08-25.md","product/APPROVED-SETTINGS-PROVIDER-PAGES-2026-08-25.md","delivery/context/VS-90-observation-handoff-2026-08-25.md"]
+    "implementationPr":"https://github.com/ksazid/kairo/pull/196",
+    "evidence":["docs/plans/VS-91-implementation.md","product/DESIGN.md","product/UI-IMPLEMENTATION-CONTRACT-2026-08-25.md","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/APPROVED-UI-FROZEN-PAGES-2026-08-25.md","product/APPROVED-SETTINGS-PROVIDER-PAGES-2026-08-25.md","delivery/context/VS-90-observation-handoff-2026-08-25.md","delivery/evidence/VS-91-functionality-gaps.md"]
   },
   "maxAttempts": 3
 }
