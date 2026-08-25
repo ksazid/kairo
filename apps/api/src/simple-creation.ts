@@ -6,7 +6,16 @@ import type { PutBrandPresenterRequest, SimpleCreationPresenterDto } from "@kair
 import type { IdeaDevelopmentPort } from "./app";
 import type { AvatarProvider } from "./avatar-provider";
 import { BrandPresenterService, type BrandPresenterStore } from "./brand-presenter";
-import type { HomeMediaResolver } from "./home-media";
+import {
+  HomeMediaService,
+  type BeginHomeMediaUploadInput,
+  type HomeMediaRepository,
+} from "./home-media";
+import {
+  s3PrivateObjectStorageConfigFromEnv,
+  S3PrivateUploadSigner,
+  S3TemporaryObjectSigner,
+} from "./private-object-storage";
 
 export type SimpleCreationStatus =
   | "queued"
@@ -41,6 +50,7 @@ export interface SimpleCreationRequest {
 }
 
 export interface SimpleCreationStore extends BrandPresenterStore {
+  homeMedia?: HomeMediaRepository;
   create(value: SimpleCreationRequest): Promise<SimpleCreationRequest>;
   get(accountId: string, brandId: string, id: string): Promise<SimpleCreationRequest | null>;
   claim(workerId: string, leaseSeconds: number): Promise<SimpleCreationRequest | null>;
@@ -68,7 +78,6 @@ export class SimpleCreationService {
     private developer: IdeaDevelopmentPort,
     private now = () => new Date(),
     avatarProvider?: AvatarProvider,
-    private mediaResolver?: HomeMediaResolver,
   ) {
     this.research = new ResearchService(researchRepo, now);
     this.campaigns = new CampaignService(campaignRepo, researchRepo, undefined, now);
@@ -89,8 +98,8 @@ export class SimpleCreationService {
     }
     if (presenterId) await this.presenters.requireEligible(workspaceId, brandId, presenterId);
     if (mediaAssetIds.length) {
-      if (!this.mediaResolver) throw new DomainValidationError("Media inputs are unavailable in this environment");
-      await this.mediaResolver.requireAssets(accountId, brandId, mediaAssetIds);
+      if (!this.store.homeMedia) throw new DomainValidationError("Media inputs are unavailable in this environment");
+      await this.store.homeMedia.requireAssets(accountId, brandId, mediaAssetIds);
     }
     const at = this.now().toISOString();
     return this.store.create({
@@ -129,6 +138,27 @@ export class SimpleCreationService {
 
   savePresenter(workspaceId: string, brandId: string, input: PutBrandPresenterRequest) {
     return this.presenters.save(workspaceId, brandId, input);
+  }
+
+  homeMediaConfigured() {
+    return Boolean(this.store.homeMedia && s3PrivateObjectStorageConfigFromEnv(process.env));
+  }
+
+  async listHomeMedia(accountId: string, brandId: string) {
+    return this.homeMediaService().list(accountId, brandId);
+  }
+
+  async beginHomeMediaUpload(
+    accountId: string,
+    workspaceId: string,
+    brandId: string,
+    input: BeginHomeMediaUploadInput,
+  ) {
+    return this.homeMediaService().begin(accountId, workspaceId, brandId, input);
+  }
+
+  async completeHomeMediaUpload(accountId: string, brandId: string, uploadId: string) {
+    return this.homeMediaService().complete(accountId, brandId, uploadId);
   }
 
   async runOnce(workerId: string) {
@@ -222,6 +252,20 @@ export class SimpleCreationService {
       await this.store.advance(job.id, workerId, "needs-attention", { failureReason: safeError(error) });
       return true;
     }
+  }
+
+  private homeMediaService() {
+    if (!this.store.homeMedia) throw new DomainValidationError("Media inputs are unavailable in this environment");
+    const config = s3PrivateObjectStorageConfigFromEnv(process.env);
+    if (!config) throw new DomainValidationError("Private media storage is not configured in this environment");
+    return new HomeMediaService(
+      this.store.homeMedia,
+      new S3PrivateUploadSigner(config),
+      new S3TemporaryObjectSigner(config),
+      config.provider,
+      fetch,
+      this.now,
+    );
   }
 }
 
