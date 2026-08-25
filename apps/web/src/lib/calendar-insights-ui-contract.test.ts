@@ -42,7 +42,7 @@ describe("Calendar + Insights UI compatibility contract", () => {
     expect(page).toContain("What happened</h2>");
     expect(page).toContain("Why it happened</h2>");
     expect(page).toContain("What to do next</h2>");
-    expect(metricView).toContain('formattedValue: "Unavailable"');
+    expect(metricView).toContain('if (value == null) return "Unavailable";');
     expect(page).not.toContain("ChannelConnection");
     expect(page).not.toContain("Instagram connection");
     expect(page).not.toContain("getChannelAccounts");
