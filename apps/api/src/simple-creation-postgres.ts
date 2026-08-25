@@ -1,10 +1,12 @@
 import type {Pool} from "pg";
 import {ConcurrencyConflictError} from "@kairo/domain";
 import type {BrandPresenterDto} from "@kairo/contracts/presenter";
+import {PgHomeMediaRepository} from "./home-media";
 import type {SimpleCreationRequest,SimpleCreationStatus,SimpleCreationStore} from"./simple-creation";
 
 export class PgSimpleCreationStore implements SimpleCreationStore{
- constructor(private pool:Pool){}
+ readonly homeMedia:PgHomeMediaRepository;
+ constructor(private pool:Pool){this.homeMedia=new PgHomeMediaRepository(pool);}
  async create(v:SimpleCreationRequest){await this.pool.query(`insert into simple_creation_requests(id,account_id,workspace_id,brand_id,goal,input_text,source,content_preference,presenter_id,media_asset_ids,status,created_at,updated_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12,$12)`,[v.id,v.accountId,v.workspaceId,v.brandId,v.goal,v.input??null,v.source??null,v.contentPreference,v.presenterId??null,JSON.stringify(v.mediaAssetIds),v.status,v.createdAt]);return v;}
  async get(accountId:string,brandId:string,id:string){const r=await this.pool.query(`${select} where r.account_id=$1 and r.brand_id=$2 and r.id=$3`,[accountId,brandId,id]);return r.rows[0]?map(r.rows[0]):null;}
  async claim(workerId:string,leaseSeconds:number){const c=await this.pool.connect();try{await c.query("begin");const r=await c.query(`${select} where r.status not in ('ready','needs-attention') and (r.lease_expires_at is null or r.lease_expires_at<now()) order by r.created_at for update skip locked limit 1`);if(!r.rows[0]){await c.query("commit");return null;}await c.query(`update simple_creation_requests set lease_owner=$2,lease_expires_at=now()+($3*interval '1 second'),attempt=attempt+1,updated_at=now() where id=$1`,[r.rows[0].id,workerId,leaseSeconds]);await c.query("commit");return map({...r.rows[0],lease_owner:workerId,attempt:Number(r.rows[0].attempt)+1});}catch(e){await c.query("rollback");throw e;}finally{c.release();}}
