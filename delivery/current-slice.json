@@ -3,14 +3,14 @@
   "sliceId": "VS-94",
   "title": "Exact Approved Calendar and Insights Replication",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01", "FR-16", "FR-17", "FR-18"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
   "dependencies": ["VS-93"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**", "docs/slices/VS-94.md", "docs/plans/**", "delivery/**", "scripts/**", ".github/workflows/ui-fidelity-evidence.yml"],
+  "allowedPaths": ["apps/web/**", "docs/slices/VS-94.md", "docs/plans/**", "delivery/**"],
   "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
   "impact": {
     "areas": ["frontend", "customer-flow", "analytics"],
@@ -19,6 +19,8 @@
       "Supplied screenshots are bitmap authority for geometry, typography and spacing.",
       "Calendar cards navigate to exact Content Preview/Detail routes using existing campaignId and assetId fields.",
       "Insights remains truthful: no fabricated metrics, sparklines, trend series or causal claims.",
+      "Rendered evidence passed at 728x1536 and 390x844 with no horizontal overflow or Blocker/Major visual discrepancy.",
+      "Temporary visual evidence workflow and fixture were removed after evidence was frozen.",
       "No API, worker, database or analytics-collection behavior changes."
     ]
   },
@@ -26,20 +28,38 @@
     {"type":"scope","status":"approved","version":"VS-94@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T22:00:00+02:00","rationale":"Calendar and Insights bitmap references supplied; implementation explicitly requested."},
     {"type":"policy","status":"not-required","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"No policy change."},
     {"type":"implementation","status":"approved","version":"VS-94@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T22:00:00+02:00","rationale":"Implementation explicitly requested."},
-    {"type":"certification","status":"pending","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires immutable candidate, rendered evidence and green automated gates."},
+    {"type":"certification","status":"pending","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation and testing are complete. Requires exact-SHA Product Owner certification."},
     {"type":"release","status":"pending","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."},
     {"type":"production-enable","status":"pending","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
+  "certification": {
+    "status":"not-started",
+    "commitSha":null,
+    "evidence":[
+      "delivery/context/VS-94.md",
+      "visual-run:32897564012",
+      "visual-artifact:9581811957",
+      "visual-artifact-digest:sha256:4b33b16484a904d1943ec04414aadc5c2d66c71ca0ba7262ad37161d600b49af",
+      "product-intake:32897569699:passed",
+      "security:32897569696:passed",
+      "ci:32897569750:passed"
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
     "specification":"docs/slices/VS-94.md",
-    "implementationPr":null,
-    "evidence":["Product Owner Calendar reference 728x1536", "Product Owner Insights reference 728x1536", "product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md", "product/DESIGN.md"]
+    "implementationPr":"https://github.com/ksazid/kairo/pull/200",
+    "evidence":[
+      "Product Owner Calendar reference 728x1536",
+      "Product Owner Insights reference 728x1536",
+      "delivery/context/VS-94.md",
+      "product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md",
+      "product/DESIGN.md"
+    ]
   },
   "maxAttempts": 3
 }
