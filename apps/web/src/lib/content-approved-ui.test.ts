@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const root = resolve(process.cwd(), "apps/web");
+const root = resolve(import.meta.dirname, "../..");
 const listPage = readFileSync(resolve(root, "app/brands/[brandId]/content/page.tsx"), "utf8");
 const listCss = readFileSync(resolve(root, "app/brands/[brandId]/content/content.module.css"), "utf8");
 const detailPage = readFileSync(resolve(root, "app/brands/[brandId]/content/[campaignId]/[assetId]/page.tsx"), "utf8");
