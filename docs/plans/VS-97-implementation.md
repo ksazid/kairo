@@ -6,13 +6,14 @@ Implement the approved Home `Get recommendations` → Hunter → `For You` flow 
 
 ## Steps
 
-1. Add an API-facing Hunter runtime adapter that:
-   - projects active Brand Brain into the existing Brand Intelligence Profile;
-   - uses sector-aware source planning when a matching pack exists;
-   - falls back to a bounded explicit public query for Brands without a matching sector pack;
-   - routes through existing RSS/Hacker News/Bluesky/optional YouTube discovery adapters;
-   - invokes the existing HunterOrchestrator and DiscoveryService.
-2. Add a Brand-scoped authenticated `POST /api/v1/brands/:brandId/hunter/run` route.
+1. Wire the existing Hunter runtime for Home recommendations:
+   - project active Brand Brain into the existing Brand Intelligence Profile;
+   - use sector-aware source planning when a matching Sector Intelligence Pack exists;
+   - use a bounded explicit public query for Brands without a matching pack so the Home action does not block on classification coverage;
+   - route public discovery through the existing Kairo-owned Hacker News, Bluesky and optional YouTube adapters, preserving concrete provider provenance;
+   - allow unsupported/unconfigured named sources to degrade truthfully rather than fabricate evidence;
+   - persist only qualified, non-duplicate Opportunities through the existing DiscoveryService.
+2. Add a Brand-scoped authenticated `POST /api/v1/brands/:brandId/recommendations` route.
    - return 503 when no model runtime is configured;
    - coalesce concurrent duplicate requests per account+Brand in-process;
    - return evidence/candidate/opportunity counts and degraded source names.
@@ -31,9 +32,9 @@ Implement the approved Home `Get recommendations` → Hunter → `For You` flow 
 
 - Authenticate and resolve Brand access before Hunter execution.
 - Keep Brand-private context scoped to the active Brand.
-- Public discovery receives only bounded queries through existing adapters/tool gateway.
+- Public discovery receives only bounded queries through the existing Tool Gateway.
 - Preserve provider/source provenance and existing opportunity qualification/deduplication.
-- Do not add publishing authority or provider credentials.
+- Do not add publishing authority, new credential scopes or autonomous execution.
 - Do not fabricate recommendations when Hunter returns zero.
 
 ## Rollback
