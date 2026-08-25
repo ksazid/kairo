@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import process from "node:process";
 
@@ -8,29 +8,28 @@ const appUrl = "http://127.0.0.1:3000/?workspace=workspace-ui&brand=brand-ui";
 
 await mkdir(outputDir, { recursive: true });
 
-let chrome;
-let executable;
-for (const candidate of chromeCandidates) {
-  try {
-    chrome = spawn(candidate, [
-      "--headless=new",
-      "--no-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--remote-debugging-port=9222",
-      "--user-data-dir=/tmp/kairo-ui-fidelity-chrome",
-      "about:blank",
-    ], { stdio: ["ignore", "pipe", "pipe"] });
-    executable = candidate;
-    break;
-  } catch {
-    chrome = undefined;
-  }
-}
-if (!chrome) throw new Error("Unable to launch Chrome/Chromium");
+const executable = chromeCandidates.find((candidate) => {
+  const probe = spawnSync(candidate, ["--version"], { stdio: "ignore" });
+  return !probe.error && probe.status === 0;
+});
+if (!executable) throw new Error(`Unable to find Chrome/Chromium. Tried: ${chromeCandidates.join(", ")}`);
+
+const chrome = spawn(executable, [
+  "--headless=new",
+  "--no-sandbox",
+  "--disable-dev-shm-usage",
+  "--disable-gpu",
+  "--remote-debugging-address=127.0.0.1",
+  "--remote-debugging-port=9222",
+  "--user-data-dir=/tmp/kairo-ui-fidelity-chrome",
+  "about:blank",
+], { stdio: ["ignore", "pipe", "pipe"] });
 
 const stderr = [];
 chrome.stderr.on("data", (chunk) => stderr.push(String(chunk)));
+chrome.on("exit", (code, signal) => {
+  if (code && code !== 0) stderr.push(`Chrome exited with code ${code} signal ${signal ?? "none"}`);
+});
 
 try {
   await waitFor(async () => {
