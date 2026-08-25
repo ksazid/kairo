@@ -263,7 +263,7 @@ function buildHomeMetrics(metrics: PerformanceMetricView[]): HomeMetric[] {
     { label: "Reach", names: ["reach"] },
     { label: "Saves", names: ["saves", "saved"] },
     { label: "Shares", names: ["shares", "shared"] },
-    { label: "Engagement rate", names: ["engagement rate", "engagement_rate", "engagement-rate", "engagement"] },
+    { label: "Engagement rate", names: ["engagement rate", "engagement_rate", "engagement-rate"] },
   ].map(({ label, names }) => {
     const metric = latestAvailableMetric(metrics, names);
     return {
