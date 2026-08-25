@@ -21,7 +21,7 @@ type ProductShellProps = {
   active?: DesktopProductDestination | null;
   mobileActive?: MobileProductDestination;
   pageLabel?: string;
-  variant?: "default" | "content-reference";
+  variant?: "default" | "content-reference" | "portrait-reference";
   children: ReactNode;
 };
 
@@ -60,9 +60,14 @@ export async function KairoProductShell({
   const addBrandHref = workspaceId
     ? `/brands/new?workspace=${encodeURIComponent(workspaceId)}`
     : "/brands/new";
+  const variantClass = variant === "content-reference"
+    ? " k-shell--content-reference"
+    : variant === "portrait-reference"
+      ? " k-shell--portrait-reference"
+      : "";
 
   return (
-    <div className={`k-shell${variant === "content-reference" ? " k-shell--content-reference" : ""}`}>
+    <div className={`k-shell${variantClass}`}>
       <a className="skip-link" href="#kairo-main-content">Skip to content</a>
 
       <aside className="k-shell-sidebar" aria-label="Primary navigation">
