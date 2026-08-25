@@ -1,8 +1,8 @@
 /* Final fixed-geometry corrections measured against the approved 393px Home bitmap. */
 @media (max-width: 820px) {
   .k-shell-mobile-header {
-    min-height: 45px !important;
-    height: 45px !important;
+    min-height: 56px !important;
+    height: 56px !important;
   }
 
   #kairo-main-content section[aria-label="Needs attention"] article {
