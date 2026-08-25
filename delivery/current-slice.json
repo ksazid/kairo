@@ -1,65 +1,44 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-94",
-  "title": "Exact Approved Calendar and Insights Replication",
+  "sliceId": "VS-95",
+  "title": "Approved Brand, Avatar and Provider Interaction Wiring",
   "status": "active",
-  "lifecycle": "certification",
-  "riskLevel": "medium",
+  "lifecycle": "implementing",
+  "riskLevel": "low",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-01", "FR-16", "FR-17", "FR-18"],
+  "requirements": ["FR-03", "FR-04", "FR-05", "FR-11", "FR-13"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
-  "dependencies": ["VS-93"],
+  "dependencies": ["VS-89", "VS-90", "VS-94"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**", "docs/slices/VS-94.md", "docs/plans/**", "delivery/**"],
-  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
+  "allowedPaths": ["apps/web/**", "docs/slices/VS-95.md", "docs/plans/**", "delivery/**", ".engineering/STATE.json"],
+  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**", "packages/contracts/**", "packages/domain/**"],
   "impact": {
-    "areas": ["frontend", "customer-flow", "analytics"],
+    "areas": ["frontend", "customer-flow"],
     "notes": [
-      "Replicates Product Owner supplied Calendar and Insights references at 728x1536.",
-      "Supplied screenshots are bitmap authority for geometry, typography and spacing.",
-      "Calendar cards navigate to exact Content Preview/Detail routes using existing campaignId and assetId fields.",
-      "Insights remains truthful: no fabricated metrics, sparklines, trend series or causal claims.",
-      "Rendered evidence passed at 728x1536 and 390x844 with no horizontal overflow or Blocker/Major visual discrepancy.",
-      "Temporary visual evidence workflow and fixture were removed after evidence was frozen.",
-      "No API, worker, database or analytics-collection behavior changes."
+      "Wires approved Brand, Avatar and AI/Media Provider interactions only where an existing governed route/action already exists.",
+      "Adds a frontend-only AI & Media Providers overview/navigation destination without provider secrets, configuration persistence or fabricated provider health.",
+      "Unsupported approved actions remain disabled or safely omitted and are durably recorded for a later governed implementation slice.",
+      "No API, worker, database, provider adapter, credential, publishing or media-generation behavior changes."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-94@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T22:00:00+02:00","rationale":"Calendar and Insights bitmap references supplied; implementation explicitly requested."},
-    {"type":"policy","status":"not-required","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"No policy change."},
-    {"type":"implementation","status":"approved","version":"VS-94@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T22:00:00+02:00","rationale":"Implementation explicitly requested."},
-    {"type":"certification","status":"pending","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"Implementation and testing are complete. Requires exact-SHA Product Owner certification."},
-    {"type":"release","status":"pending","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."},
-    {"type":"production-enable","status":"pending","version":"VS-94@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."}
+    {"type":"scope","status":"approved","version":"VS-95@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T23:37:00+02:00","rationale":"Product Owner supplied the frozen Brand, Avatar and AI & Media Providers references and explicitly requested implementation of every currently supportable link/action with unsupported interactions saved for later."},
+    {"type":"policy","status":"not-required","version":"VS-95@1.0","commitSha":null,"by":null,"at":null,"rationale":"No product/security/provider policy change; unsupported provider execution and secret configuration remain disabled."},
+    {"type":"implementation","status":"approved","version":"VS-95@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T23:37:00+02:00","rationale":"Implementation explicitly requested for existing supported routes/actions and truthful frontend-only provider overview/navigation."},
+    {"type":"certification","status":"pending","version":"VS-95@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires exact-SHA evidence after implementation/testing."},
+    {"type":"release","status":"pending","version":"VS-95@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."},
+    {"type":"production-enable","status":"pending","version":"VS-95@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
-  "certification": {
-    "status":"not-started",
-    "commitSha":null,
-    "evidence":[
-      "delivery/context/VS-94.md",
-      "visual-run:32897564012",
-      "visual-artifact:9581811957",
-      "visual-artifact-digest:sha256:4b33b16484a904d1943ec04414aadc5c2d66c71ca0ba7262ad37161d600b49af",
-      "product-intake:32897569699:passed",
-      "security:32897569696:passed",
-      "ci:32897569750:passed"
-    ]
-  },
+  "progress": {"discovery":100,"decisions":100,"implementation":20,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":["delivery/context/VS-95.md","docs/plans/VS-95-implementation.md","docs/plans/VS-95-deferred-interactions.md"]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
-    "specification":"docs/slices/VS-94.md",
-    "implementationPr":"https://github.com/ksazid/kairo/pull/200",
-    "evidence":[
-      "Product Owner Calendar reference 728x1536",
-      "Product Owner Insights reference 728x1536",
-      "delivery/context/VS-94.md",
-      "product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md",
-      "product/DESIGN.md"
-    ]
+    "specification":"docs/slices/VS-95.md",
+    "implementationPr":null,
+    "evidence":["Product Owner supplied Brand reference","Product Owner supplied Avatar (Presenter) reference","Product Owner supplied AI & Media Providers reference","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/DESIGN.md"]
   },
   "maxAttempts": 3
 }
