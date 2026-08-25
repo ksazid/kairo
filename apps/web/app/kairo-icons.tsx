@@ -25,7 +25,11 @@ export type KairoIconName =
   | "image"
   | "video"
   | "media"
-  | "bookmark";
+  | "bookmark"
+  | "warning"
+  | "shield"
+  | "sparkles"
+  | "eye";
 
 const paths: Record<KairoIconName, React.ReactNode> = {
   home: <><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></>,
@@ -53,34 +57,16 @@ const paths: Record<KairoIconName, React.ReactNode> = {
   video: <><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3Z"/></>,
   media: <><rect x="5" y="3" width="16" height="14" rx="2"/><path d="M3 7v12a2 2 0 0 0 2 2h14M8 13l3-3 3 3 2-2 3 3"/></>,
   bookmark: <path d="M6 4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21l-6-4-6 4Z"/>,
+  warning: <><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v5M12 17.5h.01"/></>,
+  shield: <><path d="M12 2.8 20 6v5.8c0 5.1-3.2 8.2-8 10.2-4.8-2-8-5.1-8-10.2V6l8-3.2Z"/><path d="m8.6 12 2.2 2.2 4.6-4.6"/></>,
+  sparkles: <><path d="m12 3 1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2L12 3Z"/><path d="m19 13 .7 2.3L22 16l-2.3.7L19 19l-.7-2.3L16 16l2.3-.7L19 13ZM5 14l.8 2.5L8 17l-2.2.5L5 20l-.8-2.5L2 17l2.2-.5L5 14Z"/></>,
+  eye: <><path d="M2.8 12s3.4-5.2 9.2-5.2S21.2 12 21.2 12 17.8 17.2 12 17.2 2.8 12 2.8 12Z"/><circle cx="12" cy="12" r="2.3"/></>,
 };
 
 export function KairoIcon({ name, ...props }: { name: KairoIconName } & SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      {...props}
-    >
-      {paths[name]}
-    </svg>
-  );
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" {...props}>{paths[name]}</svg>;
 }
 
 export function KairoLogo({ compact = false }: { compact?: boolean }) {
-  return (
-    <span className={`kairo-logo ${compact ? "compact" : ""}`} aria-label="Kairo">
-      <svg viewBox="0 0 36 36" aria-hidden="true">
-        <path d="M18 3a15 15 0 1 0 15 15A15 15 0 0 0 18 3Zm0 6a9 9 0 1 1-9 9 9 9 0 0 1 9-9Z"/>
-        <path d="m17 12 7 6-7 6v-4H9v-4h8Z"/>
-      </svg>
-      {compact ? null : <span>Kairo</span>}
-    </span>
-  );
+  return <span className={`kairo-logo ${compact ? "compact" : ""}`} aria-label="Kairo"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M18 3a15 15 0 1 0 15 15A15 15 0 0 0 18 3Zm0 6a9 9 0 1 1-9 9 9 9 0 0 1 9-9Z"/><path d="m17 12 7 6-7 6v-4H9v-4h8Z"/></svg>{compact ? null : <span>Kairo</span>}</span>;
 }
