@@ -12,14 +12,15 @@
   "blockers": [],
   "allowedPaths": [
     "apps/api/src/server.ts",
-    "apps/api/src/hunter-routes.ts",
-    "apps/api/src/hunter-routes.test.ts",
-    "apps/api/src/hunter-runtime.ts",
+    "apps/api/src/hunter-recommendation-routes.ts",
+    "apps/api/src/hunter-recommendation-routes.test.ts",
+    "apps/api/src/hunter-tool-gateway.ts",
     "apps/web/app/page.tsx",
     "apps/web/app/my-idea-composer.tsx",
-    "apps/web/app/for-you-recommendations-action.tsx",
-    "apps/web/app/for-you-recommendations-action.module.css",
+    "apps/web/app/get-recommendations-button.tsx",
+    "apps/web/app/get-recommendations-button.module.css",
     "apps/web/app/api/home/recommendations/route.ts",
+    "apps/web/src/lib/hunter-api.ts",
     "docs/slices/VS-97.md",
     "docs/plans/VS-97-implementation.md",
     "delivery/**",
@@ -38,6 +39,7 @@
     "notes": [
       "Adds one explicit Home action that invokes the already-approved Hunter/Discover capability for the active Brand and refreshes the existing For You ranking.",
       "Uses the existing Brand Brain projection, sector/source policy, public discovery adapters, Hunter scoring, evidence lineage and opportunity deduplication; no new discovery policy or provider authority is introduced.",
+      "Brands without a matching Sector Intelligence Pack use a bounded explicit public query instead of blocking the Home action.",
       "Renames the My Idea format recommendation action so it is not confused with Hunter discovery.",
       "Concurrent duplicate clicks are coalesced in-process and authoritative opportunity deduplication remains in the existing DiscoveryService.",
       "No database migration, publishing authority, credential scope, autonomous publishing or hidden reasoning exposure is added."
@@ -100,7 +102,7 @@
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":90,"testing":10,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
