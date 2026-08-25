@@ -84,7 +84,7 @@ export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
 
       <button className={styles.recommendButton} type="button" onClick={recommend} disabled={!canRecommend || state !== "idle"}>
         <KairoIcon name="sparkles" />
-        <span>{state === "recommending" ? "Getting recommendations…" : recommendation ? "Update recommendations" : "Get recommendations"}</span>
+        <span>{state === "recommending" ? "Recommending format…" : recommendation ? "Update format" : "Recommend format"}</span>
       </button>
 
       <p className={styles.recommendationHint}><KairoIcon name="shield" /><span>Kairo recommends the format before it creates anything.</span></p>
