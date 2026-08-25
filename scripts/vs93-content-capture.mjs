@@ -142,7 +142,7 @@ function listEvidenceExpression() {
     table: one('section[aria-labelledby="content-list-title"]'),
     tableHeader: one('[class*="tableHeader"]'),
     rows: many('[class*="rows"] > article'),
-    thumbnails: many('[class*="thumbnail"]'),
+    thumbnails: many('a[class*="contentCell"] > div[class*="thumbnail"]'),
     pagination: one('[class*="pagination"]'),
     navItems: many('.k-shell-mobile-nav-item'),
     text: document.querySelector('#kairo-main-content')?.innerText?.replace(/\\s+/g,' ').trim().slice(0,2400) || ''
