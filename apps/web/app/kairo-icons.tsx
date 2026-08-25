@@ -5,7 +5,8 @@ export type KairoIconName =
   | "instagram" | "facebook" | "brand" | "profile" | "settings" | "logout"
   | "plus" | "chevron" | "sun" | "moon" | "system" | "density" | "search" | "bell"
   | "link" | "photo" | "video" | "attachment" | "bookmark" | "filter" | "grid" | "list"
-  | "arrow-left" | "arrow-right" | "external" | "refresh" | "check" | "warning";
+  | "arrow-left" | "arrow-right" | "external" | "refresh" | "check" | "warning"
+  | "heart" | "comment" | "send" | "more";
 
 const paths: Record<KairoIconName, React.ReactNode> = {
   home: <><path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></>,
@@ -42,6 +43,10 @@ const paths: Record<KairoIconName, React.ReactNode> = {
   refresh: <><path d="M20 6v5h-5"/><path d="M4 18v-5h5"/><path d="M18.5 9A7 7 0 0 0 6 6.5L4 11M5.5 15A7 7 0 0 0 18 17.5l2-4.5"/></>,
   check: <path d="m5 12 4 4L19 6"/>,
   warning: <><path d="M12 3 2.5 20h19Z"/><path d="M12 9v4M12 17h.01"/></>,
+  heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>,
+  comment: <><path d="M21 11.5a8.5 8.5 0 0 1-9 8.5 9 9 0 0 1-4-.9L3 21l1.6-4.4A8.5 8.5 0 1 1 21 11.5Z"/></>,
+  send: <><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></>,
+  more: <><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></>,
 };
 
 export function KairoIcon({ name, ...props }: { name: KairoIconName } & SVGProps<SVGSVGElement>) {
