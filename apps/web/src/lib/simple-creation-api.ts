@@ -14,6 +14,7 @@ export interface SimpleCreationView {
   progress: { stage: CreationStatus; message: string };
   contentPreference: "auto" | "carousel" | "reel" | "image" | "campaign";
   presenter?: SimpleCreationPresenterDto;
+  mediaAssetIds: string[];
   recommendation?: {
     title?: string;
     framing?: string;
@@ -35,10 +36,7 @@ export interface SimpleCreationView {
 }
 class SimpleCreationApiError extends Error {}
 function base() {
-  return (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(
-    /\/$/,
-    "",
-  );
+  return (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
 }
 async function call<T>(path: string, init?: RequestInit) {
   const token = (await cookies()).get("kairo_access_token")?.value;
@@ -52,9 +50,7 @@ async function call<T>(path: string, init?: RequestInit) {
     },
   });
   if (!response.ok) {
-    const p = (await response.json().catch(() => null)) as {
-      detail?: string;
-    } | null;
+    const p = (await response.json().catch(() => null)) as { detail?: string } | null;
     throw new SimpleCreationApiError(p?.detail ?? "Unable to create content");
   }
   return (await response.json()) as T;
@@ -67,6 +63,7 @@ export function startSimpleCreation(
     source?: string;
     contentPreference?: "auto" | "carousel" | "reel" | "image" | "campaign";
     presenterId?: string;
+    mediaAssetIds?: string[];
   },
 ) {
   return call<SimpleCreationView>(
