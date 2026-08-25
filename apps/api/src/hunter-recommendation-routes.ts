@@ -1,7 +1,8 @@
 import type { BrandBrainFieldDto } from "@kairo/contracts";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { DomainValidationError, KairoService, type KairoRepository } from "@kairo/domain";
+import { KairoService, type KairoRepository } from "@kairo/domain";
 import { projectBrandIntelligenceProfile } from "@kairo/domain/source-policy";
+import { selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import type { HunterRunInput, HunterRunResult } from "@kairo/worker/hunter";
 import type { IdentityVerifier } from "./auth";
 
@@ -24,12 +25,6 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       if (!account) return;
 
       const brand = await core.getBrand(account.id, request.params.brandId);
-      const brain = await core.listBrandBrain(account.id, brand.id);
-      const intelligenceProfile = projectBrandIntelligenceProfile(brain);
-      if (!intelligenceProfile.sector && !intelligenceProfile.subsector) {
-        throw new DomainValidationError("Add a Brand category or sector before asking Kairo for recommendations");
-      }
-
       if (!options.runner) {
         return reply.status(503).send({
           type: "about:blank",
@@ -41,10 +36,14 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
         });
       }
 
+      const brain = await core.listBrandBrain(account.id, brand.id);
+      const intelligenceProfile = projectBrandIntelligenceProfile(brain);
       const input: HunterRunInput = {
         accountId: account.id,
         brand: projectBrandContext(brand, brain),
-        intelligenceProfile,
+        ...(selectSectorIntelligencePack(intelligenceProfile)
+          ? { intelligenceProfile }
+          : { query: fallbackPublicQuery(brand, intelligenceProfile) }),
         maxEvidence: 8,
       };
       const key = `${account.id}:${brand.id}`;
@@ -53,15 +52,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
         run = options.runner.runForAuthorizedBrand(input).finally(() => inFlight.delete(key));
         inFlight.set(key, run);
       }
-
-      try {
-        return await run;
-      } catch (error) {
-        if (error instanceof Error && /No Sector Intelligence Pack matches/i.test(error.message)) {
-          throw new DomainValidationError("Kairo does not have a discovery pack for this Brand category yet");
-        }
-        throw error;
-      }
+      return run;
     },
   );
 }
@@ -97,6 +88,18 @@ function sectionContext(
     .join(" · ")
     .slice(0, 4_000);
   return value ? { [key]: value } : {};
+}
+
+function fallbackPublicQuery(
+  brand: { name: string },
+  profile: ReturnType<typeof projectBrandIntelligenceProfile>,
+) {
+  return [brand.name, profile.sector, profile.subsector, ...profile.topics.slice(0, 2)]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 600);
 }
 
 async function authenticate(
