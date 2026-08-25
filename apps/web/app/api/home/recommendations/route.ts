@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   const base = (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
   try {
-    const response = await fetch(`${base}/api/v1/brands/${encodeURIComponent(brandId)}/hunter/run`, {
+    const response = await fetch(`${base}/api/v1/brands/${encodeURIComponent(brandId)}/recommendations`, {
       method: "POST",
       cache: "no-store",
       headers: { authorization: `Bearer ${token}` },
