@@ -3,9 +3,9 @@
   "sliceId": "VS-93",
   "title": "Exact Approved Content Replication",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "observed",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": ["FR-01", "FR-11", "FR-13", "FR-16", "FR-17", "FR-18"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
   "dependencies": ["VS-92"],
@@ -13,33 +13,53 @@
   "allowedPaths": ["apps/web/**", "docs/slices/VS-93.md", "docs/plans/**", "delivery/**", "scripts/**", ".github/workflows/ui-fidelity-evidence.yml"],
   "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
   "impact": {
-    "areas": ["frontend", "customer-flow", "analytics"],
+    "areas": ["frontend", "customer-flow", "analytics", "deployment"],
     "notes": [
       "Replicates the Product Owner supplied Content List and Content Preview/Detail references at 1024x1536.",
       "The supplied screenshots are bitmap authority for geometry, typography and spacing.",
-      "Legacy/global CSS may be removed, scoped or replaced where it conflicts with the approved references.",
       "Destination tabs remain data-driven and rendered media remains truthful.",
-      "No API, worker, database or analytics-collection behavior changes."
+      "No API, worker, database or analytics-collection behavior changes.",
+      "Latest candidate 716fdc62f453e3343d9dd6c3af6e1850dbb3b016 passed CI, Security, Product Intake and rendered geometry evidence.",
+      "Product Owner explicitly instructed merge and production deployment after the remaining minor visual offsets had been disclosed, accepting the current candidate for release."
     ]
   },
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-93@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T20:30:00+02:00","rationale":"Exact Content List and Content Preview references supplied; implementation explicitly approved."},
     {"type":"policy","status":"not-required","version":"VS-93@1.0","commitSha":null,"by":null,"at":null,"rationale":"No policy change."},
-    {"type":"implementation","status":"approved","version":"VS-93@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T20:30:00+02:00","rationale":"Implementation explicitly approved."},
-    {"type":"certification","status":"pending","version":"VS-93@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires immutable candidate, rendered evidence and green automated gates."},
-    {"type":"release","status":"pending","version":"VS-93@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."},
-    {"type":"production-enable","status":"pending","version":"VS-93@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."}
+    {"type":"implementation","status":"approved","version":"VS-93@1.0","commitSha":"716fdc62f453e3343d9dd6c3af6e1850dbb3b016","by":"Product Owner","at":"2026-08-25T20:30:00+02:00","rationale":"Implementation explicitly approved."},
+    {"type":"certification","status":"approved","version":"VS-93@1.0","commitSha":"716fdc62f453e3343d9dd6c3af6e1850dbb3b016","by":"Product Owner","at":"2026-08-25T21:48:00+02:00","rationale":"Immutable candidate, rendered evidence and all automated gates passed; Product Owner explicitly authorized shipping the disclosed current visual state."},
+    {"type":"release","status":"approved","version":"VS-93@1.0","commitSha":"716fdc62f453e3343d9dd6c3af6e1850dbb3b016","by":"Product Owner","at":"2026-08-25T21:48:00+02:00","rationale":"Product Owner explicitly instructed merge and production deployment."},
+    {"type":"production-enable","status":"approved","version":"VS-93@1.0","commitSha":"716fdc62f453e3343d9dd6c3af6e1850dbb3b016","by":"Product Owner","at":"2026-08-25T21:48:00+02:00","rationale":"Product Owner explicitly instructed production deployment."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
-  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":60},
+  "certification": {
+    "status":"passed",
+    "commitSha":"716fdc62f453e3343d9dd6c3af6e1850dbb3b016",
+    "evidence":[
+      "CI run 32890475750",
+      "Security baseline run 32890475660",
+      "Product intake run 32890475689",
+      "VS-93 Content fidelity evidence run 32890471020"
+    ]
+  },
+  "release": {"status":"released","releaseId":"dpl_CQXtP8vwx4bLDCmEbWUcp3wCmRJy"},
+  "rollback": {"status":"ready","rollbackId":"dpl_4R9URdSPYkULZtgzUk9Tmq8bwaH5"},
+  "postRelease": {
+    "status":"observing",
+    "reviewAt":null,
+    "expectedOutcome":"Production serves the VS-93 Content UI while preserving truthful data and existing auth/publishing authority.",
+    "metrics":["Production deployment READY", "Root request redirects correctly to Auth0", "No production error/fatal logs observed immediately after deployment"]
+  },
   "links": {
     "specification":"docs/slices/VS-93.md",
-    "implementationPr":null,
-    "evidence":["product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/DESIGN.md"]
+    "implementationPr":"https://github.com/ksazid/kairo/pull/199",
+    "evidence":[
+      "product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md",
+      "product/DESIGN.md",
+      "GitHub Actions run 32890471020",
+      "Vercel deployment dpl_CQXtP8vwx4bLDCmEbWUcp3wCmRJy"
+    ]
   },
   "maxAttempts": 3
 }
