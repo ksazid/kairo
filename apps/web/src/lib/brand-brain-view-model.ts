@@ -117,7 +117,7 @@ export function buildBrandBrainOverview(fields: BrandBrainFieldDto[]) {
 export function fieldStateLabel(field?: Pick<BrandBrainFieldDto, "state">) {
   if (!field) return "Not set";
   if (field.state === "confirmed") return "Confirmed";
-  if (field.state === "inferred") return "Suggested";
+  if (field.state === "inferred") return "AI inferred";
   return "Needs refresh";
 }
 
@@ -131,8 +131,8 @@ export function fieldEvidenceLabel(field?: Pick<BrandBrainFieldDto, "state" | "s
   }
   if (field.state === "stale") return "Previous context needs review before Kairo relies on it.";
   return sourceCount
-    ? `Suggested from ${sourceCount} readable ${sourceCount === 1 ? "source" : "sources"}`
-    : "Suggested from Brand setup and owner context";
+    ? `AI inferred from ${sourceCount} readable ${sourceCount === 1 ? "source" : "sources"}`
+    : "AI inferred from Brand setup and owner context";
 }
 
 export function fieldAnchor(fieldKey: string) {
