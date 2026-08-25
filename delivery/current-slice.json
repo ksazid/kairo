@@ -3,7 +3,7 @@
   "sliceId": "VS-91",
   "title": "Frozen UI Shell and Home Fidelity",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01", "FR-06", "FR-09", "FR-10", "FR-11", "FR-13", "FR-14", "FR-16", "FR-17", "FR-18"],
@@ -25,7 +25,7 @@
       "UI Review found no Blocker/Major visual or responsive discrepancy; mobile rendered at 390px with no horizontal document overflow.",
       "The temporary visual workflow and fixture scripts were removed after evidence capture; Vercel Git deployment remains disabled and production was untouched.",
       "VS-90 remains released/inactive in post-release observation with issue #192 open; activating VS-91 does not mark VS-90 validated.",
-      "Testing is complete. Certification, merge, release, production-enable and deployment remain separate exact-SHA human gates."
+      "Implementation and testing are complete. VS-91 is now at the certification gate; certification, merge, release, production-enable and deployment remain separate exact-SHA human gates."
     ]
   },
   "approvals": [
@@ -38,7 +38,7 @@
   ],
   "decisionIds": [],
   "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"ready-for-approval","commitSha":null,"evidence":["GitHub visual evidence run 32863800449","GitHub visual artifact 9569274055","delivery/context/VS-91.md"]},
+  "certification": {"status":"not-started","commitSha":null,"evidence":["GitHub visual evidence run 32863800449","GitHub visual artifact 9569274055","delivery/context/VS-91.md"]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
