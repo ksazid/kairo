@@ -10,7 +10,7 @@
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
   "dependencies": ["VS-85", "VS-89", "VS-90"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**", "packages/design-tokens/**", "tests/**", "docs/slices/VS-91.md", "docs/plans/**", "delivery/**", ".engineering/STATE.json", "scripts/**"],
+  "allowedPaths": ["apps/web/**", "packages/design-tokens/**", "tests/**", "docs/slices/VS-91.md", "docs/plans/**", "delivery/**", ".engineering/STATE.json", "scripts/**", ".github/workflows/ui-fidelity-evidence.yml"],
   "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
   "impact": {
     "areas": ["frontend", "customer-flow", "analytics"],
@@ -22,7 +22,7 @@
       "Approved but unavailable Home behavior is preserved visibly and truthfully in the UI and recorded in docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md.",
       "No API, worker, migration, provider, tenant-boundary, publishing-authority or analytics-collection behavior is changed in this slice.",
       "Automated Product Intake, Security baseline and CI/runtime verification passed on runtime candidate 0e6d0802797c89b794bbe24aa56adb42db2f5f5a.",
-      "Rendered desktop/mobile comparison remains a testing requirement and is not yet claimed; Git preview deployment is disabled by the existing repository Vercel gate.",
+      "Rendered desktop/mobile comparison remains a testing requirement. A temporary non-production GitHub Actions visual-evidence workflow is authorized for this slice because repository Vercel Git deployments remain intentionally disabled; the temporary workflow and fixture scripts must be removed before merge readiness is declared.",
       "VS-90 remains released/inactive in post-release observation with issue #192 open; activating VS-91 does not mark VS-90 validated.",
       "Certification, merge, release, production-enable and deployment are not authorized by the implementation approval."
     ]
