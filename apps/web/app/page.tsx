@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { KairoProductShell } from "./kairo-product-shell";
 import { KairoIcon } from "./kairo-icons";
 import { MyIdeaComposer } from "./my-idea-composer";
-import { GetRecommendationsButton } from "./get-recommendations-button";
+import { ForYouRecommendationsAction } from "./for-you-recommendations-action";
 import {
   getBrandNotifications,
   getBrands,
@@ -106,7 +106,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <h2 id="home-for-you-title">For you</h2>
               <p>Smart recommendations based on your brand and goals.</p>
             </div>
-            <GetRecommendationsButton brandId={brand.id} hasRecommendations={forYou.length > 0} />
+            <ForYouRecommendationsAction brandId={brand.id} hasRecommendations={forYou.length > 0} />
           </div>
 
           {forYou.length ? (
