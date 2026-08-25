@@ -6,6 +6,7 @@ import type { PutBrandPresenterRequest, SimpleCreationPresenterDto } from "@kair
 import type { IdeaDevelopmentPort } from "./app";
 import type { AvatarProvider } from "./avatar-provider";
 import { BrandPresenterService, type BrandPresenterStore } from "./brand-presenter";
+import type { HomeMediaResolver } from "./home-media";
 
 export type SimpleCreationStatus =
   | "queued"
@@ -27,6 +28,7 @@ export interface SimpleCreationRequest {
   source?: string;
   contentPreference: ContentPreference;
   presenterId?: string;
+  mediaAssetIds: string[];
   status: SimpleCreationStatus;
   ideaId?: string;
   recommendedAngleId?: string;
@@ -51,6 +53,7 @@ export interface StartSimpleCreationInput {
   source?: string;
   contentPreference?: ContentPreference;
   presenterId?: string;
+  mediaAssetIds?: string[];
 }
 
 export class SimpleCreationService {
@@ -65,6 +68,7 @@ export class SimpleCreationService {
     private developer: IdeaDevelopmentPort,
     private now = () => new Date(),
     avatarProvider?: AvatarProvider,
+    private mediaResolver?: HomeMediaResolver,
   ) {
     this.research = new ResearchService(researchRepo, now);
     this.campaigns = new CampaignService(campaignRepo, researchRepo, undefined, now);
@@ -79,10 +83,15 @@ export class SimpleCreationService {
     const source = optional(raw?.source, 2000);
     const preference = raw?.contentPreference ?? "auto";
     const presenterId = optional(raw?.presenterId, 200);
-    if (!( ["auto", "carousel", "reel", "image", "campaign"] as string[]).includes(preference)) {
+    const mediaAssetIds = mediaIds(raw?.mediaAssetIds);
+    if (!(["auto", "carousel", "reel", "image", "campaign"] as string[]).includes(preference)) {
       throw new DomainValidationError("contentPreference must be auto, carousel, reel, image, or campaign");
     }
     if (presenterId) await this.presenters.requireEligible(workspaceId, brandId, presenterId);
+    if (mediaAssetIds.length) {
+      if (!this.mediaResolver) throw new DomainValidationError("Media inputs are unavailable in this environment");
+      await this.mediaResolver.requireAssets(accountId, brandId, mediaAssetIds);
+    }
     const at = this.now().toISOString();
     return this.store.create({
       id: randomUUID(),
@@ -94,6 +103,7 @@ export class SimpleCreationService {
       ...(source ? { source } : {}),
       contentPreference: preference,
       ...(presenterId ? { presenterId } : {}),
+      mediaAssetIds,
       status: "queued",
       attempt: 0,
       createdAt: at,
@@ -221,6 +231,7 @@ function publicView(value: SimpleCreationRequest, presenter?: SimpleCreationPres
     status: value.status,
     progress: { stage: value.status, message: messages[value.status] },
     contentPreference: value.contentPreference,
+    mediaAssetIds: value.mediaAssetIds,
     ...(presenter ? { presenter } : {}),
     ...(value.recommendation ? { recommendation: value.recommendation } : {}),
     ...(value.campaignId ? { campaignId: value.campaignId } : {}),
@@ -254,6 +265,17 @@ function optional(value: unknown, max: number) {
   const normalized = typeof value === "string" ? value.trim() : "";
   if (normalized.length > max) throw new DomainValidationError("Input is too long");
   return normalized || undefined;
+}
+function mediaIds(value: unknown) {
+  if (value == null) return [];
+  if (!Array.isArray(value)) throw new DomainValidationError("mediaAssetIds must be an array");
+  const normalized = [...new Set(value.map((item) => {
+    const id = typeof item === "string" ? item.trim() : "";
+    if (!id || id.length > 200 || !/^[A-Za-z0-9._-]+$/.test(id)) throw new DomainValidationError("mediaAssetId is invalid");
+    return id;
+  }))];
+  if (normalized.length > 12) throw new DomainValidationError("A creation can use at most 12 media assets");
+  return normalized;
 }
 function safeError(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 500) : "Creation failed";
