@@ -1,0 +1,210 @@
+.shellBoundary {
+  min-width: 0;
+}
+
+@media (min-width: 821px) and (max-width: 1100px) {
+  :global(.k-shell--content-reference) {
+    min-height: 100vh;
+    display: block;
+    padding-bottom: 88px;
+    background: #fff;
+    color: #101116;
+  }
+
+  :global(.k-shell--content-reference .k-shell-sidebar) {
+    display: none;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-header) {
+    position: relative;
+    z-index: 30;
+    height: 100px;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px 24px 14px;
+    border: 0;
+    background: #fff;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-context) {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-context .brand-switcher) {
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-context .brand-switcher > summary) {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-context .brand-switcher > summary > span:first-child) {
+    width: 58px !important;
+    height: 58px !important;
+    display: grid !important;
+    place-items: center !important;
+    flex: none !important;
+    border-radius: 12px !important;
+    background: #edf8e9 !important;
+    color: #54b53e !important;
+    font-size: 23px !important;
+    font-weight: 760 !important;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-context .brand-switcher-copy strong) {
+    max-width: 210px;
+    display: block;
+    overflow: hidden;
+    color: #101116;
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 760;
+    letter-spacing: -0.02em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-context .brand-switcher-copy small),
+  :global(.k-shell--content-reference .k-shell-mobile-context .brand-switcher > summary > svg) {
+    display: none;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-page) {
+    min-width: 0;
+    max-width: 150px;
+    padding-left: 17px;
+    border-left: 1px solid #dfe2e8;
+    color: #6e7380;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 600;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-actions) {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-actions > div > button),
+  :global(.k-shell--content-reference .k-shell-mobile-actions .profile-menu > summary),
+  :global(.k-shell--content-reference .k-shell-mobile-actions .k-shell-theme-toggle button) {
+    width: 58px;
+    min-width: 58px;
+    height: 58px;
+    min-height: 58px;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #e5e7ec;
+    border-radius: 12px;
+    background: #fff;
+    color: #111318;
+    box-shadow: none;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-actions .k-shell-theme-toggle) {
+    width: auto;
+    height: auto;
+    display: contents;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-actions .k-shell-theme-toggle button.active) {
+    color: #111318;
+    background: #fff;
+    box-shadow: none;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-actions > div > button > svg),
+  :global(.k-shell--content-reference .k-shell-mobile-actions .profile-menu > summary > svg),
+  :global(.k-shell--content-reference .k-shell-mobile-actions .k-shell-theme-toggle svg) {
+    width: 25px;
+    height: 25px;
+    stroke-width: 1.75;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-actions .profile-menu-panel) {
+    position: fixed;
+    top: 88px;
+    right: 24px;
+    left: auto;
+    bottom: auto;
+    width: 280px;
+  }
+
+  :global(.k-shell--content-reference .k-shell-content) {
+    min-width: 0;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-nav) {
+    position: fixed;
+    z-index: 40;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 88px;
+    min-height: 88px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 0;
+    border-top: 1px solid #e7e9ed;
+    background: #fff;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-nav-item) {
+    position: relative;
+    min-height: 88px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 7px;
+    padding: 11px 4px 9px;
+    color: #797f89;
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 18px;
+    font-weight: 560;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-nav-item > svg) {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.8;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-nav-item.active) {
+    color: #4f3de7;
+  }
+
+  :global(.k-shell--content-reference .k-shell-mobile-nav-item.active::before) {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(164px, 80%);
+    height: 2px;
+    border-radius: 999px;
+    background: #4f3de7;
+    transform: translateX(-50%);
+  }
+}
