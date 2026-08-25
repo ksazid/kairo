@@ -21,7 +21,8 @@
 .avatar-summary h2,
 .avatar-form-section h2,
 .avatar-capability h2,
-.avatar-suggestion h2 {
+.avatar-suggestion h2,
+.avatar-provider-callout h2 {
   margin: 4px 0 0;
 }
 
@@ -29,7 +30,8 @@
 .avatar-form-section header p:last-child,
 .avatar-capability p:last-child,
 .avatar-suggestion > p,
-.avatar-summary p {
+.avatar-summary p,
+.avatar-provider-callout p:last-child {
   color: var(--k-neutral-700);
   line-height: 22px;
 }
@@ -37,12 +39,26 @@
 .avatar-suggestion,
 .avatar-summary,
 .avatar-form-section,
-.avatar-capability {
+.avatar-capability,
+.avatar-provider-callout {
   display: grid;
   grid-template-columns: minmax(210px, .34fr) minmax(0, 1fr);
   gap: 32px;
   padding: 30px 0;
   border-bottom: 1px solid var(--k-neutral-200);
+}
+
+.avatar-provider-callout {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.avatar-provider-callout > div {
+  max-width: 720px;
+}
+
+.avatar-provider-callout .secondary-button {
+  align-self: center;
 }
 
 .avatar-suggestion > p {
@@ -69,6 +85,46 @@
   line-height: 20px;
 }
 
+.avatar-recommendations {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--k-neutral-200);
+}
+
+.avatar-recommendations a {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border: 1px solid var(--k-neutral-200);
+  border-radius: 10px;
+  background: var(--k-surface);
+  color: var(--k-neutral-900);
+  text-decoration: none;
+}
+
+.avatar-recommendations a:hover,
+.avatar-recommendations a:focus-visible {
+  border-color: color-mix(in srgb, var(--k-primary) 42%, var(--k-neutral-200));
+  outline: none;
+  background: color-mix(in srgb, var(--k-primary) 3%, var(--k-surface));
+}
+
+.avatar-recommendations strong {
+  font-size: 13px;
+}
+
+.avatar-recommendations span {
+  overflow: hidden;
+  color: var(--k-neutral-700);
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .avatar-form {
   display: grid;
 }
@@ -93,6 +149,10 @@
   color: var(--k-neutral-700);
   font-size: 13px;
   font-weight: 700;
+}
+
+.avatar-fields label[id] {
+  scroll-margin-top: 96px;
 }
 
 .avatar-fields label span,
@@ -151,12 +211,26 @@
   padding-top: 22px;
 }
 
+.avatar-actions button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+
+.avatar-action-note {
+  margin: 8px 0 0;
+  color: var(--k-neutral-400);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: right;
+}
+
 @media (max-width: 860px) {
   .avatar-header,
   .avatar-suggestion,
   .avatar-summary,
   .avatar-form-section,
-  .avatar-capability {
+  .avatar-capability,
+  .avatar-provider-callout {
     grid-template-columns: 1fr;
   }
 
@@ -168,8 +242,17 @@
   .avatar-suggestion,
   .avatar-summary,
   .avatar-form-section,
-  .avatar-capability {
+  .avatar-capability,
+  .avatar-provider-callout {
     gap: 18px;
+  }
+
+  .avatar-provider-callout .secondary-button {
+    justify-self: start;
+  }
+
+  .avatar-recommendations {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -180,7 +263,8 @@
 
   .avatar-fields.two-column,
   .avatar-advanced > div,
-  .avatar-summary dl {
+  .avatar-summary dl,
+  .avatar-recommendations {
     grid-template-columns: 1fr;
   }
 
@@ -196,6 +280,10 @@
   .avatar-actions > * {
     width: 100%;
     justify-content: center;
+  }
+
+  .avatar-action-note {
+    text-align: left;
   }
 }
 
