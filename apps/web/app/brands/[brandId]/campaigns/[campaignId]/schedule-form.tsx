@@ -15,8 +15,8 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
   return (
     <div className="schedule-form">
       <div>
-        <strong>Publish approved version</strong>
-        <p>{account.displayName} · {account.channel} · {account.accountRef}</p>
+        <strong>Publish approved content</strong>
+        <p>{account.displayName} · {friendlyChannel(account.channel)}</p>
       </div>
 
       {publishNowContentType ? (
@@ -24,8 +24,8 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
           <input type="hidden" name="channelAccountId" value={account.id} />
           <input type="hidden" name="contentType" value={publishNowContentType} />
           <input type="hidden" name="publishMode" value="now" />
-          <button className="success-button" type="submit">Publish now</button>
-          <p>The approved version is queued immediately through Kairo's normal publishing worker. Success is shown only after the channel confirms publication.</p>
+          <button className="primary-button" type="submit">Publish now</button>
+          <p>Kairo will show Published only after the destination confirms it.</p>
         </form>
       ) : null}
 
@@ -33,7 +33,7 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
         <summary>
           <span>
             <strong>Schedule for later</strong>
-            <small>Keep the existing calendar flow available when you want an exact future time.</small>
+            <small>Choose an exact future time and add it to your Calendar.</small>
           </span>
           <span className="context-summary-action">Open</span>
         </summary>
@@ -54,7 +54,7 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
           <label>
             Format
             <select name="contentType" required>
-              {capabilities.map((value) => <option value={value} key={value}>{value}</option>)}
+              {capabilities.map((value) => <option value={value} key={value}>{friendlyFormat(value)}</option>)}
             </select>
           </label>
           <label>
@@ -66,4 +66,15 @@ export function ScheduleForm({ account, action }: { account: ChannelAccountView;
       </details>
     </div>
   );
+}
+
+function friendlyChannel(value: string) {
+  if (value.toLowerCase() === "youtube") return "YouTube";
+  if (value.toLowerCase() === "linkedin") return "LinkedIn";
+  return value.replace(/[-_]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function friendlyFormat(value: string) {
+  if (value === "image") return "Post";
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
