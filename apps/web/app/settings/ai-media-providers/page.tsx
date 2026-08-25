@@ -5,7 +5,7 @@ import { getBrandPresenter } from "../../../src/lib/presenter-api";
 import { KairoProductShell } from "../../kairo-product-shell";
 import styles from "./providers.module.css";
 
-type SearchParams = Promise<{ tab?: string }>;
+type SearchParams = Promise<{ tab?: string; brand?: string }>;
 type ProviderTab = "ai" | "media";
 
 type ProviderRow = {
@@ -107,10 +107,15 @@ export default async function AiMediaProvidersPage({ searchParams }: { searchPar
 
   const workspace = session.workspaces[0];
   if (!workspace) redirect("/onboarding");
-  const brands = await getBrands(workspace.id).catch(() => []);
-  const brand = brands[0] ?? null;
-  const query = await searchParams;
+  const [brands, query] = await Promise.all([
+    getBrands(workspace.id).catch(() => []),
+    searchParams,
+  ]);
+  const brand = query.brand
+    ? brands.find((item) => item.id === query.brand) ?? brands[0] ?? null
+    : brands[0] ?? null;
   const tab: ProviderTab = query.tab === "media" ? "media" : "ai";
+  const brandQuery = brand ? `&brand=${encodeURIComponent(brand.id)}` : "";
 
   const avatarState = brand
     ? await getBrandPresenter(brand.id).catch(() => null)
@@ -152,8 +157,8 @@ export default async function AiMediaProvidersPage({ searchParams }: { searchPar
         </section>
 
         <nav className={styles.tabs} aria-label="Provider type">
-          <Link href="/settings/ai-media-providers?tab=ai" aria-current={tab === "ai" ? "page" : undefined} data-active={tab === "ai"}>AI Providers</Link>
-          <Link href="/settings/ai-media-providers?tab=media" aria-current={tab === "media" ? "page" : undefined} data-active={tab === "media"}>Media Providers</Link>
+          <Link href={`/settings/ai-media-providers?tab=ai${brandQuery}`} aria-current={tab === "ai" ? "page" : undefined} data-active={tab === "ai"}>AI Providers</Link>
+          <Link href={`/settings/ai-media-providers?tab=media${brandQuery}`} aria-current={tab === "media" ? "page" : undefined} data-active={tab === "media"}>Media Providers</Link>
         </nav>
 
         {tab === "ai" ? (
