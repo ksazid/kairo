@@ -21,7 +21,7 @@ describe("final frozen Home UI contract", () => {
     for (const label of ["Needs Attention", "My Idea", "For You", "What's Working"]) {
       expect(page).toContain(label);
     }
-    expect(page).toContain(") [0];");
+    expect(page).toContain("})[0];");
     expect(page).not.toContain('label="Up Next"');
     expect(page).not.toContain('label="Continue"');
     expect(page).not.toContain("buildUpNext");
