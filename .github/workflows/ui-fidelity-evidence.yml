@@ -75,8 +75,9 @@ jobs:
         run: |
           python -m pip install --quiet pillow
           python <<'PY'
-          from PIL import Image
+          from PIL import Image, ImageFile
           from pathlib import Path
+          ImageFile.LOAD_TRUNCATED_IMAGES = True
           source = Path('product/approved-ui/kairo-approved-ui-pages-board-2026-08-25.webp')
           out = Path('artifacts/ui-fidelity/approved-home-reference.png')
           image = Image.open(source).convert('RGB')
@@ -85,6 +86,7 @@ jobs:
           cell_w, cell_h = w // 3, h // 4
           image.crop((0, 0, cell_w, cell_h)).save(out)
           Path('artifacts/ui-fidelity/reference-metadata.txt').write_text(f'board={w}x{h}\nhome-cell={cell_w}x{cell_h}\n')
+          print(f'approval board {w}x{h}; Home reference cell {cell_w}x{cell_h}')
           PY
 
       - name: Include server logs
