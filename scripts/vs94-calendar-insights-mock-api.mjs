@@ -2,7 +2,7 @@ import http from "node:http";
 
 const workspace = { id: "workspace-ui", name: "Kairo Studio", role: "owner" };
 const brand = { id: "brand-ui", workspaceId: workspace.id, name: "TheDukeMan", publicSourceUrl: "https://example.com" };
-const now = "2026-06-10T12:00:00.000Z";
+const now = "2026-08-25T12:00:00.000Z";
 
 const contentDefinitions = [
   ["wheel", "Why lighter wheels change how the Duke feels", "carousel", "instagram"],
@@ -128,19 +128,21 @@ function carouselReview(id) {
 }
 
 const performance = [];
-const dailyRates = [4.7, 5.4, 5.8, 5.1, 6.3, 5.4, 4.8, 6.2, 6.5, 6.1, 5.7, 5.1, 5.9, 6.6, 6.0, 6.8, 7.5, 8.3, 6.4, 5.7, 7.1, 6.6, 6.5, 5.9, 5.6, 5.5, 6.6, 7.7];
+// Controlled evidence only: representative observations mirror the approved Insights
+// reference while exercising the same real-metric code path used in production.
+const dailyRates = [5.3, 6.0, 6.4, 5.7, 6.9, 6.0, 5.4, 6.8, 7.1, 6.7, 6.3, 5.7, 6.5, 7.2, 6.6, 7.4, 8.1, 8.9, 7.0, 6.3, 7.7, 7.2, 7.1, 6.5, 6.2, 6.1, 7.2, 8.3];
 for (let i = 0; i < dailyRates.length; i += 1) {
-  const date = new Date(Date.UTC(2026, 4, 14 + i, 12, 0, 0)).toISOString();
+  const date = new Date(Date.UTC(2026, 6, 29 + i, 12, 0, 0)).toISOString();
   performance.push(metric(`rate-${i}`, "engagement-rate", dailyRates[i], date));
 }
 performance.push(
-  metric("reach-current", "reach", 12400, "2026-06-09T12:00:00.000Z"),
-  metric("saves-current", "saves", 1200, "2026-06-09T12:00:00.000Z"),
-  metric("shares-current", "shares", 320, "2026-06-09T12:00:00.000Z"),
-  metric("reach-prev", "reach", 10508.47, "2026-05-05T12:00:00.000Z"),
-  metric("saves-prev", "saves", 944.88, "2026-05-05T12:00:00.000Z"),
-  metric("shares-prev", "shares", 278.26, "2026-05-05T12:00:00.000Z"),
-  metric("rate-prev", "engagement-rate", 6.15, "2026-05-05T12:00:00.000Z"),
+  metric("reach-current", "reach", 12400, "2026-08-24T12:00:00.000Z"),
+  metric("saves-current", "saves", 1200, "2026-08-24T12:00:00.000Z"),
+  metric("shares-current", "shares", 320, "2026-08-24T12:00:00.000Z"),
+  metric("reach-prev", "reach", 10508.47, "2026-07-10T12:00:00.000Z"),
+  metric("saves-prev", "saves", 944.88, "2026-07-10T12:00:00.000Z"),
+  metric("shares-prev", "shares", 278.26, "2026-07-10T12:00:00.000Z"),
+  metric("rate-prev", "engagement-rate", 6.18, "2026-07-10T12:00:00.000Z"),
 );
 
 function metric(id, name, value, capturedAt) {
@@ -167,7 +169,7 @@ const learnings = [
     statement: "Short videos drove more engagement",
     interpretation: "Your short videos had higher engagement than your other comparable content.",
     confidence: 0.86,
-    period: { from: "2026-05-11T00:00:00.000Z", to: now },
+    period: { from: "2026-07-26T00:00:00.000Z", to: now },
     applicability: { format: "reel" },
     patterns: [{ dimension: "format", value: "reel", observation: "Higher engagement on comparable short videos.", evidence: [] }],
     evidence: [], contradictions: [], status: "accepted", version: 1, createdAt: now,
@@ -179,7 +181,7 @@ const learnings = [
     statement: "Weekend posting performed best",
     interpretation: "Comparable weekend posts showed stronger engagement in this measurement period.",
     confidence: 0.78,
-    period: { from: "2026-05-11T00:00:00.000Z", to: now },
+    period: { from: "2026-07-26T00:00:00.000Z", to: now },
     applicability: {},
     patterns: [{ dimension: "timing", value: "weekend", observation: "Weekend observations were stronger.", evidence: [] }],
     evidence: [], contradictions: [], status: "accepted", version: 1, createdAt: now,
