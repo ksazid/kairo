@@ -56,7 +56,8 @@ jobs:
             if (dom.navItems?.length !== 5) throw new Error(`${label}: expected five bottom navigation items`);
           }
 
-          near(calendar.header?.height,102,4,'Calendar portrait header');
+          // Browser evidence intentionally excludes the native iOS status bar shown in the bitmap authority.
+          near(calendar.header?.height,56,2,'Calendar app header');
           near(calendar.bottomNav?.height,86,4,'Calendar bottom nav');
           near(calendar.viewTabs?.height,54,4,'Calendar view tabs');
           if (calendar.cards.length !== 6) throw new Error(`Calendar expected 6 fixture cards, got ${calendar.cards.length}`);
@@ -68,7 +69,7 @@ jobs:
           if (!calendar.text.includes('Thursday, Apr 27') || !calendar.text.includes('Wednesday, Apr 26') || !calendar.text.includes('Tuesday, Apr 25')) throw new Error('Calendar grouped agenda drift');
           if (!calendar.text.includes('Scheduled') || !calendar.text.includes('Published') || !calendar.text.includes('Needs attention')) throw new Error('Calendar statuses missing');
 
-          near(insights.header?.height,102,4,'Insights portrait header');
+          near(insights.header?.height,56,2,'Insights app header');
           near(insights.bottomNav?.height,86,4,'Insights bottom nav');
           near(insights.period?.height,52,4,'Insights period control');
           if (insights.metricCards.length !== 4) throw new Error(`Insights expected exactly 4 KPI cards, got ${insights.metricCards.length}`);
@@ -77,6 +78,9 @@ jobs:
           if (insights.patternCards.length !== 2) throw new Error(`Insights expected 2 why cards, got ${insights.patternCards.length}`);
           if (!insights.nextCard) throw new Error('Insights next-action card missing');
           if (!insights.text.includes('What happened') || !insights.text.includes('Why it happened') || !insights.text.includes('What to do next')) throw new Error('Insights hierarchy drift');
+          if (!insights.text.includes('12.4K') || !insights.text.includes('1.2K') || !insights.text.includes('320') || !insights.text.includes('6.7%')) throw new Error('Insights approved KPI evidence drift');
+          if (!insights.text.includes('18%') || !insights.text.includes('27%') || !insights.text.includes('15%') || !insights.text.includes('9%')) throw new Error('Insights comparison evidence drift');
+          if (insights.text.includes('Trend unavailable')) throw new Error('Insights visual fixture must exercise real trend rendering');
           if (insights.text.includes('Candidate Learnings') || insights.text.includes('Decision brief') || insights.text.includes('Evidence IDs')) throw new Error('Technical Insights machinery leaked');
           NODE
       - name: Include logs
