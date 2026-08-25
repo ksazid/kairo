@@ -4,7 +4,6 @@ import { getBrandNotifications, getBrands, getSession } from "../src/lib/kairo-a
 import { productNotificationView } from "../src/lib/product-notification-view";
 import { KairoIcon, KairoLogo, type KairoIconName } from "./kairo-icons";
 import { BrandSwitcher } from "./brand-switcher";
-import { ProductGuide } from "./product-guide";
 import { ProfileMenu } from "./profile-menu";
 import { ThemeToggle } from "./theme-toggle";
 import { NotificationCentre, type ProductNotification } from "./ui-states";
@@ -30,7 +29,7 @@ const destinationIcons: Record<string, KairoIconName> = {
   Content: "library",
   Calendar: "calendar",
   Results: "results",
-  Brand: "brain",
+  Brand: "brand",
 };
 
 export async function KairoProductShell({
@@ -43,9 +42,8 @@ export async function KairoProductShell({
 }: ProductShellProps) {
   const navigation = buildProductNavigation({ brandId, workspaceId });
   const session = await getSession();
-  const workspace = session?.workspaces.find(item => item.id === workspaceId) ?? session?.workspaces[0];
+  const workspace = session?.workspaces.find((item) => item.id === workspaceId) ?? session?.workspaces[0];
   const brands = workspace ? await getBrands(workspace.id) : [];
-  const currentBrand = brands.find(item => item.id === brandId) ?? null;
   const notificationResult = brandId ? await getBrandNotifications(brandId).catch(() => null) : null;
   const notifications: ProductNotification[] = (notificationResult?.items ?? []).map(productNotificationView);
   const resolvedActive = active ? simpleDestinationFor(active) : null;
@@ -69,7 +67,7 @@ export async function KairoProductShell({
         <BrandSwitcher brands={brands} currentBrandId={brandId} addBrandHref={addBrandHref} />
 
         <nav className="k-shell-nav">
-          {navigation.desktop.map(item =>
+          {navigation.desktop.map((item) =>
             item.href ? (
               <Link
                 key={item.label}
@@ -109,22 +107,10 @@ export async function KairoProductShell({
         </div>
       </header>
 
-      <div className="k-shell-content">
-        <nav className="k-shell-breadcrumbs" aria-label="Breadcrumb">
-          <Link href="/">Kairo</Link>
-          <KairoIcon name="chevron" />
-          {currentBrand
-            ? <Link href={`/?workspace=${encodeURIComponent(currentBrand.workspaceId)}&brand=${encodeURIComponent(currentBrand.id)}`}>{currentBrand.name}</Link>
-            : <span>Brand</span>}
-          <KairoIcon name="chevron" />
-          <span aria-current="page">{pageLabel ?? (resolvedActive ? displayDestination(resolvedActive) : "Home")}</span>
-        </nav>
-        <ProductGuide />
-        {children}
-      </div>
+      <div className="k-shell-content">{children}</div>
 
       <nav className="k-shell-mobile-nav" aria-label="Mobile navigation">
-        {navigation.mobile.map(item =>
+        {navigation.mobile.map((item) =>
           item.href ? (
             <Link
               key={item.label}

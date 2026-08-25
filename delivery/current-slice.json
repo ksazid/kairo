@@ -1,74 +1,51 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-90",
-  "title": "Brand Avatar and Optional Presenter",
+  "sliceId": "VS-91",
+  "title": "Frozen UI Shell and Home Fidelity",
   "status": "active",
-  "lifecycle": "observed",
+  "lifecycle": "certification",
   "riskLevel": "medium",
-  "implementationMode": "production-enabled",
-  "requirements": ["FR-03", "FR-11", "FR-13"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-84", "VS-85", "VS-89"],
+  "implementationMode": "runtime-enabled",
+  "requirements": ["FR-01", "FR-06", "FR-09", "FR-10", "FR-11", "FR-13", "FR-14", "FR-16", "FR-17", "FR-18"],
+  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
+  "dependencies": ["VS-85", "VS-89", "VS-90"],
   "blockers": [],
-  "allowedPaths": ["packages/contracts/**", "apps/api/src/**", "apps/api/migrations/0029_brand_presenters.sql", "apps/web/**", "docs/slices/VS-90.md", "docs/plans/**", "delivery/**", "scripts/**", "README.md", ".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/worker/**"],
+  "allowedPaths": ["apps/web/**", "packages/design-tokens/**", "tests/**", "docs/slices/VS-91.md", "docs/plans/**", "delivery/**", ".engineering/STATE.json", "scripts/**"],
+  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
   "impact": {
-    "areas": ["architecture", "frontend", "api", "database", "authorization", "sensitive-data", "customer-flow"],
+    "areas": ["frontend", "customer-flow", "analytics"],
     "notes": [
-      "Adds one optional Workspace- and Brand-scoped presenter profile; no presenter is created implicitly.",
-      "Presenter profile stores descriptive presentation preferences only. This slice does not accept biometric enrollment, raw face/voice cloning media or provider secrets.",
-      "DEC-012 establishes Kairo-owned Presenter state plus a replaceable server-side AvatarProvider capability boundary.",
-      "Presenter profile readiness and runtime eligibility are separate: a saved enabled profile is not selectable unless the provider capability is configured and avatar rendering is healthy.",
-      "Creation may reference only an eligible presenter through a nullable durable presenterId; None remains the default and existing creation behavior remains valid.",
-      "Avatar is a Brand sub-surface only and follows product/DESIGN.md before repository design skills.",
-      "No production Avatar provider adapter, worker/media-orchestrator change, provider credential/configuration change or generated test clip is authorized in this foundation slice.",
-      "Existing tenant isolation, human approval, exact Preview, publishing and channel credential boundaries remain unchanged.",
-      "Migration 0029 was applied successfully to the production kairo database during REL-008 after isolated Neon branch verification.",
-      "VS-89 remains released and inactive in post-release observation. Issue #187 remains open and must not be represented as validated.",
-      "VS-90 authenticated Avatar / Presenter production observation remains open in issue #192 and blocks final validation."
+      "Implements screenshot-level fidelity for the shared authenticated shell and final frozen Home reference only; it does not reopen design decisions.",
+      "Reuses existing Home recommendation, creation, performance and Brand/channel contracts without changing their domain semantics.",
+      "Removes or hides legacy technical/internal navigation and Home chrome from the normal creator experience while preserving underlying governed lineage.",
+      "Analytics shown on Home remain truthful: unavailable observations are not fabricated or coerced to zero for visual parity, and generic engagement counts are not labeled as engagement rate.",
+      "Approved but unavailable Home behavior is preserved visibly and truthfully in the UI and recorded in docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md.",
+      "No API, worker, migration, provider, tenant-boundary, publishing-authority or analytics-collection behavior is changed in this slice.",
+      "Rendered desktop/mobile evidence passed in temporary non-production workflow 32863800449; artifact 9569274055 contains desktop/mobile captures, approved Home reference crop, DOM evidence and logs.",
+      "UI Review found no Blocker/Major visual or responsive discrepancy; mobile rendered at 390px with no horizontal document overflow.",
+      "The temporary visual workflow and fixture scripts were removed after evidence capture; Vercel Git deployment remains disabled and production was untouched.",
+      "VS-90 remains released/inactive in post-release observation with issue #192 open; activating VS-91 does not mark VS-90 validated.",
+      "Implementation and testing are complete. VS-91 is now at the certification gate; certification, merge, release, production-enable and deployment remain separate exact-SHA human gates."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-90@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T19:19:00+02:00","rationale":"The Product Owner said Go after the bounded next sequence was stated: preserve truthful VS-89 observation, then start the approved Avatar / Presenter work under DESIGN.md and existing provider boundaries."},
-    {"type":"policy","status":"approved","version":"DEC-012","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T21:47:00+02:00","rationale":"The Product Owner approved Option A: Kairo-owned Brand-scoped Presenter state, private media, replaceable server-side AvatarProvider boundary, fail-closed eligibility and unchanged exact approval/publishing guarantees."},
-    {"type":"implementation","status":"approved","version":"VS-90@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-24T21:55:00+02:00","rationale":"The Product Owner said Go after approving DEC-012 and after the sequence to defer #187 as an open observation, hand off VS-89 and activate VS-90 was restated."},
-    {"type":"certification","status":"approved","version":"VS-90@1.0","commitSha":"1da4665fa430468516f79e38984638369552b6e7","by":"Sazid Khan","at":"2026-08-24T23:00:00+02:00","rationale":"Product Intake #876, Security #1051 and CI #1266 passed on the exact candidate, including migration 0029, governance/preflight, runtime verification, fail-closed provider eligibility tests and production build."},
-    {"type":"release","status":"approved","version":"VS-90@1.0","commitSha":"1da4665fa430468516f79e38984638369552b6e7","by":"Sazid Khan","at":"2026-08-24T23:02:00+02:00","rationale":"The Product Owner said Go to the explicitly stated VS-90 release-authorization gate. This authorizes release preparation for the certified candidate only and does not authorize production enablement or deployment."},
-    {"type":"production-enable","status":"approved","version":"VS-90@1.0","commitSha":"1da4665fa430468516f79e38984638369552b6e7","by":"Sazid Khan","at":"2026-08-25T00:06:00+02:00","rationale":"The Product Owner said Go ahead to the explicitly stated VS-90 production-enable gate. This authorizes the controlled production rollout of the certified candidate, including additive migration 0029, with rollback readiness and production smoke verification required."}
+    {"type":"scope","status":"approved","version":"VS-91@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-25T14:30:00+02:00","rationale":"After all approved UI work was declared frozen, the Product Owner approved the strict implementation plan and said Go. VS-91 is the first bounded execution batch: shared shell plus exact frozen Home fidelity, with later surfaces split into subsequent reviewable slices."},
+    {"type":"policy","status":"not-required","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"No new product, security, publishing, provider or analytics policy is introduced. Existing approved decisions and frozen design authority are reused unchanged."},
+    {"type":"implementation","status":"approved","version":"VS-91@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-25T14:30:00+02:00","rationale":"The Product Owner explicitly said Go after the strict frozen-UI implementation sequence and verification rules were stated. Runtime work is limited to the allowed frontend/design-token paths and this bounded Home/shell scope."},
+    {"type":"certification","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"All implementation/testing evidence is complete; certification still requires explicit approval of the final immutable candidate SHA."},
+    {"type":"release","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"No release authorization is granted by the implementation Go."},
+    {"type":"production-enable","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"No production enablement or deployment is authorized by the implementation Go."}
   ],
-  "decisionIds": ["DEC-012"],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":60},
-  "certification": {
-    "status":"passed",
-    "commitSha":"1da4665fa430468516f79e38984638369552b6e7",
-    "evidence":[
-      "Product Intake #876 passed on exact candidate 1da4665fa430468516f79e38984638369552b6e7.",
-      "Security baseline #1051 passed on the exact candidate.",
-      "CI #1266 passed with clean PostgreSQL 18 migrations through 0029, zero production dependency vulnerabilities, governance/preflight, runtime typecheck/tests/build and dashboard build.",
-      "API tests: 70 files / 218 passed; Web: 21 files / 104 passed; Worker: 39 files / 249 passed; Domain: 30 files / 169 passed; Hermes: 25 passed.",
-      "Next.js production build included /brands/[brandId]/avatar.",
-      "Provider-unavailable Presenter selection fails closed in both UI projection and API service tests."
-    ]
-  },
-  "release": {"status":"released","releaseId":"REL-008"},
-  "rollback": {"status":"ready","rollbackId":"RB-008"},
-  "postRelease": {
-    "status":"observing",
-    "reviewAt":"2026-08-25",
-    "expectedOutcome":"Brand-scoped Presenter persistence is available in production while Presenter selection remains fail-closed without a healthy configured AvatarProvider and existing creation, approval, publishing and channel behavior remain unchanged.",
-    "metrics":[
-      "Production schema contains Presenter persistence and scoped Presenter-to-creation linkage.",
-      "Production API and web runtimes remain live without new deployment-window errors.",
-      "A provider-unavailable Presenter must not be selectable.",
-      "Existing creation with None must remain functional.",
-      "Cross-Brand Presenter access must remain denied.",
-      "Issue #192 authenticated functional and visual observation must pass before validation."
-    ]
-  },
+  "decisionIds": [],
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":["GitHub visual evidence run 32863800449","GitHub visual artifact 9569274055","delivery/context/VS-91.md"]},
+  "release": {"status":"not-authorized","releaseId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
+  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
-    "specification":"docs/slices/VS-90.md",
-    "implementationPr":"https://github.com/ksazid/kairo/pull/186",
-    "evidence":["delivery/context/VS-90.md","docs/plans/VS-90-implementation.md","docs/plans/VS-90-architecture-decision.md","delivery/context/VS-90-release.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","https://github.com/ksazid/kairo/issues/187","https://github.com/ksazid/kairo/issues/188","https://github.com/ksazid/kairo/issues/192"]
+    "specification":"docs/slices/VS-91.md",
+    "implementationPr":"https://github.com/ksazid/kairo/pull/197",
+    "evidence":["delivery/context/VS-91.md","docs/plans/KAIRO-APPROVED-UI-FIDELITY-IMPLEMENTATION-2026-08-25.md","docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/approved-ui/kairo-approved-ui-pages-board-2026-08-25.webp","GitHub Product Intake 32852174639","GitHub Security baseline 32852174701","GitHub CI 32852174620","GitHub visual evidence 32863800449","GitHub artifact 9569274055"]
   },
   "maxAttempts": 3
 }
