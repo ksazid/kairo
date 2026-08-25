@@ -19,9 +19,9 @@ describe("VS-95 approved Brand, Avatar and Provider interaction contract", () =>
     expect(brandPage).toContain('href="#sources">{brand.publicSourceUrl ? "Manage source" : "Add source"}</a>');
   });
 
-  it("routes Avatar recommendations to real editable fields and provider settings", () => {
+  it("routes Avatar recommendations to real editable fields and exact-Brand provider settings", () => {
     expect(avatarPage).toContain('<h1>Avatar (Presenter)</h1>');
-    expect(avatarPage).toContain('/settings/ai-media-providers?tab=media#avatar-provider');
+    expect(avatarPage).toContain('/settings/ai-media-providers?tab=media&brand=${encoded}#avatar-provider');
     expect(avatarPage).toContain('href="#presenter-style"');
     expect(avatarPage).toContain('href="#presenter-voice"');
     expect(avatarPage).toContain('href="#presenter-language"');
@@ -31,6 +31,8 @@ describe("VS-95 approved Brand, Avatar and Provider interaction contract", () =>
     expect(avatarPage).toContain('id="presenter-style"');
     expect(avatarPage).toContain('id="presenter-mode"');
     expect(avatarPage).toContain('Create & Save');
+    expect(providersPage).toContain('brands.find((item) => item.id === query.brand)');
+    expect(providersPage).toContain('brandQuery');
   });
 
   it("keeps Avatar test rendering truthful until provider execution exists", () => {
@@ -44,8 +46,8 @@ describe("VS-95 approved Brand, Avatar and Provider interaction contract", () =>
   it("links Settings to the approved provider overview and keeps unsupported writes disabled", () => {
     expect(settingsPage).toContain('href="/settings/ai-media-providers"');
     expect(providersPage).toContain('<h1>AI &amp; Media Providers</h1>');
-    expect(providersPage).toContain('href="/settings/ai-media-providers?tab=ai"');
-    expect(providersPage).toContain('href="/settings/ai-media-providers?tab=media"');
+    expect(providersPage).toContain('/settings/ai-media-providers?tab=ai${brandQuery}');
+    expect(providersPage).toContain('/settings/ai-media-providers?tab=media${brandQuery}');
     expect(providersPage).toContain('id: "avatar-provider"');
     expect(providersPage).toContain('Configuration UI pending');
     expect(providersPage).toContain('Not configured');
