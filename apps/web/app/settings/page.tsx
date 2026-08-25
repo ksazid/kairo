@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getBrands, getSession } from "../../src/lib/kairo-api";
 import { KairoProductShell } from "../kairo-product-shell";
@@ -21,6 +22,22 @@ export default async function SettingsPage() {
           <h1>Settings</h1>
           <p>Keep account-level preferences simple. Brand-specific context and channel connections stay with the Brand.</p>
         </header>
+
+        <section className={styles.section} aria-labelledby="provider-settings-title">
+          <div>
+            <h2 id="provider-settings-title">AI &amp; Media Providers</h2>
+            <p>See the approved open-source-first provider setup and the optional third-party, BYOK and self-hosted alternatives.</p>
+          </div>
+          <div>
+            <div className={styles.control}>
+              <div>
+                <strong>Provider overview</strong>
+                <span>Provider configuration actions stay disabled until their governed backend flows exist.</span>
+              </div>
+              <Link className={styles.accountAction} href="/settings/ai-media-providers">Open</Link>
+            </div>
+          </div>
+        </section>
 
         <section className={styles.section} aria-labelledby="appearance-settings-title">
           <div>
