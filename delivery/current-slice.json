@@ -20,6 +20,7 @@
     "apps/web/app/for-you-recommendations-action.tsx",
     "apps/web/app/for-you-recommendations-action.module.css",
     "apps/web/app/api/home/recommendations/route.ts",
+    "apps/web/src/lib/hunter-api.ts",
     "docs/slices/VS-97.md",
     "docs/plans/VS-97-implementation.md",
     "delivery/**",
