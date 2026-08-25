@@ -10,7 +10,7 @@
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
   "dependencies": ["VS-85", "VS-89", "VS-90"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**", "packages/design-tokens/**", "tests/**", "docs/slices/VS-91.md", "docs/plans/**", "delivery/**", ".engineering/STATE.json", "scripts/**", ".github/workflows/ui-fidelity-evidence.yml"],
+  "allowedPaths": ["apps/web/**", "packages/design-tokens/**", "tests/**", "docs/slices/VS-91.md", "docs/plans/**", "delivery/**", ".engineering/STATE.json", "scripts/**"],
   "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**"],
   "impact": {
     "areas": ["frontend", "customer-flow", "analytics"],
@@ -21,30 +21,31 @@
       "Analytics shown on Home remain truthful: unavailable observations are not fabricated or coerced to zero for visual parity, and generic engagement counts are not labeled as engagement rate.",
       "Approved but unavailable Home behavior is preserved visibly and truthfully in the UI and recorded in docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md.",
       "No API, worker, migration, provider, tenant-boundary, publishing-authority or analytics-collection behavior is changed in this slice.",
-      "Automated Product Intake, Security baseline and CI/runtime verification passed on runtime candidate 0e6d0802797c89b794bbe24aa56adb42db2f5f5a.",
-      "Rendered desktop/mobile comparison remains a testing requirement. A temporary non-production GitHub Actions visual-evidence workflow is authorized for this slice because repository Vercel Git deployments remain intentionally disabled; the temporary workflow and fixture scripts must be removed before merge readiness is declared.",
+      "Rendered desktop/mobile evidence passed in temporary non-production workflow 32863800449; artifact 9569274055 contains desktop/mobile captures, approved Home reference crop, DOM evidence and logs.",
+      "UI Review found no Blocker/Major visual or responsive discrepancy; mobile rendered at 390px with no horizontal document overflow.",
+      "The temporary visual workflow and fixture scripts were removed after evidence capture; Vercel Git deployment remains disabled and production was untouched.",
       "VS-90 remains released/inactive in post-release observation with issue #192 open; activating VS-91 does not mark VS-90 validated.",
-      "Certification, merge, release, production-enable and deployment are not authorized by the implementation approval."
+      "Testing is complete. Certification, merge, release, production-enable and deployment remain separate exact-SHA human gates."
     ]
   },
   "approvals": [
     {"type":"scope","status":"approved","version":"VS-91@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-25T14:30:00+02:00","rationale":"After all approved UI work was declared frozen, the Product Owner approved the strict implementation plan and said Go. VS-91 is the first bounded execution batch: shared shell plus exact frozen Home fidelity, with later surfaces split into subsequent reviewable slices."},
     {"type":"policy","status":"not-required","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"No new product, security, publishing, provider or analytics policy is introduced. Existing approved decisions and frozen design authority are reused unchanged."},
     {"type":"implementation","status":"approved","version":"VS-91@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-25T14:30:00+02:00","rationale":"The Product Owner explicitly said Go after the strict frozen-UI implementation sequence and verification rules were stated. Runtime work is limited to the allowed frontend/design-token paths and this bounded Home/shell scope."},
-    {"type":"certification","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"Requires an immutable candidate with runtime verification, governance/preflight, desktop/mobile rendered conformance evidence and explicit exact-SHA Product Owner certification approval."},
+    {"type":"certification","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"All implementation/testing evidence is complete; certification still requires explicit approval of the final immutable candidate SHA."},
     {"type":"release","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"No release authorization is granted by the implementation Go."},
     {"type":"production-enable","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"No production enablement or deployment is authorized by the implementation Go."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":90,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"ready-for-approval","commitSha":null,"evidence":["GitHub visual evidence run 32863800449","GitHub visual artifact 9569274055","delivery/context/VS-91.md"]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
     "specification":"docs/slices/VS-91.md",
     "implementationPr":"https://github.com/ksazid/kairo/pull/197",
-    "evidence":["delivery/context/VS-91.md","docs/plans/KAIRO-APPROVED-UI-FIDELITY-IMPLEMENTATION-2026-08-25.md","docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/approved-ui/kairo-approved-ui-pages-board-2026-08-25.webp","GitHub Product Intake 32852174639","GitHub Security baseline 32852174701","GitHub CI 32852174620"]
+    "evidence":["delivery/context/VS-91.md","docs/plans/KAIRO-APPROVED-UI-FIDELITY-IMPLEMENTATION-2026-08-25.md","docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/approved-ui/kairo-approved-ui-pages-board-2026-08-25.webp","GitHub Product Intake 32852174639","GitHub Security baseline 32852174701","GitHub CI 32852174620","GitHub visual evidence 32863800449","GitHub artifact 9569274055"]
   },
   "maxAttempts": 3
 }
