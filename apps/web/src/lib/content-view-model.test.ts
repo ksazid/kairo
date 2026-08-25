@@ -40,7 +40,7 @@ function detail(assetId: string, topic: string): CampaignDetailView {
         assetId,
         version: 1,
         parentVersionId: null,
-        content: "Exact approved copy",
+        content: "Exact approved copy. A second sentence that should not dominate the list row.",
         supportingClaimIds: [],
         actor: "ai",
         action: "draft",
@@ -100,15 +100,18 @@ describe("Content list state model", () => {
     ]);
 
     const byId = new Map(result.items.map((item) => [item.assetId, item]));
-    expect(byId.get("draft")?.bucket).toBe("needs-you");
+    expect(byId.get("draft")?.bucket).toBe("drafts");
     expect(byId.get("draft")?.actionLabel).toBe("Continue");
-    expect(byId.get("approve")?.statusLabel).toBe("Ready for approval");
+    expect(byId.get("approve")?.statusLabel).toBe("Needs you");
+    expect(byId.get("approve")?.detailLabel).toBe("Review");
     expect(byId.get("ready")?.bucket).toBe("ready");
-    expect(byId.get("ready")?.actionLabel).toBe("Publish");
+    expect(byId.get("ready")?.statusLabel).toBe("Ready");
+    expect(byId.get("ready")?.detailLabel).toBe("Ready to publish");
     expect(byId.get("scheduled")?.bucket).toBe("scheduled");
+    expect(byId.get("scheduled")?.scheduledFor).toBe("2026-08-25T10:00:00.000Z");
     expect(byId.get("published")?.actionLabel).toBe("See results");
     expect(byId.get("failed")?.attention).toBe(true);
-    expect(result.counts).toEqual({ all: 6, "needs-you": 3, ready: 1, scheduled: 1, published: 1 });
+    expect(result.counts).toEqual({ all: 6, "needs-you": 2, ready: 1, scheduled: 1, published: 1, drafts: 1 });
   });
 
   it("does not reuse approval or publishing state from an older immutable version", () => {
@@ -144,15 +147,17 @@ describe("Content list state model", () => {
     );
 
     expect(result.items[0]?.version).toBe(2);
-    expect(result.items[0]?.bucket).toBe("needs-you");
+    expect(result.items[0]?.bucket).toBe("drafts");
     expect(result.items[0]?.statusLabel).toBe("Draft");
-    expect(result.items[0]?.actionLabel).toBe("Continue");
+    expect(result.items[0]?.updatedBy).toBe("You");
   });
 
   it("keeps filter labels and validation deterministic", () => {
     expect(contentFilterLabel("needs-you")).toBe("Needs you");
+    expect(contentFilterLabel("drafts")).toBe("Drafts");
     expect(contentFilterLabel("published")).toBe("Published");
     expect(isContentFilter("ready")).toBe(true);
+    expect(isContentFilter("drafts")).toBe(true);
     expect(isContentFilter("campaigns")).toBe(false);
   });
 });
