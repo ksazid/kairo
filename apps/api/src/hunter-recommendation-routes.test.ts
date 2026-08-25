@@ -93,6 +93,46 @@ describe("VS-97 Hunter recommendations API", () => {
         audiences: ["Software teams"],
       },
     });
+    expect(captured?.query).toBeUndefined();
+    await app.close();
+  });
+
+  it("uses a bounded explicit public query when no sector pack matches the Brand", async () => {
+    const store = new MemoryKairoRepository();
+    const verifier = new Verifier();
+    const { account, brand } = await setupBrand(store);
+    await store.putConfirmedBrandBrainField(account.id, brand.id, "category", {
+      section: "identity",
+      value: "Restaurant",
+    });
+    await store.putConfirmedBrandBrainField(account.id, brand.id, "content-pillars", {
+      section: "content-strategy",
+      value: "seasonal menus",
+    });
+    let captured: HunterRunInput | undefined;
+    const app = buildApp({ store, identityVerifier: verifier });
+    registerHunterRecommendationRoutes(app, {
+      store,
+      identityVerifier: verifier,
+      runner: {
+        async runForAuthorizedBrand(input) {
+          captured = input;
+          return emptyResult;
+        },
+      },
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: `/api/v1/brands/${brand.id}/recommendations`,
+      headers: { authorization: "Bearer test:alice" },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(captured?.intelligenceProfile).toBeUndefined();
+    expect(captured?.query).toContain(brand.name);
+    expect(captured?.query).toContain("Restaurant");
+    expect((captured?.query?.length ?? 0)).toBeLessThanOrEqual(600);
     await app.close();
   });
 
