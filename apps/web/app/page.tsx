@@ -20,25 +20,9 @@ import {
 } from "../src/lib/home-intelligence";
 import styles from "./home-vs85.module.css";
 
-type SearchParams = Promise<{
-  workspace?: string;
-  brand?: string;
-  notice?: string;
-  error?: string;
-  idea?: string;
-}>;
-
-type RecommendationScores = {
-  overall: number;
-  audienceFit: number;
-  status: string;
-};
-
-type HomeMetric = {
-  label: "Reach" | "Saves" | "Shares" | "Engagement rate";
-  value?: number;
-  capturedAt?: string;
-};
+type SearchParams = Promise<{ workspace?: string; brand?: string; notice?: string; error?: string; idea?: string }>;
+type RecommendationScores = { overall: number; audienceFit: number; status: string };
+type HomeMetric = { label: "Reach" | "Saves" | "Shares" | "Engagement rate"; value?: number };
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const session = await getSession();
@@ -55,16 +39,12 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   if (!brand) {
     return (
       <KairoProductShell workspaceId={workspace.id} active="Home">
-        <main id="kairo-main-content" tabIndex={-1} className={`${styles.home} workspace-main`}>
-          <header className={styles.header}>
-            <h1>Home</h1>
-            <p>What needs you, what to create next, and what Kairo is handling.</p>
-          </header>
+        <main id="kairo-main-content" tabIndex={-1} className={styles.home}>
+          <h1 className={styles.srOnly}>Home</h1>
           <section className={styles.emptyBrand}>
-            <span className={styles.sectionLabel}>First step</span>
             <h2>Give Kairo something to learn from.</h2>
             <p>One public Brand URL is enough to start.</p>
-            <Link className="primary-button" href={`/brands/new?workspace=${encodeURIComponent(workspace.id)}`}>Add Brand</Link>
+            <Link className={styles.primaryAction} href={`/brands/new?workspace=${encodeURIComponent(workspace.id)}`}>Add Brand</Link>
           </section>
         </main>
       </KairoProductShell>
@@ -75,131 +55,84 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     getOpportunities(brand.id).catch(() => []),
     getPerformance(brand.id).catch(() => []),
     getBrandNotifications(brand.id).catch(() => ({ brandId: brand.id, items: [] })),
-    getChannelAccounts(brand.id)
-      .then((items) => ({ available: true as const, items }))
-      .catch(() => ({ available: false as const, items: [] })),
+    getChannelAccounts(brand.id).then((items) => ({ available: true as const, items })).catch(() => ({ available: false as const, items: [] })),
   ]);
 
-  const hasConnectedChannel = channelResult.available
-    ? channelResult.items.some((channel) => channel.status === "connected")
-    : true;
-  const attention = buildAttentionItems({
-    brandId: brand.id,
-    notifications: notificationResult.items,
-    hasConnectedChannel,
-  })[0];
+  const hasConnectedChannel = channelResult.available ? channelResult.items.some((channel) => channel.status === "connected") : true;
+  const attention = buildAttentionItems({ brandId: brand.id, notifications: notificationResult.items, hasConnectedChannel })[0];
   const forYou = buildForYou(opportunities);
-  const recommendationScores = new Map<string, RecommendationScores>(
-    opportunities.map((item) => [
-      item.id,
-      {
-        overall: item.scores.overall,
-        audienceFit: item.scores.audienceFit,
-        status: item.status,
-      },
-    ]),
-  );
+  const scores = new Map<string, RecommendationScores>(opportunities.map((item) => [item.id, { overall: item.scores.overall, audienceFit: item.scores.audienceFit, status: item.status }]));
   const metrics = buildHomeMetrics(performance);
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Home">
-      <main id="kairo-main-content" tabIndex={-1} className={`${styles.home} workspace-main`}>
-        <header className={styles.header}>
-          <h1>Home</h1>
-          <p>What needs you, what to create next, and what Kairo is handling.</p>
-        </header>
+      <main id="kairo-main-content" tabIndex={-1} className={styles.home}>
+        <h1 className={styles.srOnly}>Home</h1>
 
-        {params.notice ? <p className="notice success" role="status">{params.notice}</p> : null}
-        {params.error ? <p className="notice error" role="alert">{params.error}</p> : null}
+        {params.notice ? <p className={styles.notice} role="status">{params.notice}</p> : null}
+        {params.error ? <p className={`${styles.notice} ${styles.error}`} role="alert">{params.error}</p> : null}
 
-        <section className={`${styles.section} ${styles.attentionSection}`} aria-labelledby="home-attention-title">
-          <SectionHeading label="Needs Attention" title="The one thing that needs you now." id="home-attention-title" />
+        <section className={styles.attentionSection} aria-label="Needs attention">
           {attention ? (
             <article className={styles.attentionCard}>
-              <div>
-                <span className={styles.statusPill}>Needs you</span>
-                <h3>{attention.title}</h3>
+              <div className={styles.attentionLabel}><KairoIcon name="warning" /><span>Needs attention</span></div>
+              <div className={styles.attentionCopy}>
+                <h2>{attention.title}</h2>
                 <p>{attention.detail}</p>
               </div>
-              <Link className="primary-button" href={attention.href}>{attention.actionLabel}</Link>
+              <Link className={styles.retryButton} href={attention.href}>{attention.actionLabel}</Link>
+              <Link className={styles.attentionChevron} href={attention.href} aria-label={`${attention.actionLabel}: ${attention.title}`}><KairoIcon name="chevron" /></Link>
             </article>
           ) : (
-            <div className={styles.quietState} role="status">
-              <strong>Nothing needs you right now.</strong>
-              <span>Kairo will surface the next blocker here when your input is required.</span>
-            </div>
+            <article className={`${styles.attentionCard} ${styles.attentionClear}`}>
+              <div className={styles.attentionLabel}><KairoIcon name="shield" /><span>All clear</span></div>
+              <div className={styles.attentionCopy}><h2>Nothing needs you right now.</h2><p>Kairo will surface the next blocker here when your input is required.</p></div>
+            </article>
           )}
         </section>
 
-        <section id="my-idea" className={`${styles.section} ${styles.ideaSection}`} aria-labelledby="home-my-idea-title">
-          <SectionHeading
-            label="My Idea"
-            title="Have something in mind?"
-            id="home-my-idea-title"
-            detail="Share the thought or source. Kairo will recommend the strongest format before creating anything."
-          />
+        <section id="my-idea" className={styles.ideaSection} aria-labelledby="home-my-idea-title">
+          <div className={styles.sectionHeading}>
+            <h2 id="home-my-idea-title">My idea</h2>
+            <p>Share your thought and let Kairo recommend the best format.</p>
+          </div>
           <MyIdeaComposer brandId={brand.id} initialText={params.idea ?? ""} />
         </section>
 
-        <section className={`${styles.section} ${styles.forYouSection}`} aria-labelledby="home-for-you-title">
+        <section className={styles.forYouSection} aria-labelledby="home-for-you-title">
           <div className={styles.sectionHeadingRow}>
-            <SectionHeading
-              label="For You"
-              title="Ideas worth creating next."
-              id="home-for-you-title"
-              detail="Ranked from current Brand and opportunity signals."
-            />
-            <button className={styles.viewAllButton} type="button" disabled title="A dedicated recommendations view is not connected yet">View all</button>
+            <div className={styles.sectionHeading}>
+              <h2 id="home-for-you-title">For you</h2>
+              <p>Smart recommendations based on your brand and goals.</p>
+            </div>
+            <span className={styles.viewAll}>View all <KairoIcon name="chevron" /></span>
           </div>
 
           {forYou.length ? (
-            <div className={styles.recommendationRail}>
-              {forYou.map((item) => (
-                <RecommendationCard
-                  key={item.id}
-                  item={item}
-                  scores={recommendationScores.get(item.id)}
-                  workspaceId={workspace.id}
-                  brandId={brand.id}
-                />
-              ))}
-            </div>
+            <>
+              <div className={styles.recommendationRail}>
+                {forYou.map((item) => <RecommendationCard key={item.id} item={item} scores={scores.get(item.id)} workspaceId={workspace.id} brandId={brand.id} />)}
+              </div>
+              <div className={styles.railProgress} aria-hidden="true"><span /></div>
+            </>
           ) : (
-            <div className={styles.quietState}>
-              <strong>No recommendation is ready yet.</strong>
-              <span>Use My Idea while Kairo gathers enough real signal to rank suggestions.</span>
-            </div>
+            <div className={styles.compactEmpty}><strong>No recommendation is ready yet.</strong><span>Use My idea while Kairo gathers enough signal to rank suggestions.</span></div>
           )}
         </section>
 
-        <section className={`${styles.section} ${styles.workingSection}`} aria-labelledby="home-working-title">
-          <div className={styles.sectionHeadingRow}>
-            <SectionHeading
-              label="What's Working"
-              title="A quick read on real performance."
-              id="home-working-title"
-              detail="Only observations Kairo can verify are shown."
-            />
+        <section className={styles.workingSection} aria-labelledby="home-working-title">
+          <div className={styles.workingHeadingRow}>
+            <div className={styles.sectionHeading}>
+              <h2 id="home-working-title">What&apos;s working</h2>
+              <p>A quick pulse of your content performance.</p>
+            </div>
             <label className={styles.periodControl}>
               <span className={styles.srOnly}>Performance period</span>
-              <select disabled aria-label="Performance period">
-                <option>Last 30 days</option>
-              </select>
+              <select disabled aria-label="Performance period"><option>Last 7 days</option></select>
             </label>
           </div>
-
           <div className={styles.metricGrid} aria-label="Latest available Brand performance">
-            {metrics.map((metric) => (
-              <article className={styles.metricCard} key={metric.label}>
-                <span>{metric.label}</span>
-                <strong>{metric.value === undefined ? "Unavailable" : formatNumber(metric.value)}</strong>
-                <small>{metric.capturedAt ? `Observed ${formatObservedDate(metric.capturedAt)}` : "No verified observation yet"}</small>
-                <div className={styles.sparklineUnavailable} aria-hidden="true" />
-              </article>
-            ))}
-          </div>
-          <div className={styles.sectionFooter}>
-            <Link className={styles.textLink} href={`/brands/${encodeURIComponent(brand.id)}/performance`}>View Insights</Link>
+            {metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}
           </div>
         </section>
       </main>
@@ -207,53 +140,35 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   );
 }
 
-function SectionHeading({ label, title, detail, id }: { label: string; title: string; detail?: string; id: string }) {
+function RecommendationCard({ item, scores, workspaceId, brandId }: { item: HomeForYouItem; scores?: RecommendationScores; workspaceId: string; brandId: string }) {
+  const format = item.format ? formatLabel(item.format) : "Idea";
+  const tone = item.format === "reel" ? "reel" : item.format === "image" ? "post" : "carousel";
   return (
-    <div className={styles.sectionHeading}>
-      <span className={styles.sectionLabel}>{label}</span>
-      <h2 id={id}>{title}</h2>
-      {detail ? <p>{detail}</p> : null}
-    </div>
+    <article className={styles.recommendationCard}>
+      <div className={styles.recommendationThumb} data-tone={tone} aria-label="Recommendation preview unavailable">
+        <KairoIcon name={item.format === "reel" ? "video" : "image"} />
+        <span className={styles.formatPill}>{format}</span>
+        <button className={styles.bookmarkButton} type="button" disabled aria-label={`Save recommendation: ${item.title}`} aria-pressed={scores?.status === "saved"}><KairoIcon name="bookmark" /></button>
+      </div>
+      <div className={styles.recommendationBody}>
+        <h3>{item.title}</h3>
+        <p>{item.reason}</p>
+        <div className={styles.indicators}>
+          <span data-tone={impactTone(scores?.overall)}><KairoIcon name="eye" />{scores ? impactLabel(scores.overall) : "Impact"}</span>
+          <span data-tone="fit">{scores ? fitLabel(scores.audienceFit) : "Fit"}</span>
+        </div>
+        <Link className={styles.useIdeaLink} href={seedIdeaHref(workspaceId, brandId, item.title)} aria-label={`Use idea: ${item.title}`} />
+      </div>
+    </article>
   );
 }
 
-function RecommendationCard({
-  item,
-  scores,
-  workspaceId,
-  brandId,
-}: {
-  item: HomeForYouItem;
-  scores?: RecommendationScores;
-  workspaceId: string;
-  brandId: string;
-}) {
+function MetricCard({ metric }: { metric: HomeMetric }) {
   return (
-    <article className={styles.recommendationCard}>
-      <div className={styles.recommendationThumb} aria-label="Recommendation preview unavailable">
-        <KairoIcon name={item.format === "reel" ? "video" : "image"} />
-        <span>Preview unavailable</span>
-      </div>
-      <div className={styles.recommendationTopline}>
-        <span className={styles.formatPill}>{item.format ? formatLabel(item.format) : "Idea"}</span>
-        <button
-          className={styles.bookmarkButton}
-          type="button"
-          disabled
-          aria-label={scores?.status === "saved" ? `Saved recommendation: ${item.title}` : `Save recommendation: ${item.title}`}
-          aria-pressed={scores?.status === "saved"}
-          title="Saving from Home is not connected yet"
-        >
-          <KairoIcon name="bookmark" />
-        </button>
-      </div>
-      <h3>{item.title}</h3>
-      <p>{item.reason}</p>
-      <div className={styles.indicators}>
-        <span><b>Impact</b>{scores ? scoreLabel(scores.overall) : "Unavailable"}</span>
-        <span><b>Fit</b>{scores ? scoreLabel(scores.audienceFit) : "Unavailable"}</span>
-      </div>
-      <Link className={styles.useIdeaLink} href={seedIdeaHref(workspaceId, brandId, item.title)}>Use idea</Link>
+    <article className={styles.metricCard}>
+      <span>{metric.label}</span>
+      <strong>{metric.value === undefined ? "—" : formatNumber(metric.value)}</strong>
+      <div className={styles.metricTrendPlaceholder} aria-hidden="true" />
     </article>
   );
 }
@@ -265,43 +180,17 @@ function buildHomeMetrics(metrics: PerformanceMetricView[]): HomeMetric[] {
     { label: "Shares", names: ["shares", "shared"] },
     { label: "Engagement rate", names: ["engagement rate", "engagement_rate", "engagement-rate"] },
   ].map(({ label, names }) => {
-    const metric = latestAvailableMetric(metrics, names);
-    return {
-      label: label as HomeMetric["label"],
-      ...(metric ? { value: metric.value, capturedAt: metric.capturedAt } : {}),
-    };
+    const metric = metrics.filter((item) => item.status === "available" && typeof item.value === "number").filter((item) => names.includes(item.name.trim().toLowerCase())).sort((a, b) => b.capturedAt.localeCompare(a.capturedAt))[0];
+    return { label: label as HomeMetric["label"], ...(metric ? { value: metric.value } : {}) };
   });
-}
-
-function latestAvailableMetric(metrics: PerformanceMetricView[], names: string[]) {
-  return metrics
-    .filter((metric) => metric.status === "available" && typeof metric.value === "number")
-    .filter((metric) => names.includes(metric.name.trim().toLowerCase()))
-    .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt))[0];
 }
 
 function seedIdeaHref(workspaceId: string, brandId: string, idea: string) {
   const query = new URLSearchParams({ workspace: workspaceId, brand: brandId, idea });
   return `/?${query.toString()}#my-idea`;
 }
-
-function formatLabel(format: HomeCreationFormat) {
-  return format === "image" ? "Post" : format.charAt(0).toUpperCase() + format.slice(1);
-}
-
-function scoreLabel(value: number) {
-  if (!Number.isFinite(value)) return "Unavailable";
-  if (value >= 0 && value <= 1) return `${Math.round(value * 100)}%`;
-  return `${Math.round(value)}`;
-}
-
-function formatNumber(value: number) {
-  if (!Number.isFinite(value)) return "Unavailable";
-  return new Intl.NumberFormat("en", { notation: Math.abs(value) >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }).format(value);
-}
-
-function formatObservedDate(value: string) {
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return "recently";
-  return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: "UTC" }).format(date);
-}
+function formatLabel(format: HomeCreationFormat) { return format === "image" ? "Post" : format.charAt(0).toUpperCase() + format.slice(1); }
+function impactTone(value?: number) { if (value === undefined) return "neutral"; const n = value <= 1 ? value * 100 : value; return n >= 75 ? "high" : n >= 50 ? "medium" : "neutral"; }
+function impactLabel(value: number) { const n = value <= 1 ? value * 100 : value; return n >= 75 ? "High impact" : n >= 50 ? "Medium impact" : "Impact"; }
+function fitLabel(value: number) { const n = value <= 1 ? value * 100 : value; return n >= 80 ? "Best match" : n >= 60 ? "Great fit" : "Good fit"; }
+function formatNumber(value: number) { if (!Number.isFinite(value)) return "—"; return new Intl.NumberFormat("en", { notation: Math.abs(value) >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }).format(value); }
