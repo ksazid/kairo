@@ -106,7 +106,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <h2 id="home-for-you-title">For you</h2>
               <p>Smart recommendations based on your brand and goals.</p>
             </div>
-            <GetRecommendationsButton brandId={brand.id} />
+            <GetRecommendationsButton brandId={brand.id} hasRecommendations={forYou.length > 0} />
           </div>
 
           {forYou.length ? (
