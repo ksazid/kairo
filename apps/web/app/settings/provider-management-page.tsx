@@ -44,7 +44,7 @@ export async function ProviderManagementPage({ definition }: { definition: Media
                     <span>{field.value}</span>
                   </label>
                 ) : (
-                  <select aria-label={field.label} value={field.value} disabled readOnly>
+                  <select aria-label={field.label} value={field.value} disabled>
                     {(field.options ?? [field.value]).map((option) => <option key={option} value={option}>{option}</option>)}
                   </select>
                 )}
