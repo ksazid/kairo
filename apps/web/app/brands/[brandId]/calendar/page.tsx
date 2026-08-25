@@ -20,10 +20,10 @@ import {
   parseCalendarDay,
   parseCalendarMonth,
   type CalendarChannel,
-  type CalendarStatus,
   type CalendarView,
 } from "../../../../src/lib/calendar-view-model";
 import { KairoProductShell } from "../../../kairo-product-shell";
+import { KairoIcon } from "../../../kairo-icons";
 import { cancelPublishAction, retryPublishAction } from "./actions";
 import "./calendar-v2.css";
 
@@ -40,9 +40,12 @@ type Search = Promise<{
 }>;
 
 type CalendarEntry = PublishCommandView & { brandName: string; contentLabel: string };
+type FrozenCalendarStatus = "all" | "scheduled" | "publishing" | "published" | "needs-attention";
+type CalendarNavigationState = { brand: string; channel: CalendarChannel | "all"; status: FrozenCalendarStatus };
+type RangeState = { date?: string; month?: string };
 
 const CHANNELS: CalendarChannel[] = ["instagram", "facebook", "linkedin", "manual"];
-const STATUSES: CalendarStatus[] = ["scheduled", "dispatching", "published", "failed", "unknown", "manual-required", "cancelled"];
+const STATUS_FILTERS: FrozenCalendarStatus[] = ["all", "scheduled", "publishing", "published", "needs-attention"];
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default async function CalendarPage({ params, searchParams }: { params: Params; searchParams: Search }) {
@@ -65,7 +68,7 @@ export default async function CalendarPage({ params, searchParams }: { params: P
     ? workspaceBrands
     : [workspaceBrands.find((candidate) => candidate.id === brandFilter) ?? brand];
   const channelFilter = normaliseChannel(messages.channel);
-  const statusFilter = normaliseStatus(messages.status);
+  const statusFilter = normaliseFrozenStatus(messages.status);
 
   const bundles = await Promise.all(visibleBrands.map(async (visibleBrand) => {
     const [commands, campaigns] = await Promise.all([
@@ -84,11 +87,14 @@ export default async function CalendarPage({ params, searchParams }: { params: P
     }));
   });
 
-  const filtered = applyCalendarFilters(entries, {
+  const baseFiltered = applyCalendarFilters(entries, {
     brandId: brandFilter,
     channel: channelFilter,
-    status: statusFilter,
-  }).sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
+    status: "all",
+  });
+  const filtered = baseFiltered
+    .filter((entry) => matchesFrozenStatus(entry.status, statusFilter))
+    .sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
   const week = buildCalendarWeek(anchorDay, filtered);
   const month = buildCalendarMonth(monthStart, filtered);
   const grouped = group(filtered);
@@ -105,17 +111,12 @@ export default async function CalendarPage({ params, searchParams }: { params: P
   const todayHref = calendarHref(brand.id, "week", { date: todayKey }, state);
 
   return (
-    <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Calendar">
+    <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Calendar" pageLabel="Calendar">
       <main id="kairo-main-content" tabIndex={-1} className="workspace-main kcal-main">
         <header className="kcal-hero">
           <div>
-            <p className="eyebrow">Calendar</p>
-            <h1>Plan the week. Keep publishing visible.</h1>
-            <p className="lede">See what is scheduled, what published, and what needs attention without turning Calendar into another editor.</p>
-          </div>
-          <div className="kcal-hero-actions">
-            <Link className="secondary-button" href={todayHref}>Today</Link>
-            <Link className="primary-button" href={`/brands/${encodeURIComponent(brand.id)}/content`}>Open Content</Link>
+            <h1>Calendar</h1>
+            <p className="lede">See what’s scheduled, publishing, and already live.</p>
           </div>
         </header>
 
@@ -139,12 +140,17 @@ export default async function CalendarPage({ params, searchParams }: { params: P
           </nav>
 
           <div className="kcal-range-nav">
-            <Link className="kcal-icon-button" href={previousHref} aria-label={`Previous ${view === "week" ? "week" : "month"}`}>‹</Link>
+            <Link className="secondary-button kcal-today" href={todayHref}>Today</Link>
+            <Link className="kcal-icon-button" href={previousHref} aria-label={`Previous ${view === "week" ? "week" : "month"}`}>
+              <KairoIcon name="arrow-left" />
+            </Link>
             <div>
               <span>{view === "week" ? "Week" : view === "month" ? "Month" : "Agenda"}</span>
               <strong>{view === "week" ? week.label : month.label}</strong>
             </div>
-            <Link className="kcal-icon-button" href={nextHref} aria-label={`Next ${view === "week" ? "week" : "month"}`}>›</Link>
+            <Link className="kcal-icon-button" href={nextHref} aria-label={`Next ${view === "week" ? "week" : "month"}`}>
+              <KairoIcon name="arrow-right" />
+            </Link>
           </div>
         </section>
 
@@ -164,14 +170,13 @@ export default async function CalendarPage({ params, searchParams }: { params: P
             <span>Channel</span>
             <select name="channel" defaultValue={channelFilter}>
               <option value="all">All channels</option>
-              {CHANNELS.map((channel) => <option key={channel} value={channel}>{title(channel)}</option>)}
+              {CHANNELS.map((channel) => <option key={channel} value={channel}>{channelLabel(channel)}</option>)}
             </select>
           </label>
           <label>
             <span>Status</span>
             <select name="status" defaultValue={statusFilter}>
-              <option value="all">All statuses</option>
-              {STATUSES.map((status) => <option key={status} value={status}>{statusLabel(status)}</option>)}
+              {STATUS_FILTERS.map((status) => <option key={status} value={status}>{frozenStatusFilterLabel(status)}</option>)}
             </select>
           </label>
           <div className="kcal-filter-actions">
@@ -231,8 +236,8 @@ export default async function CalendarPage({ params, searchParams }: { params: P
                           <td key={day.dateKey} className={`${day.inMonth ? "" : "outside"}${day.dateKey === todayKey ? " today" : ""}`}>
                             <time dateTime={day.dateKey}>{day.dayNumber}</time>
                             {day.entries.slice(0, 2).map((entry) => (
-                              <Link key={entry.id} href={`/brands/${encodeURIComponent(entry.brandId)}/content`} className={`kcal-month-item ${entry.status}`}>
-                                <span>{timeLabel(entry.scheduledFor)}</span>
+                              <Link key={entry.id} href={contentHref(entry)} className={`kcal-month-item ${frozenStatusKey(entry.status)}`}>
+                                <span>{timeLabel(entry.scheduledFor)} · {channelLabel(entry.channel)}</span>
                                 <strong>{entry.contentLabel}</strong>
                               </Link>
                             ))}
@@ -246,16 +251,14 @@ export default async function CalendarPage({ params, searchParams }: { params: P
               </div>
             ) : null}
 
-            <Agenda grouped={grouped} brandId={brand.id} />
+            {view === "agenda" ? <Agenda grouped={grouped} /> : null}
+            {view !== "agenda" ? <div className="kcal-mobile-agenda"><Agenda grouped={grouped} /></div> : null}
           </>
         ) : (
           <section className="kcal-empty">
-            <p className="eyebrow">Nothing planned here</p>
             <h2>{activeFilters ? "No content matches these filters." : "Your calendar is clear."}</h2>
-            <p>{activeFilters ? "Clear the filters to return to the full schedule." : "Approve content, then publish now or schedule it from Preview."}</p>
-            {activeFilters
-              ? <Link className="secondary-button" href={clearFiltersHref(brand.id, view, anchorDay, monthStart)}>Clear filters</Link>
-              : <Link className="primary-button" href={`/brands/${encodeURIComponent(brand.id)}/content`}>Open Content</Link>}
+            <p>{activeFilters ? "Clear the filters to return to the full schedule." : "Approved content will appear here when it is published now or scheduled for later."}</p>
+            {activeFilters ? <Link className="secondary-button" href={clearFiltersHref(brand.id, view, anchorDay, monthStart)}>Clear filters</Link> : null}
           </section>
         )}
       </main>
@@ -263,20 +266,20 @@ export default async function CalendarPage({ params, searchParams }: { params: P
   );
 }
 
-function Agenda({ grouped, brandId }: { grouped: Map<string, CalendarEntry[]>; brandId: string }) {
+function Agenda({ grouped }: { grouped: Map<string, CalendarEntry[]> }) {
   return (
     <section className="kcal-agenda" aria-labelledby="kcal-agenda-title">
       <div className="kcal-section-heading">
         <div>
-          <p className="eyebrow">Agenda</p>
-          <h2 id="kcal-agenda-title">Publishing schedule</h2>
+          <h2 id="kcal-agenda-title">Agenda</h2>
+          <p>Scheduled and published content grouped by day.</p>
         </div>
         <small>Times shown in UTC</small>
       </div>
       {[...grouped].map(([date, items]) => (
         <section className="kcal-agenda-day" id={`agenda-${date}`} key={date}>
           <time dateTime={date}>{dayLabel(date)}</time>
-          <div>{items.map((item) => <CalendarItem key={item.id} item={item} brandId={item.brandId} />)}</div>
+          <div>{items.map((item) => <CalendarItem key={item.id} item={item} />)}</div>
         </section>
       ))}
     </section>
@@ -285,46 +288,49 @@ function Agenda({ grouped, brandId }: { grouped: Map<string, CalendarEntry[]>; b
 
 function CompactCalendarItem({ item }: { item: CalendarEntry }) {
   return (
-    <Link className={`kcal-compact-item ${item.status}`} href={`/brands/${encodeURIComponent(item.brandId)}/content`}>
-      <span>{timeLabel(item.scheduledFor)} · {title(item.channel)}</span>
+    <Link className={`kcal-compact-item ${frozenStatusKey(item.status)}`} href={contentHref(item)}>
+      <span>{timeLabel(item.scheduledFor)} · {channelLabel(item.channel)}</span>
       <strong>{item.contentLabel}</strong>
-      <small>{statusLabel(item.status)}</small>
+      <small>{frozenStatusLabel(item.status)}</small>
     </Link>
   );
 }
 
-function CalendarItem({ item, brandId }: { item: CalendarEntry; brandId: string }) {
+function CalendarItem({ item }: { item: CalendarEntry }) {
   const retry = item.status === "failed";
   const cancel = item.status === "scheduled" || item.status === "manual-required";
   return (
-    <article className="kcal-item">
+    <article className="kcal-item" data-status={frozenStatusKey(item.status)}>
+      <Link className="kcal-item-thumbnail" href={contentHref(item)} aria-label={`Open ${item.contentLabel}`}>
+        <KairoIcon name={item.contentType === "video" ? "video" : "photo"} />
+      </Link>
       <div className="kcal-item-time">
         <time dateTime={item.scheduledFor}>{timeLabel(item.scheduledFor)}</time>
-        <span>{title(item.channel)}</span>
+        <span>{channelLabel(item.channel)}</span>
       </div>
       <div className="kcal-item-copy">
-        <Link href={`/brands/${encodeURIComponent(item.brandId)}/content`}>{item.contentLabel}</Link>
-        <p>{item.brandName}{item.contentType ? ` · ${title(item.contentType)}` : ""}</p>
-        <small>{item.status === "unknown" ? "Outcome requires reconciliation" : item.attemptCount ? `${item.attemptCount} of 3 attempts` : "Not dispatched"}</small>
+        <Link href={contentHref(item)}>{item.contentLabel}</Link>
+        <p>{item.brandName}{item.contentType ? ` · ${formatLabel(item.contentType)}` : ""}</p>
       </div>
       <div className="kcal-item-state">
-        <span className={`publish-state ${item.status}`}>{statusLabel(item.status)}</span>
+        <span className={`publish-state ${frozenStatusKey(item.status)}`}>{frozenStatusLabel(item.status)}</span>
         <div className="kcal-item-actions">
           {retry && item.attemptCount < 3 ? (
-            <form action={retryPublishAction.bind(null, brandId, item.id)}><button className="tertiary-button">Retry</button></form>
+            <form action={retryPublishAction.bind(null, item.brandId, item.id)}><button className="tertiary-button" type="submit">Retry</button></form>
           ) : null}
           {cancel ? (
-            <form action={cancelPublishAction.bind(null, brandId, item.id)}><button className="tertiary-button">Cancel schedule</button></form>
+            <form action={cancelPublishAction.bind(null, item.brandId, item.id)}><button className="tertiary-button" type="submit">Cancel schedule</button></form>
           ) : null}
-          <Link className="tertiary-button" href={`/brands/${encodeURIComponent(item.brandId)}/content`}>View content</Link>
+          <Link className="tertiary-button" href={contentHref(item)}>{frozenStatusKey(item.status) === "needs-attention" ? "Fix" : "View content"}</Link>
         </div>
       </div>
     </article>
   );
 }
 
-type CalendarNavigationState = { brand: string; channel: CalendarChannel | "all"; status: CalendarStatus | "all" };
-type RangeState = { date?: string; month?: string };
+function contentHref(item: CalendarEntry): string {
+  return `/brands/${encodeURIComponent(item.brandId)}/content/${encodeURIComponent(item.campaignId)}/${encodeURIComponent(item.assetId)}`;
+}
 
 function calendarHref(brandId: string, view: CalendarView, range: RangeState, filters: CalendarNavigationState): string {
   const params = new URLSearchParams({ view });
@@ -346,8 +352,35 @@ function normaliseChannel(value?: string): CalendarChannel | "all" {
   return value === "instagram" || value === "facebook" || value === "linkedin" || value === "manual" ? value : "all";
 }
 
-function normaliseStatus(value?: string): CalendarStatus | "all" {
-  return value === "scheduled" || value === "dispatching" || value === "published" || value === "failed" || value === "unknown" || value === "manual-required" || value === "cancelled" ? value : "all";
+function normaliseFrozenStatus(value?: string): FrozenCalendarStatus {
+  return STATUS_FILTERS.includes(value as FrozenCalendarStatus) ? value as FrozenCalendarStatus : "all";
+}
+
+function matchesFrozenStatus(value: PublishCommandView["status"], filter: FrozenCalendarStatus): boolean {
+  if (filter === "all") return true;
+  if (filter === "scheduled") return value === "scheduled";
+  if (filter === "publishing") return value === "dispatching";
+  if (filter === "published") return value === "published";
+  return ["failed", "unknown", "manual-required"].includes(value);
+}
+
+function frozenStatusKey(value: PublishCommandView["status"]): "scheduled" | "publishing" | "published" | "needs-attention" {
+  if (value === "scheduled") return "scheduled";
+  if (value === "dispatching") return "publishing";
+  if (value === "published") return "published";
+  return "needs-attention";
+}
+
+function frozenStatusLabel(value: PublishCommandView["status"]): string {
+  const key = frozenStatusKey(value);
+  if (key === "needs-attention") return "Needs attention";
+  return title(key);
+}
+
+function frozenStatusFilterLabel(value: FrozenCalendarStatus): string {
+  if (value === "all") return "All statuses";
+  if (value === "needs-attention") return "Needs attention";
+  return title(value);
 }
 
 function group(entries: CalendarEntry[]): Map<string, CalendarEntry[]> {
@@ -367,9 +400,15 @@ function timeLabel(value: string): string {
   return new Date(value).toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit", timeZone: "UTC", hour12: false });
 }
 
-function statusLabel(value: CalendarStatus): string {
-  if (value === "manual-required") return "Needs manual publishing";
-  if (value === "unknown") return "Needs attention";
+function channelLabel(value: string): string {
+  if (value.toLowerCase() === "youtube") return "YouTube";
+  if (value.toLowerCase() === "linkedin") return "LinkedIn";
+  if (value.toLowerCase() === "manual") return "Manual";
+  return title(value);
+}
+
+function formatLabel(value: string): string {
+  if (value.toLowerCase() === "image") return "Post";
   return title(value);
 }
 
