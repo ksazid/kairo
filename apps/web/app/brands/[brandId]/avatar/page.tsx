@@ -44,7 +44,7 @@ export default async function AvatarPage({
   const suggestions = presenter ?? suggestedPresenter(brand.name, brain);
   const encoded = encodeURIComponent(brand.id);
   const providerReady = eligibility?.status === "eligible";
-  const providerSettingsHref = "/settings/ai-media-providers?tab=media#avatar-provider";
+  const providerSettingsHref = `/settings/ai-media-providers?tab=media&brand=${encoded}#avatar-provider`;
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand" pageLabel="Avatar">
