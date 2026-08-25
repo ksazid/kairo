@@ -20,7 +20,7 @@
     "apps/web/app/for-you-recommendations-action.tsx",
     "apps/web/app/for-you-recommendations-action.module.css",
     "apps/web/app/api/home/recommendations/route.ts",
-    "apps/web/src/lib/hunter-api.ts",
+    "apps/web/src/lib/home-frozen-ui.test.ts",
     "docs/slices/VS-97.md",
     "docs/plans/VS-97-implementation.md",
     "delivery/**",
@@ -42,6 +42,7 @@
       "Brands without a matching Sector Intelligence Pack use a bounded explicit public query instead of blocking the Home action.",
       "Renames the My Idea format recommendation action so it is not confused with Hunter discovery.",
       "Concurrent duplicate clicks are coalesced in-process and authoritative opportunity deduplication remains in the existing DiscoveryService.",
+      "Updates the frozen Home contract test only for the two explicitly approved CTA changes: My Idea uses Recommend format, and For You exposes the Hunter recommendations action instead of the inert View all label.",
       "No database migration, publishing authority, credential scope, autonomous publishing or hidden reasoning exposure is added."
     ]
   },
