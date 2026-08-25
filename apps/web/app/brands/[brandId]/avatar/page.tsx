@@ -44,18 +44,16 @@ export default async function AvatarPage({
   const suggestions = presenter ?? suggestedPresenter(brand.name, brain);
   const encoded = encodeURIComponent(brand.id);
   const providerReady = eligibility?.status === "eligible";
+  const providerSettingsHref = "/settings/ai-media-providers?tab=media#avatar-provider";
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Brand" pageLabel="Avatar">
       <main id="kairo-main-content" tabIndex={-1} className="workspace-main avatar-main">
         <header className="avatar-header">
           <div>
-            <p className="eyebrow">Brand · Avatar</p>
-            <h1>{presenter ? presenter.displayName : "Create a Brand presenter"}</h1>
-            <p>
-              Keep one optional presenter profile for content that benefits from a human-style explanation.
-              Presenter use is always optional and never selected automatically.
-            </p>
+            <p className="eyebrow">Brand · Avatar (Presenter)</p>
+            <h1>Avatar (Presenter)</h1>
+            <p>Create an optional presenter Kairo can use in your videos. Presenter use remains optional and is never selected automatically.</p>
           </div>
           <Link className="tertiary-button" href={`/brands/${encoded}/brain`}>Back to Brand</Link>
         </header>
@@ -83,6 +81,29 @@ export default async function AvatarPage({
           </section>
         )}
 
+        <section className="avatar-provider-callout" aria-labelledby="avatar-provider-callout-title">
+          <div>
+            <p className="eyebrow">Avatar provider</p>
+            <h2 id="avatar-provider-callout-title">{providerReady ? "Provider capability verified" : "Set up avatar provider"}</h2>
+            <p>
+              {providerReady
+                ? "The current Brand has verified presenter-rendering capability. Provider configuration remains managed separately from Brand truth."
+                : capabilities?.reason ?? "Choose and connect an Avatar provider in Settings before Kairo can render or test a presenter."}
+            </p>
+          </div>
+          <Link className="secondary-button" href={providerSettingsHref}>Go to Settings</Link>
+        </section>
+
+        <nav className="avatar-recommendations" aria-label="Kairo presenter recommendations">
+          <a href="#presenter-style"><strong>Style</strong><span>{suggestions.visualStyle ?? "Not set"}</span></a>
+          <a href="#presenter-voice"><strong>Voice</strong><span>{suggestions.voiceStyle ?? "Not set"}</span></a>
+          <a href="#presenter-language"><strong>Language</strong><span>{suggestions.locale ?? "Not set"}</span></a>
+          <a href="#presenter-framing"><strong>Framing</strong><span>{suggestions.framing ?? "Not set"}</span></a>
+          <a href="#presenter-background"><strong>Background</strong><span>{suggestions.background ?? "Not set"}</span></a>
+          <a href="#presenter-mode"><strong>Mode</strong><span>{modeLabel(suggestions.mode)}</span></a>
+          <a href="#presenter-style"><strong>Customize</strong><span>Fine-tune appearance, voice and delivery</span></a>
+        </nav>
+
         {presenterResult.available ? (
           <form className="avatar-form" action={saveBrandPresenterAction.bind(null, brand.id)}>
             {presenter ? <input type="hidden" name="expectedVersion" value={presenter.version} /> : null}
@@ -98,7 +119,7 @@ export default async function AvatarPage({
                   Presenter name
                   <input name="displayName" required maxLength={120} defaultValue={suggestions.displayName} />
                 </label>
-                <label>
+                <label id="presenter-mode">
                   Mode
                   <select name="mode" defaultValue={suggestions.mode}>
                     <option value="basic">Basic presenter</option>
@@ -128,15 +149,15 @@ export default async function AvatarPage({
                 <p>These are descriptive preferences. No face, voice clone, biometric media or provider secret is stored here.</p>
               </header>
               <div className="avatar-fields two-column">
-                <label>
+                <label id="presenter-style">
                   Visual style <span>optional</span>
                   <input name="visualStyle" maxLength={240} defaultValue={suggestions.visualStyle ?? ""} />
                 </label>
-                <label>
+                <label id="presenter-voice">
                   Voice style <span>optional</span>
                   <input name="voiceStyle" maxLength={240} defaultValue={suggestions.voiceStyle ?? ""} />
                 </label>
-                <label>
+                <label id="presenter-language">
                   Language / locale <span>optional</span>
                   <input name="locale" maxLength={80} defaultValue={suggestions.locale ?? ""} />
                 </label>
@@ -148,11 +169,11 @@ export default async function AvatarPage({
                   Pace <span>optional</span>
                   <input name="pace" maxLength={80} defaultValue={suggestions.pace ?? ""} />
                 </label>
-                <label>
+                <label id="presenter-framing">
                   Framing <span>optional</span>
                   <input name="framing" maxLength={160} defaultValue={suggestions.framing ?? ""} />
                 </label>
-                <label className="wide">
+                <label className="wide" id="presenter-background">
                   Background <span>optional</span>
                   <input name="background" maxLength={240} defaultValue={suggestions.background ?? ""} />
                 </label>
@@ -186,7 +207,7 @@ export default async function AvatarPage({
                 <p>
                   {providerReady
                     ? "Kairo has verified the Avatar provider for this Brand. The Presenter selector may appear during creation, with None remaining the default."
-                    : capabilities?.reason ?? "Kairo will not show a Presenter selector or Test Clip action until a governed Avatar provider is configured and verified."}
+                    : capabilities?.reason ?? "Kairo will not show a Presenter selector until a governed Avatar provider is configured and verified."}
                 </p>
               </div>
               <span className="avatar-capability-state">
@@ -196,10 +217,19 @@ export default async function AvatarPage({
 
             <div className="avatar-actions">
               <Link className="tertiary-button" href={`/brands/${encoded}/brain`}>Cancel</Link>
+              <button
+                className="secondary-button"
+                type="button"
+                disabled
+                title="Test clip needs a governed Avatar provider execution flow that is not implemented yet."
+              >
+                Test clip
+              </button>
               <button className="primary-button" type="submit">
                 {presenter ? "Save presenter" : "Create & Save"}
               </button>
             </div>
+            <p className="avatar-action-note">Test clip will become available only after provider-backed test rendering is implemented and verified.</p>
           </form>
         ) : null}
       </main>
