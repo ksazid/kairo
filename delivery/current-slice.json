@@ -1,45 +1,119 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-95",
-  "title": "Approved Brand, Avatar and Provider Interaction Wiring",
+  "sliceId": "VS-97",
+  "title": "Home Hunter Recommendations Trigger",
   "status": "active",
-  "lifecycle": "certified",
-  "riskLevel": "low",
+  "lifecycle": "implementing",
+  "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-03", "FR-04", "FR-05", "FR-11", "FR-13"],
+  "requirements": ["FR-03", "FR-06", "FR-07"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
-  "dependencies": ["VS-89", "VS-90", "VS-94"],
+  "dependencies": ["VS-03", "VS-91"],
   "blockers": [],
-  "allowedPaths": ["apps/web/**", "docs/slices/VS-95.md", "docs/plans/**", "delivery/**", ".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml", "infrastructure/**", "apps/api/**", "apps/worker/**", "apps/api/migrations/**", "packages/contracts/**", "packages/domain/**"],
+  "allowedPaths": [
+    "apps/api/src/server.ts",
+    "apps/api/src/hunter-routes.ts",
+    "apps/api/src/hunter-routes.test.ts",
+    "apps/api/src/hunter-runtime.ts",
+    "apps/web/app/page.tsx",
+    "apps/web/app/my-idea-composer.tsx",
+    "apps/web/app/for-you-recommendations-action.tsx",
+    "apps/web/app/for-you-recommendations-action.module.css",
+    "apps/web/app/api/home/recommendations/route.ts",
+    "docs/slices/VS-97.md",
+    "docs/plans/VS-97-implementation.md",
+    "delivery/**",
+    ".engineering/STATE.json"
+  ],
+  "protectedPaths": [
+    ".github/workflows/release.yml",
+    "infrastructure/**",
+    "apps/api/migrations/**",
+    "apps/worker/**",
+    "packages/contracts/**",
+    "packages/domain/**"
+  ],
   "impact": {
-    "areas": ["frontend", "customer-flow"],
+    "areas": ["frontend", "api", "customer-flow"],
     "notes": [
-      "Wires approved Brand, Avatar and AI/Media Provider interactions only where an existing governed route/action already exists.",
-      "Adds a frontend-only AI & Media Providers overview/navigation destination without provider secrets, configuration persistence or fabricated provider health.",
-      "Avatar-to-provider navigation preserves the exact Brand context across the Settings boundary.",
-      "Unsupported approved actions remain disabled or safely omitted and are durably recorded for a later governed implementation slice.",
-      "No API, worker, database, provider adapter, credential, publishing or media-generation behavior changes."
+      "Adds one explicit Home action that invokes the already-approved Hunter/Discover capability for the active Brand and refreshes the existing For You ranking.",
+      "Uses the existing Brand Brain projection, sector/source policy, public discovery adapters, Hunter scoring, evidence lineage and opportunity deduplication; no new discovery policy or provider authority is introduced.",
+      "Renames the My Idea format recommendation action so it is not confused with Hunter discovery.",
+      "Concurrent duplicate clicks are coalesced in-process and authoritative opportunity deduplication remains in the existing DiscoveryService.",
+      "No database migration, publishing authority, credential scope, autonomous publishing or hidden reasoning exposure is added."
     ]
   },
   "approvals": [
-    {"type":"scope","status":"approved","version":"VS-95@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T23:37:00+02:00","rationale":"Product Owner supplied the frozen Brand, Avatar and AI & Media Providers references and explicitly requested implementation of every currently supportable link/action with unsupported interactions saved for later."},
-    {"type":"policy","status":"not-required","version":"VS-95@1.0","commitSha":null,"by":null,"at":null,"rationale":"No product/security/provider policy change; unsupported provider execution and secret configuration remain disabled."},
-    {"type":"implementation","status":"approved","version":"VS-95@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-25T23:37:00+02:00","rationale":"Implementation explicitly requested for existing supported routes/actions and truthful frontend-only provider overview/navigation."},
-    {"type":"certification","status":"approved","version":"VS-95@1.0","commitSha":"a68d5db96650d9cedd0b28ca32c4709999613aba","by":"Product Owner","at":"2026-08-26T00:16:00+02:00","rationale":"Product Owner explicitly approved VS-95 certification after the exact candidate passed Product Intake 32903380377, Security baseline 32903380374 and CI 32903380360 with no blocking PR comments or unresolved review threads."},
-    {"type":"release","status":"pending","version":"VS-95@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."},
-    {"type":"production-enable","status":"pending","version":"VS-95@1.0","commitSha":null,"by":null,"at":null,"rationale":"Separate gate."}
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-97@1.0",
+      "commitSha": null,
+      "by": "Product Owner",
+      "at": "2026-08-26T01:47:00+02:00",
+      "rationale": "Product Owner approved the exact Home flow discussed in chat: Get recommendations invokes Hunter, persists qualified Brand Opportunities, then refreshes For You; AI Generate remains a separate downstream creation action. This operationalises approved FR-06/FR-07 without expanding product scope."
+    },
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": "VS-97@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "The slice reuses existing Hunter source policy, provider boundaries, budgets, evidence lineage and Brand isolation."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-97@1.0",
+      "commitSha": null,
+      "by": "Product Owner",
+      "at": "2026-08-26T01:47:00+02:00",
+      "rationale": "Product Owner said Good to go immediately after the exact implementation flow was proposed, authorising implementation of this bounded Hunter trigger only. Certification, merge, release and production enablement remain separate gates."
+    },
+    {
+      "type": "certification",
+      "status": "pending",
+      "version": "VS-97@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Separate exact-SHA gate."
+    },
+    {
+      "type": "release",
+      "status": "pending",
+      "version": "VS-97@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Separate gate."
+    },
+    {
+      "type": "production-enable",
+      "status": "pending",
+      "version": "VS-97@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Separate gate."
+    }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
-  "certification": {"status":"passed","commitSha":"a68d5db96650d9cedd0b28ca32c4709999613aba","evidence":["delivery/context/VS-95.md","docs/plans/VS-95-implementation.md","docs/plans/VS-95-deferred-interactions.md","apps/web/src/lib/approved-brand-avatar-provider-links.test.ts","GitHub Actions Product Intake run 32903380377","GitHub Actions Security baseline run 32903380374","GitHub Actions CI run 32903380360","Product Owner certification approval at 2026-08-26T00:16:00+02:00 bound to a68d5db96650d9cedd0b28ca32c4709999613aba"]},
+  "progress": {"discovery":100,"decisions":100,"implementation":10,"testing":0,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
-    "specification":"docs/slices/VS-95.md",
-    "implementationPr":"https://github.com/ksazid/kairo/pull/201",
-    "evidence":["Product Owner supplied Brand reference","Product Owner supplied Avatar (Presenter) reference","Product Owner supplied AI & Media Providers reference","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/DESIGN.md"]
+    "specification": "docs/slices/VS-97.md",
+    "implementationPr": null,
+    "evidence": [
+      "product/PRD.md FR-06 Hunter / Discover",
+      "product/PRD.md Home: Kairo-led discovery begins from For You",
+      "product/TRD.md Global Hunter and bounded AgentRuntime",
+      "product/DESIGN.md Home / For You interaction baseline"
+    ]
   },
   "maxAttempts": 3
 }
