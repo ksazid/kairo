@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Inter } from "next/font/google";
 import "@kairo/design-tokens/tokens.css";
 import "./globals.css";
 import "./shell-baseline.css";
@@ -16,6 +17,12 @@ import "./approved-home-pixel-tuning.css";
 import { SessionKeepalive } from "./session-keepalive";
 import { ToastProvider } from "./ui-states";
 
+const contentInter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--k-content-inter",
+});
+
 export const metadata: Metadata = {
   title: "Kairo — Content Intelligence",
   description: "Content Intelligence for Brands",
@@ -31,7 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           }}
         />
       </head>
-      <body>
+      <body className={contentInter.variable}>
         <SessionKeepalive />
         <ToastProvider>{children}</ToastProvider>
       </body>
