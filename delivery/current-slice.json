@@ -3,7 +3,7 @@
   "sliceId": "VS-91",
   "title": "Frozen UI Shell and Home Fidelity",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-01", "FR-06", "FR-09", "FR-10", "FR-11", "FR-13", "FR-14", "FR-16", "FR-17", "FR-18"],
@@ -16,10 +16,13 @@
     "areas": ["frontend", "customer-flow", "analytics"],
     "notes": [
       "Implements screenshot-level fidelity for the shared authenticated shell and final frozen Home reference only; it does not reopen design decisions.",
-      "Reuses existing Home recommendation, creation, Calendar/performance and Brand-learning contracts without changing their domain semantics.",
+      "Reuses existing Home recommendation, creation, performance and Brand/channel contracts without changing their domain semantics.",
       "Removes or hides legacy technical/internal navigation and Home chrome from the normal creator experience while preserving underlying governed lineage.",
-      "Analytics shown on Home remain truthful: unavailable observations are not fabricated or coerced to zero for visual parity.",
+      "Analytics shown on Home remain truthful: unavailable observations are not fabricated or coerced to zero for visual parity, and generic engagement counts are not labeled as engagement rate.",
+      "Approved but unavailable Home behavior is preserved visibly and truthfully in the UI and recorded in docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md.",
       "No API, worker, migration, provider, tenant-boundary, publishing-authority or analytics-collection behavior is changed in this slice.",
+      "Automated Product Intake, Security baseline and CI/runtime verification passed on runtime candidate 0e6d0802797c89b794bbe24aa56adb42db2f5f5a.",
+      "Rendered desktop/mobile comparison remains a testing requirement and is not yet claimed; Git preview deployment is disabled by the existing repository Vercel gate.",
       "VS-90 remains released/inactive in post-release observation with issue #192 open; activating VS-91 does not mark VS-90 validated.",
       "Certification, merge, release, production-enable and deployment are not authorized by the implementation approval."
     ]
@@ -33,7 +36,7 @@
     {"type":"production-enable","status":"pending","version":"VS-91@1.0","commitSha":null,"by":null,"at":null,"rationale":"No production enablement or deployment is authorized by the implementation Go."}
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":90,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
@@ -41,7 +44,7 @@
   "links": {
     "specification":"docs/slices/VS-91.md",
     "implementationPr":"https://github.com/ksazid/kairo/pull/197",
-    "evidence":["delivery/context/VS-91.md","docs/plans/KAIRO-APPROVED-UI-FIDELITY-IMPLEMENTATION-2026-08-25.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/approved-ui/kairo-approved-ui-pages-board-2026-08-25.webp"]
+    "evidence":["delivery/context/VS-91.md","docs/plans/KAIRO-APPROVED-UI-FIDELITY-IMPLEMENTATION-2026-08-25.md","docs/plans/KAIRO-UI-FUNCTIONALITY-GAPS-2026-08-25.md","docs/plans/KAIRO-UI-TRACEABILITY-2026-08-24.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","product/APPROVED-UI-PAGES-CONTEXT-2026-08-25.md","product/approved-ui/kairo-approved-ui-pages-board-2026-08-25.webp","GitHub Product Intake 32852174639","GitHub Security baseline 32852174701","GitHub CI 32852174620"]
   },
   "maxAttempts": 3
 }
