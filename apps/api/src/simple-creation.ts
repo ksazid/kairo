@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import { DomainValidationError, ResourceNotFoundError } from "@kairo/domain";
-import type { BrandIntelligenceContext } from "@kairo/domain/brand-intelligence-context";
 import type { ContentChannel, ContentLibraryAssetReference } from "@kairo/domain/campaign";
 import { ResearchService, type ResearchRepository } from "@kairo/domain/research-service";
 import { CampaignService, type CampaignRepository, type ContentGenerationPort } from "@kairo/domain/campaign-service";
@@ -60,8 +59,6 @@ export interface StartSimpleCreationInput {
   mediaAssetIds?: string[];
 }
 
-type BrandContextResolver = (accountId: string, brandId: string) => Promise<BrandIntelligenceContext>;
-
 export class SimpleCreationService {
   private research: ResearchService;
   private campaigns: CampaignService;
@@ -75,7 +72,6 @@ export class SimpleCreationService {
     private now = () => new Date(),
     avatarProvider?: AvatarProvider,
     contentGenerator?: ContentGenerationPort,
-    private brandContextResolver?: BrandContextResolver,
   ) {
     this.research = new ResearchService(researchRepo, now);
     this.campaigns = new CampaignService(campaignRepo, researchRepo, contentGenerator, now);
@@ -124,8 +120,7 @@ export class SimpleCreationService {
     if (!job) return false;
     try {
       await this.store.advance(job.id, workerId, "understanding-goal");
-      const brandContext = await this.brandContextResolver?.(job.accountId, job.brandId);
-      const brandContextVersion = brandContext?.version ?? `${job.brandId}@current`;
+      const brandContextVersion = `${job.brandId}@current`;
       let ideaId = job.ideaId;
       if (!ideaId) {
         const premise = [job.goal, job.input && `Input: ${job.input}`, job.source && `Source: ${job.source}`].filter(Boolean).join("\n\n");
@@ -137,7 +132,7 @@ export class SimpleCreationService {
       if (!bundle) throw new Error("Created Idea was not found");
       if (!bundle.research || bundle.angles.length < 2) {
         await this.store.advance(job.id, workerId, "researching", { ideaId });
-        await this.developer.develop({ accountId: job.accountId, workspaceId: job.workspaceId, brandId: job.brandId, brandContextVersion, idea: bundle.idea, ...(brandContext ? { brandContext } : {}) });
+        await this.developer.develop({ accountId: job.accountId, workspaceId: job.workspaceId, brandId: job.brandId, brandContextVersion, idea: bundle.idea });
         bundle = await this.research.getIdea(job.accountId, job.brandId, ideaId);
       }
       if (!bundle?.research || !bundle.angles.length) throw new Error("Research did not produce a recommendation");
@@ -153,18 +148,28 @@ export class SimpleCreationService {
       let assetId = job.assetId;
       if (job.contentPreference !== "campaign" && !assetId) {
         const media = job.mediaAssetIds?.length && this.store.homeMedia ? await this.store.homeMedia.requireAssets(job.accountId, job.brandId, job.mediaAssetIds) : [];
-        const detail = await this.campaigns.createGeneratedAsset(job.accountId, job.brandId, campaignId, {
-          channel: supportedChannel(preferred.recommendedChannel), format,
-          audience: preferred.audience, topic: bundle.idea.title,
+        const generated = await this.campaigns.createGeneratedAsset(job.accountId, job.brandId, campaignId, {
+          channel: supportedChannel(preferred.recommendedChannel),
+          format,
+          audience: preferred.audience,
+          topic: bundle.idea.title,
           hookType: preferred.hookDirection.slice(0, 120) || "opening",
-          cta: "Learn more", brandContextVersion, ...(brandContext ? { brandContext } : {}),
+          cta: "Learn more",
+          seedContent: creationSeed(job),
+          brandContextVersion,
           libraryAssetRefs: media.map((item): ContentLibraryAssetReference => ({
-            libraryId: item.libraryId, libraryAssetId: item.id, libraryName: "Kairo Media", provider: "manual",
-            externalId: item.id, name: item.name, kind: item.kind, mimeType: item.mimeType, indexedAt: item.indexedAt,
+            libraryId: item.libraryId,
+            libraryAssetId: item.id,
+            libraryName: "Kairo Media",
+            provider: "manual",
+            externalId: item.id,
+            name: item.name,
+            kind: item.kind,
+            mimeType: item.mimeType,
+            indexedAt: item.indexedAt,
           })),
         });
-        assetId = detail.assets.at(-1)?.asset.id;
-        if (!assetId) throw new Error("Generated Content Asset was not persisted");
+        assetId = generated.assetId;
       }
       const recommendation = {
         title: preferred.title, framing: preferred.framing, format, channel: preferred.recommendedChannel,
@@ -186,7 +191,8 @@ function publicView(value: SimpleCreationRequest, presenter?: SimpleCreationPres
     contentPreference: value.contentPreference, mediaAssetIds: value.mediaAssetIds ?? [],
     ...(presenter ? { presenter } : {}), ...(value.recommendation ? { recommendation: value.recommendation } : {}),
     ...(value.campaignId ? { campaignId: value.campaignId } : {}), ...(value.assetId ? { assetId: value.assetId } : {}),
-    ...(value.status === "needs-attention" ? { canRetry: true } : {}), createdAt: value.createdAt, updatedAt: value.updatedAt,
+    ...(value.status === "needs-attention" ? { canRetry: true, failureReason: value.failureReason ?? "Creation could not be completed" } : {}),
+    createdAt: value.createdAt, updatedAt: value.updatedAt,
   };
 }
 const messages: Record<SimpleCreationStatus, string> = {
@@ -198,6 +204,7 @@ function formatMatches(value:string, preference:ContentPreference){const normali
 function normalizedFormat(value:string):Exclude<ContentPreference,"auto"|"campaign">{const normalized=value.trim().toLowerCase();if(normalized.includes("carousel"))return"carousel";if(normalized.includes("reel")||normalized.includes("short"))return"reel";if(normalized.includes("video"))return"video";return"image"}
 function supportedChannel(value:string):ContentChannel{const normalized=value.trim().toLowerCase();if(normalized.includes("linkedin"))return"linkedin";if(normalized.includes("instagram"))return"instagram";if(normalized.includes("facebook"))return"facebook";return"manual"}
 function creationTitle(job: Pick<SimpleCreationRequest, "goal" | "input">, max: number) { return (job.input?.trim() || job.goal).slice(0, max); }
+function creationSeed(job: Pick<SimpleCreationRequest, "goal" | "input" | "source">) { return [job.input?.trim() || job.goal, job.source ? `Source: ${job.source}` : ""].filter(Boolean).join("\n\n").slice(0, 50_000); }
 function text(value: unknown, name: string, max: number) { const normalized = typeof value === "string" ? value.trim() : ""; if (!normalized) throw new DomainValidationError(`${name} is required`); if (normalized.length > max) throw new DomainValidationError(`${name} is too long`); return normalized; }
 function optional(value: unknown, max: number) { if (value == null) return undefined; const normalized = typeof value === "string" ? value.trim() : ""; if (normalized.length > max) throw new DomainValidationError("Input is too long"); return normalized || undefined; }
 function safeError(error: unknown) { return error instanceof Error ? error.message.slice(0, 500) : "Creation failed"; }
