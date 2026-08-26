@@ -3,7 +3,7 @@
   "sliceId": "VS-99",
   "title": "VS-99 — Common Source Intelligence Foundation",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -95,12 +95,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-99@1.0",
+      "commitSha": "ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4",
+      "by": "Product Owner",
+      "at": "2026-08-26T09:35:00+02:00",
+      "rationale": "Product Owner approved the exact PR candidate after Product Intake 32943266122, Security baseline 32943266180 and CI 32943266123 completed successfully."
     },
     {
       "type": "release",
@@ -133,13 +133,13 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4",
     "evidence": [
       "product/PRD.md FR-02/03/04/06/08/20",
       "product/TRD.md source, provenance, ToolGateway and tenant-isolation boundaries",
@@ -150,7 +150,11 @@
       "Full repository tests: 771 passed, 38 expected skips",
       "Affected and repository-wide TypeScript checks passed",
       "API and Next.js production builds passed",
-      "Governance, JSON, dashboard, lockfile and script syntax checks passed"
+      "Governance, JSON, dashboard, lockfile and script syntax checks passed",
+      "GitHub Actions Product Intake run 32943266122",
+      "GitHub Actions Security baseline run 32943266180",
+      "GitHub Actions CI run 32943266123",
+      "Product Owner certification approval bound to ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4"
     ]
   },
   "release": {
