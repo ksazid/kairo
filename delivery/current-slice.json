@@ -3,7 +3,7 @@
   "sliceId": "VS-104",
   "title": "VS-104 — Batch 7 closed-loop recommendations",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -99,12 +99,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-104@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Awaiting exact-SHA Product Intake, Security and CI evidence."
+      "commitSha": "3c9a8913fc7852858b0462ecca072c35244e8a86",
+      "by": "Product Owner",
+      "at": "2026-08-26T16:56:25+02:00",
+      "rationale": "Product Owner instructed Go next after exact-SHA Product Intake, Security and CI evidence passed for the VS-104 implementation candidate."
     },
     {
       "type": "release",
@@ -113,7 +113,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Release occurs only after exact-SHA certification."
+      "rationale": "Release occurs only after the certified implementation is merged."
     },
     {
       "type": "production-enable",
@@ -122,7 +122,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Production enablement requires certified implementation and exact migration/deployment evidence."
+      "rationale": "Production enablement requires the certified merge SHA, exact migration execution and production verification."
     }
   ],
   "decisionIds": [
@@ -136,16 +136,22 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 90,
-    "testing": 70,
-    "certification": 0,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "3c9a8913fc7852858b0462ecca072c35244e8a86",
+    "evidence": [
+      "Product Intake 32983032028 passed on exact candidate 3c9a8913fc7852858b0462ecca072c35244e8a86.",
+      "Security baseline 32983031812 passed on exact candidate 3c9a8913fc7852858b0462ecca072c35244e8a86.",
+      "CI 32983031908 passed on exact candidate 3c9a8913fc7852858b0462ecca072c35244e8a86.",
+      "Clean PostgreSQL 18 verification applied migration 0033_opportunity_feedback_closed_loop.sql successfully.",
+      "Runtime typechecks, tests, build, governance/preflight and dashboard build passed; the frozen Home bookmark contract was verified through the functional bookmark component without visual redesign."
+    ]
   },
   "release": {
     "status": "not-authorized"
@@ -167,7 +173,11 @@
   "links": {
     "specification": "docs/slices/VS-104.md",
     "implementationPr": "https://github.com/ksazid/kairo/pull/218",
-    "evidence": []
+    "evidence": [
+      "Product Intake 32983032028",
+      "Security baseline 32983031812",
+      "CI 32983031908"
+    ]
   },
   "maxAttempts": 3
 }
