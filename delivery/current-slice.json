@@ -2,10 +2,10 @@
   "schemaVersion": 2,
   "sliceId": "VS-99",
   "title": "VS-99 — Common Source Intelligence Foundation",
-  "status": "active",
-  "lifecycle": "certified",
+  "status": "completed",
+  "lifecycle": "validated",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": [
     "FR-02",
     "FR-03",
@@ -104,21 +104,21 @@
     },
     {
       "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-99@1.0",
+      "commitSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
+      "by": "Product Owner",
+      "at": "2026-08-26T09:39:00+02:00",
+      "rationale": "Product Owner explicitly approved the Batch 1 production release after certified PR #209 merged."
     },
     {
       "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-99@1.0",
+      "commitSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
+      "by": "Product Owner",
+      "at": "2026-08-26T09:39:00+02:00",
+      "rationale": "Render deploy dep-da79gvh42hec73aok0qg reached live on the exact merge SHA; API health returned 200, startup completed normally and no post-deploy error logs were present."
     }
   ],
   "decisionIds": [
@@ -134,8 +134,8 @@
     "implementation": 100,
     "testing": 100,
     "certification": 100,
-    "release": 0,
-    "validation": 0
+    "release": 100,
+    "validation": 100
   },
   "certification": {
     "status": "passed",
@@ -158,23 +158,35 @@
     ]
   },
   "release": {
-    "status": "not-authorized",
-    "releaseId": null
+    "status": "released",
+    "releaseId": "REL-010"
   },
   "rollback": {
-    "status": "not-applicable",
-    "rollbackId": null
+    "status": "ready",
+    "rollbackId": "RB-010"
   },
   "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
+    "status": "validated",
+    "reviewAt": "2026-08-26T09:43:00+02:00",
+    "expectedOutcome": "Brand onboarding and agent tooling use the common source-intelligence foundation while preserving secure fallback behavior.",
+    "metrics": [
+      "Render deploy dep-da79gvh42hec73aok0qg is live on merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
+      "Production /health returned HTTP 200 with status ok",
+      "Production startup completed with API listening and Instagram publisher running",
+      "No error-level logs were present in the post-deploy verification window"
+    ]
   },
   "links": {
     "specification": "docs/slices/VS-99.md",
-    "implementationPr": null,
-    "evidence": []
+    "implementationPr": "https://github.com/ksazid/kairo/pull/209",
+    "evidence": [
+      "GitHub Actions Product Intake 32943590653",
+      "GitHub Actions Security baseline 32943590649",
+      "GitHub Actions CI 32943590636",
+      "Render deploy dep-da79gvh42hec73aok0qg",
+      "Production /health HTTP 200",
+      "Clean post-deploy error-log query"
+    ]
   },
   "maxAttempts": 3
 }
