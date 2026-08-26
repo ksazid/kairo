@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { beginHomeMediaUpload, completeHomeMediaUpload, getHomeMedia } from "../../../src/lib/home-media-api";
+import { beginHomeMediaUpload, completeHomeMediaUpload, getHomeMedia } from "../../../../src/lib/home-media-api";
 
 type Body = { action?: unknown; brandId?: unknown; mediaAssetId?: unknown; name?: unknown; mimeType?: unknown; sizeBytes?: unknown };
 
