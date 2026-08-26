@@ -1,6 +1,7 @@
-import type { BrandBrainFieldDto } from "@kairo/contracts";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { KairoService, type KairoRepository } from "@kairo/domain";
+import { projectBrandIntelligenceContext } from "@kairo/domain/brand-intelligence-context";
+import type { LearningRepository } from "@kairo/domain/learning-service";
 import { projectBrandIntelligenceProfile } from "@kairo/domain/source-policy";
 import { selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import type { HunterRunInput, HunterRunResult } from "@kairo/worker/hunter";
@@ -14,6 +15,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   store: KairoRepository;
   identityVerifier: IdentityVerifier;
   runner?: HunterRecommendationRunner;
+  learningRepository?: Pick<LearningRepository, "listLearnings">;
 }) {
   const core = new KairoService(options.store);
   const inFlight = new Map<string, Promise<HunterRunResult>>();
@@ -23,7 +25,6 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
     async (request, reply) => {
       const account = await authenticate(request, reply, core, options.identityVerifier);
       if (!account) return;
-
       const brand = await core.getBrand(account.id, request.params.brandId);
       if (!options.runner) {
         return reply.status(503).send({
@@ -36,14 +37,33 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
         });
       }
 
-      const brain = await core.listBrandBrain(account.id, brand.id);
+      const [brain, learnings] = await Promise.all([
+        core.listBrandBrain(account.id, brand.id),
+        options.learningRepository?.listLearnings(account.id, brand.id).catch(() => []) ?? Promise.resolve([]),
+      ]);
       const intelligenceProfile = projectBrandIntelligenceProfile(brain);
+      const context = projectBrandIntelligenceContext(brand, brain, learnings);
+      const brandContext: HunterRunInput["brand"] = {
+        workspaceId: brand.workspaceId,
+        brandId: brand.id,
+        contextVersion: context.version,
+        brandName: context.brandName,
+        completeness: context.completeness,
+        ...(context.identity ? { identity: context.identity } : {}),
+        ...(context.positioning ? { positioning: context.positioning } : {}),
+        ...(context.audience ? { audience: context.audience } : {}),
+        ...(context.voice ? { voice: context.voice } : {}),
+        ...(context.contentStrategy ? { contentStrategy: context.contentStrategy } : {}),
+        ...(context.goals ? { goals: context.goals } : {}),
+        ...(context.boundaries ? { boundaries: context.boundaries } : {}),
+        ...(context.performanceMemory.length ? { performanceMemory: context.performanceMemory } : {}),
+      };
       const input: HunterRunInput = {
         accountId: account.id,
-        brand: projectBrandContext(brand, brain),
+        brand: brandContext,
         ...(selectSectorIntelligencePack(intelligenceProfile)
           ? { intelligenceProfile }
-          : { query: fallbackPublicQuery(brand, intelligenceProfile) }),
+          : { query: fallbackPublicQuery(brand, intelligenceProfile, context) }),
         maxEvidence: 8,
       };
       const key = `${account.id}:${brand.id}`;
@@ -52,49 +72,26 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
         run = options.runner.runForAuthorizedBrand(input).finally(() => inFlight.delete(key));
         inFlight.set(key, run);
       }
-      return run;
+      const result = await run;
+      return { ...result, brandContextStatus: context.completeness };
     },
   );
-}
-
-function projectBrandContext(
-  brand: { id: string; workspaceId: string; name: string },
-  brain: readonly BrandBrainFieldDto[],
-): HunterRunInput["brand"] {
-  const active = brain.filter((field) => field.state !== "stale");
-  const latest = [...active].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
-  return {
-    workspaceId: brand.workspaceId,
-    brandId: brand.id,
-    contextVersion: `${brand.id}@${latest?.updatedAt ?? "brain-empty"}`,
-    brandName: brand.name,
-    ...sectionContext(active, "positioning", "positioning"),
-    ...sectionContext(active, "audience", "audience"),
-    ...sectionContext(active, "voice", "voice"),
-    ...sectionContext(active, "goals", "goals"),
-    ...sectionContext(active, "boundaries", "boundaries"),
-  };
-}
-
-function sectionContext(
-  fields: readonly BrandBrainFieldDto[],
-  section: BrandBrainFieldDto["section"],
-  key: "positioning" | "audience" | "voice" | "goals" | "boundaries",
-) {
-  const value = fields
-    .filter((field) => field.section === section)
-    .map((field) => field.value.trim())
-    .filter(Boolean)
-    .join(" · ")
-    .slice(0, 4_000);
-  return value ? { [key]: value } : {};
 }
 
 function fallbackPublicQuery(
   brand: { name: string },
   profile: ReturnType<typeof projectBrandIntelligenceProfile>,
+  context: ReturnType<typeof projectBrandIntelligenceContext>,
 ) {
-  return [brand.name, profile.sector, profile.subsector, ...profile.topics.slice(0, 2)]
+  return [
+    brand.name,
+    profile.sector,
+    profile.subsector,
+    ...profile.topics.slice(0, 3),
+    context.identity,
+    context.contentStrategy,
+    context.goals,
+  ]
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     .join(" ")
     .replace(/\s+/g, " ")
