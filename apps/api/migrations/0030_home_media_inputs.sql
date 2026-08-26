@@ -1,8 +1,10 @@
 begin;
 
 alter table simple_creation_requests
+  drop constraint simple_creation_preference,
   add column media_asset_ids jsonb not null default '[]'::jsonb,
   add column asset_id text references content_assets(id) on delete set null,
+  add constraint simple_creation_preference check (content_preference in ('auto','carousel','reel','image','video','campaign')),
   add constraint simple_creation_media_asset_ids_array check (jsonb_typeof(media_asset_ids) = 'array'),
   add constraint simple_creation_media_asset_ids_bounded check (jsonb_array_length(media_asset_ids) <= 12);
 
