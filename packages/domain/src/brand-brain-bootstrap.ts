@@ -15,6 +15,7 @@ export interface PublicBrandReference {
   retrievedAt: string;
   contentType?: string;
   sizeBytes?: number;
+  links?: string[];
 }
 
 export interface PublicBrandReferenceReader {
