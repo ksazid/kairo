@@ -121,16 +121,17 @@ export class PgHomeMediaRepository implements HomeMediaRepository {
       await client.query(
         `insert into content_library_assets(
           id,workspace_id,brand_id,library_id,external_id,name,kind,mime_type,size_bytes,modified_at,provider_ref,preview_ref,indexed_at
-        ) values($1,$2,$3,$4,$1,$5,$6,$7,$8,$9,$10,null,$9)
+        ) values($1,$2,$3,$4,$1,$5,$6,$7,$8,$9,null,null,$9)
         on conflict(id) do update set
           name=excluded.name,
           kind=excluded.kind,
           mime_type=excluded.mime_type,
           size_bytes=excluded.size_bytes,
           modified_at=excluded.modified_at,
-          provider_ref=excluded.provider_ref,
+          provider_ref=null,
+          preview_ref=null,
           indexed_at=excluded.indexed_at`,
-        [asset.id, asset.workspaceId, asset.brandId, libraryId, asset.fileName, asset.kind, asset.mimeType, asset.sizeBytes, readyAt, asset.objectKey],
+        [asset.id, asset.workspaceId, asset.brandId, libraryId, asset.fileName, asset.kind, asset.mimeType, asset.sizeBytes, readyAt],
       );
       const updated = await client.query(
         `update media_assets
