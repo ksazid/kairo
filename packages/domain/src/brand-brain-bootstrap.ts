@@ -185,6 +185,17 @@ export class BrandBrainBootstrapService {
         sourceIds: successfulReferences.map((item) => item.sourceId),
       };
     }
+    if (!proposals.length) {
+      const fallback = fallbackProposals(successfulReferences);
+      const brain = await this.persistFallback(accountId, brandId, fallback);
+      return {
+        brain,
+        generatorStatus: fallback.length ? "generated" : "unavailable",
+        proposedCount: fallback.length,
+        skippedConfirmedCount: 0,
+        sourceIds: successfulReferences.map((item) => item.sourceId),
+      };
+    }
 
     const liveFields = new Map((await this.repository.listBrandBrainFields(accountId, brandId)).map((field) => [field.fieldKey, field]));
     const inspectedSourceIds = successfulReferences.map((item) => item.sourceId);
