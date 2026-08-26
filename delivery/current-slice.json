@@ -23,9 +23,9 @@
   ],
   "decisionIds": ["DEC-005", "DEC-006", "DEC-009", "DEC-010", "DEC-011"],
   "progress": {"discovery": 100, "decisions": 100, "implementation": 75, "testing": 25, "certification": 0, "release": 0, "validation": 0},
-  "certification": {"status": "not-run", "commitSha": null, "evidence": []},
-  "release": {"status": "not-released", "releaseId": null},
-  "rollback": {"status": "not-required-yet", "rollbackId": null},
+  "certification": {"status": "not-started", "commitSha": null, "evidence": []},
+  "release": {"status": "not-authorized", "releaseId": null},
+  "rollback": {"status": "not-applicable", "rollbackId": null},
   "postRelease": {"status": "not-started", "reviewAt": null, "expectedOutcome": "Supported social/video public URLs normalize through dedicated adapters and onboarding consumes useful public evidence when available while failing safely when providers block access.", "metrics": []},
   "links": {"specification": "docs/slices/VS-101.md", "implementationPr": "https://github.com/ksazid/kairo/pull/213", "evidence": []},
   "maxAttempts": 3
