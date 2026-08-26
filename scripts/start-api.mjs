@@ -78,33 +78,86 @@ async function runClosedLoopProductionSmoke() {
   }
   const connectionString = process.env.DATABASE_URL?.trim();
   if (!connectionString) throw new Error("DATABASE_URL is required for closed-loop production smoke");
+
   const pool = new Pool({ connectionString });
   const client = await pool.connect();
   let inTransaction = false;
-  let insertedIdeaId;
+
+  const fixture = {
+    accountId: `smoke-account-${randomUUID()}`,
+    workspaceId: `smoke-workspace-${randomUUID()}`,
+    brandId: `smoke-brand-${randomUUID()}`,
+    opportunityId: `smoke-opportunity-${randomUUID()}`,
+    feedbackId: `smoke-feedback-${randomUUID()}`,
+    ideaId: `smoke-idea-${randomUUID()}`,
+  };
+
   try {
     await client.query("begin");
     inTransaction = true;
-    const sample = await client.query(
+
+    await client.query(
+      `insert into accounts(id,email,display_name) values($1,null,$2)`,
+      [fixture.accountId, "VS-104 production smoke"],
+    );
+    await client.query(
+      `insert into workspaces(id,name) values($1,$2)`,
+      [fixture.workspaceId, "VS-104 production smoke"],
+    );
+    await client.query(
+      `insert into workspace_memberships(workspace_id,account_id,role,active) values($1,$2,'owner',true)`,
+      [fixture.workspaceId, fixture.accountId],
+    );
+    await client.query(
+      `insert into brands(id,workspace_id,name) values($1,$2,$3)`,
+      [fixture.brandId, fixture.workspaceId, "VS-104 production smoke"],
+    );
+    await client.query(
+      `insert into brand_opportunities(
+         id,workspace_id,brand_id,title,rationale,why_now,development_direction,status,
+         relevance,evidence,novelty,timeliness,brand_authority,audience_fit,overall,
+         scoring_version,brand_context_version
+       ) values($1,$2,$3,$4,$5,$6,$7,'new',$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+      [
+        fixture.opportunityId,
+        fixture.workspaceId,
+        fixture.brandId,
+        "VS-104 closed-loop smoke opportunity",
+        "Transactional fixture used only to verify closed-loop persistence and rollback.",
+        "Production verification gate requires a representative opportunity path.",
+        "Create a temporary Idea from this opportunity and roll all changes back.",
+        0.9,
+        0.9,
+        0.7,
+        0.9,
+        0.8,
+        0.9,
+        0.85,
+        "vs104-production-smoke-v1",
+        "vs104-production-smoke-v1",
+      ],
+    );
+
+    const authorized = await client.query(
       `select m.account_id,b.workspace_id,b.id as brand_id,o.id as opportunity_id,o.title,o.rationale,o.why_now,o.development_direction,o.status
          from workspace_memberships m
          join brands b on b.workspace_id=m.workspace_id
          join brand_opportunities o on o.workspace_id=b.workspace_id and o.brand_id=b.id
-        where m.active=true
-        order by o.updated_at desc,o.id
+        where m.active=true and m.account_id=$1 and b.workspace_id=$2 and b.id=$3 and o.id=$4
         limit 1`,
+      [fixture.accountId, fixture.workspaceId, fixture.brandId, fixture.opportunityId],
     );
-    const row = sample.rows[0];
-    if (!row) throw new Error("Closed-loop production smoke requires one existing authorized Brand opportunity");
+    const row = authorized.rows[0];
+    if (!row) throw new Error("Closed-loop production smoke could not establish its transactional authorization fixture");
 
-    const feedbackId = randomUUID();
     const firstFeedback = await client.query(
       `insert into opportunity_feedback_events(id,workspace_id,brand_id,opportunity_id,account_id,action)
        values($1,$2,$3,$4,$5,'seen')
        on conflict(workspace_id,brand_id,opportunity_id,account_id,action) do nothing`,
-      [feedbackId, row.workspace_id, row.brand_id, row.opportunity_id, row.account_id],
+      [fixture.feedbackId, row.workspace_id, row.brand_id, row.opportunity_id, row.account_id],
     );
     if (firstFeedback.rowCount !== 1) throw new Error("Closed-loop production smoke could not persist representative Seen feedback");
+
     const duplicateFeedback = await client.query(
       `insert into opportunity_feedback_events(id,workspace_id,brand_id,opportunity_id,account_id,action)
        values($1,$2,$3,$4,$5,'seen')
@@ -112,38 +165,32 @@ async function runClosedLoopProductionSmoke() {
       [randomUUID(), row.workspace_id, row.brand_id, row.opportunity_id, row.account_id],
     );
     if (duplicateFeedback.rowCount !== 0) throw new Error("Closed-loop production smoke idempotency check failed");
+
     const visibleFeedback = await client.query(
       `select f.action,o.title from opportunity_feedback_events f
          join brand_opportunities o on o.workspace_id=f.workspace_id and o.brand_id=f.brand_id and o.id=f.opportunity_id
         where f.id=$1`,
-      [feedbackId],
+      [fixture.feedbackId],
     );
     if (visibleFeedback.rows[0]?.action !== "seen") throw new Error("Closed-loop production smoke feedback lineage check failed");
 
-    const existingIdea = await client.query(
-      `select id from ideas where workspace_id=$1 and brand_id=$2 and source_type='opportunity' and opportunity_id=$3 order by created_at,id limit 1`,
-      [row.workspace_id, row.brand_id, row.opportunity_id],
+    const premise = `${row.development_direction}\n\nWhy now: ${row.why_now}\n\nContext: ${row.rationale}`.slice(0, 2_000);
+    await client.query(
+      `insert into ideas(id,workspace_id,brand_id,title,premise,source_type,opportunity_id,status,created_at)
+       values($1,$2,$3,$4,$5,'opportunity',$6,'new',now())`,
+      [fixture.ideaId, row.workspace_id, row.brand_id, `[SMOKE] ${row.title}`.slice(0, 300), premise, row.opportunity_id],
     );
-    let ideaId = existingIdea.rows[0]?.id;
-    if (!ideaId) {
-      ideaId = randomUUID();
-      insertedIdeaId = ideaId;
-      const premise = `${row.development_direction}\n\nWhy now: ${row.why_now}\n\nContext: ${row.rationale}`.slice(0, 2_000);
-      await client.query(
-        `insert into ideas(id,workspace_id,brand_id,title,premise,source_type,opportunity_id,status,created_at)
-         values($1,$2,$3,$4,$5,'opportunity',$6,'new',now())`,
-        [ideaId, row.workspace_id, row.brand_id, `[SMOKE] ${row.title}`.slice(0, 300), premise, row.opportunity_id],
-      );
-    }
+
     const lineage = await client.query(
       `select i.id,i.opportunity_id,o.brand_id from ideas i
          join brand_opportunities o on o.workspace_id=i.workspace_id and o.brand_id=i.brand_id and o.id=i.opportunity_id
         where i.id=$1 and i.workspace_id=$2 and i.brand_id=$3`,
-      [ideaId, row.workspace_id, row.brand_id],
+      [fixture.ideaId, row.workspace_id, row.brand_id],
     );
     if (lineage.rows[0]?.opportunity_id !== row.opportunity_id || lineage.rows[0]?.brand_id !== row.brand_id) {
       throw new Error("Closed-loop production smoke Opportunity-to-Idea lineage check failed");
     }
+
     await client.query(
       `update brand_opportunities set status='developing',updated_at=now() where workspace_id=$1 and brand_id=$2 and id=$3`,
       [row.workspace_id, row.brand_id, row.opportunity_id],
@@ -156,18 +203,36 @@ async function runClosedLoopProductionSmoke() {
 
     await client.query("rollback");
     inTransaction = false;
-    const persistedFeedback = await client.query(`select 1 from opportunity_feedback_events where id=$1`, [feedbackId]);
-    if (persistedFeedback.rowCount !== 0) throw new Error("Closed-loop production smoke rollback left feedback behind");
-    if (insertedIdeaId) {
-      const persistedIdea = await client.query(`select 1 from ideas where id=$1`, [insertedIdeaId]);
-      if (persistedIdea.rowCount !== 0) throw new Error("Closed-loop production smoke rollback left an Idea behind");
-    }
-    const restored = await client.query(
-      `select status from brand_opportunities where workspace_id=$1 and brand_id=$2 and id=$3`,
-      [row.workspace_id, row.brand_id, row.opportunity_id],
+
+    const residue = await client.query(
+      `select
+         exists(select 1 from accounts where id=$1) as account_exists,
+         exists(select 1 from workspaces where id=$2) as workspace_exists,
+         exists(select 1 from brands where id=$3) as brand_exists,
+         exists(select 1 from brand_opportunities where id=$4) as opportunity_exists,
+         exists(select 1 from opportunity_feedback_events where id=$5) as feedback_exists,
+         exists(select 1 from ideas where id=$6) as idea_exists`,
+      [
+        fixture.accountId,
+        fixture.workspaceId,
+        fixture.brandId,
+        fixture.opportunityId,
+        fixture.feedbackId,
+        fixture.ideaId,
+      ],
     );
-    if (restored.rows[0]?.status !== row.status) throw new Error("Closed-loop production smoke rollback did not restore opportunity state");
-    console.log(JSON.stringify({ event: "KAIRO_CLOSED_LOOP_SMOKE_PASSED", feedback: true, idempotency: true, opportunityIdeaLineage: true, rollbackClean: true }));
+    if (Object.values(residue.rows[0] ?? {}).some(Boolean)) {
+      throw new Error("Closed-loop production smoke rollback left transactional fixture data behind");
+    }
+
+    console.log(JSON.stringify({
+      event: "KAIRO_CLOSED_LOOP_SMOKE_PASSED",
+      selfContainedFixture: true,
+      feedback: true,
+      idempotency: true,
+      opportunityIdeaLineage: true,
+      rollbackClean: true,
+    }));
   } catch (error) {
     if (inTransaction) {
       try { await client.query("rollback"); } catch { /* keep original smoke error */ }
