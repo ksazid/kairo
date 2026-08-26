@@ -117,3 +117,17 @@ function documentFor(url: string, provider: string): NormalizedSourceDocument {
     extractionWarnings: [],
   });
 }
+
+describe("corrective source cache freshness", () => {
+  it("expires only the latest shortcut while retaining content-addressed entries", async () => {
+    let now = 1_000;
+    const cache = new InMemoryNormalizedSourceCache(10, 100, () => now);
+    const document = documentFor("https://example.com/cache", "cache-test");
+    await cache.set("content", document);
+    await cache.setLatest("source", document);
+    expect(await cache.getLatest("source")).toBeDefined();
+    now = 1_101;
+    expect(await cache.getLatest("source")).toBeUndefined();
+    expect(await cache.get("content")).toBeDefined();
+  });
+});

@@ -1,6 +1,11 @@
 import type { BrandIntelligenceProfile, SectorIntelligencePack } from "./source-policy";
 
 export const SECTOR_INTELLIGENCE_PACKS = {
+  generic: {
+    id: "generic", version: "1", sector: "General", subsectors: [], topics: ["industry developments", "audience needs"],
+    sourceWeights: { "agent-reach": 0.7, rss: 0.7, youtube: 0.4, "hacker-news": 0.3, bluesky: 0.5, github: 0.25, openalex: 0.1, crossref: 0.1 },
+    queryTemplates: ["latest {topic}", "{topic} {geography}", "{topic} {audience}"],
+  },
   "ai-technology": {
     id: "ai-technology",
     version: "1",
@@ -15,6 +20,7 @@ export const SECTOR_INTELLIGENCE_PACKS = {
       bluesky: 0.7,
       openalex: 0.5,
       crossref: 0.4,
+      github: 1,
     },
     queryTemplates: [
       "latest {topic}",
@@ -90,17 +96,17 @@ export const SECTOR_INTELLIGENCE_PACKS = {
 export function selectSectorIntelligencePack(
   profile: BrandIntelligenceProfile,
   packs: readonly SectorIntelligencePack[] = Object.values(SECTOR_INTELLIGENCE_PACKS),
-): SectorIntelligencePack | undefined {
+): SectorIntelligencePack {
   const classifications = [profile.sector, profile.subsector]
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     .map(normalize);
-  if (!classifications.length) return undefined;
+  if (!classifications.length) return packs.find((pack) => pack.id === "generic") ?? SECTOR_INTELLIGENCE_PACKS.generic;
 
   const ranked = packs
     .map((pack) => ({ pack, score: packMatchScore(classifications, pack) }))
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score || a.pack.id.localeCompare(b.pack.id));
-  return ranked[0]?.pack;
+  return ranked[0]?.pack ?? packs.find((pack) => pack.id === "generic") ?? SECTOR_INTELLIGENCE_PACKS.generic;
 }
 
 function packMatchScore(classifications: readonly string[], pack: SectorIntelligencePack): number {

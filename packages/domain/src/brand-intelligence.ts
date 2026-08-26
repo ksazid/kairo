@@ -31,9 +31,12 @@ export interface TopicGraphNode {
   confidence?: number;
   sourceIds: string[];
   freshness: "evergreen" | "fresh" | "mixed" | "unspecified";
+  freshnessHorizon?: "evergreen" | "7d" | "30d" | "90d";
+  preferredSources: string[];
   preferred: boolean;
   excluded: boolean;
   authority: boolean;
+  authorityLevel: "none" | "developing" | "established";
   origin: "brand-brain" | "sector-pack";
 }
 
@@ -42,6 +45,11 @@ export interface BrandIntelligenceTopicGraph {
   sectorPack: SectorPackId;
   nodes: TopicGraphNode[];
   fingerprint: string;
+  interestGraph: Array<{ topic: string; weight: number }>;
+  exclusions: string[];
+  explorationTopics: string[];
+  authorityZones: string[];
+  performanceWeights: Record<string, number>;
 }
 
 export interface SectorPackTopicSeed {
@@ -81,6 +89,27 @@ const FIELD_ALIASES: Record<string, keyof BrandBrainV2Snapshot> = {
   geography: "geography",
   language: "languages",
   languages: "languages",
+  identitysector: "sector",
+  identitycategory: "sector",
+  identitysubsector: "subsector",
+  identityproductsservices: "products",
+  identityoffers: "offers",
+  contentauthorityareas: "authorityAreas",
+  contentcoretopics: "coreTopics",
+  contentpreferredtopics: "coreTopics",
+  contentpillars: "coreTopics",
+  contentrelatedtopics: "relatedTopics",
+  boundariesexcludedtopics: "excludedTopics",
+  contentchannels: "preferredChannels",
+  contentpreferredformats: "preferredFormats",
+  contentvisualpatterns: "visualPatterns",
+  contentvisualdirection: "visualPatterns",
+  contentterminology: "terminology",
+  contentcompetitorswatchlist: "competitors",
+  identitygeography: "geography",
+  identitylanguage: "languages",
+  contentevergreentopics: "evergreenTopics",
+  contentfreshnesstopics: "freshnessTopics",
   evergreentopics: "evergreenTopics",
   freshnesstopics: "freshnessTopics",
 };
@@ -163,8 +192,8 @@ export function buildTopicGraph(
     const evidence = evidenceByTopic.get(normalized);
     nodes.set(normalized, {
       topic: cleanTopic(topic), aliases: [], priority, ...(evidence?.confidence !== undefined ? { confidence: evidence.confidence } : {}),
-      sourceIds: evidence?.sourceIds ?? [], freshness: freshnessOf(normalized, evergreen, fresh), preferred: preferred.has(normalized),
-      excluded: excluded.has(normalized), authority: authority.has(normalized), origin: "brand-brain",
+      sourceIds: evidence?.sourceIds ?? [], freshness: freshnessOf(normalized, evergreen, fresh), ...freshnessHorizon(freshnessOf(normalized, evergreen, fresh)), preferredSources: [], preferred: preferred.has(normalized),
+      excluded: excluded.has(normalized), authority: authority.has(normalized), authorityLevel: authority.has(normalized) ? "established" : "none", origin: "brand-brain",
     });
   };
 
@@ -187,7 +216,7 @@ export function buildTopicGraph(
     nodes.set(normalized, {
       topic: cleanTopic(seed.topic), aliases: dedupe(seed.aliases ?? []).filter((alias) => normalizeTopic(alias) !== normalized),
       ...(seed.parent ? { parent: cleanTopic(seed.parent) } : {}), priority: clamp(seed.priority ?? 0.25), sourceIds: [],
-      freshness: seed.freshness ?? "unspecified", preferred: false, excluded: false, authority: false, origin: "sector-pack",
+      freshness: seed.freshness ?? "unspecified", ...freshnessHorizon(seed.freshness ?? "unspecified"), preferredSources: [], preferred: false, excluded: false, authority: false, authorityLevel: "none", origin: "sector-pack",
     });
   }
 
@@ -198,8 +227,13 @@ export function buildTopicGraph(
 
   const sorted = [...nodes.values()].map((node) => ({ ...node, aliases: dedupe(node.aliases).sort(compareText), sourceIds: dedupe(node.sourceIds).sort(compareText) }))
     .sort((a, b) => Number(b.excluded) - Number(a.excluded) || b.priority - a.priority || compareText(a.topic, b.topic));
-  const canonical = JSON.stringify({ schemaVersion: 2, sectorPack: pack.id, nodes: sorted });
-  return { schemaVersion: 2, sectorPack: pack.id, nodes: sorted, fingerprint: createHash("sha256").update(canonical).digest("hex") };
+  const interestGraph = sorted.filter((node) => !node.excluded).map((node) => ({ topic: node.topic, weight: node.priority }));
+  const exclusions = sorted.filter((node) => node.excluded).map((node) => node.topic);
+  const explorationTopics = sorted.filter((node) => node.origin === "sector-pack" && !node.excluded).map((node) => node.topic);
+  const authorityZones = sorted.filter((node) => node.authority).map((node) => node.topic);
+  const performanceWeights: Record<string, number> = {};
+  const canonical = JSON.stringify({ schemaVersion: 2, sectorPack: pack.id, nodes: sorted, interestGraph, exclusions, explorationTopics, authorityZones, performanceWeights });
+  return { schemaVersion: 2, sectorPack: pack.id, nodes: sorted, interestGraph, exclusions, explorationTopics, authorityZones, performanceWeights, fingerprint: createHash("sha256").update(canonical).digest("hex") };
 }
 
 export function nextGraphVersion(current: { version: number; fingerprint: string } | undefined, nextFingerprint: string): number {
@@ -228,6 +262,7 @@ function freshnessOf(topic: string, evergreen: Set<string>, fresh: Set<string>):
   if (evergreen.has(topic)) return "evergreen";
   return "unspecified";
 }
+function freshnessHorizon(value: TopicGraphNode["freshness"]): Pick<TopicGraphNode, "freshnessHorizon"> | {} { if (value === "evergreen") return { freshnessHorizon: "evergreen" }; if (value === "fresh") return { freshnessHorizon: "7d" }; if (value === "mixed") return { freshnessHorizon: "30d" }; return {}; }
 function stateRank(state: BrandBrainFieldDto["state"]) { return state === "confirmed" ? 2 : state === "inferred" ? 1 : 0; }
 function parseValues(value: string): string[] {
   const text = value.trim(); if (!text) return [];

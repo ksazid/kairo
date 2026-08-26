@@ -5,6 +5,8 @@ import { projectBrandIntelligenceProfile } from "@kairo/domain/source-policy";
 import { selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import type { HunterRunInput, HunterRunResult } from "@kairo/worker/hunter";
 import type { IdentityVerifier } from "./auth";
+import type { BrandIntelligenceGraphStore } from "./brand-intelligence-graph-store";
+import type { SectorPackId } from "@kairo/domain/brand-intelligence";
 
 export interface HunterRecommendationRunner {
   runForAuthorizedBrand(input: HunterRunInput): Promise<HunterRunResult>;
@@ -14,6 +16,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   store: KairoRepository;
   identityVerifier: IdentityVerifier;
   runner?: HunterRecommendationRunner;
+  graphStore?: BrandIntelligenceGraphStore;
 }) {
   const core = new KairoService(options.store);
   const inFlight = new Map<string, Promise<HunterRunResult>>();
@@ -38,12 +41,15 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
 
       const brain = await core.listBrandBrain(account.id, brand.id);
       const intelligenceProfile = projectBrandIntelligenceProfile(brain);
+      const pack = selectSectorIntelligencePack(intelligenceProfile);
+      const graphRecord = options.graphStore
+        ? await options.graphStore.ensureCurrent(account.id, brand.workspaceId, brand.id, brain, topicGraphPack(pack.id))
+        : undefined;
       const input: HunterRunInput = {
         accountId: account.id,
         brand: projectBrandContext(brand, brain),
-        ...(selectSectorIntelligencePack(intelligenceProfile)
-          ? { intelligenceProfile }
-          : { query: fallbackPublicQuery(brand, intelligenceProfile) }),
+        intelligenceProfile,
+        ...(graphRecord ? { intelligenceGraph: graphRecord.graph, intelligenceVersion: graphRecord.version } : {}),
         maxEvidence: 8,
       };
       const key = `${account.id}:${brand.id}`;
@@ -55,6 +61,14 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       return run;
     },
   );
+}
+
+function topicGraphPack(packId: string): SectorPackId {
+  if (packId === "ai-technology") return "ai-tech";
+  if (packId === "umrah-religious-travel") return "umrah";
+  if (packId === "ias-upsc-education") return "ias-upsc";
+  if (packId === "motorcycles") return "motorcycles";
+  return "generic";
 }
 
 function projectBrandContext(

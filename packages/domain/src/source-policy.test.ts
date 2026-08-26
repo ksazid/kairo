@@ -43,10 +43,12 @@ describe("VS-12A sector-aware source policy", () => {
       field("boundaries", "excluded-topics", "political endorsements, medical advice"),
       field("goals", "primary-goal", "Educate founders"),
       field("identity", "sector", "stale value", "stale"),
+      field("identity", "identity.subsector", "AI infrastructure"),
     ];
 
     expect(projectBrandIntelligenceProfile(fields)).toEqual({
       sector: "Developer Technology",
+      subsector: "AI infrastructure",
       geographies: ["Malta", "Europe"],
       languages: ["English"],
       audiences: ["Technical founders", "SaaS builders"],
@@ -70,7 +72,7 @@ describe("VS-12A sector-aware source policy", () => {
     expect(selectSectorIntelligencePack(profile({ sector: "Religious Travel" }))?.id).toBe("umrah-religious-travel");
     expect(selectSectorIntelligencePack(profile({ sector: "Motorcycles" }))?.id).toBe("motorcycles");
     expect(selectSectorIntelligencePack(profile({ sector: "IAS" }))?.id).toBe("ias-upsc-education");
-    expect(selectSectorIntelligencePack(profile({ sector: undefined, subsector: undefined }))).toBeUndefined();
+    expect(selectSectorIntelligencePack(profile({ sector: undefined, subsector: undefined })).id).toBe("generic");
   });
 
   it("uses the same resolver to produce a technology policy with Hacker News, YouTube and RSS weighted high", () => {

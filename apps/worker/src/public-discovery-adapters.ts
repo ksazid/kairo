@@ -26,6 +26,43 @@ export interface RssFeedDefinition {
   enabled?: boolean;
 }
 
+export interface GitHubDiscoveryProviderOptions { fetchImpl?: FetchLike; now?: () => Date; }
+
+export class GitHubDiscoveryProvider implements DiscoverySourceProvider {
+  private readonly fetchImpl: FetchLike;
+  private readonly now: () => Date;
+  constructor(options: GitHubDiscoveryProviderOptions = {}) { this.fetchImpl = options.fetchImpl ?? fetch; this.now = options.now ?? (() => new Date()); }
+  async discover(request: DiscoveryRequest): Promise<DiscoveryEvidence[]> {
+    const normalized = validateDiscoveryRequest(request);
+    const url = new URL("https://api.github.com/search/repositories");
+    url.searchParams.set("q", normalized.query);
+    url.searchParams.set("sort", "updated");
+    url.searchParams.set("order", "desc");
+    url.searchParams.set("per_page", String(normalized.maxResults));
+    const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), normalized.timeoutMs);
+    try {
+      const response = await this.fetchImpl(url, { signal: controller.signal, headers: { accept: "application/vnd.github+json", "user-agent": "KairoHunter/1.0" } });
+      if (response.status === 403 || response.status === 429) throw new PublicDiscoveryAdapterError("rate-limited", "GitHub discovery rate limit reached");
+      if (!response.ok) throw new PublicDiscoveryAdapterError("upstream", `GitHub discovery returned ${response.status}`);
+      const payload = asRecord(await readJson(response, 2_000_000)); const items = Array.isArray(payload?.items) ? payload.items : [];
+      const retrievedAt = this.now().toISOString(); const result: DiscoveryEvidence[] = [];
+      for (const raw of items) {
+        const item = asRecord(raw); const title = asText(item?.full_name); const sourceUrl = safeExternalUrl(asText(item?.html_url));
+        if (!title || !sourceUrl) continue;
+        const prepared = tryPrepareEvidence({ title, ...(asText(item?.description) ? { summary: asText(item?.description)! } : {}), sourceUrl,
+          platform: "github", publisher: "GitHub", ...(asText(item?.updated_at) ? { publishedAt: asText(item?.updated_at)! } : {}),
+          retrievedAt, provider: "github", providerVersion: "rest-search-v1" });
+        if (prepared) result.push(prepared);
+      }
+      return result.slice(0, normalized.maxResults);
+    } catch (error) {
+      if (controller.signal.aborted) throw new PublicDiscoveryAdapterError("timeout", "GitHub discovery timed out");
+      if (error instanceof PublicDiscoveryAdapterError) throw error;
+      throw new PublicDiscoveryAdapterError("invalid-response", "GitHub discovery response could not be processed");
+    } finally { clearTimeout(timeout); }
+  }
+}
+
 export interface RssAtomDiscoveryProviderOptions {
   feeds: readonly RssFeedDefinition[];
   fetchImpl?: FetchLike;

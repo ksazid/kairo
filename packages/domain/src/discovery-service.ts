@@ -4,6 +4,7 @@ import type {
   OpportunityScoresDto,
   OpportunityStatus,
   PublicSignalDto,
+  OpportunityDetailsDto,
 } from "@kairo/contracts";
 import { ResourceNotFoundError } from "./index";
 import {
@@ -24,6 +25,7 @@ export interface CreateBrandOpportunityInput {
   signalIds: string[];
   scores: OpportunityScoresDto;
   brandContextVersion: string;
+  details?: OpportunityDetailsDto;
 }
 
 export interface OpportunityCandidateInput {
@@ -34,6 +36,7 @@ export interface OpportunityCandidateInput {
   developmentDirection: string;
   brandContextVersion: string;
   scores: OpportunityEvaluationInput;
+  details?: Omit<OpportunityDetailsDto, "supportingSourceIds">;
 }
 
 export interface DiscoveryRepository {
@@ -89,6 +92,7 @@ export class DiscoveryService {
       signalIds: [signal.id],
       scores,
       brandContextVersion: input.brandContextVersion.trim(),
+      ...(input.details ? { details: { ...input.details, supportingSourceIds: [signal.id] } } : {}),
     });
     return { signal, opportunity };
   }

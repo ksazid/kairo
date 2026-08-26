@@ -28,6 +28,7 @@ class FakeTools implements ToolGatewayPort {
   ) {}
   async invoke<TOutput>(request: ToolRequest): Promise<ToolResult<TOutput>> {
     this.requests.push(request);
+    if (request.capability === "public-content-fetch") return { output: { document: { canonicalUrl: String(request.input.url), platform: "web", sourceType: "article", title: evidence[0]!.title, body: evidence[0]!.summary, retrievedAt: evidence[0]!.retrievedAt, contentHash: "sha256:" + "a".repeat(64), provider: "website", providerVersion: "v1", parserVersion: "v1", provenance: [{ provider: "website", sourceUrl: String(request.input.url), retrievedAt: evidence[0]!.retrievedAt }], confidence: 1, extractionWarnings: [], trust: "untrusted-evidence" } } as TOutput, provenance: [] };
     const output = this.handler ? await this.handler(request) : this.output;
     return { output: output as TOutput, provenance: [] };
   }
@@ -94,13 +95,16 @@ describe("Hunter orchestration", () => {
     const tools = new FakeTools();
     const sink = new FakeSink();
     const hunter = new HunterOrchestrator(tools, runtime, sink as never);
-    const result = await hunter.runForAuthorizedBrand({ accountId: "account-1", brand, query: "AI agents" });
+    const result = await hunter.runForAuthorizedBrand({ accountId: "account-1", brand, query: "AI agents", intelligenceVersion: 4 });
 
     expect(result).toEqual({ evidenceCount: 1, candidateCount: 1, opportunityCount: 1 });
-    expect(tools.requests).toHaveLength(1);
-    expect(tools.requests[0]?.input.query).toBe("AI agents");
-    expect(tools.requests[0]?.input.source).toBeUndefined();
+    const searches = tools.requests.filter((request) => request.capability === "public-content-search");
+    expect(searches).toHaveLength(1);
+    expect(searches[0]?.input.query).toBe("AI agents");
+    expect(searches[0]?.input.source).toBeUndefined();
+    expect(tools.requests.some((request) => request.capability === "public-content-fetch")).toBe(true);
     expect(sink.records).toHaveLength(1);
+    expect(sink.records[0]).toMatchObject({ details: { topic: "Persistent agents change SaaS architecture", proposedAngle: "Explain multi-tenant architecture tradeoffs", intelligenceVersion: 4 } });
     expect(runtime.lastRequest?.scope).toEqual({ visibility: "brand-private", workspaceId: "workspace-1", brandId: "brand-1" });
     expect(runtime.lastRequest?.budget.maxToolCalls).toBe(0);
   });
@@ -120,14 +124,15 @@ describe("Hunter orchestration", () => {
       intelligenceProfile: umrahProfile,
     });
 
-    const aiSources = new Set(aiTools.requests.map((request) => request.input.source));
-    const umrahSources = new Set(umrahTools.requests.map((request) => request.input.source));
-    expect(aiSources).toEqual(new Set(["hacker-news", "rss", "youtube", "bluesky", "agent-reach"]));
+    const aiSearches = aiTools.requests.filter((request) => request.capability === "public-content-search");
+    const umrahSearches = umrahTools.requests.filter((request) => request.capability === "public-content-search");
+    const aiSources = new Set(aiSearches.map((request) => request.input.source));
+    const umrahSources = new Set(umrahSearches.map((request) => request.input.source));
+    expect(aiSources).toEqual(new Set(["github", "hacker-news", "rss", "youtube", "bluesky", "agent-reach"]));
     expect(umrahSources).toEqual(new Set(["rss", "youtube", "agent-reach", "bluesky"]));
     expect(umrahSources.has("hacker-news")).toBe(false);
-    expect(aiTools.requests.every((request) => request.capability === "public-content-search")).toBe(true);
-    expect(aiTools.requests.length).toBeLessThanOrEqual(11);
-    expect(umrahTools.requests.length).toBeLessThanOrEqual(9);
+    expect(aiSearches.length).toBeLessThanOrEqual(16);
+    expect(umrahSearches.length).toBeLessThanOrEqual(16);
   });
 
   it("isolates a degraded provider and continues with evidence from healthy providers", async () => {

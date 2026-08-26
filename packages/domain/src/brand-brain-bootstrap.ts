@@ -55,6 +55,10 @@ const PROPOSAL_FIELDS = new Map<string, BrandBrainSection>([
   ["identity.category", "identity"],
   ["identity.geography", "identity"],
   ["identity.language", "identity"],
+  ["identity.sector", "identity"],
+  ["identity.subsector", "identity"],
+  ["identity.products-services", "identity"],
+  ["identity.offers", "identity"],
   ["positioning.value-proposition", "positioning"],
   ["positioning.differentiation", "positioning"],
   ["positioning.market-position", "positioning"],
@@ -74,10 +78,20 @@ const PROPOSAL_FIELDS = new Map<string, BrandBrainSection>([
   ["content.typography-direction", "content-strategy"],
   ["content.imagery-direction", "content-strategy"],
   ["content.logo-guidance", "content-strategy"],
+  ["content.authority-areas", "content-strategy"],
+  ["content.core-topics", "content-strategy"],
+  ["content.related-topics", "content-strategy"],
+  ["content.preferred-formats", "content-strategy"],
+  ["content.visual-patterns", "content-strategy"],
+  ["content.terminology", "content-strategy"],
+  ["content.competitors-watchlist", "content-strategy"],
+  ["content.evergreen-topics", "content-strategy"],
+  ["content.freshness-topics", "content-strategy"],
   ["goals.objectives", "goals"],
   ["boundaries.claims-to-avoid", "boundaries"],
   ["boundaries.prohibited-subjects", "boundaries"],
   ["boundaries.sensitive-subjects", "boundaries"],
+  ["boundaries.excluded-topics", "boundaries"],
 ]);
 
 const SOURCE_REQUIRED_PROPOSAL_FIELDS = new Set([
@@ -87,6 +101,10 @@ const SOURCE_REQUIRED_PROPOSAL_FIELDS = new Set([
   "content.imagery-direction",
   "content.logo-guidance",
   "goals.objectives",
+  "identity.sector", "identity.subsector", "identity.products-services", "identity.offers",
+  "content.authority-areas", "content.core-topics", "content.related-topics", "content.preferred-formats",
+  "content.visual-patterns", "content.terminology", "content.competitors-watchlist", "content.evergreen-topics", "content.freshness-topics",
+  "boundaries.excluded-topics",
 ]);
 
 const VISUAL_DIRECTION_VALUE_LIMIT = 2_000;

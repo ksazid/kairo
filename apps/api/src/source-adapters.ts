@@ -25,6 +25,7 @@ export class SourceProviderError extends Error {
 
 export interface WebsiteAdapterOptions {
   maxPages?: number;
+  maxRecentPages?: number;
   reader: PublicBrandReferenceReader;
 }
 
@@ -33,22 +34,35 @@ export class WebsiteAdapter implements SourceAdapter {
   readonly version = "website-v1";
   readonly priority = 20;
   private readonly maxPages: number;
+  private readonly maxRecentPages: number;
 
   constructor(private readonly options: WebsiteAdapterOptions) {
     this.maxPages = boundedInteger(options.maxPages ?? 6, 1, 12, "maxPages");
+    this.maxRecentPages = boundedInteger(options.maxRecentPages ?? 3, 0, 10, "maxRecentPages");
   }
-  supports(url: URL) { return ["website", "web"].includes(SourceRouter.identify(url).platform); }
+  supports(url: URL) { return SourceRouter.identify(url).platform === "website"; }
   identify(url: URL) { return SourceRouter.identify(url); }
   async health(): Promise<SourceHealth> { return { status: "available" }; }
 
   async fetch(request: SourceFetchRequest): Promise<RawSourceDocument> {
-    const root = await this.options.reader.read(request.url);
+    const deadline = Date.now() + request.timeoutMs;
+    const read = (url: string) => withinDeadline(this.options.reader.read(url), deadline, "Website extraction timed out");
+    const root = await read(request.url);
     const selected = rankBrandLinks(root.links ?? [], new URL(root.url)).slice(0, this.maxPages - 1);
     const pages = [root];
     const warnings: string[] = [];
     for (const link of selected) {
-      try { pages.push(await this.options.reader.read(link)); }
+      try { pages.push(await read(link)); }
       catch { warnings.push(`Could not extract linked Brand page: ${link}`); }
+    }
+    const remaining = this.maxPages - pages.length;
+    if (remaining > 0 && this.maxRecentPages > 0) {
+      const recent = rankRecentLinks(pages.flatMap((page) => page.links ?? []), new URL(root.url), new Set(pages.map((page) => page.url)))
+        .slice(0, Math.min(remaining, this.maxRecentPages));
+      for (const link of recent) {
+        try { pages.push(await read(link)); }
+        catch { warnings.push(`Could not extract recent Brand content: ${link}`); }
+      }
     }
     return raw(root.url, pages[0]!.retrievedAt, { pages: pages.map(compactReference) }, warnings);
   }
@@ -58,7 +72,12 @@ export class WebsiteAdapter implements SourceAdapter {
     const root = pages[0];
     const body = uniqueText(pages.map((page) => page.excerpt)).join("\n\n").slice(0, 200_000);
     const externalLinks = [...new Set(pages.flatMap((page) => page.links ?? []).map(safeCanonicalUrl).filter((url): url is string => Boolean(url)))].slice(0, 500);
-    return normalized(value, identity, this.id, this.version, {
+    return prepareNormalizedSourceDocument({
+      canonicalUrl: value.canonicalUrl, platform: identity.platform, sourceType: identity.sourceType,
+      retrievedAt: value.retrievedAt, contentHash: value.contentHash, provider: this.id,
+      providerVersion: this.version, parserVersion: this.version,
+      provenance: pages.map((page) => ({ provider: this.id, providerVersion: this.version, sourceUrl: page.url, retrievedAt: page.retrievedAt })),
+      extractionWarnings: value.warnings ?? [], trust: "untrusted-evidence",
       ...(root?.title ? { title: root.title } : {}),
       ...(root?.summary ? { description: root.summary } : {}),
       ...(body ? { body } : {}),
@@ -94,11 +113,18 @@ export class GitHubAdapter implements SourceAdapter {
     const api = `https://api.github.com/repos/${encodeURIComponent(parts.owner)}/${encodeURIComponent(parts.repo)}`;
     try {
       const repo = await this.json(api, controller.signal, true);
-      const [readme, languages, releases, events] = await Promise.all([
+      const optional = await Promise.allSettled([
         this.json(`${api}/readme`, controller.signal), this.json(`${api}/languages`, controller.signal),
         this.json(`${api}/releases?per_page=5`, controller.signal), this.json(`${api}/events?per_page=15`, controller.signal),
       ]);
-      return raw(`https://github.com/${parts.owner}/${parts.repo}`, this.now().toISOString(), { repo, readme, languages, releases, events });
+      const names = ["readme", "languages", "releases", "events"] as const;
+      const payload: Record<string, JsonValue> = { repo };
+      const warnings: string[] = [];
+      optional.forEach((result, index) => {
+        if (result.status === "fulfilled") payload[names[index]!] = result.value;
+        else warnings.push(`GitHub optional ${names[index]} enrichment unavailable`);
+      });
+      return raw(`https://github.com/${parts.owner}/${parts.repo}`, this.now().toISOString(), payload as JsonValue, warnings);
     } catch (error) {
       if (controller.signal.aborted) throw new SourceProviderError("timeout", "GitHub extraction timed out");
       throw error;
@@ -273,7 +299,7 @@ function normalized(rawValue: RawSourceDocument, identity: SourceIdentity, provi
 }
 
 function raw(canonicalUrl: string, retrievedAt: string, payload: JsonValue, warnings: string[] = []): RawSourceDocument {
-  return { canonicalUrl, retrievedAt, contentHash: `sha256:${createHash("sha256").update(JSON.stringify(payload)).digest("hex")}`, payload, ...(warnings.length ? { warnings } : {}) };
+  return { canonicalUrl, retrievedAt, contentHash: `sha256:${createHash("sha256").update(JSON.stringify(stableHashValue(payload))).digest("hex")}`, payload, ...(warnings.length ? { warnings } : {}) };
 }
 
 function rankBrandLinks(links: readonly string[], root: URL): string[] {
@@ -281,6 +307,25 @@ function rankBrandLinks(links: readonly string[], root: URL): string[] {
   return [...new Set(links.map(safeCanonicalUrl).filter((link): link is string => Boolean(link)))].filter((link) => { try { return new URL(link).hostname === root.hostname; } catch { return false; } })
     .map((link, index) => ({ link, index, score: priorities.findIndex((pattern) => pattern.test(new URL(link).pathname)) }))
     .filter((item) => item.score >= 0).sort((a, b) => a.score - b.score || a.index - b.index).map((item) => item.link);
+}
+
+function rankRecentLinks(links: readonly string[], root: URL, visited: ReadonlySet<string>): string[] {
+  return [...new Set(links.map(safeCanonicalUrl).filter((link): link is string => Boolean(link)))]
+    .filter((link) => { try { const url = new URL(link); return url.hostname === root.hostname && !visited.has(link) && /\/(blog|news|resources?|insights?|articles?)\//i.test(url.pathname); } catch { return false; } })
+    .sort((a, b) => recentPathScore(b) - recentPathScore(a) || a.localeCompare(b));
+}
+function recentPathScore(value: string) { const path = new URL(value).pathname; return /\/20\d{2}\//.test(path) ? 2 : /\d{4}[-/]\d{1,2}/.test(path) ? 1 : 0; }
+function stableHashValue(value: JsonValue): JsonValue {
+  if (Array.isArray(value)) return value.map(stableHashValue);
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).filter(([key]) => key !== "retrievedAt").map(([key, item]) => [key, stableHashValue(item as JsonValue)])) as JsonValue;
+  return value;
+}
+async function withinDeadline<T>(promise: Promise<T>, deadline: number, message: string): Promise<T> {
+  const remaining = deadline - Date.now();
+  if (remaining <= 0) throw new SourceProviderError("timeout", message);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try { return await Promise.race([promise, new Promise<T>((_, reject) => { timer = setTimeout(() => reject(new SourceProviderError("timeout", message)), remaining); })]); }
+  finally { if (timer) clearTimeout(timer); }
 }
 
 function compactReference(reference: PublicBrandReference): JsonValue { return { url: reference.url, ...(reference.title ? { title: reference.title } : {}), ...(reference.summary ? { summary: reference.summary } : {}), excerpt: reference.excerpt, retrievedAt: reference.retrievedAt, ...(reference.links ? { links: reference.links } : {}) }; }

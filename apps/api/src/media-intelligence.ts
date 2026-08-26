@@ -6,6 +6,19 @@ export interface MediaAnalysisPorts {
   readFrameText?: (frame: RepresentativeFrame, signal?: AbortSignal) => Promise<string | undefined>;
 }
 
+export interface MediaObjectStore {
+  putTemporary(input: { bytes: Uint8Array; contentType: string; expiresAt: string }): Promise<{ key: string }>;
+  removeTemporary(key: string): Promise<void>;
+  health(): Promise<{ status: "available" | "unavailable"; reason?: string }>;
+}
+
+/** Truthful default: text/caption analysis continues without persistent temporary media storage. */
+export class UnavailableMediaObjectStore implements MediaObjectStore {
+  async putTemporary(): Promise<{ key: string }> { throw new Error("temporary media object storage is not configured"); }
+  async removeTemporary(): Promise<void> { /* nothing was retained */ }
+  async health() { return { status: "unavailable" as const, reason: "temporary media object storage is not configured" }; }
+}
+
 export interface MediaAnalysisLimits {
   maxTranscriptChars: number;
   maxFrames: number;

@@ -5,6 +5,7 @@ const approvedMigrations = new Set([
   "0022_marketing_shadow_evidence_authorizations.sql",
   "0030_home_media_inputs.sql",
   "0031_brand_intelligence_topic_graph.sql",
+  "0032_hunter_opportunity_details.sql",
 ]);
 const approvedRanges = new Set([
   "0023_meta_multichannel_connections.sql..0028_performance_pattern_memory.sql",

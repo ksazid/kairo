@@ -126,6 +126,17 @@ describe("BrandBrainBuilder", () => {
     }]);
   });
 
+  it("accepts evidence-backed Brand Intelligence V2 proposals", async () => {
+    const builder = new BrandBrainBuilder(new FakeRuntime({ proposals: [
+      { section: "identity", fieldKey: "identity.sector", value: "Developer Technology", sourceIds: ["source-1"] },
+      { section: "content-strategy", fieldKey: "content.core-topics", value: "AI agents, developer tools", sourceIds: ["source-1"] },
+    ] }));
+    await expect(builder.propose(input)).resolves.toMatchObject([
+      { fieldKey: "identity.sector", sourceIds: ["source-1"] },
+      { fieldKey: "content.core-topics", sourceIds: ["source-1"] },
+    ]);
+  });
+
   it("rejects visual direction without active supplied-source provenance", async () => {
     const runtime = new FakeRuntime({ proposals: [
       {
