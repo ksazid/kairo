@@ -149,14 +149,23 @@ export class BrandBrainBootstrapService {
     ]);
     const privateExtracts = await this.readActiveKnowledgeExtracts(accountId, brandId, new Set(successfulReferences.map((item) => item.sourceId)));
     successfulReferences.push(...privateExtracts);
-    if (!successfulReferences.length && (brand.publicProfileUrl || brand.publicSourceUrl)) {
-      successfulReferences.push({
-        url: brand.publicProfileUrl || brand.publicSourceUrl!,
+    let syntheticFallback = false;
+    const fallbackUrl = brand.publicProfileUrl || brand.publicSourceUrl;
+    const fallbackHost = fallbackUrl ? new URL(fallbackUrl).hostname.toLowerCase() : "";
+    const isSocialFallback = fallbackHost === "instagram.com" || fallbackHost === "www.instagram.com"
+      || fallbackHost === "facebook.com" || fallbackHost === "www.facebook.com";
+    if (!successfulReferences.length && fallbackUrl && isSocialFallback) {
+      const fallbackReference = {
+        url: fallbackUrl,
         title: brand.name,
         excerpt: `Public social profile for ${brand.name}. Detailed profile evidence is unavailable until the source is connected or refreshed.`,
         retrievedAt: new Date().toISOString(),
-        sourceId: "",
-      });
+      };
+      // Keep conservative fallback proposals source-backed so PostgreSQL can
+      // persist them and the Brand Brain UI can render them as suggestions.
+      const source = await this.ensureSource(accountId, brandId, fallbackReference, await this.repository.listKnowledgeSources(accountId, brandId));
+      successfulReferences.push({ ...fallbackReference, sourceId: source.id });
+      syntheticFallback = true;
     }
 
     if (!this.generator) {
@@ -246,7 +255,7 @@ export class BrandBrainBootstrapService {
       generatorStatus: "generated",
       proposedCount,
       skippedConfirmedCount,
-      sourceIds: inspectedSourceIds.filter(Boolean),
+      sourceIds: syntheticFallback ? [] : inspectedSourceIds.filter(Boolean),
     };
   }
 
