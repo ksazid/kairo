@@ -5,7 +5,7 @@
   "status": "active",
   "lifecycle": "certified",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04", "FR-06", "FR-08", "FR-20"],
   "owners": {"product": "Product Owner", "engineering": "Engineering Owner", "operations": "Operations Owner", "security": "Security Owner"},
   "dependencies": ["VS-13", "VS-84", "VS-99", "VS-100"],
@@ -19,7 +19,7 @@
     {"type": "implementation", "status": "approved", "version": "VS-101@1.0", "commitSha": null, "by": "Product Owner", "at": "2026-08-26T11:00:00+02:00", "rationale": "Product Owner instructed: Go ahead."},
     {"type": "certification", "status": "approved", "version": "VS-101@1.0", "commitSha": "d127fa6b482aa0792d7c24cdde39e436f357bcd5", "by": "Product Owner", "at": "2026-08-26T11:36:00+02:00", "rationale": "Product Owner explicitly approved certification after Product Intake, Security baseline, CI, preflight, runtime verification, dashboard build, PostgreSQL 18 migrations and production dependency audit passed for the exact implementation candidate."},
     {"type": "release", "status": "approved", "version": "VS-101@1.0", "commitSha": "62058194b98cc3739ba6a931864dfdb295f61ae4", "by": "Product Owner", "at": "2026-08-26T11:36:00+02:00", "rationale": "Product Owner explicitly approved merge and release after VS-101 certification."},
-    {"type": "production-enable", "status": "pending", "version": "VS-101@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Production enablement remains a separate authorization gate."}
+    {"type": "production-enable", "status": "approved", "version": "VS-101@1.0", "commitSha": "62058194b98cc3739ba6a931864dfdb295f61ae4", "by": "Product Owner", "at": "2026-08-26T11:37:00+02:00", "rationale": "Product Owner explicitly instructed Go, authorizing production enablement and deployment of Batch 3."}
   ],
   "decisionIds": ["DEC-005", "DEC-006", "DEC-009", "DEC-010", "DEC-011"],
   "progress": {"discovery": 100, "decisions": 100, "implementation": 100, "testing": 100, "certification": 100, "release": 25, "validation": 0},
