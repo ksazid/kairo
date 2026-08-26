@@ -3,7 +3,7 @@
   "sliceId": "VS-98",
   "title": "Approved Home Creation Recovery",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certified",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-09", "FR-11", "FR-18"],
@@ -90,12 +90,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-98@1.1",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Reopened for the release-only startup migration authorization; exact candidate will be rebound after CI/Security/Product Intake pass."
+      "commitSha": "79a12869d805cbea9004af160f2e45ef5c38cafa",
+      "by": "Product Owner",
+      "at": "2026-08-26T04:13:00+02:00",
+      "rationale": "Product Owner instructed the checked VS-98 release to be deployed to production. Exact release-preparation candidate 79a12869d805cbea9004af160f2e45ef5c38cafa passed Product Intake 32921588366, Security baseline 32921588476 and CI 32921588361. The only runtime delta from the previously certified Home candidate is bounded authorization for exact migration 0030 through the existing release-SHA check."
     },
     {
       "type": "release",
@@ -104,7 +104,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded after the release-preparation merge."
+      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded after merge."
     },
     {
       "type": "production-enable",
@@ -117,8 +117,22 @@
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":90,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "certification": {
+    "status":"passed",
+    "commitSha":"79a12869d805cbea9004af160f2e45ef5c38cafa",
+    "evidence":[
+      "docs/plans/VS-98-implementation.md",
+      "apps/web/src/lib/home-frozen-ui.test.ts",
+      "apps/web/src/lib/home-creation-format.test.ts",
+      "apps/api/src/simple-creation.test.ts",
+      "apps/api/src/private-object-storage.test.ts",
+      "GitHub Actions Product Intake run 32921588366",
+      "GitHub Actions Security baseline run 32921588476",
+      "GitHub Actions CI run 32921588361",
+      "Product Owner certification/deployment instruction on 2026-08-26 bound to 79a12869d805cbea9004af160f2e45ef5c38cafa"
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
@@ -129,7 +143,8 @@
       "product/PRD.md FR-09/11/18",
       "product/TRD.md private object storage and Brand isolation boundaries",
       "product/DESIGN.md Home and human+intelligent interaction baseline",
-      "Product Owner correction, implementation authorization, scope narrowing and production deployment instruction 2026-08-26"
+      "Product Owner correction, implementation authorization, scope narrowing and production deployment instruction 2026-08-26",
+      "Release-preparation PR https://github.com/ksazid/kairo/pull/206"
     ]
   },
   "maxAttempts": 3
