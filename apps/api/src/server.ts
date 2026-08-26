@@ -184,7 +184,7 @@ registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier})
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
-registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,graphStore:brandIntelligenceGraphStore,...(hunter?{runner:hunter}:{})});
+registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,graphStore:brandIntelligenceGraphStore,discovery:discoveryService,...(hunter?{runner:hunter}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
