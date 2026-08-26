@@ -3,199 +3,624 @@
   "releases": [
     {
       "id": "REL-001",
-      "sliceIds": ["VS-01","VS-02","VS-03","VS-04","VS-05","VS-06","VS-07","VS-08","VS-09","VS-10","VS-11"],
+      "sliceIds": [
+        "VS-01",
+        "VS-02",
+        "VS-03",
+        "VS-04",
+        "VS-05",
+        "VS-06",
+        "VS-07",
+        "VS-08",
+        "VS-09",
+        "VS-10",
+        "VS-11"
+      ],
       "status": "approved",
       "commitSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
-      "migrations": ["apps/api/migrations/0001_identity_workspace_brand.sql","apps/api/migrations/0002_brand_brain_knowledge.sql","apps/api/migrations/0003_hunter_discover.sql","apps/api/migrations/0004_research_angles.sql","apps/api/migrations/0005_campaign_content.sql","apps/api/migrations/0006_content_review_approval.sql","apps/api/migrations/0007_channel_calendar_publishing.sql","apps/api/migrations/0008_performance_tracking.sql","apps/api/migrations/0009_performance_learning.sql","apps/api/migrations/0010_pilot_operations.sql","apps/api/migrations/0011_publishing_operations_projection.sql","apps/api/migrations/0012_operations_authoritative_time.sql","apps/api/migrations/0013_operations_safe_retry_dispatch.sql"],
-      "configurationChanges": ["Neon Frankfurt pilot PostgreSQL DATABASE_URL with backups enabled","API OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URI","Web KAIRO_API_URL plus NEON_AUTH_BASE_URL and secret-managed NEON_AUTH_COOKIE_SECRET","KAIRO_RELEASE_SHA must identify 84b778660f9d0152a7a0aa248317b476f15215d4 on every released component","Secret-managed provider-neutral model gateway configuration","Capability-gated Instagram Professional and LinkedIn organization credentials only for explicitly approved pilot accounts"],
-      "featureFlags": ["External publishing remains capability-gated and human-approval-bound","Production enablement remains unauthorized until a separate exact-SHA approval","Commercial use remains disabled for the zero-budget pilot topology"],
-      "smokeTests": ["CI #330 applied migrations 0001-0013 successfully to clean PostgreSQL 18 on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4","CI #330 production dependency audit passed at high severity threshold on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4","CI #330 preflight/governance, runtime verification and dashboard build passed on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4","During release execution, API /health/live, /health/ready and /version must pass with releaseSha 84b778660f9d0152a7a0aa248317b476f15215d4 before web rollout","During release execution, authenticated Workspace/Brand flow and cross-tenant denial must pass before release may be marked released","During release execution, publishing must succeed only through an approved capability or degrade explicitly to manual fallback","During release execution, Pilot Operations failure/retry paths must remain observable with redacted telemetry"],
-      "rollbackStrategy": {"summary":"RB-001 is ready. If deployment or smoke verification fails, stop pilot traffic and external publishing, preserve audit state, restore/repoint the database only when required, and redeploy the last known-good certified pilot runtime (cb273c59e83c3043313127f15afc717b33577958) or disable the affected component. Verify health, version provenance, authentication and tenant isolation before reopening pilot traffic."},
+      "migrations": [
+        "apps/api/migrations/0001_identity_workspace_brand.sql",
+        "apps/api/migrations/0002_brand_brain_knowledge.sql",
+        "apps/api/migrations/0003_hunter_discover.sql",
+        "apps/api/migrations/0004_research_angles.sql",
+        "apps/api/migrations/0005_campaign_content.sql",
+        "apps/api/migrations/0006_content_review_approval.sql",
+        "apps/api/migrations/0007_channel_calendar_publishing.sql",
+        "apps/api/migrations/0008_performance_tracking.sql",
+        "apps/api/migrations/0009_performance_learning.sql",
+        "apps/api/migrations/0010_pilot_operations.sql",
+        "apps/api/migrations/0011_publishing_operations_projection.sql",
+        "apps/api/migrations/0012_operations_authoritative_time.sql",
+        "apps/api/migrations/0013_operations_safe_retry_dispatch.sql"
+      ],
+      "configurationChanges": [
+        "Neon Frankfurt pilot PostgreSQL DATABASE_URL with backups enabled",
+        "API OIDC_ISSUER, OIDC_AUDIENCE and OIDC_JWKS_URI",
+        "Web KAIRO_API_URL plus NEON_AUTH_BASE_URL and secret-managed NEON_AUTH_COOKIE_SECRET",
+        "KAIRO_RELEASE_SHA must identify 84b778660f9d0152a7a0aa248317b476f15215d4 on every released component",
+        "Secret-managed provider-neutral model gateway configuration",
+        "Capability-gated Instagram Professional and LinkedIn organization credentials only for explicitly approved pilot accounts"
+      ],
+      "featureFlags": [
+        "External publishing remains capability-gated and human-approval-bound",
+        "Production enablement remains unauthorized until a separate exact-SHA approval",
+        "Commercial use remains disabled for the zero-budget pilot topology"
+      ],
+      "smokeTests": [
+        "CI #330 applied migrations 0001-0013 successfully to clean PostgreSQL 18 on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
+        "CI #330 production dependency audit passed at high severity threshold on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
+        "CI #330 preflight/governance, runtime verification and dashboard build passed on exact SHA 84b778660f9d0152a7a0aa248317b476f15215d4",
+        "During release execution, API /health/live, /health/ready and /version must pass with releaseSha 84b778660f9d0152a7a0aa248317b476f15215d4 before web rollout",
+        "During release execution, authenticated Workspace/Brand flow and cross-tenant denial must pass before release may be marked released",
+        "During release execution, publishing must succeed only through an approved capability or degrade explicitly to manual fallback",
+        "During release execution, Pilot Operations failure/retry paths must remain observable with redacted telemetry"
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-001 is ready. If deployment or smoke verification fails, stop pilot traffic and external publishing, preserve audit state, restore/repoint the database only when required, and redeploy the last known-good certified pilot runtime (cb273c59e83c3043313127f15afc717b33577958) or disable the affected component. Verify health, version provenance, authentication and tenant isolation before reopening pilot traffic."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-14T03:10:00+02:00",
-      "productionVerification": {"status":"not-started","evidence":[]}
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": []
+      }
     },
     {
       "id": "REL-002",
-      "sliceIds": ["VS-72"],
+      "sliceIds": [
+        "VS-72"
+      ],
       "status": "approved",
       "commitSha": "5ec2ab1108ee1db79b818de121db0101e0f293f3",
       "migrations": [],
-      "configurationChanges": ["Set KAIRO_RELEASE_SHA to 5ec2ab1108ee1db79b818de121db0101e0f293f3 on the Kairo API during release execution; no database, provider, credential or web configuration change is required."],
-      "featureFlags": ["No new feature flag is introduced by VS-72; existing capability gates, human approval controls and publishing safeguards remain unchanged."],
-      "smokeTests": ["Exact merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 is tree-identical to checked PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd, which passed Product Intake #685, Security #785 and CI #928.","After API deployment, /health/live, /health/ready and /version must pass and /version must report releaseSha 5ec2ab1108ee1db79b818de121db0101e0f293f3.","Authenticated TheDukeMan research smoke must no longer admit clearly off-topic firm-innovation or state-owned-enterprise evidence for the motorcycle-mod Idea.","Research must either persist at least two materially relevant evidence items and grounded candidate Angles or fail safely before model persistence when the minimum relevance threshold is not met.","No Vercel rollout is required for VS-72 because this slice changes API/worker research relevance logic and no apps/web file."],
-      "rollbackStrategy": {"summary":"If the VS-72 API deployment, health/version checks or authenticated Research smoke fails, stop the release, preserve Research/audit state, and redeploy the previously live Kairo API runtime (VS-71 lineage) without any database rollback because VS-72 contains no migrations. Restore the prior release SHA provenance and verify health plus the existing Idea-to-Research path before resuming traffic."},
+      "configurationChanges": [
+        "Set KAIRO_RELEASE_SHA to 5ec2ab1108ee1db79b818de121db0101e0f293f3 on the Kairo API during release execution; no database, provider, credential or web configuration change is required."
+      ],
+      "featureFlags": [
+        "No new feature flag is introduced by VS-72; existing capability gates, human approval controls and publishing safeguards remain unchanged."
+      ],
+      "smokeTests": [
+        "Exact merge SHA 5ec2ab1108ee1db79b818de121db0101e0f293f3 is tree-identical to checked PR head a1f1f88200b3baf1bebae3c3570435e5a53caafd, which passed Product Intake #685, Security #785 and CI #928.",
+        "After API deployment, /health/live, /health/ready and /version must pass and /version must report releaseSha 5ec2ab1108ee1db79b818de121db0101e0f293f3.",
+        "Authenticated TheDukeMan research smoke must no longer admit clearly off-topic firm-innovation or state-owned-enterprise evidence for the motorcycle-mod Idea.",
+        "Research must either persist at least two materially relevant evidence items and grounded candidate Angles or fail safely before model persistence when the minimum relevance threshold is not met.",
+        "No Vercel rollout is required for VS-72 because this slice changes API/worker research relevance logic and no apps/web file."
+      ],
+      "rollbackStrategy": {
+        "summary": "If the VS-72 API deployment, health/version checks or authenticated Research smoke fails, stop the release, preserve Research/audit state, and redeploy the previously live Kairo API runtime (VS-71 lineage) without any database rollback because VS-72 contains no migrations. Restore the prior release SHA provenance and verify health plus the existing Idea-to-Research path before resuming traffic."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-20T23:46:00+02:00",
-      "productionVerification": {"status":"not-started","evidence":[]}
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": []
+      }
     },
     {
       "id": "REL-003",
-      "sliceIds": ["VS-73"],
+      "sliceIds": [
+        "VS-73"
+      ],
       "status": "released",
       "commitSha": "d19c471a11ec30ca717870dc8ca4021ffac5fd5b",
       "migrations": [],
-      "configurationChanges": ["KAIRO_RELEASE_SHA set to d19c471a11ec30ca717870dc8ca4021ffac5fd5b on the Render API service.","Instagram publisher remains explicitly enabled with the existing capability-gated Meta configuration; no new scopes, credentials, migrations or web configuration are introduced by the closeout release.","No Vercel rollout is required for the closeout commit because Git compare from the last verified web release lineage to d19c471a11ec30ca717870dc8ca4021ffac5fd5b contains no apps/web changes."],
-      "featureFlags": ["Instagram publishing remains destination-bound, approval-bound and capability-gated.","Concurrent Research production verification is deferred to issue #142 and is not a VS-73 release gate."],
-      "smokeTests": ["Product Intake #708, Security #854 and CI #1017 passed on PR #143 exact head 41ce3656df74f2c00e042fee7ca3ba743b1ce596, merged as d19c471a11ec30ca717870dc8ca4021ffac5fd5b with only VS-73 governance documentation changes.","Render deploy dep-da4emu3bc2fs73cvrc20 is live on exact commit d19c471a11ec30ca717870dc8ca4021ffac5fd5b.","Exact deployment logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED using Meta Graph v24.0.","Git compare bb901c2e04549ffcf1d621e33567ce488839d4c1..d19c471a11ec30ca717870dc8ca4021ffac5fd5b changes only delivery/context/VS-73.md, delivery/current-slice.json and docs/slices/VS-73.md, so the runtime is identical to the provider-confirmed production publish build.","Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical build.","The previously verified web deployment remains applicable because there are no apps/web changes after the verified web release lineage."],
-      "rollbackStrategy": {"summary":"If the VS-73 closeout deployment regresses, disable the Instagram publisher if necessary and redeploy the last provider-confirmed runtime bb901c2e04549ffcf1d621e33567ce488839d4c1. No database rollback is required because the closeout release contains no migrations. Preserve publish/audit state and re-verify API startup, release provenance, authentication, tenant isolation and destination-bound approval behavior before reopening publishing."},
+      "configurationChanges": [
+        "KAIRO_RELEASE_SHA set to d19c471a11ec30ca717870dc8ca4021ffac5fd5b on the Render API service.",
+        "Instagram publisher remains explicitly enabled with the existing capability-gated Meta configuration; no new scopes, credentials, migrations or web configuration are introduced by the closeout release.",
+        "No Vercel rollout is required for the closeout commit because Git compare from the last verified web release lineage to d19c471a11ec30ca717870dc8ca4021ffac5fd5b contains no apps/web changes."
+      ],
+      "featureFlags": [
+        "Instagram publishing remains destination-bound, approval-bound and capability-gated.",
+        "Concurrent Research production verification is deferred to issue #142 and is not a VS-73 release gate."
+      ],
+      "smokeTests": [
+        "Product Intake #708, Security #854 and CI #1017 passed on PR #143 exact head 41ce3656df74f2c00e042fee7ca3ba743b1ce596, merged as d19c471a11ec30ca717870dc8ca4021ffac5fd5b with only VS-73 governance documentation changes.",
+        "Render deploy dep-da4emu3bc2fs73cvrc20 is live on exact commit d19c471a11ec30ca717870dc8ca4021ffac5fd5b.",
+        "Exact deployment logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED using Meta Graph v24.0.",
+        "Git compare bb901c2e04549ffcf1d621e33567ce488839d4c1..d19c471a11ec30ca717870dc8ca4021ffac5fd5b changes only delivery/context/VS-73.md, delivery/current-slice.json and docs/slices/VS-73.md, so the runtime is identical to the provider-confirmed production publish build.",
+        "Provider-confirmed real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 passed Content Review, Approval, Calendar and Performance verification on the runtime-identical build.",
+        "The previously verified web deployment remains applicable because there are no apps/web changes after the verified web release lineage."
+      ],
+      "rollbackStrategy": {
+        "summary": "If the VS-73 closeout deployment regresses, disable the Instagram publisher if necessary and redeploy the last provider-confirmed runtime bb901c2e04549ffcf1d621e33567ce488839d4c1. No database rollback is required because the closeout release contains no migrations. Preserve publish/audit state and re-verify API startup, release provenance, authentication, tenant isolation and destination-bound approval behavior before reopening publishing."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-22T02:23:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da4emu3bc2fs73cvrc20 reached live status on d19c471a11ec30ca717870dc8ca4021ffac5fd5b.","Exact deployment startup logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening successfully.","Runtime equivalence from bb901c2e04549ffcf1d621e33567ce488839d4c1 to d19c471a11ec30ca717870dc8ca4021ffac5fd5b is proven by Git compare: only VS-73 delivery/specification documentation changed.","Real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 was provider-confirmed published with Calendar and Performance verification on the runtime-identical build.","Concurrent Research verification is explicitly deferred to follow-up issue #142."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Render deploy dep-da4emu3bc2fs73cvrc20 reached live status on d19c471a11ec30ca717870dc8ca4021ffac5fd5b.",
+          "Exact deployment startup logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening successfully.",
+          "Runtime equivalence from bb901c2e04549ffcf1d621e33567ce488839d4c1 to d19c471a11ec30ca717870dc8ca4021ffac5fd5b is proven by Git compare: only VS-73 delivery/specification documentation changed.",
+          "Real-data Instagram publish command 5c1f80a6-01f8-4a09-abb0-6d3f204635c9 was provider-confirmed published with Calendar and Performance verification on the runtime-identical build.",
+          "Concurrent Research verification is explicitly deferred to follow-up issue #142."
+        ]
+      }
     },
     {
       "id": "REL-004",
-      "sliceIds": ["VS-82"],
+      "sliceIds": [
+        "VS-82"
+      ],
       "status": "released",
       "commitSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
-      "migrations": ["0023_meta_multichannel_connections.sql","0024_carousel_studio_persistence.sql","0025_content_asset_connections.sql","0026_instagram_content_insights.sql","0027_asset_thumbnails.sql","0028_performance_pattern_memory.sql"],
-      "configurationChanges": ["KAIRO_RELEASE_SHA set to ec01d4b08bc58e92a615f90a8e18c221f2c45610 on the Render API service.","The bounded startup migration range was enabled for one deployment and cleared immediately after successful application.","Instagram publishing remained explicitly enabled; Reel execution no longer depends on carousel-only object storage."],
-      "featureFlags": ["Instagram publishing remains destination-bound, exact-version approved and media-fingerprint locked.","Carousel publishing continues to fail closed unless approved rendered media delivery is configured."],
-      "smokeTests": ["All CI and Security checks passed on PRs #155 through #160 before exact-SHA merge approvals.","Fresh-Idea concurrent Research verification persisted one dossier and exactly two candidate Angles.","Render deploy dep-da4tf8v40ujc73a0p8tg reached live on the final runtime SHA.","Instagram publisher logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and processed the pending Reel command.","Reel command 95783df8-11df-4e6f-8143-857b63c5d791 displayed Published in Calendar for @_dukeman390.","Results displayed six available Instagram observations with fresh provider evidence."],
-      "rollbackStrategy": {"summary":"If the final publisher runtime regresses, disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED and redeploy ec01d4b08bc58e92a615f90a8e18c221f2c45610 or the preceding certified runtime. Do not roll back migrations 0023 through 0028; preserve publish commands, provider IDs, audit lineage and metric snapshots before recovery."},
+      "migrations": [
+        "0023_meta_multichannel_connections.sql",
+        "0024_carousel_studio_persistence.sql",
+        "0025_content_asset_connections.sql",
+        "0026_instagram_content_insights.sql",
+        "0027_asset_thumbnails.sql",
+        "0028_performance_pattern_memory.sql"
+      ],
+      "configurationChanges": [
+        "KAIRO_RELEASE_SHA set to ec01d4b08bc58e92a615f90a8e18c221f2c45610 on the Render API service.",
+        "The bounded startup migration range was enabled for one deployment and cleared immediately after successful application.",
+        "Instagram publishing remained explicitly enabled; Reel execution no longer depends on carousel-only object storage."
+      ],
+      "featureFlags": [
+        "Instagram publishing remains destination-bound, exact-version approved and media-fingerprint locked.",
+        "Carousel publishing continues to fail closed unless approved rendered media delivery is configured."
+      ],
+      "smokeTests": [
+        "All CI and Security checks passed on PRs #155 through #160 before exact-SHA merge approvals.",
+        "Fresh-Idea concurrent Research verification persisted one dossier and exactly two candidate Angles.",
+        "Render deploy dep-da4tf8v40ujc73a0p8tg reached live on the final runtime SHA.",
+        "Instagram publisher logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and processed the pending Reel command.",
+        "Reel command 95783df8-11df-4e6f-8143-857b63c5d791 displayed Published in Calendar for @_dukeman390.",
+        "Results displayed six available Instagram observations with fresh provider evidence."
+      ],
+      "rollbackStrategy": {
+        "summary": "If the final publisher runtime regresses, disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED and redeploy ec01d4b08bc58e92a615f90a8e18c221f2c45610 or the preceding certified runtime. Do not roll back migrations 0023 through 0028; preserve publish commands, provider IDs, audit lineage and metric snapshots before recovery."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-22T19:07:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Final Render deployment is live at ec01d4b08bc58e92a615f90a8e18c221f2c45610.","Provider-backed Reel command reached Published after one deterministic worker attempt.","Calendar and Results verification passed in the authenticated TheDukeMan Brand scope.","Temporary PR #141 and issue #142 were closed after evidence preservation."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Final Render deployment is live at ec01d4b08bc58e92a615f90a8e18c221f2c45610.",
+          "Provider-backed Reel command reached Published after one deterministic worker attempt.",
+          "Calendar and Results verification passed in the authenticated TheDukeMan Brand scope.",
+          "Temporary PR #141 and issue #142 were closed after evidence preservation."
+        ]
+      }
     },
     {
       "id": "REL-005",
-      "sliceIds": ["VS-84"],
+      "sliceIds": [
+        "VS-84"
+      ],
       "status": "deploying",
       "commitSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
       "migrations": [],
-      "configurationChanges": ["Release the certified VS-84 web/API candidate at exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867; no database migration or provider-scope change is required.","Keep existing authenticated social-channel credentials and publishing capability gates unchanged; onboarding public URLs remain evidence only."],
-      "featureFlags": ["Simplified onboarding is URL → Learn → Confirm → Home.","Channel connection remains post-onboarding through Home Needs Attention / Brand.","Production enablement was approved on the exact certified SHA before rollout."],
-      "smokeTests": ["Product Intake run 32659123567, Security baseline run 32659123631 and CI run 32659123574 passed for exact certified runtime candidate c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.","CI preflight, runtime verification and dashboard build passed for the certified candidate.","Vercel preview passed for the certified candidate.","Existing-user additional-Brand production flow created a Brand from one public URL, reached confirmation, confirmed and reached Home.","A public Instagram URL remained evidence only and did not create authenticated publishing/Insights authority.","First-time zero-Workspace production onboarding remains an observation item before final VS-84 validation."],
-      "rollbackStrategy": {"summary":"RB-005 is ready. If VS-84 rollout verification fails, stop the rollout, preserve Brand/source/audit state, and restore the last known-good runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components. No database rollback is required."},
+      "configurationChanges": [
+        "Release the certified VS-84 web/API candidate at exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867; no database migration or provider-scope change is required.",
+        "Keep existing authenticated social-channel credentials and publishing capability gates unchanged; onboarding public URLs remain evidence only."
+      ],
+      "featureFlags": [
+        "Simplified onboarding is URL → Learn → Confirm → Home.",
+        "Channel connection remains post-onboarding through Home Needs Attention / Brand.",
+        "Production enablement was approved on the exact certified SHA before rollout."
+      ],
+      "smokeTests": [
+        "Product Intake run 32659123567, Security baseline run 32659123631 and CI run 32659123574 passed for exact certified runtime candidate c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.",
+        "CI preflight, runtime verification and dashboard build passed for the certified candidate.",
+        "Vercel preview passed for the certified candidate.",
+        "Existing-user additional-Brand production flow created a Brand from one public URL, reached confirmation, confirmed and reached Home.",
+        "A public Instagram URL remained evidence only and did not create authenticated publishing/Insights authority.",
+        "First-time zero-Workspace production onboarding remains an observation item before final VS-84 validation."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-005 is ready. If VS-84 rollout verification fails, stop the rollout, preserve Brand/source/audit state, and restore the last known-good runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components. No database rollback is required."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-23T20:54:00+02:00",
-      "productionVerification": {"status":"not-started","evidence":["Vercel production deployment dpl_2V32YeeKPXeeBjvjtKWGZfembkjA is READY on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.","Render API deployment dep-da5k8mqjobas73f0mo40 is live on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 and API/publisher startup succeeded.","Authenticated production additional-Brand flow: POST /brands/new 200, GET confirmation 200, POST confirmation 200, followed by Home GET / 200.","API created Brand f5c99a6e-caf2-428c-8ebd-e9f87f2ad044 in existing Workspace f7ab356b-b93c-4022-8f32-435acebb3787 with POST Brand 201 and Brand Brain bootstrap 200.","The Instagram public URL was persisted as one active Knowledge Source; zero channel_accounts were created, preserving the evidence-only boundary.","The Instagram public reader returned limited content, so the accepted limited-learning fallback was used and the Brand remained usable; this is explicitly allowed by VS-84.","First-time zero-Workspace live onboarding has not yet been observed; REL-005 remains in post-release observation and is not marked fully production-verified/validated."]}
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": [
+          "Vercel production deployment dpl_2V32YeeKPXeeBjvjtKWGZfembkjA is READY on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867.",
+          "Render API deployment dep-da5k8mqjobas73f0mo40 is live on exact SHA c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 and API/publisher startup succeeded.",
+          "Authenticated production additional-Brand flow: POST /brands/new 200, GET confirmation 200, POST confirmation 200, followed by Home GET / 200.",
+          "API created Brand f5c99a6e-caf2-428c-8ebd-e9f87f2ad044 in existing Workspace f7ab356b-b93c-4022-8f32-435acebb3787 with POST Brand 201 and Brand Brain bootstrap 200.",
+          "The Instagram public URL was persisted as one active Knowledge Source; zero channel_accounts were created, preserving the evidence-only boundary.",
+          "The Instagram public reader returned limited content, so the accepted limited-learning fallback was used and the Brand remained usable; this is explicitly allowed by VS-84.",
+          "First-time zero-Workspace live onboarding has not yet been observed; REL-005 remains in post-release observation and is not marked fully production-verified/validated."
+        ]
+      }
     },
     {
       "id": "REL-006",
-      "sliceIds": ["VS-85"],
+      "sliceIds": [
+        "VS-85"
+      ],
       "status": "approved",
       "commitSha": "a7659179c93299c6dfb2541583a113a96060cde2",
       "migrations": [],
-      "configurationChanges": ["Release the certified VS-85 web/API runtime at exact SHA a7659179c93299c6dfb2541583a113a96060cde2.","No database migration, provider-scope, credential or publishing-capability change is required."],
-      "featureFlags": ["Home uses Needs Attention, My Idea, For You, Up Next, What's Working and Continue.","My Idea recommends a supported format before durable creation and preserves the existing Idea → Research → Angle → Campaign lineage.","Publishing remains human-approval-bound and capability-gated."],
-      "smokeTests": ["Product Intake run 32663228553 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.","Security baseline run 32663228456 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.","CI run 32663228443 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2, including preflight, runtime verification and dashboard build.","Vercel preview passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.","Production smoke must verify Home renders the six approved sections, My Idea recommendation precedes durable creation, and Brand-scoped navigation remains intact before REL-006 may be marked released."],
-      "rollbackStrategy": {"summary":"RB-006 is ready. If VS-85 rollout or production smoke fails, stop the rollout, preserve Brand/content/audit state, and restore the last known-good production runtime c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 for affected components. No database rollback is required."},
+      "configurationChanges": [
+        "Release the certified VS-85 web/API runtime at exact SHA a7659179c93299c6dfb2541583a113a96060cde2.",
+        "No database migration, provider-scope, credential or publishing-capability change is required."
+      ],
+      "featureFlags": [
+        "Home uses Needs Attention, My Idea, For You, Up Next, What's Working and Continue.",
+        "My Idea recommends a supported format before durable creation and preserves the existing Idea → Research → Angle → Campaign lineage.",
+        "Publishing remains human-approval-bound and capability-gated."
+      ],
+      "smokeTests": [
+        "Product Intake run 32663228553 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.",
+        "Security baseline run 32663228456 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.",
+        "CI run 32663228443 passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2, including preflight, runtime verification and dashboard build.",
+        "Vercel preview passed for exact certified candidate a7659179c93299c6dfb2541583a113a96060cde2.",
+        "Production smoke must verify Home renders the six approved sections, My Idea recommendation precedes durable creation, and Brand-scoped navigation remains intact before REL-006 may be marked released."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-006 is ready. If VS-85 rollout or production smoke fails, stop the rollout, preserve Brand/content/audit state, and restore the last known-good production runtime c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 for affected components. No database rollback is required."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-23T22:14:00+02:00",
-      "productionVerification": {"status":"not-started","evidence":[]}
+      "productionVerification": {
+        "status": "not-started",
+        "evidence": []
+      }
     },
     {
       "id": "REL-007",
-      "sliceIds": ["VS-89"],
+      "sliceIds": [
+        "VS-89"
+      ],
       "status": "released",
       "commitSha": "d7243fea87008e7c5e73a1cb50f87782bf79c418",
       "migrations": [],
-      "configurationChanges": ["Release the certified VS-89 web runtime at exact SHA d7243fea87008e7c5e73a1cb50f87782bf79c418; no API, worker, database, provider or analytics-collection change is included.","Production was triggered through Kairo's existing approval-only Vercel Git gate. Deployed provenance d180d18d0166ddbb33bab9ef64e0746a0c9363fa is runtime-equivalent to the certified candidate: Git compare shows only root vercel.json and apps/web/vercel.json deploymentEnabled controls differ.","After the production deployment entered BUILDING, both Vercel Git deployment gates were restored to false."],
-      "featureFlags": ["Brand uses inline-first Identity, Audience, Voice & Style and Content Pillars editing while preserving the Brand Brain domain model.","Sources remain learning evidence; authenticated publishing and provider Insights are managed under Brand → Channels.","Avatar/Presenter and AI & Media Provider configuration remain deferred to separate governed slices.","Automatic Vercel Git deployment remains disabled outside an explicitly approved release window."],
-      "smokeTests": ["Product Intake #838, Security baseline #1010 and CI #1217 passed on exact certified candidate d7243fea87008e7c5e73a1cb50f87782bf79c418.","Vercel production deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS reached READY from main with deployed provenance d180d18d0166ddbb33bab9ef64e0746a0c9363fa.","Canonical production /api/version returned HTTP 200 with releaseSha d180d18d0166ddbb33bab9ef64e0746a0c9363fa.","Canonical production root returned the expected Auth0 307 authorization redirect with callback to the production domain.","Vercel reported no runtime errors in the 15-minute post-deploy window.","Authenticated Brand/Channels interaction and rendered visual-fidelity smoke remain post-release observation items and are not represented as validated."],
-      "rollbackStrategy": {"summary":"RB-007 is ready. If VS-89 production behavior regresses, restore the previous known-good Vercel production runtime 711e59199d4f84fafa0b8d528a88964901e8926b, preserve Brand/source/channel/audit state, keep Vercel Git auto-deploy disabled, and re-verify authentication plus Brand-scoped access before reopening the changed UX."},
+      "configurationChanges": [
+        "Release the certified VS-89 web runtime at exact SHA d7243fea87008e7c5e73a1cb50f87782bf79c418; no API, worker, database, provider or analytics-collection change is included.",
+        "Production was triggered through Kairo's existing approval-only Vercel Git gate. Deployed provenance d180d18d0166ddbb33bab9ef64e0746a0c9363fa is runtime-equivalent to the certified candidate: Git compare shows only root vercel.json and apps/web/vercel.json deploymentEnabled controls differ.",
+        "After the production deployment entered BUILDING, both Vercel Git deployment gates were restored to false."
+      ],
+      "featureFlags": [
+        "Brand uses inline-first Identity, Audience, Voice & Style and Content Pillars editing while preserving the Brand Brain domain model.",
+        "Sources remain learning evidence; authenticated publishing and provider Insights are managed under Brand → Channels.",
+        "Avatar/Presenter and AI & Media Provider configuration remain deferred to separate governed slices.",
+        "Automatic Vercel Git deployment remains disabled outside an explicitly approved release window."
+      ],
+      "smokeTests": [
+        "Product Intake #838, Security baseline #1010 and CI #1217 passed on exact certified candidate d7243fea87008e7c5e73a1cb50f87782bf79c418.",
+        "Vercel production deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS reached READY from main with deployed provenance d180d18d0166ddbb33bab9ef64e0746a0c9363fa.",
+        "Canonical production /api/version returned HTTP 200 with releaseSha d180d18d0166ddbb33bab9ef64e0746a0c9363fa.",
+        "Canonical production root returned the expected Auth0 307 authorization redirect with callback to the production domain.",
+        "Vercel reported no runtime errors in the 15-minute post-deploy window.",
+        "Authenticated Brand/Channels interaction and rendered visual-fidelity smoke remain post-release observation items and are not represented as validated."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-007 is ready. If VS-89 production behavior regresses, restore the previous known-good Vercel production runtime 711e59199d4f84fafa0b8d528a88964901e8926b, preserve Brand/source/channel/audit state, keep Vercel Git auto-deploy disabled, and re-verify authentication plus Brand-scoped access before reopening the changed UX."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-24T18:24:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Certified VS-89 candidate d7243fea87008e7c5e73a1cb50f87782bf79c418 was merged as 2368209bcae122d6e33eba671b4fa5fc0f24fdc2.","Git compare d7243fea87008e7c5e73a1cb50f87782bf79c418..d180d18d0166ddbb33bab9ef64e0746a0c9363fa changes only vercel.json and apps/web/vercel.json deployment controls.","Vercel deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS is READY and is a rollback candidate.","Production /api/version returned HTTP 200 with releaseSha d180d18d0166ddbb33bab9ef64e0746a0c9363fa.","Production root correctly redirected to Auth0 and no Vercel runtime errors were observed in the immediate post-deploy window.","Both root and apps/web Vercel Git deployment gates were restored to deploymentEnabled=false after the release trigger."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Certified VS-89 candidate d7243fea87008e7c5e73a1cb50f87782bf79c418 was merged as 2368209bcae122d6e33eba671b4fa5fc0f24fdc2.",
+          "Git compare d7243fea87008e7c5e73a1cb50f87782bf79c418..d180d18d0166ddbb33bab9ef64e0746a0c9363fa changes only vercel.json and apps/web/vercel.json deployment controls.",
+          "Vercel deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS is READY and is a rollback candidate.",
+          "Production /api/version returned HTTP 200 with releaseSha d180d18d0166ddbb33bab9ef64e0746a0c9363fa.",
+          "Production root correctly redirected to Auth0 and no Vercel runtime errors were observed in the immediate post-deploy window.",
+          "Both root and apps/web Vercel Git deployment gates were restored to deploymentEnabled=false after the release trigger."
+        ]
+      }
     },
     {
       "id": "REL-008",
-      "sliceIds": ["VS-90"],
+      "sliceIds": [
+        "VS-90"
+      ],
       "status": "released",
       "commitSha": "1da4665fa430468516f79e38984638369552b6e7",
-      "migrations": ["apps/api/migrations/0029_brand_presenters.sql"],
-      "configurationChanges": ["Applied migration 0029 to Neon production project bitter-firefly-55924620, branch br-broad-dew-asjbqglh, database kairo using verified migration 2e7c3721-aa35-4243-973e-e97c68fdf14f.","Render API release provenance was set to runtime-equivalent main commit f4bd21753e406ecb82252b0aac50d8711007c348 and all one-shot startup migration/action environment variables were cleared before deployment.","Vercel production was opened through the approval-only Git gate, then both root and apps/web deploymentEnabled controls were restored to false immediately after the production build started.","No Avatar provider credentials, endpoint or model configuration were added; Presenter eligibility therefore remains fail-closed by design."],
-      "featureFlags": ["Presenter is optional and None remains the default for creation.","A saved Presenter profile is not selectable unless AvatarProvider capability is configured and healthy.","Existing Content, Preview, approval, publishing and channel behavior remain unchanged.","Authenticated Brand → Avatar production interaction remains an observation item in issue #192 and is not represented as validated."],
-      "smokeTests": ["Product Intake #876, Security baseline #1051 and CI #1266 passed on exact certified runtime 1da4665fa430468516f79e38984638369552b6e7.","Production-enable governance Product Intake #878, Security baseline #1053 and CI #1269 passed before rollout.","Migration 0029 was applied first to temporary Neon branch br-quiet-band-assqm76z, verified for Presenter table/column/constraint/index presence, then committed successfully to production and the temporary branch was deleted.","Production schema verification confirmed brand_presenters, simple_creation_requests.presenter_id, simple_creation_presenter_scope_fk and simple_creation_presenter_idx are present.","Render deployment dep-da6ch3ek1f9s73fetht0 reached live on commit f4bd21753e406ecb82252b0aac50d8711007c348; startup logs show the API server listening and the existing Instagram publisher starting normally.","Render showed no error/fatal application logs in the new deployment window 2026-08-24T22:41:17Z through 2026-08-24T22:46:00Z.","Vercel deployment dpl_5VBJbgVj25vfUxqYrE7ipuXWhhqQ is READY on runtime-equivalent commit 3ac634f337653fce92e5ae177c2d534d80d11d5e; build output includes /brands/[brandId]/avatar.","Canonical production /api/version returned HTTP 200 with releaseSha 3ac634f337653fce92e5ae177c2d534d80d11d5e and the production root returned the expected Auth0 307 login redirect.","Vercel reported no runtime errors in the immediate post-deploy window.","Git compare proves API deployed provenance differs from the certified runtime only by VS-90 governance files; web deployed provenance differs only by those governance files plus apps/web/vercel.json deployment gating.","Authenticated Brand → Avatar save/update, provider-unavailable selector behavior, forged Presenter rejection, None creation and cross-Brand denial remain open in issue #192 before final VS-90 validation."],
-      "rollbackStrategy": {"summary":"RB-008 is ready. If VS-90 production behavior regresses, keep Vercel Git auto-deploy disabled, preserve Presenter/Brand/content/audit state, restore the prior known-good web/API runtime for the affected component, and prefer forward recovery rather than deleting or reversing additive migration 0029. Re-verify authentication, Brand scope and existing approval/publishing safeguards before reopening the changed flow."},
+      "migrations": [
+        "apps/api/migrations/0029_brand_presenters.sql"
+      ],
+      "configurationChanges": [
+        "Applied migration 0029 to Neon production project bitter-firefly-55924620, branch br-broad-dew-asjbqglh, database kairo using verified migration 2e7c3721-aa35-4243-973e-e97c68fdf14f.",
+        "Render API release provenance was set to runtime-equivalent main commit f4bd21753e406ecb82252b0aac50d8711007c348 and all one-shot startup migration/action environment variables were cleared before deployment.",
+        "Vercel production was opened through the approval-only Git gate, then both root and apps/web deploymentEnabled controls were restored to false immediately after the production build started.",
+        "No Avatar provider credentials, endpoint or model configuration were added; Presenter eligibility therefore remains fail-closed by design."
+      ],
+      "featureFlags": [
+        "Presenter is optional and None remains the default for creation.",
+        "A saved Presenter profile is not selectable unless AvatarProvider capability is configured and healthy.",
+        "Existing Content, Preview, approval, publishing and channel behavior remain unchanged.",
+        "Authenticated Brand → Avatar production interaction remains an observation item in issue #192 and is not represented as validated."
+      ],
+      "smokeTests": [
+        "Product Intake #876, Security baseline #1051 and CI #1266 passed on exact certified runtime 1da4665fa430468516f79e38984638369552b6e7.",
+        "Production-enable governance Product Intake #878, Security baseline #1053 and CI #1269 passed before rollout.",
+        "Migration 0029 was applied first to temporary Neon branch br-quiet-band-assqm76z, verified for Presenter table/column/constraint/index presence, then committed successfully to production and the temporary branch was deleted.",
+        "Production schema verification confirmed brand_presenters, simple_creation_requests.presenter_id, simple_creation_presenter_scope_fk and simple_creation_presenter_idx are present.",
+        "Render deployment dep-da6ch3ek1f9s73fetht0 reached live on commit f4bd21753e406ecb82252b0aac50d8711007c348; startup logs show the API server listening and the existing Instagram publisher starting normally.",
+        "Render showed no error/fatal application logs in the new deployment window 2026-08-24T22:41:17Z through 2026-08-24T22:46:00Z.",
+        "Vercel deployment dpl_5VBJbgVj25vfUxqYrE7ipuXWhhqQ is READY on runtime-equivalent commit 3ac634f337653fce92e5ae177c2d534d80d11d5e; build output includes /brands/[brandId]/avatar.",
+        "Canonical production /api/version returned HTTP 200 with releaseSha 3ac634f337653fce92e5ae177c2d534d80d11d5e and the production root returned the expected Auth0 307 login redirect.",
+        "Vercel reported no runtime errors in the immediate post-deploy window.",
+        "Git compare proves API deployed provenance differs from the certified runtime only by VS-90 governance files; web deployed provenance differs only by those governance files plus apps/web/vercel.json deployment gating.",
+        "Authenticated Brand → Avatar save/update, provider-unavailable selector behavior, forged Presenter rejection, None creation and cross-Brand denial remain open in issue #192 before final VS-90 validation."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-008 is ready. If VS-90 production behavior regresses, keep Vercel Git auto-deploy disabled, preserve Presenter/Brand/content/audit state, restore the prior known-good web/API runtime for the affected component, and prefer forward recovery rather than deleting or reversing additive migration 0029. Re-verify authentication, Brand scope and existing approval/publishing safeguards before reopening the changed flow."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-25T00:06:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Neon migration 2e7c3721-aa35-4243-973e-e97c68fdf14f applied successfully to production database kairo after temporary-branch verification.","Render deploy dep-da6ch3ek1f9s73fetht0 is live at runtime-equivalent commit f4bd21753e406ecb82252b0aac50d8711007c348 with clean startup and no new deployment-window errors.","Vercel production deployment dpl_5VBJbgVj25vfUxqYrE7ipuXWhhqQ is READY at runtime-equivalent commit 3ac634f337653fce92e5ae177c2d534d80d11d5e.","Production /api/version returned HTTP 200 and Auth0 production redirect returned HTTP 307 as expected.","Vercel runtime error aggregation found no errors in the immediate post-release window.","Both Vercel Git deployment gates are restored to false on current main.","Authenticated functional/visual observation is explicitly deferred to issue #192; VS-90 remains observed rather than validated."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Neon migration 2e7c3721-aa35-4243-973e-e97c68fdf14f applied successfully to production database kairo after temporary-branch verification.",
+          "Render deploy dep-da6ch3ek1f9s73fetht0 is live at runtime-equivalent commit f4bd21753e406ecb82252b0aac50d8711007c348 with clean startup and no new deployment-window errors.",
+          "Vercel production deployment dpl_5VBJbgVj25vfUxqYrE7ipuXWhhqQ is READY at runtime-equivalent commit 3ac634f337653fce92e5ae177c2d534d80d11d5e.",
+          "Production /api/version returned HTTP 200 and Auth0 production redirect returned HTTP 307 as expected.",
+          "Vercel runtime error aggregation found no errors in the immediate post-release window.",
+          "Both Vercel Git deployment gates are restored to false on current main.",
+          "Authenticated functional/visual observation is explicitly deferred to issue #192; VS-90 remains observed rather than validated."
+        ]
+      }
     },
     {
       "id": "REL-009",
-      "sliceIds": ["VS-98"],
+      "sliceIds": [
+        "VS-98"
+      ],
       "status": "released",
       "commitSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
-      "migrations": ["apps/api/migrations/0029_brand_presenters.sql","apps/api/migrations/0030_home_media_inputs.sql"],
-      "configurationChanges": ["Render API release provenance was set to main merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a for the VS-98 production rollout.","The bounded startup migration range 0029_brand_presenters.sql..0030_home_media_inputs.sql was enabled for the migration deployment and cleared immediately after successful application.","The final clean Render deployment ran with no one-shot migration flag; the web Home changes were already live on Vercel."],
-      "featureFlags": ["Home My Idea uses Auto/Post/Carousel/Reel/Video and a single AI Generate action.","Photo and Video upload plus reusable Media remain Brand-scoped and private through signed object-storage access.","Presenter remains optional and conditional for Reel/Video.","URL scraping/onboarding reliability and Hunter quality/provider changes remain explicitly deferred from VS-98."],
-      "smokeTests": ["VS-98 implementation and release-preparation candidates passed Product Intake, Security baseline and CI before production rollout.","Production migration registry contains 0029_brand_presenters.sql and 0030_home_media_inputs.sql.","Render migration deployment dep-da78iq0ae00c73b1q2eg applied the bounded presenter/media migration range and reached live.","Render clean deployment dep-da78j7u7bikc739s9cmg reached live on merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a after the one-shot migration flag was cleared.","Final API startup logs show the server listening normally with the existing Instagram publisher starting successfully."],
-      "rollbackStrategy": {"summary":"RB-009 is ready. If VS-98 Home creation or media behavior regresses, preserve Brand/media/content/audit state, keep additive migrations 0029 and 0030 in place, restore the previous known-good web/API runtime for the affected component, and use forward recovery for schema defects. Re-verify authentication, Brand isolation, existing publishing safeguards and media access before reopening the changed flow."},
+      "migrations": [
+        "apps/api/migrations/0029_brand_presenters.sql",
+        "apps/api/migrations/0030_home_media_inputs.sql"
+      ],
+      "configurationChanges": [
+        "Render API release provenance was set to main merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a for the VS-98 production rollout.",
+        "The bounded startup migration range 0029_brand_presenters.sql..0030_home_media_inputs.sql was enabled for the migration deployment and cleared immediately after successful application.",
+        "The final clean Render deployment ran with no one-shot migration flag; the web Home changes were already live on Vercel."
+      ],
+      "featureFlags": [
+        "Home My Idea uses Auto/Post/Carousel/Reel/Video and a single AI Generate action.",
+        "Photo and Video upload plus reusable Media remain Brand-scoped and private through signed object-storage access.",
+        "Presenter remains optional and conditional for Reel/Video.",
+        "URL scraping/onboarding reliability and Hunter quality/provider changes remain explicitly deferred from VS-98."
+      ],
+      "smokeTests": [
+        "VS-98 implementation and release-preparation candidates passed Product Intake, Security baseline and CI before production rollout.",
+        "Production migration registry contains 0029_brand_presenters.sql and 0030_home_media_inputs.sql.",
+        "Render migration deployment dep-da78iq0ae00c73b1q2eg applied the bounded presenter/media migration range and reached live.",
+        "Render clean deployment dep-da78j7u7bikc739s9cmg reached live on merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a after the one-shot migration flag was cleared.",
+        "Final API startup logs show the server listening normally with the existing Instagram publisher starting successfully."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-009 is ready. If VS-98 Home creation or media behavior regresses, preserve Brand/media/content/audit state, keep additive migrations 0029 and 0030 in place, restore the previous known-good web/API runtime for the affected component, and use forward recovery for schema defects. Re-verify authentication, Brand isolation, existing publishing safeguards and media access before reopening the changed flow."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T08:27:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Render migration deployment dep-da78iq0ae00c73b1q2eg reached live after applying 0029/0030.","Production migration registry verification confirmed both 0029_brand_presenters.sql and 0030_home_media_inputs.sql.","One-time migration environment configuration was cleared after successful schema application.","Render clean deployment dep-da78j7u7bikc739s9cmg reached live on SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a.","Final clean startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening normally."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Render migration deployment dep-da78iq0ae00c73b1q2eg reached live after applying 0029/0030.",
+          "Production migration registry verification confirmed both 0029_brand_presenters.sql and 0030_home_media_inputs.sql.",
+          "One-time migration environment configuration was cleared after successful schema application.",
+          "Render clean deployment dep-da78j7u7bikc739s9cmg reached live on SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a.",
+          "Final clean startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening normally."
+        ]
+      }
     },
     {
       "id": "REL-010",
-      "sliceIds": ["VS-99"],
+      "sliceIds": [
+        "VS-99"
+      ],
       "status": "released",
       "commitSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
       "migrations": [],
-      "configurationChanges": ["Deployed the certified VS-99 API merge SHA through the existing Render service with no credential, migration, provider-scope or frontend configuration changes."],
-      "featureFlags": ["Brand onboarding uses the shared SourceRouter with secure HTTP/PDF fallback.","public-content-fetch is available through the Kairo-owned ToolGateway.","Platform-specific deep extraction and scheduled Hunter remain disabled/deferred."],
-      "smokeTests": ["Product Intake 32943590653, Security baseline 32943590649 and CI 32943590636 passed on the certification-only head.","Render deploy dep-da79gvh42hec73aok0qg reached live on exact merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.","Production /health returned HTTP 200 with status ok.","Startup logs show the API listening and the existing Instagram publisher starting normally.","No error-level logs were present in the post-deploy verification window."],
-      "rollbackStrategy": {"summary":"RB-010 is ready. If source ingestion or onboarding regresses, redeploy the previous known-good API merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a. No database rollback is required. Preserve Brand/source/provenance state and keep publishing safeguards unchanged."},
+      "configurationChanges": [
+        "Deployed the certified VS-99 API merge SHA through the existing Render service with no credential, migration, provider-scope or frontend configuration changes."
+      ],
+      "featureFlags": [
+        "Brand onboarding uses the shared SourceRouter with secure HTTP/PDF fallback.",
+        "public-content-fetch is available through the Kairo-owned ToolGateway.",
+        "Platform-specific deep extraction and scheduled Hunter remain disabled/deferred."
+      ],
+      "smokeTests": [
+        "Product Intake 32943590653, Security baseline 32943590649 and CI 32943590636 passed on the certification-only head.",
+        "Render deploy dep-da79gvh42hec73aok0qg reached live on exact merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.",
+        "Production /health returned HTTP 200 with status ok.",
+        "Startup logs show the API listening and the existing Instagram publisher starting normally.",
+        "No error-level logs were present in the post-deploy verification window."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-010 is ready. If source ingestion or onboarding regresses, redeploy the previous known-good API merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a. No database rollback is required. Preserve Brand/source/provenance state and keep publishing safeguards unchanged."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T09:39:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da79gvh42hec73aok0qg is live on exact merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.","Production /health returned HTTP 200.","API startup completed normally.","Post-deploy error-log query returned no errors."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Render deploy dep-da79gvh42hec73aok0qg is live on exact merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.",
+          "Production /health returned HTTP 200.",
+          "API startup completed normally.",
+          "Post-deploy error-log query returned no errors."
+        ]
+      }
     },
     {
       "id": "REL-011",
-      "sliceIds": ["VS-100"],
+      "sliceIds": [
+        "VS-100"
+      ],
       "status": "released",
       "commitSha": "e4162533df44117791c42cd414201259ad5dd6ad",
       "migrations": [],
-      "configurationChanges": ["Deployed the VS-100 API merge SHA through the existing Render service with no credential, migration, frontend or publishing-authority changes."],
-      "featureFlags": ["Website, GitHub, Hacker News and RSS/Substack adapters are registered ahead of secure HTTP/PDF fallback.","Media analysis, social adapters, richer onboarding and scheduled Hunter remain deferred to later approved batches."],
-      "smokeTests": ["Product Intake 32946470168, Security baseline 32946470252 and CI 32946470213 passed.","Render deploy dep-da7a1kh5efls73ckksog reached live on exact merge SHA e4162533df44117791c42cd414201259ad5dd6ad.","Production /health returned HTTP 200 and no error-level logs were present after deployment."],
-      "rollbackStrategy": {"summary":"RB-011 is ready. If core adapter routing regresses, redeploy previous known-good API SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f. No database rollback is required."},
+      "configurationChanges": [
+        "Deployed the VS-100 API merge SHA through the existing Render service with no credential, migration, frontend or publishing-authority changes."
+      ],
+      "featureFlags": [
+        "Website, GitHub, Hacker News and RSS/Substack adapters are registered ahead of secure HTTP/PDF fallback.",
+        "Media analysis, social adapters, richer onboarding and scheduled Hunter remain deferred to later approved batches."
+      ],
+      "smokeTests": [
+        "Product Intake 32946470168, Security baseline 32946470252 and CI 32946470213 passed.",
+        "Render deploy dep-da7a1kh5efls73ckksog reached live on exact merge SHA e4162533df44117791c42cd414201259ad5dd6ad.",
+        "Production /health returned HTTP 200 and no error-level logs were present after deployment."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-011 is ready. If core adapter routing regresses, redeploy previous known-good API SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f. No database rollback is required."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T10:16:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7a1kh5efls73ckksog is live on exact merge SHA.","Production health returned 200.","Startup completed normally and the post-deploy error query was clean."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Render deploy dep-da7a1kh5efls73ckksog is live on exact merge SHA.",
+          "Production health returned 200.",
+          "Startup completed normally and the post-deploy error query was clean."
+        ]
+      }
     },
     {
       "id": "REL-012",
-      "sliceIds": ["VS-101"],
+      "sliceIds": [
+        "VS-101"
+      ],
       "status": "released",
       "commitSha": "db596a9eebb05ee433bf53742072b55ca839cf3f",
       "migrations": [],
-      "configurationChanges": ["Deployed Batch 3 to the existing Render Kairo API service from main with no database migration, credential, OAuth-scope, frontend or publishing-authority changes.","The deployed commit db596a9eebb05ee433bf53742072b55ca839cf3f differs from certified runtime merge 62058194b98cc3739ba6a931864dfdb295f61ae4 only by VS-101 governance metadata."],
-      "featureFlags": ["Dedicated YouTube, Instagram, Facebook and LinkedIn Source Intelligence adapters are enabled ahead of generic Website/secure HTTP fallback.","Public social evidence remains untrusted and authwall/login-only content is rejected rather than promoted to Brand truth.","No scheduler, new OAuth authority or frozen UI behavior is enabled by VS-101."],
-      "smokeTests": ["Product Intake 32953454847, Security baseline 32953454919 and CI 32953454925 passed on certified candidate d127fa6b482aa0792d7c24cdde39e436f357bcd5.","PR #213 merged as 62058194b98cc3739ba6a931864dfdb295f61ae4.","Git compare 62058194b98cc3739ba6a931864dfdb295f61ae4..db596a9eebb05ee433bf53742072b55ca839cf3f changes only delivery/current-slice.json.","Render deploy dep-da7b9im7bikc73a57oq0 reached live on db596a9eebb05ee433bf53742072b55ca839cf3f.","Production startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and the API listening normally.","No error-level or fatal logs were present in the post-deploy verification window."],
-      "rollbackStrategy": {"summary":"RB-012 is ready. If social/video Source Intelligence routing regresses, preserve Brand/source/provenance state and redeploy previous known-good API SHA e4162533df44117791c42cd414201259ad5dd6ad. No database rollback is required. Keep existing publishing capability gates and credentials unchanged."},
+      "configurationChanges": [
+        "Deployed Batch 3 to the existing Render Kairo API service from main with no database migration, credential, OAuth-scope, frontend or publishing-authority changes.",
+        "The deployed commit db596a9eebb05ee433bf53742072b55ca839cf3f differs from certified runtime merge 62058194b98cc3739ba6a931864dfdb295f61ae4 only by VS-101 governance metadata."
+      ],
+      "featureFlags": [
+        "Dedicated YouTube, Instagram, Facebook and LinkedIn Source Intelligence adapters are enabled ahead of generic Website/secure HTTP fallback.",
+        "Public social evidence remains untrusted and authwall/login-only content is rejected rather than promoted to Brand truth.",
+        "No scheduler, new OAuth authority or frozen UI behavior is enabled by VS-101."
+      ],
+      "smokeTests": [
+        "Product Intake 32953454847, Security baseline 32953454919 and CI 32953454925 passed on certified candidate d127fa6b482aa0792d7c24cdde39e436f357bcd5.",
+        "PR #213 merged as 62058194b98cc3739ba6a931864dfdb295f61ae4.",
+        "Git compare 62058194b98cc3739ba6a931864dfdb295f61ae4..db596a9eebb05ee433bf53742072b55ca839cf3f changes only delivery/current-slice.json.",
+        "Render deploy dep-da7b9im7bikc73a57oq0 reached live on db596a9eebb05ee433bf53742072b55ca839cf3f.",
+        "Production startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and the API listening normally.",
+        "No error-level or fatal logs were present in the post-deploy verification window."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-012 is ready. If social/video Source Intelligence routing regresses, preserve Brand/source/provenance state and redeploy previous known-good API SHA e4162533df44117791c42cd414201259ad5dd6ad. No database rollback is required. Keep existing publishing capability gates and credentials unchanged."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T11:37:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7b9im7bikc73a57oq0 is live on db596a9eebb05ee433bf53742072b55ca839cf3f.","API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.","Post-deploy error/fatal log queries returned no entries.","Deployed runtime is code-equivalent to the approved VS-101 merge; only delivery/current-slice.json changed after merge."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Render deploy dep-da7b9im7bikc73a57oq0 is live on db596a9eebb05ee433bf53742072b55ca839cf3f.",
+          "API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.",
+          "Post-deploy error/fatal log queries returned no entries.",
+          "Deployed runtime is code-equivalent to the approved VS-101 merge; only delivery/current-slice.json changed after merge."
+        ]
+      }
     },
     {
       "id": "REL-013",
-      "sliceIds": ["VS-102"],
+      "sliceIds": [
+        "VS-102"
+      ],
       "status": "released",
       "commitSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7",
       "migrations": [],
-      "configurationChanges": ["Deployed Batch 4 to the existing Render Kairo API service from main with no database migration, credential, OAuth-scope, frontend or publishing-authority changes."],
-      "featureFlags": ["Provider-neutral MediaAnalyzer is enabled in the shared Source Intelligence pipeline.","Onboarding evidence sampling is bounded to recent <=20, deep <=5 and total <=32 with canonical URL/content-hash deduplication.","No scheduler, autonomous publishing, new OAuth authority or frozen UI behavior is enabled by VS-102."],
-      "smokeTests": ["Product Intake 32956048584, Security baseline 32956048556 and CI 32956048472 passed on certified candidate 9bf055109c66431fb3609d91e3132e6c8023e171.","PR #214 merged as f0bb76ad12522611c138283ec03d1564b1a6f7b7.","Render deploy dep-da7bm667bikc73a6hplg reached live on f0bb76ad12522611c138283ec03d1564b1a6f7b7.","Production startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and the API listening normally.","No error-level or fatal logs were present in the post-deploy verification window."],
-      "rollbackStrategy": {"summary":"RB-013 is ready. If MediaAnalyzer or onboarding sampling regresses, preserve Brand/source/provenance state and redeploy previous known-good API SHA db596a9eebb05ee433bf53742072b55ca839cf3f. No database rollback is required. Keep existing publishing capability gates and credentials unchanged."},
+      "configurationChanges": [
+        "Deployed Batch 4 to the existing Render Kairo API service from main with no database migration, credential, OAuth-scope, frontend or publishing-authority changes."
+      ],
+      "featureFlags": [
+        "Provider-neutral MediaAnalyzer is enabled in the shared Source Intelligence pipeline.",
+        "Onboarding evidence sampling is bounded to recent <=20, deep <=5 and total <=32 with canonical URL/content-hash deduplication.",
+        "No scheduler, autonomous publishing, new OAuth authority or frozen UI behavior is enabled by VS-102."
+      ],
+      "smokeTests": [
+        "Product Intake 32956048584, Security baseline 32956048556 and CI 32956048472 passed on certified candidate 9bf055109c66431fb3609d91e3132e6c8023e171.",
+        "PR #214 merged as f0bb76ad12522611c138283ec03d1564b1a6f7b7.",
+        "Render deploy dep-da7bm667bikc73a6hplg reached live on f0bb76ad12522611c138283ec03d1564b1a6f7b7.",
+        "Production startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and the API listening normally.",
+        "No error-level or fatal logs were present in the post-deploy verification window."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-013 is ready. If MediaAnalyzer or onboarding sampling regresses, preserve Brand/source/provenance state and redeploy previous known-good API SHA db596a9eebb05ee433bf53742072b55ca839cf3f. No database rollback is required. Keep existing publishing capability gates and credentials unchanged."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T12:08:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7bm667bikc73a6hplg is live on f0bb76ad12522611c138283ec03d1564b1a6f7b7.","API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.","Post-deploy error/fatal log queries returned no entries."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Render deploy dep-da7bm667bikc73a6hplg is live on f0bb76ad12522611c138283ec03d1564b1a6f7b7.",
+          "API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.",
+          "Post-deploy error/fatal log queries returned no entries."
+        ]
+      }
     },
     {
       "id": "REL-014",
-      "sliceIds": ["VS-103"],
+      "sliceIds": [
+        "VS-103"
+      ],
       "status": "released",
       "commitSha": "fbc9ea984df526104f8b815524f62d1fd55109e2",
-      "migrations": ["apps/api/migrations/0031_brand_intelligence_topic_graph.sql"],
-      "configurationChanges": ["Applied migration 0031 through the bounded startup migration mechanism and cleared the one-shot setting after success."],
-      "featureFlags": ["Brand Intelligence V2 and Topic Graph persistence enabled; Hunter ranking unchanged in this release."],
-      "smokeTests": ["Render deployment dep-da7dkf2d0e5s73e8dhk0 reached live on the exact merge SHA after migration 0031 applied successfully."],
-      "rollbackStrategy": {"summary":"RB-014 is ready; preserve additive graph data and prefer runtime rollback or forward recovery."},
+      "migrations": [
+        "apps/api/migrations/0031_brand_intelligence_topic_graph.sql"
+      ],
+      "configurationChanges": [
+        "Applied migration 0031 through the bounded startup migration mechanism and cleared the one-shot setting after success."
+      ],
+      "featureFlags": [
+        "Brand Intelligence V2 and Topic Graph persistence enabled; Hunter ranking unchanged in this release."
+      ],
+      "smokeTests": [
+        "Render deployment dep-da7dkf2d0e5s73e8dhk0 reached live on the exact merge SHA after migration 0031 applied successfully."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-014 is ready; preserve additive graph data and prefer runtime rollback or forward recovery."
+      },
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T13:57:00+02:00",
-      "productionVerification": {"status":"passed","evidence":["Migration 0031 is present in production and the final cleanup deployment is live."]}
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Migration 0031 is present in production and the final cleanup deployment is live."
+        ]
+      }
+    },
+    {
+      "id": "REL-015",
+      "sliceIds": [
+        "VS-104"
+      ],
+      "status": "released",
+      "commitSha": "e5a28d0383816ac8eca11b1c54256b64f4319cde",
+      "migrations": [
+        "apps/api/migrations/0033_opportunity_feedback_closed_loop.sql"
+      ],
+      "configurationChanges": [
+        "Applied migration 0033 through guarded startup.",
+        "Enabled one-shot closed-loop smoke for verification, then cleared it before clean deployment."
+      ],
+      "featureFlags": [
+        "Closed-loop feedback and Opportunity-to-Idea lineage enabled.",
+        "No scheduler, autonomous publishing, new OAuth scope or UI redesign enabled."
+      ],
+      "smokeTests": [
+        "PR #223 exact candidate passed CI and Security.",
+        "PR #223 merged as e5a28d0383816ac8eca11b1c54256b64f4319cde.",
+        "Render smoke dep-da7ikkjm6pss73fs1sug logged KAIRO_CLOSED_LOOP_SMOKE_PASSED with fixtureClean=true.",
+        "Render clean deployment dep-da7ilnnavr4c7380blf0 reached live after clearing the one-shot smoke setting.",
+        "No error-level logs were observed in clean deployment."
+      ],
+      "rollbackStrategy": {
+        "summary": "RB-015 is ready. Preserve feedback, Idea, Brand and audit state; redeploy the previous known-good runtime if closed-loop behavior regresses. Do not destructively reverse migration 0033."
+      },
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-26T18:00:00+02:00",
+      "productionVerification": {
+        "status": "passed",
+        "evidence": [
+          "Transactional smoke passed with feedback, idempotency, Opportunity-to-Idea lineage, development state, rollbackClean and fixtureClean.",
+          "Clean Render deployment dep-da7ilnnavr4c7380blf0 is live on merge SHA e5a28d0383816ac8eca11b1c54256b64f4319cde.",
+          "Clean deployment produced no error-level logs."
+        ]
+      }
     }
   ]
 }
