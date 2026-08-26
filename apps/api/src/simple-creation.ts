@@ -74,9 +74,10 @@ export class SimpleCreationService {
     private now = () => new Date(),
     avatarProvider?: AvatarProvider,
     contentGenerator?: ContentGenerationPort,
+    brandBrain?: (accountId:string, brandId:string) => Promise<Array<{fieldKey:string;value:string;state:string}>>,
   ) {
     this.research = new ResearchService(researchRepo, now);
-    this.campaigns = new CampaignService(campaignRepo, researchRepo, contentGenerator, now);
+    this.campaigns = new CampaignService(campaignRepo, researchRepo, contentGenerator, now, brandBrain);
     this.presenters = avatarProvider ? new BrandPresenterService(store, now, avatarProvider) : new BrandPresenterService(store, now);
   }
 

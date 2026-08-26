@@ -179,7 +179,7 @@ const simpleCreationStore=new PgSimpleCreationStore(pool);
 const homeMediaService=homeMediaServiceFromEnv(simpleCreationStore.homeMedia);
 registerBrandPresenterRoutes(app,{coreStore,identityVerifier,service:new BrandPresenterService(simpleCreationStore)});
 let simpleCreationService:SimpleCreationService|undefined;let simpleCreationRunning=false;
-if(ideaDeveloper){simpleCreationService=new SimpleCreationService(simpleCreationStore,researchStore,campaignStore,ideaDeveloper,undefined,undefined,contentGenerator);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,...(homeMediaService?{homeMedia:homeMediaService}:{}),trigger:()=>void collectSimpleCreationTick()});}
+if(ideaDeveloper){simpleCreationService=new SimpleCreationService(simpleCreationStore,researchStore,campaignStore,ideaDeveloper,undefined,undefined,contentGenerator,(accountId,brandId)=>coreStore.listBrandBrainFields(accountId,brandId));registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,...(homeMediaService?{homeMedia:homeMediaService}:{}),trigger:()=>void collectSimpleCreationTick()});}
 registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier});
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
@@ -190,7 +190,7 @@ registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibrar
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 const privateCarouselStorage=s3PrivateObjectStorageConfigFromEnv(process.env),legacyCarouselStorage=carouselObjectStorageConfig();
 const carouselSigner=privateCarouselStorage?new S3TemporaryObjectSigner(privateCarouselStorage):legacyCarouselStorage?new HmacObjectStorageTemporarySigner(legacyCarouselStorage.publicBaseUrl,legacyCarouselStorage.signingSecret):undefined;
-const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner),carouselRenderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;
+const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner,(accountId,brandId)=>coreStore.listBrandBrainFields(accountId,brandId)),carouselRenderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;
 registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:carouselStore,...(carouselRenderer?{renderer:carouselRenderer}:{})});
 registerSimplePublishFlowRoutes(app,{coreStore,identityVerifier,service:new SimplePublishFlowService(new PgSimplePublishFlowRepository(pool,carouselSigner))});
 registerBrandNotificationRoutes(app,{coreStore,identityVerifier,repository:new PgBrandNotificationRepository(pool)});

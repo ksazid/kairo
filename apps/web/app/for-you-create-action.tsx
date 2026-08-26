@@ -15,12 +15,13 @@ type Props = {
   direction: string;
   initialFormat: HomeCreationFormat;
   eligiblePresenter?: EligiblePresenter;
+  allowFormatChange?: boolean;
 };
 type StartResponse = { creationId?: string; error?: string };
 type ProgressResponse = { status?: string; message?: string; campaignId?: string; assetId?: string; error?: string };
 const FORMATS: HomeCreationFormat[] = ["image", "carousel", "reel", "video"];
 
-export function ForYouCreateAction({ brandId, opportunityId, title, direction, initialFormat, eligiblePresenter }: Props) {
+export function ForYouCreateAction({ brandId, opportunityId, title, direction, initialFormat, eligiblePresenter, allowFormatChange = false }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<HomeCreationFormat>(initialFormat);
@@ -77,13 +78,13 @@ export function ForYouCreateAction({ brandId, opportunityId, title, direction, i
 
   return (
     <div className={styles.actionPanel}>
-      <div className={styles.formatRow} role="group" aria-label="Content format">
+      {allowFormatChange ? <div className={styles.formatRow} role="group" aria-label="Content format">
         {FORMATS.map((item) => (
           <button key={item} type="button" data-selected={format === item} aria-pressed={format === item} onClick={() => { setFormat(item); if (item !== "reel" && item !== "video") setPresenterId(""); }}>
             {homeFormatLabel(item)}
           </button>
         ))}
-      </div>
+      </div> : <p className={styles.formatHint}>Recommended format: {homeFormatLabel(format)}. You can change this before generating.</p>}
       {showPresenter && eligiblePresenter ? (
         <label className={styles.presenter}>
           <span>Presenter</span>

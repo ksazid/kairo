@@ -58,7 +58,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   const service = new KairoService(options.store);
   const discovery = options.discoveryStore ? new DiscoveryService(options.discoveryStore) : null;
   const research = options.researchStore ? new ResearchService(options.researchStore) : null;
-  const campaigns = options.campaignStore && options.researchStore ? new CampaignService(options.campaignStore, options.researchStore, options.contentGenerator) : null;
+  const campaigns = options.campaignStore && options.researchStore ? new CampaignService(options.campaignStore, options.researchStore, options.contentGenerator, undefined, (accountId, brandId) => service.listBrandBrain(accountId, brandId)) : null;
   const reviews = options.campaignStore && options.researchStore && options.reviewStore && options.criticEvaluator ? new ReviewService(options.campaignStore, options.researchStore, options.reviewStore, options.criticEvaluator) : null;
   const publishing = options.campaignStore && options.reviewStore && options.publishingStore ? new PublishingService(options.store, options.campaignStore, options.reviewStore, options.publishingStore) : null;
   const publishingGateway = reviews && publishing ? new PublishingGateway(reviews, publishing) : null;
@@ -106,6 +106,13 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
     const account = await authenticate(request, reply, service, options.identityVerifier);
     if (!account) return;
     return service.getBrand(account.id, request.params.brandId);
+  });
+
+  app.delete<{ Params: { brandId: string } }>("/api/v1/brands/:brandId", async (request, reply) => {
+    const account = await authenticate(request, reply, service, options.identityVerifier);
+    if (!account) return;
+    await service.deleteBrand(account.id, request.params.brandId);
+    return reply.status(204).send();
   });
 
   app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/brain", async (request, reply) => {

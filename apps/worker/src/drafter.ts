@@ -18,6 +18,7 @@ export interface DrafterInput {
   action: Exclude<ContentAction, "manual-edit">;
   section?: string;
   claims: Array<{ id: string; text: string; classification: string; verificationState: string }>;
+  brandBrain?: Array<{ fieldKey: string; value: string; state: string }>;
 }
 
 export class DrafterOrchestrator {
@@ -56,6 +57,7 @@ export class DrafterOrchestrator {
           action: input.action,
           ...(input.section ? { section: input.section } : {}),
           claims: input.claims,
+          ...(input.brandBrain?.length ? { brandBrain: input.brandBrain.filter((field) => field.state !== "stale") } : {}),
         },
       },
       outputSchema: { name: "content-draft", version: "1" },

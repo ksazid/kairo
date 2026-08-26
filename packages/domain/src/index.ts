@@ -63,6 +63,7 @@ export interface KairoRepository {
   hasWorkspaceAccess(accountId: string, workspaceId: string): Promise<boolean>;
   listBrandsForAccount(accountId: string, workspaceId: string): Promise<BrandDto[]>;
   getBrandForAccount(accountId: string, brandId: string): Promise<BrandDto | null>;
+  deleteBrand?(accountId: string, brandId: string): Promise<void>;
 
   listBrandBrainFields(accountId: string, brandId: string): Promise<BrandBrainFieldDto[]>;
   putConfirmedBrandBrainField(
@@ -285,6 +286,12 @@ export class KairoService {
     const brand = await this.repository.getBrandForAccount(accountId, brandId);
     if (!brand) throw new ResourceNotFoundError("Brand not found");
     return brand;
+  }
+
+  async deleteBrand(accountId: string, brandId: string): Promise<void> {
+    await this.getBrand(accountId, brandId);
+    if (!this.repository.deleteBrand) throw new DomainValidationError("Brand deletion is not configured");
+    return this.repository.deleteBrand(accountId, brandId);
   }
 
   async listBrandBrain(accountId: string, brandId: string): Promise<BrandBrainFieldDto[]> {

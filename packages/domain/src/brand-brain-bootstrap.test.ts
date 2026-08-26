@@ -129,6 +129,25 @@ class FakeGenerator implements BrandBrainProposalGenerator {
 }
 
 describe("BrandBrainBootstrapService", () => {
+  it.each([
+    ["instagram", "https://www.instagram.com/malta_bikes/", "audience.primary", /motorcycle|rider/i],
+    ["facebook", "https://www.facebook.com/malta.cars/", "audience.primary", /automotive|car/i],
+    ["substack", "https://example.substack.com/", "identity.category", /independent publishing|newsletter/i],
+    ["website", "https://example.com/", "identity.category", /business|organization/i],
+  ])("creates a truthful %s fallback when the public source is blocked", async (_kind, url, expectedKey, expectedValue) => {
+    const repository = new FakeRepository();
+    repository.brand = { ...repository.brand, publicProfileUrl: url };
+    const service = new BrandBrainBootstrapService(
+      repository,
+      undefined,
+      { read: async () => { throw new Error("blocked"); } },
+    );
+    const result = await service.build("account-1", "brand-1", { primaryObjective: "grow-audience" });
+    expect(result.generatorStatus).toBe("generated");
+    expect(repository.fields.find((field) => field.fieldKey === expectedKey)?.value).toMatch(expectedValue);
+    expect(repository.fields.find((field) => field.fieldKey === expectedKey)?.sourceIds).toHaveLength(1);
+  });
+
   it("records owner objective/directive as confirmed and generated strategy as source-backed inferred context", async () => {
     const repository = new FakeRepository();
     const reader = new FakeReferenceReader();
