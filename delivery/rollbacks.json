@@ -9,9 +9,29 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "84b778660f9d0152a7a0aa248317b476f15215d4",
       "lastKnownGoodSha": "cb273c59e83c3043313127f15afc717b33577958",
-      "triggers": ["API live/readiness or /version exact-SHA check fails","Authentication/session bootstrap fails for pilot users","Workspace or Brand tenant-isolation check fails","High/critical security regression is detected","Publishing bypasses capability or human-approval safeguards","Database migration or application startup failure threatens data integrity"],
-      "procedure": ["Stop or route away pilot traffic for the affected component.","Disable external publishing automation and retain manual fallback.","Preserve logs, audit records and failure evidence; do not delete pilot data during triage.","If schema state is implicated, prefer forward recovery; restore the approved Neon backup only when forward recovery is unsafe.","Redeploy the last known-good certified pilot runtime cb273c59e83c3043313127f15afc717b33577958 for affected runtime components, or keep the component disabled when no prior deployed version exists.","Verify /health/live, /health/ready and /version provenance, then verify authentication and tenant isolation before reopening traffic."],
-      "verification": ["API health is green","Version endpoint reports the intended rollback SHA","Authentication/session bootstrap succeeds","Cross-tenant access remains denied","External publishing remains disabled or capability-gated as intended"],
+      "triggers": [
+        "API live/readiness or /version exact-SHA check fails",
+        "Authentication/session bootstrap fails for pilot users",
+        "Workspace or Brand tenant-isolation check fails",
+        "High/critical security regression is detected",
+        "Publishing bypasses capability or human-approval safeguards",
+        "Database migration or application startup failure threatens data integrity"
+      ],
+      "procedure": [
+        "Stop or route away pilot traffic for the affected component.",
+        "Disable external publishing automation and retain manual fallback.",
+        "Preserve logs, audit records and failure evidence; do not delete pilot data during triage.",
+        "If schema state is implicated, prefer forward recovery; restore the approved Neon backup only when forward recovery is unsafe.",
+        "Redeploy the last known-good certified pilot runtime cb273c59e83c3043313127f15afc717b33577958 for affected runtime components, or keep the component disabled when no prior deployed version exists.",
+        "Verify /health/live, /health/ready and /version provenance, then verify authentication and tenant isolation before reopening traffic."
+      ],
+      "verification": [
+        "API health is green",
+        "Version endpoint reports the intended rollback SHA",
+        "Authentication/session bootstrap succeeds",
+        "Cross-tenant access remains denied",
+        "External publishing remains disabled or capability-gated as intended"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -23,9 +43,24 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "ec01d4b08bc58e92a615f90a8e18c221f2c45610",
       "lastKnownGoodSha": "70267770d0fadf2b670d3dcb833e1c9687930dfc",
-      "triggers": ["API health or exact release provenance fails","Instagram publisher startup or reconciliation regresses","Tenant isolation, destination approval or media fingerprint binding fails","Calendar or Results loses provider-confirmed publish lineage"],
-      "procedure": ["Disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED while preserving commands, attempts, provider IDs and metrics.","Redeploy the final certified runtime or last-known-good SHA according to the failure boundary.","Do not roll back migrations 0023 through 0028; use forward recovery for schema defects.","Verify health, version, authentication, Brand scope and publishing safeguards before re-enabling the worker."],
-      "verification": ["API health and version provenance are green","Authentication and tenant isolation pass","Publishing remains destination-bound and exact-version approved","Calendar and Results preserve existing provider evidence"],
+      "triggers": [
+        "API health or exact release provenance fails",
+        "Instagram publisher startup or reconciliation regresses",
+        "Tenant isolation, destination approval or media fingerprint binding fails",
+        "Calendar or Results loses provider-confirmed publish lineage"
+      ],
+      "procedure": [
+        "Disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED while preserving commands, attempts, provider IDs and metrics.",
+        "Redeploy the final certified runtime or last-known-good SHA according to the failure boundary.",
+        "Do not roll back migrations 0023 through 0028; use forward recovery for schema defects.",
+        "Verify health, version, authentication, Brand scope and publishing safeguards before re-enabling the worker."
+      ],
+      "verification": [
+        "API health and version provenance are green",
+        "Authentication and tenant isolation pass",
+        "Publishing remains destination-bound and exact-version approved",
+        "Calendar and Results preserve existing provider evidence"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -37,9 +72,27 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
       "lastKnownGoodSha": "e7c8e59787e574d5a9209ba65812027d227c554c",
-      "triggers": ["Onboarding cannot create or confirm a Brand","Brand learning from a public URL causes a runtime regression","Authenticated users cannot reach Home after onboarding","Primary navigation or tenant-scoped Brand access regresses","Vercel or API health checks fail on the released candidate"],
-      "procedure": ["Stop the VS-84 rollout and preserve Brand/source/audit state.","Redeploy the last known-good web/API runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components.","Do not delete Brands or inferred Brand Brain fields created during the failed rollout; use forward recovery for data cleanup if required.","Keep social publishing capability gates and human approval controls unchanged.","Verify authentication, tenant isolation, existing Brand access and the prior Home/navigation flow before reopening pilot traffic."],
-      "verification": ["Web and API health are green","Authentication/session bootstrap succeeds","Cross-tenant access remains denied","Existing Brands remain accessible","Publishing remains capability-gated and approval-bound"],
+      "triggers": [
+        "Onboarding cannot create or confirm a Brand",
+        "Brand learning from a public URL causes a runtime regression",
+        "Authenticated users cannot reach Home after onboarding",
+        "Primary navigation or tenant-scoped Brand access regresses",
+        "Vercel or API health checks fail on the released candidate"
+      ],
+      "procedure": [
+        "Stop the VS-84 rollout and preserve Brand/source/audit state.",
+        "Redeploy the last known-good web/API runtime e7c8e59787e574d5a9209ba65812027d227c554c for affected components.",
+        "Do not delete Brands or inferred Brand Brain fields created during the failed rollout; use forward recovery for data cleanup if required.",
+        "Keep social publishing capability gates and human approval controls unchanged.",
+        "Verify authentication, tenant isolation, existing Brand access and the prior Home/navigation flow before reopening pilot traffic."
+      ],
+      "verification": [
+        "Web and API health are green",
+        "Authentication/session bootstrap succeeds",
+        "Cross-tenant access remains denied",
+        "Existing Brands remain accessible",
+        "Publishing remains capability-gated and approval-bound"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -51,9 +104,27 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "a7659179c93299c6dfb2541583a113a96060cde2",
       "lastKnownGoodSha": "c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867",
-      "triggers": ["Home fails to render or loses Brand-scoped navigation","My Idea creates durable state before the user confirms a recommended format","Existing Idea, Research, Angle or Campaign lineage regresses","Needs Attention, For You, Up Next, What's Working or Continue exposes incorrect or cross-Brand data","Vercel or API runtime health fails on the released candidate"],
-      "procedure": ["Stop the VS-85 rollout and preserve Brand, content, publishing and audit state.","Redeploy the last known-good production runtime c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 for affected components.","No database rollback is required because VS-85 adds no migration.","Keep channel credentials, publishing capability gates and human approval controls unchanged.","Verify authentication, tenant isolation, prior Home behavior and existing content workflows before reopening traffic."],
-      "verification": ["Web and API health are green","Authentication/session bootstrap succeeds","Cross-tenant access remains denied","Existing Brands and content workflows remain accessible","Publishing remains capability-gated and approval-bound"],
+      "triggers": [
+        "Home fails to render or loses Brand-scoped navigation",
+        "My Idea creates durable state before the user confirms a recommended format",
+        "Existing Idea, Research, Angle or Campaign lineage regresses",
+        "Needs Attention, For You, Up Next, What's Working or Continue exposes incorrect or cross-Brand data",
+        "Vercel or API runtime health fails on the released candidate"
+      ],
+      "procedure": [
+        "Stop the VS-85 rollout and preserve Brand, content, publishing and audit state.",
+        "Redeploy the last known-good production runtime c32e4e1b7b4c7c56ae60ffbbeec24fc94340f867 for affected components.",
+        "No database rollback is required because VS-85 adds no migration.",
+        "Keep channel credentials, publishing capability gates and human approval controls unchanged.",
+        "Verify authentication, tenant isolation, prior Home behavior and existing content workflows before reopening traffic."
+      ],
+      "verification": [
+        "Web and API health are green",
+        "Authentication/session bootstrap succeeds",
+        "Cross-tenant access remains denied",
+        "Existing Brands and content workflows remain accessible",
+        "Publishing remains capability-gated and approval-bound"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -65,9 +136,28 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "d7243fea87008e7c5e73a1cb50f87782bf79c418",
       "lastKnownGoodSha": "711e59199d4f84fafa0b8d528a88964901e8926b",
-      "triggers": ["Production Brand page cannot load for an authenticated user","Inline Brand writes regress exact-version or Brand scoping","Sources and authenticated Channels become conflated or expose sensitive provider details","Connect, reconnect, disconnect or channel health controls regress existing OAuth behavior","Vercel runtime health, Auth0 redirect or tenant-scoped access regresses"],
-      "procedure": ["Keep root and apps/web Vercel Git deploymentEnabled=false while triaging.","Preserve Brand, source, channel-account, audit and publishing state; do not delete connected accounts as a rollback mechanism.","Restore or promote the previous known-good Vercel production runtime 711e59199d4f84fafa0b8d528a88964901e8926b if forward recovery cannot be completed safely.","No database rollback is required because VS-89 contains no migration.","Re-verify authentication, Brand scoping, existing content workflows and publishing approval safeguards before reopening the changed UX."],
-      "verification": ["Production /api/version and application health are green","Auth0 login redirect succeeds","Authenticated Brand access remains tenant-scoped","Existing Sources and channel accounts remain intact","Publishing remains capability-gated and human-approval-bound","Vercel Git auto-deploy is disabled after recovery"],
+      "triggers": [
+        "Production Brand page cannot load for an authenticated user",
+        "Inline Brand writes regress exact-version or Brand scoping",
+        "Sources and authenticated Channels become conflated or expose sensitive provider details",
+        "Connect, reconnect, disconnect or channel health controls regress existing OAuth behavior",
+        "Vercel runtime health, Auth0 redirect or tenant-scoped access regresses"
+      ],
+      "procedure": [
+        "Keep root and apps/web Vercel Git deploymentEnabled=false while triaging.",
+        "Preserve Brand, source, channel-account, audit and publishing state; do not delete connected accounts as a rollback mechanism.",
+        "Restore or promote the previous known-good Vercel production runtime 711e59199d4f84fafa0b8d528a88964901e8926b if forward recovery cannot be completed safely.",
+        "No database rollback is required because VS-89 contains no migration.",
+        "Re-verify authentication, Brand scoping, existing content workflows and publishing approval safeguards before reopening the changed UX."
+      ],
+      "verification": [
+        "Production /api/version and application health are green",
+        "Auth0 login redirect succeeds",
+        "Authenticated Brand access remains tenant-scoped",
+        "Existing Sources and channel accounts remain intact",
+        "Publishing remains capability-gated and human-approval-bound",
+        "Vercel Git auto-deploy is disabled after recovery"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -79,9 +169,31 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "1da4665fa430468516f79e38984638369552b6e7",
       "lastKnownGoodSha": "47b6e66ba0a57015cbd97054d33819e2c165cc04",
-      "triggers": ["API startup, readiness or release provenance regresses after VS-90 rollout","Authenticated Brand → Avatar route cannot load or save a Brand-scoped Presenter safely","A provider-unavailable Presenter becomes selectable or forged Presenter selection reaches durable creation","Existing creation with None regresses","Cross-Brand Presenter read, write or selection succeeds","Existing Content, Preview, approval, publishing or channel safeguards regress"],
-      "procedure": ["Keep root and apps/web Vercel Git deploymentEnabled=false while triaging.","Preserve Presenter, Brand, content, publishing and audit state; do not delete Presenter rows as a rollback mechanism.","For API/runtime regression, redeploy the previous known-good API lineage 47b6e66ba0a57015cbd97054d33819e2c165cc04 or disable the affected Presenter path while forward recovery is prepared.","For web regression, restore the prior known-good Vercel production deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS or its equivalent runtime lineage.","Do not reverse additive migration 0029 as the default rollback path; prefer forward recovery and leave nullable Presenter references intact.","Re-verify authentication, Brand scoping, None creation behavior and existing approval/publishing/channel safeguards before reopening the changed flow."],
-      "verification": ["API and web production runtimes are healthy","Auth0 login redirect and authenticated session bootstrap succeed","Presenter remains unavailable for selection without a healthy configured AvatarProvider","Existing creation with None remains functional","Cross-Brand Presenter access remains denied","Existing publishing remains capability-gated and human-approval-bound","Vercel Git auto-deploy is disabled after recovery"],
+      "triggers": [
+        "API startup, readiness or release provenance regresses after VS-90 rollout",
+        "Authenticated Brand → Avatar route cannot load or save a Brand-scoped Presenter safely",
+        "A provider-unavailable Presenter becomes selectable or forged Presenter selection reaches durable creation",
+        "Existing creation with None regresses",
+        "Cross-Brand Presenter read, write or selection succeeds",
+        "Existing Content, Preview, approval, publishing or channel safeguards regress"
+      ],
+      "procedure": [
+        "Keep root and apps/web Vercel Git deploymentEnabled=false while triaging.",
+        "Preserve Presenter, Brand, content, publishing and audit state; do not delete Presenter rows as a rollback mechanism.",
+        "For API/runtime regression, redeploy the previous known-good API lineage 47b6e66ba0a57015cbd97054d33819e2c165cc04 or disable the affected Presenter path while forward recovery is prepared.",
+        "For web regression, restore the prior known-good Vercel production deployment dpl_Dp5AijvpViucdN1cMWopa7va2ZKS or its equivalent runtime lineage.",
+        "Do not reverse additive migration 0029 as the default rollback path; prefer forward recovery and leave nullable Presenter references intact.",
+        "Re-verify authentication, Brand scoping, None creation behavior and existing approval/publishing/channel safeguards before reopening the changed flow."
+      ],
+      "verification": [
+        "API and web production runtimes are healthy",
+        "Auth0 login redirect and authenticated session bootstrap succeed",
+        "Presenter remains unavailable for selection without a healthy configured AvatarProvider",
+        "Existing creation with None remains functional",
+        "Cross-Brand Presenter access remains denied",
+        "Existing publishing remains capability-gated and human-approval-bound",
+        "Vercel Git auto-deploy is disabled after recovery"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -93,9 +205,27 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
       "lastKnownGoodSha": "d9aefc46679d72e51183ad2de67f7876e6ffac3a",
-      "triggers": ["Home My Idea or For You creation flow becomes unusable","Photo, Video or reusable Media violates Brand isolation or signed-access boundaries","Presenter selection reaches unsupported formats or bypasses eligibility checks","API startup, readiness or release provenance regresses","Existing Content Preview, approval or publishing safeguards regress"],
-      "procedure": ["Preserve Brand, media, content, publishing and audit state; do not delete MediaAsset or Presenter records as a rollback mechanism.","Keep additive migrations 0029 and 0030 in place and use forward recovery for schema defects.","Restore the previous known-good web/API runtime for the affected component if forward recovery cannot be completed safely.","Keep publishing capability gates and human approval controls unchanged.","Re-verify authentication, Brand isolation, media access, existing creation and publishing safeguards before reopening the changed flow."],
-      "verification": ["Web and API production runtimes are healthy","Authentication/session bootstrap succeeds","Cross-Brand media and Presenter access remains denied","Photo/Video/Media access remains private and signed","Existing Content Preview and publishing safeguards remain intact"],
+      "triggers": [
+        "Home My Idea or For You creation flow becomes unusable",
+        "Photo, Video or reusable Media violates Brand isolation or signed-access boundaries",
+        "Presenter selection reaches unsupported formats or bypasses eligibility checks",
+        "API startup, readiness or release provenance regresses",
+        "Existing Content Preview, approval or publishing safeguards regress"
+      ],
+      "procedure": [
+        "Preserve Brand, media, content, publishing and audit state; do not delete MediaAsset or Presenter records as a rollback mechanism.",
+        "Keep additive migrations 0029 and 0030 in place and use forward recovery for schema defects.",
+        "Restore the previous known-good web/API runtime for the affected component if forward recovery cannot be completed safely.",
+        "Keep publishing capability gates and human approval controls unchanged.",
+        "Re-verify authentication, Brand isolation, media access, existing creation and publishing safeguards before reopening the changed flow."
+      ],
+      "verification": [
+        "Web and API production runtimes are healthy",
+        "Authentication/session bootstrap succeeds",
+        "Cross-Brand media and Presenter access remains denied",
+        "Photo/Video/Media access remains private and signed",
+        "Existing Content Preview and publishing safeguards remain intact"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -107,9 +237,27 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
       "lastKnownGoodSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
-      "triggers": ["API health or startup regresses","Brand onboarding can no longer read supported public references","Source routing bypasses secure HTTP/PDF fallback controls","Fetched content escapes untrusted-evidence handling or Brand scope","Existing Hunter search or publishing behavior regresses"],
-      "procedure": ["Preserve Brand, source, provenance, content, publishing and audit state.","Redeploy the previous known-good API SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a.","No database rollback is required because VS-99 adds no migration.","Keep publishing capability gates and human approval unchanged.","Re-verify health, Brand onboarding, source SSRF controls, tenant isolation and existing Hunter search before reopening."],
-      "verification": ["API health returns 200","Authentication and tenant isolation remain intact","Supported public Brand references remain readable through the prior secure reader","Existing Hunter search remains available","Publishing remains capability-gated and approval-bound"],
+      "triggers": [
+        "API health or startup regresses",
+        "Brand onboarding can no longer read supported public references",
+        "Source routing bypasses secure HTTP/PDF fallback controls",
+        "Fetched content escapes untrusted-evidence handling or Brand scope",
+        "Existing Hunter search or publishing behavior regresses"
+      ],
+      "procedure": [
+        "Preserve Brand, source, provenance, content, publishing and audit state.",
+        "Redeploy the previous known-good API SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a.",
+        "No database rollback is required because VS-99 adds no migration.",
+        "Keep publishing capability gates and human approval unchanged.",
+        "Re-verify health, Brand onboarding, source SSRF controls, tenant isolation and existing Hunter search before reopening."
+      ],
+      "verification": [
+        "API health returns 200",
+        "Authentication and tenant isolation remain intact",
+        "Supported public Brand references remain readable through the prior secure reader",
+        "Existing Hunter search remains available",
+        "Publishing remains capability-gated and approval-bound"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -121,9 +269,25 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "e4162533df44117791c42cd414201259ad5dd6ad",
       "lastKnownGoodSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
-      "triggers": ["API health or startup regresses","Website onboarding extraction regresses","GitHub, Hacker News or RSS adapter failures bypass secure fallback","Source evidence loses provenance or untrusted handling"],
-      "procedure": ["Preserve Brand, source, provenance, content and audit state.","Redeploy previous known-good API SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.","No database rollback is required.","Re-verify health, source SSRF controls, tenant isolation and fallback behavior."],
-      "verification": ["API health returns 200","Brand onboarding remains available","Secure HTTP/PDF fallback remains active","Source evidence remains provenance-bound and untrusted","Publishing remains capability-gated"],
+      "triggers": [
+        "API health or startup regresses",
+        "Website onboarding extraction regresses",
+        "GitHub, Hacker News or RSS adapter failures bypass secure fallback",
+        "Source evidence loses provenance or untrusted handling"
+      ],
+      "procedure": [
+        "Preserve Brand, source, provenance, content and audit state.",
+        "Redeploy previous known-good API SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.",
+        "No database rollback is required.",
+        "Re-verify health, source SSRF controls, tenant isolation and fallback behavior."
+      ],
+      "verification": [
+        "API health returns 200",
+        "Brand onboarding remains available",
+        "Secure HTTP/PDF fallback remains active",
+        "Source evidence remains provenance-bound and untrusted",
+        "Publishing remains capability-gated"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -135,9 +299,28 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "db596a9eebb05ee433bf53742072b55ca839cf3f",
       "lastKnownGoodSha": "e4162533df44117791c42cd414201259ad5dd6ad",
-      "triggers": ["API health or startup regresses","YouTube, Instagram, Facebook or LinkedIn routing causes onboarding regressions","Authwall/login-only content is accepted as Brand truth","Social adapter failure bypasses secure fallback or provenance safeguards","Existing publishing or tenant-isolation behavior regresses"],
-      "procedure": ["Preserve Brand, source, provenance, content, publishing and audit state.","Redeploy previous known-good API SHA e4162533df44117791c42cd414201259ad5dd6ad.","No database rollback is required because VS-101 adds no migration.","Keep Meta credentials, publishing capability gates and human approval controls unchanged.","Re-verify API health, onboarding source routing, authwall rejection, provenance, tenant isolation and existing publishing behavior before reopening."],
-      "verification": ["API health returns 200","Supported social/video public URLs fail safely or normalize through their dedicated adapter","Authwall/login-only evidence remains rejected","Source evidence remains provenance-bound and untrusted","Authentication and tenant isolation remain intact","Publishing remains capability-gated and approval-bound"],
+      "triggers": [
+        "API health or startup regresses",
+        "YouTube, Instagram, Facebook or LinkedIn routing causes onboarding regressions",
+        "Authwall/login-only content is accepted as Brand truth",
+        "Social adapter failure bypasses secure fallback or provenance safeguards",
+        "Existing publishing or tenant-isolation behavior regresses"
+      ],
+      "procedure": [
+        "Preserve Brand, source, provenance, content, publishing and audit state.",
+        "Redeploy previous known-good API SHA e4162533df44117791c42cd414201259ad5dd6ad.",
+        "No database rollback is required because VS-101 adds no migration.",
+        "Keep Meta credentials, publishing capability gates and human approval controls unchanged.",
+        "Re-verify API health, onboarding source routing, authwall rejection, provenance, tenant isolation and existing publishing behavior before reopening."
+      ],
+      "verification": [
+        "API health returns 200",
+        "Supported social/video public URLs fail safely or normalize through their dedicated adapter",
+        "Authwall/login-only evidence remains rejected",
+        "Source evidence remains provenance-bound and untrusted",
+        "Authentication and tenant isolation remain intact",
+        "Publishing remains capability-gated and approval-bound"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -149,9 +332,28 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7",
       "lastKnownGoodSha": "db596a9eebb05ee433bf53742072b55ca839cf3f",
-      "triggers": ["API health or startup regresses","MediaAnalyzer fabricates evidence or fails to degrade safely when STT/frame/OCR capabilities are unavailable","Onboarding evidence sampling exceeds configured recent/deep/total bounds or fails deduplication","Source provenance/confidence handling regresses","Existing publishing or tenant-isolation behavior regresses"],
-      "procedure": ["Preserve Brand, source, provenance, content, publishing and audit state.","Redeploy previous known-good API SHA db596a9eebb05ee433bf53742072b55ca839cf3f.","No database rollback is required because VS-102 adds no migration.","Keep provider credentials, publishing capability gates and human approval controls unchanged.","Re-verify API health, MediaAnalyzer no-fabrication behavior, bounded sampling, provenance, tenant isolation and existing publishing behavior before reopening."],
-      "verification": ["API health returns 200","MediaAnalyzer continues to prefer supplied captions/transcripts and fails safely when optional capabilities are unavailable","Onboarding sampling remains bounded and deduplicated","Source evidence remains provenance-bound and untrusted","Authentication and tenant isolation remain intact","Publishing remains capability-gated and approval-bound"],
+      "triggers": [
+        "API health or startup regresses",
+        "MediaAnalyzer fabricates evidence or fails to degrade safely when STT/frame/OCR capabilities are unavailable",
+        "Onboarding evidence sampling exceeds configured recent/deep/total bounds or fails deduplication",
+        "Source provenance/confidence handling regresses",
+        "Existing publishing or tenant-isolation behavior regresses"
+      ],
+      "procedure": [
+        "Preserve Brand, source, provenance, content, publishing and audit state.",
+        "Redeploy previous known-good API SHA db596a9eebb05ee433bf53742072b55ca839cf3f.",
+        "No database rollback is required because VS-102 adds no migration.",
+        "Keep provider credentials, publishing capability gates and human approval controls unchanged.",
+        "Re-verify API health, MediaAnalyzer no-fabrication behavior, bounded sampling, provenance, tenant isolation and existing publishing behavior before reopening."
+      ],
+      "verification": [
+        "API health returns 200",
+        "MediaAnalyzer continues to prefer supplied captions/transcripts and fails safely when optional capabilities are unavailable",
+        "Onboarding sampling remains bounded and deduplicated",
+        "Source evidence remains provenance-bound and untrusted",
+        "Authentication and tenant isolation remain intact",
+        "Publishing remains capability-gated and approval-bound"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     },
@@ -163,9 +365,46 @@
       "owner": "Operations Owner",
       "targetReleaseSha": "fbc9ea984df526104f8b815524f62d1fd55109e2",
       "lastKnownGoodSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7",
-      "triggers": ["Brand Intelligence graph persistence or API startup regresses"],
-      "procedure": ["Preserve Brand/source/provenance and additive graph data.","Redeploy the preceding known-good runtime or use forward recovery.","Do not destructively reverse migration 0031."],
-      "verification": ["API health is green","Tenant isolation and provenance remain intact"],
+      "triggers": [
+        "Brand Intelligence graph persistence or API startup regresses"
+      ],
+      "procedure": [
+        "Preserve Brand/source/provenance and additive graph data.",
+        "Redeploy the preceding known-good runtime or use forward recovery.",
+        "Do not destructively reverse migration 0031."
+      ],
+      "verification": [
+        "API health is green",
+        "Tenant isolation and provenance remain intact"
+      ],
+      "initiatedBy": null,
+      "initiatedAt": null
+    },
+    {
+      "id": "RB-015",
+      "releaseId": "REL-015",
+      "status": "ready",
+      "reason": "Rollback readiness for medium-risk VS-104 closed-loop recommendations release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "e5a28d0383816ac8eca11b1c54256b64f4319cde",
+      "lastKnownGoodSha": "ee5995929c9acdd20bbcc3a4b04e0cdd33a70d12",
+      "triggers": [
+        "API startup or health regresses",
+        "For You feedback or Opportunity-to-Idea lineage regresses",
+        "Closed-loop state crosses Brand or Workspace boundaries"
+      ],
+      "procedure": [
+        "Preserve Brand, feedback, Idea, opportunity and audit state.",
+        "Redeploy previous known-good runtime ee5995929c9acdd20bbcc3a4b04e0cdd33a70d12.",
+        "Do not reverse additive migration 0033; use forward recovery.",
+        "Re-verify tenant isolation, feedback idempotency and human publishing approval."
+      ],
+      "verification": [
+        "API health and readiness are green",
+        "Feedback remains Brand-scoped and idempotent",
+        "Opportunity-to-Idea lineage remains intact",
+        "No unauthorized publishing or scheduler behavior is introduced"
+      ],
       "initiatedBy": null,
       "initiatedAt": null
     }
