@@ -11,6 +11,7 @@ type RequestBody = {
   presenterId?: unknown;
   mediaAssetIds?: unknown;
   mediaKinds?: unknown;
+  ideaId?: unknown;
 };
 const FORMATS = new Set<HomeCreationFormat>(["image", "carousel", "reel", "video"]);
 
@@ -39,11 +40,12 @@ export async function POST(request: Request) {
   const brandId = text(body.brandId, 200);
   const idea = optionalText(body.text, 4000);
   const source = optionalText(body.source, 2000);
+  const ideaId = optionalText(body.ideaId, 200);
   const mediaAssetIds = ids(body.mediaAssetIds);
   const mediaKinds = kinds(body.mediaKinds);
   const presenterId = optionalText(body.presenterId, 200);
   if (!brandId) return NextResponse.json({ error: "Brand is required." }, { status: 400 });
-  if (!idea && !source && !mediaAssetIds.length && !mediaKinds.length) return NextResponse.json({ error: "Add an idea, link or media first." }, { status: 400 });
+  if (!idea && !source && !mediaAssetIds.length && !mediaKinds.length && !ideaId) return NextResponse.json({ error: "Add an idea, link or media first." }, { status: 400 });
   if (source && !isPublicHttpUrl(source)) return NextResponse.json({ error: "Use a public http(s) link." }, { status: 400 });
 
   const brand = await getBrand(brandId).catch(() => null);
@@ -64,6 +66,7 @@ export async function POST(request: Request) {
       contentPreference: requestedFormat as HomeCreationFormat,
       ...(presenterId ? { presenterId } : {}),
       ...(mediaAssetIds.length ? { mediaAssetIds } : {}),
+      ...(ideaId ? { ideaId } : {}),
     });
     return NextResponse.json({ creationId: creation.id, status: creation.status });
   } catch (error) {
