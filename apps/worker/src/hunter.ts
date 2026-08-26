@@ -19,11 +19,15 @@ export interface BrandContextProjection {
   brandId: string;
   contextVersion: string;
   brandName: string;
+  completeness?: "empty" | "partial" | "learned";
+  identity?: string;
   positioning?: string;
   audience?: string;
   voice?: string;
+  contentStrategy?: string;
   goals?: string;
   boundaries?: string;
+  performanceMemory?: string[];
 }
 
 export interface HunterJudgmentCandidate {
@@ -42,32 +46,21 @@ export interface HunterJudgmentCandidate {
   };
 }
 
-export interface HunterJudgmentOutput {
-  candidates: HunterJudgmentCandidate[];
-}
-
+export interface HunterJudgmentOutput { candidates: HunterJudgmentCandidate[] }
 export interface HunterRunInput {
   accountId: string;
   brand: BrandContextProjection;
-  /** Existing compatibility path. When supplied it takes precedence over sector-aware planning. */
   query?: string;
-  /** Transient Brand-private projection; it is used for routing and never copied into shared source definitions. */
   intelligenceProfile?: BrandIntelligenceProfile;
   maxEvidence?: number;
 }
-
 export interface HunterRunResult {
   evidenceCount: number;
   candidateCount: number;
   opportunityCount: number;
   degradedSources?: string[];
 }
-
-interface ExecutableDiscoveryPlan {
-  source: string;
-  query: string;
-  explicit: boolean;
-}
+interface ExecutableDiscoveryPlan { source: string; query: string; explicit: boolean }
 
 export class HunterOrchestrator {
   constructor(
@@ -80,9 +73,6 @@ export class HunterOrchestrator {
     const maxEvidence = normalizeMaxEvidence(input.maxEvidence);
     const plans = executablePlans(input);
     if (!plans.length) return { evidenceCount: 0, candidateCount: 0, opportunityCount: 0 };
-
-    // Source Registry/query planning owns the provider request ceilings. maxEvidence bounds the
-    // evidence set sent to the model, not which relevant providers are allowed to participate.
     const maxResultsPerQuery = Math.max(1, Math.min(20, Math.ceil(maxEvidence / plans.length)));
     const discovered: DiscoveryEvidence[] = [];
     const degradedSources = new Set<string>();
@@ -92,19 +82,13 @@ export class HunterOrchestrator {
       const toolRequest = prepareToolRequest({
         capability: "public-content-search",
         scope: { visibility: "global-public" },
-        input: {
-          query: plan.query,
-          maxResults: maxResultsPerQuery,
-          ...(plan.explicit ? {} : { source: plan.source }),
-        },
+        input: { query: plan.query, maxResults: maxResultsPerQuery, ...(plan.explicit ? {} : { source: plan.source }) },
         timeoutMs: 20_000,
       });
       try {
         const discovery = await this.tools.invoke<DiscoveryEvidence[]>(toolRequest);
         discovered.push(...discovery.output);
       } catch {
-        // A provider is degraded for the rest of this run. Other providers continue; failure is
-        // surfaced in the run result rather than fabricated as successful empty evidence.
         degradedSources.add(plan.source);
       }
     }
@@ -118,7 +102,7 @@ export class HunterOrchestrator {
       approvedContextVersion: input.brand.contextVersion,
       capabilities: ["public-content-search"],
       task: {
-        instruction: "Evaluate the supplied public evidence for this Brand. Return only genuinely worthwhile, evidence-linked opportunities; returning zero candidates is preferred to filler.",
+        instruction: "Evaluate the supplied public evidence against the complete supplied Brand Intelligence Context. Return only genuinely worthwhile, evidence-linked opportunities; returning zero candidates is preferred to filler. Treat confirmed Brand boundaries and accepted performance memory as constraints/advisory context, never as public evidence.",
         context: {
           brand: compactBrand(input.brand),
           ...(input.intelligenceProfile ? { intelligenceProfile: compactIntelligenceProfile(input.intelligenceProfile) } : {}),
@@ -139,12 +123,11 @@ export class HunterOrchestrator {
 
     const judgment = await this.runtime.invoke<HunterJudgmentOutput>(invocation);
     if (!isHunterJudgmentOutput(judgment.output)) throw new Error("Hunter output failed domain validation");
-
     const byUrl = new Map(evidence.map((item) => [item.sourceUrl, item]));
     let opportunityCount = 0;
     for (const candidate of judgment.output.candidates.slice(0, 5)) {
       const source = byUrl.get(candidate.sourceUrl);
-      if (!source) continue; // No evidence lineage → cannot create an Opportunity.
+      if (!source) continue;
       const record: OpportunityCandidateInput = {
         signal: {
           title: source.title,
@@ -169,22 +152,15 @@ export class HunterOrchestrator {
       const saved = await this.opportunities.recordCandidate(input.accountId, input.brand.brandId, record);
       if (saved.opportunity) opportunityCount += 1;
     }
-
-    return withDegraded({
-      evidenceCount: evidence.length,
-      candidateCount: judgment.output.candidates.length,
-      opportunityCount,
-    }, degradedSources);
+    return withDegraded({ evidenceCount: evidence.length, candidateCount: judgment.output.candidates.length, opportunityCount }, degradedSources);
   }
 }
 
 export function isHunterJudgmentOutput(value: unknown): value is HunterJudgmentOutput {
   if (!value || typeof value !== "object" || !Array.isArray((value as HunterJudgmentOutput).candidates)) return false;
-  return (value as HunterJudgmentOutput).candidates.every((candidate) =>
-    candidate && typeof candidate === "object" &&
+  return (value as HunterJudgmentOutput).candidates.every((candidate) => candidate && typeof candidate === "object" &&
     nonEmpty(candidate.sourceUrl) && nonEmpty(candidate.title) && nonEmpty(candidate.rationale) &&
-    nonEmpty(candidate.whyNow) && nonEmpty(candidate.developmentDirection) && validScores(candidate.scores),
-  );
+    nonEmpty(candidate.whyNow) && nonEmpty(candidate.developmentDirection) && validScores(candidate.scores));
 }
 
 function executablePlans(input: HunterRunInput): ExecutableDiscoveryPlan[] {
@@ -192,28 +168,22 @@ function executablePlans(input: HunterRunInput): ExecutableDiscoveryPlan[] {
   if (explicit) return [{ source: "agent-reach", query: explicit, explicit: true }];
   if (input.query !== undefined && !explicit) throw new Error("Hunter query is required");
   if (!input.intelligenceProfile) throw new Error("Hunter requires an explicit query or Brand Intelligence Profile");
-
   const pack = selectSectorIntelligencePack(input.intelligenceProfile, Object.values(SECTOR_INTELLIGENCE_PACKS));
   if (!pack) throw new Error("No Sector Intelligence Pack matches the Brand Intelligence Profile");
   const policy = resolveBrandSourcePolicy(input.intelligenceProfile, pack, DEFAULT_SOURCE_REGISTRY);
   return planSourceQueries(input.intelligenceProfile, pack, policy, DEFAULT_SOURCE_REGISTRY)
     .map((item) => ({ source: item.source, query: item.query, explicit: false }));
 }
-
 function normalizeMaxEvidence(value: number | undefined): number {
   const maxEvidence = value ?? 8;
-  if (!Number.isInteger(maxEvidence) || maxEvidence < 1 || maxEvidence > 20) {
-    throw new Error("maxEvidence must be an integer from 1 to 20");
-  }
+  if (!Number.isInteger(maxEvidence) || maxEvidence < 1 || maxEvidence > 20) throw new Error("maxEvidence must be an integer from 1 to 20");
   return maxEvidence;
 }
-
 function validScores(scores: HunterJudgmentCandidate["scores"] | undefined): boolean {
   if (!scores || typeof scores !== "object") return false;
   return [scores.relevance, scores.evidence, scores.novelty, scores.timeliness, scores.brandAuthority, scores.audienceFit]
     .every((value) => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1);
 }
-
 function uniqueEvidence(items: DiscoveryEvidence[]): DiscoveryEvidence[] {
   const seen = new Set<string>();
   const result: DiscoveryEvidence[] = [];
@@ -225,40 +195,36 @@ function uniqueEvidence(items: DiscoveryEvidence[]): DiscoveryEvidence[] {
   }
   return result;
 }
-
 function canonicalEvidenceKey(sourceUrl: string): string {
   try {
     const url = new URL(sourceUrl);
     url.hash = "";
     for (const key of [...url.searchParams.keys()]) {
       const normalized = key.toLowerCase();
-      if (normalized.startsWith("utm_") || ["fbclid", "gclid", "dclid", "msclkid"].includes(normalized)) {
-        url.searchParams.delete(key);
-      }
+      if (normalized.startsWith("utm_") || ["fbclid", "gclid", "dclid", "msclkid"].includes(normalized)) url.searchParams.delete(key);
     }
     url.searchParams.sort();
     return url.toString().replace(/\?$/, "");
-  } catch {
-    return sourceUrl.trim();
-  }
+  } catch { return sourceUrl.trim(); }
 }
-
 function withDegraded(result: Omit<HunterRunResult, "degradedSources">, degraded: ReadonlySet<string>): HunterRunResult {
   const sources = [...degraded].sort();
   return sources.length ? { ...result, degradedSources: sources } : result;
 }
-
 function compactBrand(brand: BrandContextProjection) {
   return {
     brandName: brand.brandName,
+    ...(brand.completeness ? { completeness: brand.completeness } : {}),
+    ...(brand.identity ? { identity: brand.identity } : {}),
     ...(brand.positioning ? { positioning: brand.positioning } : {}),
     ...(brand.audience ? { audience: brand.audience } : {}),
     ...(brand.voice ? { voice: brand.voice } : {}),
+    ...(brand.contentStrategy ? { contentStrategy: brand.contentStrategy } : {}),
     ...(brand.goals ? { goals: brand.goals } : {}),
     ...(brand.boundaries ? { boundaries: brand.boundaries } : {}),
+    ...(brand.performanceMemory?.length ? { performanceMemory: brand.performanceMemory.slice(0, 6) } : {}),
   };
 }
-
 function compactIntelligenceProfile(profile: BrandIntelligenceProfile) {
   return {
     ...(profile.sector ? { sector: profile.sector } : {}),
@@ -271,5 +237,4 @@ function compactIntelligenceProfile(profile: BrandIntelligenceProfile) {
     goals: profile.goals,
   };
 }
-
 function nonEmpty(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
