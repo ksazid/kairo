@@ -5,7 +5,7 @@
   "status": "active",
   "lifecycle": "certified",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04", "FR-06", "FR-08", "FR-20"],
   "owners": {"product": "Product Owner", "engineering": "Engineering Owner", "operations": "Operations Owner", "security": "Security Owner"},
   "dependencies": ["VS-99", "VS-100", "VS-101"],
@@ -18,8 +18,8 @@
     {"type": "policy", "status": "not-required", "version": "VS-102@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Reuses existing public-source, provenance, credential-isolation and no-autonomous-publishing decisions."},
     {"type": "implementation", "status": "approved", "version": "VS-102@1.0", "commitSha": null, "by": "Product Owner", "at": "2026-08-26T11:55:00+02:00", "rationale": "Product Owner explicitly instructed Proceed."},
     {"type": "certification", "status": "approved", "version": "VS-102@1.0", "commitSha": "9bf055109c66431fb3609d91e3132e6c8023e171", "by": "Product Owner", "at": "2026-08-26T12:07:00+02:00", "rationale": "Product Owner explicitly approved certification after Product Intake, Security baseline and CI passed on exact candidate 9bf055109c66431fb3609d91e3132e6c8023e171, including preflight, runtime verification, dashboard build, PostgreSQL 18 migrations and production dependency audit."},
-    {"type": "release", "status": "pending", "version": "VS-102@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Release remains a separate authorization gate."},
-    {"type": "production-enable", "status": "pending", "version": "VS-102@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Production enablement remains a separate authorization gate."}
+    {"type": "release", "status": "approved", "version": "VS-102@1.0", "commitSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7", "by": "Product Owner", "at": "2026-08-26T12:07:30+02:00", "rationale": "Product Owner approved merge and release after VS-102 certification."},
+    {"type": "production-enable", "status": "approved", "version": "VS-102@1.0", "commitSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7", "by": "Product Owner", "at": "2026-08-26T12:08:00+02:00", "rationale": "Product Owner explicitly instructed Go, authorizing Batch 4 production deployment."}
   ],
   "decisionIds": ["DEC-005", "DEC-006", "DEC-009", "DEC-010", "DEC-011"],
   "progress": {"discovery": 100, "decisions": 100, "implementation": 100, "testing": 100, "certification": 100, "release": 0, "validation": 0},
@@ -27,6 +27,6 @@
   "release": {"status": "not-authorized", "releaseId": null},
   "rollback": {"status": "not-applicable", "rollbackId": null},
   "postRelease": {"status": "not-started", "reviewAt": null, "expectedOutcome": "Media-rich public sources produce bounded evidence and onboarding samples enough recent/deep Brand context without duplicate retrieval pipelines.", "metrics": []},
-  "links": {"specification": "docs/slices/VS-102.md", "implementationPr": "https://github.com/ksazid/kairo/pull/214", "evidence": ["Product Intake 32956048584", "Security baseline 32956048556", "CI 32956048472"]},
+  "links": {"specification": "docs/slices/VS-102.md", "implementationPr": "https://github.com/ksazid/kairo/pull/214", "evidence": ["Product Intake 32956048584", "Security baseline 32956048556", "CI 32956048472", "Render deploy dep-da7bm667bikc73a6hplg live on f0bb76ad12522611c138283ec03d1564b1a6f7b7"]},
   "maxAttempts": 3
 }
