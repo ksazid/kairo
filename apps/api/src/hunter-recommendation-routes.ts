@@ -7,6 +7,11 @@ import type { HunterRunInput, HunterRunResult } from "@kairo/worker/hunter";
 import type { IdentityVerifier } from "./auth";
 import type { BrandIntelligenceGraphStore } from "./brand-intelligence-graph-store";
 import type { SectorPackId } from "@kairo/domain/brand-intelligence";
+import {
+  hunterClosedLoopStoreFromEnvironment,
+  type HunterClosedLoopStore,
+  type RecommendationFeedbackAction,
+} from "./batch7-closed-loop-store";
 
 export interface HunterRecommendationRunner {
   runForAuthorizedBrand(input: HunterRunInput): Promise<HunterRunResult>;
@@ -17,9 +22,11 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   identityVerifier: IdentityVerifier;
   runner?: HunterRecommendationRunner;
   graphStore?: BrandIntelligenceGraphStore;
+  closedLoopStore?: HunterClosedLoopStore;
 }) {
   const core = new KairoService(options.store);
   const inFlight = new Map<string, Promise<HunterRunResult>>();
+  const closedLoop = options.closedLoopStore ?? hunterClosedLoopStoreFromEnvironment();
 
   app.post<{ Params: { brandId: string } }>(
     "/api/v1/brands/:brandId/recommendations",
@@ -45,9 +52,13 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       const graphRecord = options.graphStore
         ? await options.graphStore.ensureCurrent(account.id, brand.workspaceId, brand.id, brain, topicGraphPack(pack.id))
         : undefined;
+      const projectedBrand = projectBrandContext(brand, brain);
+      const learnedContext = closedLoop ? await closedLoop.learningContext(account.id, brand.id) : undefined;
       const input: HunterRunInput = {
         accountId: account.id,
-        brand: projectBrandContext(brand, brain),
+        brand: learnedContext
+          ? { ...projectedBrand, goals: mergeClosedLoopContext(projectedBrand.goals, learnedContext) }
+          : projectedBrand,
         intelligenceProfile,
         ...(graphRecord ? { intelligenceGraph: graphRecord.graph, intelligenceVersion: graphRecord.version } : {}),
         maxEvidence: 8,
@@ -61,6 +72,63 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       return run;
     },
   );
+
+  app.post<{ Params: { brandId: string; opportunityId: string; action: string } }>(
+    "/api/v1/brands/:brandId/opportunities/:opportunityId/feedback/:action",
+    async (request, reply) => {
+      const account = await authenticate(request, reply, core, options.identityVerifier);
+      if (!account) return;
+      await core.getBrand(account.id, request.params.brandId);
+      if (!closedLoop) return unavailableClosedLoop(reply, request.id);
+      if (!isFeedbackAction(request.params.action)) {
+        return reply.status(400).send({
+          type: "about:blank",
+          title: "Invalid feedback",
+          status: 400,
+          detail: "Recommendation feedback must be seen or dismissed.",
+          code: "invalid_feedback_action",
+          correlationId: request.id,
+        });
+      }
+      return closedLoop.recordFeedback(
+        account.id,
+        request.params.brandId,
+        request.params.opportunityId,
+        request.params.action,
+      );
+    },
+  );
+
+  app.post<{ Params: { brandId: string; opportunityId: string } }>(
+    "/api/v1/brands/:brandId/opportunities/:opportunityId/development",
+    async (request, reply) => {
+      const account = await authenticate(request, reply, core, options.identityVerifier);
+      if (!account) return;
+      await core.getBrand(account.id, request.params.brandId);
+      if (!closedLoop) return unavailableClosedLoop(reply, request.id);
+      return closedLoop.developOpportunity(account.id, request.params.brandId, request.params.opportunityId);
+    },
+  );
+}
+
+function isFeedbackAction(value: string): value is RecommendationFeedbackAction {
+  return value === "seen" || value === "dismissed";
+}
+
+function unavailableClosedLoop(reply: FastifyReply, correlationId: string) {
+  return reply.status(503).send({
+    type: "about:blank",
+    title: "Recommendation feedback unavailable",
+    status: 503,
+    detail: "Kairo's recommendation feedback store is not configured right now.",
+    code: "closed_loop_unavailable",
+    correlationId,
+  });
+}
+
+function mergeClosedLoopContext(existing: string | undefined, learnedContext: string): string {
+  const prefix = existing?.trim() ? `${existing.trim()}\n\n` : "";
+  return `${prefix}Closed-loop learning (use as guidance, not as public evidence):\n${learnedContext}`.slice(0, 8_000);
 }
 
 function topicGraphPack(packId: string): SectorPackId {
@@ -102,18 +170,6 @@ function sectionContext(
     .join(" · ")
     .slice(0, 4_000);
   return value ? { [key]: value } : {};
-}
-
-function fallbackPublicQuery(
-  brand: { name: string },
-  profile: ReturnType<typeof projectBrandIntelligenceProfile>,
-) {
-  return [brand.name, profile.sector, profile.subsector, ...profile.topics.slice(0, 2)]
-    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 600);
 }
 
 async function authenticate(
