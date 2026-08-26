@@ -11,3 +11,5 @@ Do not close Batch 7 until all of the following are true:
 7. Central release/rollback/current-slice evidence is closed without overstating anything not verified.
 
 All release evidence is bound to exact Git SHAs and named deployment IDs.
+
+Certification rerun note: PR #220 replaces the runner-stalled PR #219 without expanding product scope.
