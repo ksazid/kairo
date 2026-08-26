@@ -1,7 +1,10 @@
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const approvedMigration = "0022_marketing_shadow_evidence_authorizations.sql";
+const approvedMigrations = new Set([
+  "0022_marketing_shadow_evidence_authorizations.sql",
+  "0030_home_media_inputs.sql",
+]);
 const approvedRange = "0023_meta_multichannel_connections.sql..0028_performance_pattern_memory.sql";
 const approvedMarketingAuthorization = "vs23-qualification-20260820-d";
 const approvedMarketingEvidenceExport = "vs23-qualification-20260820-d";
@@ -59,7 +62,7 @@ function runBackgroundScript(scriptUrl, label) {
 }
 
 if (requestedMigration) {
-  if (requestedMigration !== approvedMigration) throw new Error(`Startup migration is not approved: ${requestedMigration}`);
+  if (!approvedMigrations.has(requestedMigration)) throw new Error(`Startup migration is not approved: ${requestedMigration}`);
   await runStartupScript(new URL("./migrate-exact.mjs", import.meta.url), `exact migration ${requestedMigration}`);
 } else if (requestedRange) {
   if (requestedRange !== approvedRange) throw new Error(`Startup migration range is not approved: ${requestedRange}`);
