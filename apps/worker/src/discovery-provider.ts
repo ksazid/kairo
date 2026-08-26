@@ -2,6 +2,7 @@ import type {
   DiscoveryEvidence,
   DiscoveryRequest,
   DiscoverySourceProvider,
+  PublicContentFetchPort,
   ToolGatewayPort,
   ToolRequest,
   ToolResult,
@@ -103,6 +104,7 @@ export class SourceRoutingToolGateway implements ToolGatewayPort {
   constructor(
     private readonly fallback: DiscoverySourceProvider,
     providers: Readonly<Record<string, DiscoverySourceProvider>> = {},
+    private readonly fetcher?: PublicContentFetchPort,
   ) {
     this.providers = new Map(
       Object.entries(providers).map(([key, provider]) => [normalizeSourceKey(key), provider]),
@@ -110,6 +112,13 @@ export class SourceRoutingToolGateway implements ToolGatewayPort {
   }
 
   async invoke<TOutput>(request: ToolRequest): Promise<ToolResult<TOutput>> {
+    if (request.capability === "public-content-fetch") {
+      if (!this.fetcher) throw new DiscoveryProviderError("public-content-fetch is not configured");
+      const url = typeof request.input.url === "string" ? request.input.url.trim() : "";
+      if (!url) throw new DiscoveryProviderError("public-content-fetch requires url");
+      const result = await this.fetcher.fetch({ url, scope: request.scope, timeoutMs: request.timeoutMs });
+      return { output: result as TOutput, provenance: result.document.provenance };
+    }
     if (request.capability !== "public-content-search") throw new DiscoveryProviderError("Tool capability is not implemented by this gateway");
     const query = typeof request.input.query === "string" ? request.input.query.trim() : "";
     if (!query) throw new DiscoveryProviderError("public-content-search requires query");
