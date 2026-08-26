@@ -70,6 +70,7 @@ import{RepositoryInstagramPublishingOperations,StoredInstagramInsightsReader}fro
 import{MetaMcpToolHandler}from"./meta-mcp-tools";
 import{registerMetaMcpRoutes}from"./meta-mcp-routes";
 import{SimpleCreationService}from"./simple-creation";import{PgSimpleCreationStore}from"./simple-creation-postgres";import{registerSimpleCreationRoutes}from"./simple-creation-routes";
+import{homeMediaServiceFromEnv}from"./home-media-factory";
 import{BrandPresenterService}from"./brand-presenter";import{registerBrandPresenterRoutes}from"./brand-presenter-routes";
 import{SimplePublishFlowService}from"@kairo/domain/simple-publish-flow";import{PgSimplePublishFlowRepository}from"./simple-publish-flow-postgres";import{registerSimplePublishFlowRoutes}from"./simple-publish-flow-routes";
 import{PgCommandSearchRepository}from"./command-search-postgres";import{registerCommandSearchRoutes}from"./command-search-routes";
@@ -170,9 +171,10 @@ const app = buildApp({
   logger: true,
 });
 const simpleCreationStore=new PgSimpleCreationStore(pool);
+const homeMediaService=homeMediaServiceFromEnv(simpleCreationStore.homeMedia);
 registerBrandPresenterRoutes(app,{coreStore,identityVerifier,service:new BrandPresenterService(simpleCreationStore)});
 let simpleCreationService:SimpleCreationService|undefined;let simpleCreationRunning=false;
-if(ideaDeveloper){simpleCreationService=new SimpleCreationService(simpleCreationStore,researchStore,campaignStore,ideaDeveloper);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,trigger:()=>void collectSimpleCreationTick()});}
+if(ideaDeveloper){simpleCreationService=new SimpleCreationService(simpleCreationStore,researchStore,campaignStore,ideaDeveloper,undefined,undefined,contentGenerator);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,...(homeMediaService?{homeMedia:homeMediaService}:{}),trigger:()=>void collectSimpleCreationTick()});}
 registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier});
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
