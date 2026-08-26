@@ -1,91 +1,94 @@
-# VS-98 Implementation Plan — Approved Home Intelligence Recovery
+# VS-98 Implementation Plan — Approved Home Creation Recovery
 
 ## Authority
 
-- `product/PRD.md` FR-02/03/04/06/07/09/11/18
+- `product/PRD.md`
 - `product/TRD.md`
 - `product/DESIGN.md`
-- Product Owner correction/implementation approval in the 2026-08-26 release-recovery session
+- Product Owner correction/implementation approval in the 2026-08-26 recovery session
+- Product Owner scope narrowing: defer URL-ingestion/onboarding reliability and Hunter-quality work; concentrate on Home UI, URL input, media uploads/library and direct creation
 - `docs/slices/VS-98.md`
 
 ## Implementation sequence
 
 ### 1. Recover private Home media
 
-Reuse the already-written VS-96 private S3-compatible media boundary rather than adding a second storage system.
+Reuse the existing private S3-compatible storage boundary rather than adding another storage system.
 
-- Add migration `0030_home_media_inputs.sql` for Brand-scoped media metadata and `simple_creation_requests.media_asset_ids`.
+- Add migration `0030_home_media_inputs.sql` for Brand-scoped MediaAsset metadata and `simple_creation_requests.media_asset_ids`.
 - Extend the existing private object-storage SigV4 boundary with bounded signed PUT support.
-- Store media binaries in private object storage with Workspace/Brand/asset scoped keys.
-- Store metadata and lifecycle in PostgreSQL and mirror ready media into the existing Kairo Content Asset Library.
+- Store binaries under Workspace/Brand/asset scoped private keys.
+- Keep metadata/lifecycle in PostgreSQL and mirror ready uploads into the existing Kairo Content Asset Library metadata without copying the binary.
 - Expose authenticated Brand-scoped begin/complete/list APIs.
 - Validate media IDs again when a Simple Creation starts.
 
 ### 2. Replace the incorrect format workflow
 
-- Extend supported Home execution formats to Post, Carousel, Reel and Video.
-- Keep `Auto` as the user-facing default.
-- Reuse deterministic `recommendMyIdea` scoring, accepted Brand Learnings and attached-media cues to resolve Auto without a separate CTA.
-- Debounce the Home inference request; never require a `Recommend format` click.
-- Preserve explicit user override until the user chooses Auto again.
-- Make `AI Generate` the only creation CTA.
+- Support user-facing Post, Carousel, Reel and Video execution formats.
+- Keep `Auto` as the default.
+- Reuse deterministic input/media cues and existing accepted Brand Learnings to resolve Auto without a separate CTA.
+- Debounce automatic selection; never require a `Recommend format` click.
+- Preserve explicit user override until the user selects Auto again.
+- Make `AI Generate` the dominant creation CTA.
 
-### 3. Conditional Presenter
+### 3. Direct generation to Content Preview
+
+- Reuse the existing Research → Angle → Campaign → Drafter pipeline internally.
+- Create the generated Content Asset through application-owned services.
+- Persist selected Media references on the Content Version.
+- Poll only a user-facing creation status from Home and route directly to the existing Content Preview when ready.
+- Do not expose internal Research/Angle/Campaign workflow pages in the Home journey.
+
+### 4. Conditional Presenter
 
 - Load the existing Brand Presenter eligibility projection on Home.
-- Show Presenter only for video-capable execution (Reel/Video) and only when the configured Brand Presenter is eligible.
-- Keep `None` default and retain server-side `presenterId` eligibility validation.
+- Show Presenter only for Reel/Video and only when the configured Presenter is eligible.
+- Keep `None` available and retain server-side Presenter eligibility validation.
 
-### 4. For You direct generation
+### 5. For You UI direct generation
 
-- Keep existing recommendation card geometry.
-- Expose recommended format in user language.
-- Add one compact selected-card action surface instead of a large control set on every card.
-- Reuse the same Auto/manual format and optional Presenter generation contract.
+- Use already-persisted Brand Opportunities only; do not modify Hunter in VS-98.
+- Keep existing card geometry as far as the approved action controls allow.
+- Show Post/Carousel/Reel/Video type in user language.
+- Add compact format / optional Presenter / `AI Generate` controls after the user chooses a recommendation.
+- Route successful generation directly to Content Preview.
 
-### 5. Repair Hunter discovery
+### 6. URL input behavior
 
-- Register the existing bounded RSS/Atom adapter in `createHunterToolGateway` so sector packs that already request RSS no longer degrade simply because the API omitted the adapter.
-- Keep Hacker News, Bluesky and optional YouTube adapters.
-- Return evidence/candidate/opportunity/degraded information to Home and distinguish no-evidence from no-qualified-opportunity states.
-- Keep zero opportunity valid and do not synthesize filler.
+- Keep URL as an optional My Idea input using the existing explicit URL/research reader.
+- Validate public HTTP(S) input.
+- Do not add scraping engines, source-specific fallback logic or onboarding extraction changes in this slice.
+- When the existing URL reader cannot use the source, return a concise user-facing failure and preserve the rest of the user's idea/media.
 
-### 6. Canonical Brand Intelligence Context
-
-- Add one pure domain projection over Brand + active Brand Brain fields.
-- Include concise Identity, Positioning, Audience, Voice, Content Strategy, Goals, Boundaries and accepted Performance Memory where present.
-- Use latest authoritative field update to form a versioned context identifier.
-- Reuse this projection in Hunter.
-- Resolve it at authenticated application boundaries and pass it to Researcher, Strategist, Drafter and Critic inputs; worker roles do not query PostgreSQL.
-
-### 7. Onboarding truthfulness
-
-- Preserve the existing one-URL onboarding and Knowledge Source lifecycle.
-- Do not fake data when blocked sites cannot be fetched.
-- Make `learning-limited` a visible Brand/Home state and ensure downstream Hunter/generation sees the real sparse Brand context rather than silently assuming it is complete.
-- Reuse existing source-specific connectors only where already authorized; generic public fetch remains fail-closed for blocked providers.
-
-### 8. Verification
+### 7. Verification
 
 Run focused tests first, then repository gates:
 
-- Home intelligence unit tests including Video and media cues.
-- Home frozen contract regression: no `Recommend format`, working media controls, visible Auto/Post/Carousel/Reel/Video, AI Generate.
-- API media tests: auth, signed upload lifecycle, type/size bounds, cross-Brand rejection.
-- Simple Creation tests: media IDs, Video format and Presenter validation.
-- Hunter route/tool tests including RSS and degraded/zero evidence reporting.
-- Brand Intelligence projection tests and worker context tests.
-- Next production build + API/worker/domain tests.
-- `npm run governance:validate`, `npm run preflight`, Security, Product Intake, CI.
-- Production-equivalent authenticated journey evidence required before certification.
+- Home contract: no `Recommend format`; visible Auto/Post/Carousel/Reel/Video; working URL/Photo/Video/Media; AI Generate.
+- Auto-format tests for text, URL and attached media cues.
+- API media tests: authentication, signed upload lifecycle, type/size bounds and cross-Brand rejection.
+- Simple Creation tests: media IDs, Video format, Presenter validation and direct generated Content Asset.
+- For You existing-opportunity direct-generation UI tests.
+- URL readable/failure-state UI tests against the existing reader only.
+- Responsive/accessibility checks for changed Home controls.
+- Production build + API/domain/web tests.
+- `npm run governance:validate`, `npm run preflight`, Security, Product Intake and CI before certification.
+- Production-equivalent authenticated journey evidence is required before certification.
+
+## Explicitly deferred
+
+- URL onboarding extraction/scraping reliability and source-specific fallback architecture.
+- Arbitrary URL scraping improvements from My Idea beyond the existing reader.
+- Hunter discovery/provider/source-routing/qualification fixes.
+- Canonical Brand Intelligence Context or agent-context propagation refactor.
+- Claims that Hunter `Get recommendations` is fixed by this slice.
 
 ## Non-goals
 
 - New primary navigation.
-- New public bucket or permanent binary URL model.
+- Public media bucket or permanent binary URLs.
 - A second media store.
 - Multi-presenter provider redesign.
-- Heavy automatic image/video generation provider work.
-- New paid discovery provider.
+- New paid discovery providers.
 - Autonomous publishing.
 - Certification, merge or deployment without later exact-SHA approval.
