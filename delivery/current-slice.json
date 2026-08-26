@@ -3,7 +3,7 @@
   "sliceId": "VS-98",
   "title": "Approved Home Creation Recovery",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-09", "FR-11", "FR-18"],
@@ -34,6 +34,7 @@
     "apps/web/src/lib/**.test.ts",
     "packages/domain/src/campaign-service.ts",
     "packages/domain/src/**.test.ts",
+    "scripts/start-api.mjs",
     "docs/slices/VS-98.md",
     "docs/plans/VS-98-implementation.md",
     "delivery/**",
@@ -55,6 +56,7 @@
       "Reuses the existing private S3-compatible object-storage boundary used with Cloudflare R2 in production; PostgreSQL remains authoritative media metadata storage.",
       "Adds Brand-scoped media validation, conditional existing Presenter UI and direct Content Preview routing.",
       "Adds direct generation controls to already-persisted For You opportunities without changing Hunter discovery, source routing or qualification behavior.",
+      "Release preparation authorizes only exact migration 0030 through the existing release-SHA-bound startup migration mechanism; it adds no new product capability.",
       "Preserves VS-97 release history; this slice is corrective and does not rewrite prior certification evidence."
     ]
   },
@@ -84,16 +86,16 @@
       "commitSha": null,
       "by": "Product Owner",
       "at": "2026-08-26T03:36:05+02:00",
-      "rationale": "Product Owner explicitly instructed implementation to continue under the narrowed Home UI/media scope."
+      "rationale": "Product Owner explicitly instructed implementation to continue under the narrowed Home UI/media scope and later instructed the checked candidate to be deployed to production; the exact migration startup authorization is necessary release plumbing for approved migration 0030."
     },
     {
       "type": "certification",
-      "status": "approved",
+      "status": "pending",
       "version": "VS-98@1.1",
-      "commitSha": "b68ffa6743279ef176fbb33335da38adde47ca52",
-      "by": "Product Owner",
-      "at": "2026-08-26T03:59:25+02:00",
-      "rationale": "Product Owner instructed Kairo to check the final candidate and deploy to production. Exact candidate b68ffa6743279ef176fbb33335da38adde47ca52 passed Product Intake 32920828402, Security baseline 32920828446 and CI 32920828479 after correcting the Auto-format video signal regression."
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Reopened for the release-only startup migration authorization; exact candidate will be rebound after CI/Security/Product Intake pass."
     },
     {
       "type": "release",
@@ -102,7 +104,7 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded after merge."
+      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded after the release-preparation merge."
     },
     {
       "type": "production-enable",
@@ -111,26 +113,12 @@
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded before production rollout."
+      "rationale": "Authorized by the Product Owner deployment instruction; exact release SHA will be recorded before production rollout."
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
-  "certification": {
-    "status":"passed",
-    "commitSha":"b68ffa6743279ef176fbb33335da38adde47ca52",
-    "evidence":[
-      "docs/plans/VS-98-implementation.md",
-      "apps/web/src/lib/home-frozen-ui.test.ts",
-      "apps/web/src/lib/home-creation-format.test.ts",
-      "apps/api/src/simple-creation.test.ts",
-      "apps/api/src/private-object-storage.test.ts",
-      "GitHub Actions Product Intake run 32920828402",
-      "GitHub Actions Security baseline run 32920828446",
-      "GitHub Actions CI run 32920828479",
-      "Product Owner certification/deployment instruction at 2026-08-26T03:59:25+02:00 bound to b68ffa6743279ef176fbb33335da38adde47ca52"
-    ]
-  },
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":90,"certification":0,"release":0,"validation":0},
+  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
@@ -141,7 +129,7 @@
       "product/PRD.md FR-09/11/18",
       "product/TRD.md private object storage and Brand isolation boundaries",
       "product/DESIGN.md Home and human+intelligent interaction baseline",
-      "Product Owner correction, implementation authorization and scope narrowing 2026-08-26"
+      "Product Owner correction, implementation authorization, scope narrowing and production deployment instruction 2026-08-26"
     ]
   },
   "maxAttempts": 3
