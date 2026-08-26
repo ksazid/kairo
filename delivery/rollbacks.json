@@ -126,6 +126,20 @@
       "verification": ["API health returns 200","Brand onboarding remains available","Secure HTTP/PDF fallback remains active","Source evidence remains provenance-bound and untrusted","Publishing remains capability-gated"],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-012",
+      "releaseId": "REL-012",
+      "status": "ready",
+      "reason": "Rollback readiness for the medium-risk VS-101 social and video Source Intelligence adapter release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "db596a9eebb05ee433bf53742072b55ca839cf3f",
+      "lastKnownGoodSha": "e4162533df44117791c42cd414201259ad5dd6ad",
+      "triggers": ["API health or startup regresses","YouTube, Instagram, Facebook or LinkedIn routing causes onboarding regressions","Authwall/login-only content is accepted as Brand truth","Social adapter failure bypasses secure fallback or provenance safeguards","Existing publishing or tenant-isolation behavior regresses"],
+      "procedure": ["Preserve Brand, source, provenance, content, publishing and audit state.","Redeploy previous known-good API SHA e4162533df44117791c42cd414201259ad5dd6ad.","No database rollback is required because VS-101 adds no migration.","Keep Meta credentials, publishing capability gates and human approval controls unchanged.","Re-verify API health, onboarding source routing, authwall rejection, provenance, tenant isolation and existing publishing behavior before reopening."],
+      "verification": ["API health returns 200","Supported social/video public URLs fail safely or normalize through their dedicated adapter","Authwall/login-only evidence remains rejected","Source evidence remains provenance-bound and untrusted","Authentication and tenant isolation remain intact","Publishing remains capability-gated and approval-bound"],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }
