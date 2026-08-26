@@ -126,6 +126,20 @@
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T08:27:00+02:00",
       "productionVerification": {"status":"passed","evidence":["Render migration deployment dep-da78iq0ae00c73b1q2eg reached live after applying 0029/0030.","Production migration registry verification confirmed both 0029_brand_presenters.sql and 0030_home_media_inputs.sql.","One-time migration environment configuration was cleared after successful schema application.","Render clean deployment dep-da78j7u7bikc739s9cmg reached live on SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a.","Final clean startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening normally."]}
+    },
+    {
+      "id": "REL-010",
+      "sliceIds": ["VS-99"],
+      "status": "released",
+      "commitSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
+      "migrations": [],
+      "configurationChanges": ["Deployed the certified VS-99 API merge SHA through the existing Render service with no credential, migration, provider-scope or frontend configuration changes."],
+      "featureFlags": ["Brand onboarding uses the shared SourceRouter with secure HTTP/PDF fallback.","public-content-fetch is available through the Kairo-owned ToolGateway.","Platform-specific deep extraction and scheduled Hunter remain disabled/deferred."],
+      "smokeTests": ["Product Intake 32943590653, Security baseline 32943590649 and CI 32943590636 passed on the certification-only head.","Render deploy dep-da79gvh42hec73aok0qg reached live on exact merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.","Production /health returned HTTP 200 with status ok.","Startup logs show the API listening and the existing Instagram publisher starting normally.","No error-level logs were present in the post-deploy verification window."],
+      "rollbackStrategy": {"summary":"RB-010 is ready. If source ingestion or onboarding regresses, redeploy the previous known-good API merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a. No database rollback is required. Preserve Brand/source/provenance state and keep publishing safeguards unchanged."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-26T09:39:00+02:00",
+      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da79gvh42hec73aok0qg is live on exact merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.","Production /health returned HTTP 200.","API startup completed normally.","Post-deploy error-log query returned no errors."]}
     }
   ]
 }

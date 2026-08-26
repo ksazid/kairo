@@ -98,6 +98,20 @@
       "verification": ["Web and API production runtimes are healthy","Authentication/session bootstrap succeeds","Cross-Brand media and Presenter access remains denied","Photo/Video/Media access remains private and signed","Existing Content Preview and publishing safeguards remain intact"],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-010",
+      "releaseId": "REL-010",
+      "status": "ready",
+      "reason": "Rollback readiness for the medium-risk VS-99 common Source Intelligence foundation release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
+      "lastKnownGoodSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
+      "triggers": ["API health or startup regresses","Brand onboarding can no longer read supported public references","Source routing bypasses secure HTTP/PDF fallback controls","Fetched content escapes untrusted-evidence handling or Brand scope","Existing Hunter search or publishing behavior regresses"],
+      "procedure": ["Preserve Brand, source, provenance, content, publishing and audit state.","Redeploy the previous known-good API SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a.","No database rollback is required because VS-99 adds no migration.","Keep publishing capability gates and human approval unchanged.","Re-verify health, Brand onboarding, source SSRF controls, tenant isolation and existing Hunter search before reopening."],
+      "verification": ["API health returns 200","Authentication and tenant isolation remain intact","Supported public Brand references remain readable through the prior secure reader","Existing Hunter search remains available","Publishing remains capability-gated and approval-bound"],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }
