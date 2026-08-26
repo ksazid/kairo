@@ -1,50 +1,38 @@
 {
   "schemaVersion": 2,
   "sliceId": "VS-98",
-  "title": "Approved Home Intelligence Recovery",
+  "title": "Approved Home Creation Recovery",
   "status": "active",
   "lifecycle": "implementing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-02", "FR-03", "FR-04", "FR-06", "FR-07", "FR-09", "FR-11", "FR-18"],
+  "requirements": ["FR-09", "FR-11", "FR-18"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
   "dependencies": ["VS-90", "VS-91", "VS-97"],
   "blockers": [],
   "allowedPaths": [
     "apps/api/migrations/0030_home_media_inputs.sql",
     "apps/api/src/home-media.ts",
+    "apps/api/src/home-media-factory.ts",
     "apps/api/src/private-object-storage.ts",
     "apps/api/src/simple-creation.ts",
     "apps/api/src/simple-creation-postgres.ts",
     "apps/api/src/simple-creation-routes.ts",
     "apps/api/src/server.ts",
-    "apps/api/src/hunter-recommendation-routes.ts",
-    "apps/api/src/hunter-tool-gateway.ts",
-    "apps/api/src/drafter-adapter.ts",
-    "apps/api/src/critic-adapter.ts",
     "apps/api/src/**.test.ts",
     "apps/web/app/page.tsx",
     "apps/web/app/my-idea-composer.tsx",
-    "apps/web/app/for-you-creation-action.tsx",
+    "apps/web/app/for-you-create-action.tsx",
+    "apps/web/app/for-you-create-action.module.css",
     "apps/web/app/api/home/my-idea/route.ts",
     "apps/web/app/api/home/media/route.ts",
     "apps/web/app/home-media.module.css",
-    "apps/web/app/for-you-recommendations-action.tsx",
-    "apps/web/src/lib/home-intelligence.ts",
+    "apps/web/src/lib/home-creation-format.ts",
     "apps/web/src/lib/home-media-api.ts",
     "apps/web/src/lib/simple-creation-api.ts",
     "apps/web/src/lib/home-frozen-ui.test.ts",
     "apps/web/src/lib/**.test.ts",
-    "apps/worker/src/hunter.ts",
-    "apps/worker/src/researcher.ts",
-    "apps/worker/src/strategist.ts",
-    "apps/worker/src/drafter.ts",
-    "apps/worker/src/reviewer.ts",
-    "apps/worker/src/**.test.ts",
-    "packages/domain/src/brand-intelligence-context.ts",
-    "packages/domain/src/index.ts",
     "packages/domain/src/campaign-service.ts",
-    "packages/domain/src/review-service.ts",
     "packages/domain/src/**.test.ts",
     "docs/slices/VS-98.md",
     "docs/plans/VS-98-implementation.md",
@@ -60,13 +48,13 @@
     "apps/api/migrations/0003_hunter_discover.sql"
   ],
   "impact": {
-    "areas": ["frontend", "api", "database", "architecture", "customer-flow", "sensitive-data"],
+    "areas": ["frontend", "api", "database", "customer-flow", "sensitive-data"],
     "notes": [
-      "Corrects the released Home flow to the Product Owner-approved Auto format plus AI Generate interaction and removes the incorrect Recommend format step.",
-      "Enables Photo, Video and reusable Media through the existing private S3-compatible object-storage boundary used with Cloudflare R2 in production; PostgreSQL remains authoritative metadata storage.",
-      "Adds Brand-scoped media validation and keeps Presenter as a separate existing domain object.",
-      "Repairs Hunter source wiring and Brand Intelligence use while preserving truthful zero-result behavior.",
-      "Introduces a canonical versioned Brand Intelligence Context projection for Brand-private agent execution without giving agents persistence access.",
+      "Corrects the released Home flow to the Product Owner-approved Auto/Post/Carousel/Reel/Video plus AI Generate interaction and removes the incorrect Recommend format step.",
+      "Enables URL input, Photo, Video and reusable Media on My Idea while explicitly deferring URL scraping/onboarding reliability improvements.",
+      "Reuses the existing private S3-compatible object-storage boundary used with Cloudflare R2 in production; PostgreSQL remains authoritative media metadata storage.",
+      "Adds Brand-scoped media validation, conditional existing Presenter UI and direct Content Preview routing.",
+      "Adds direct generation controls to already-persisted For You opportunities without changing Hunter discovery, source routing or qualification behavior.",
       "Preserves VS-97 release history; this slice is corrective and does not rewrite prior certification evidence."
     ]
   },
@@ -74,43 +62,43 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-98@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T02:32:00+02:00",
-      "rationale": "Product Owner supplied the exact corrected functionality for Auto/Post/Carousel/Reel/Video, private R2-backed Photo/Video/Media, conditional Presenter, direct AI Generate, For You generation, Hunter and Brand Intelligence, then explicitly instructed implementation."
+      "at": "2026-08-26T03:36:05+02:00",
+      "rationale": "Product Owner narrowed VS-98 to Home UI, My Idea URL input, private Photo/Video/Media uploads and reuse, Auto/Post/Carousel/Reel/Video, conditional Presenter, direct AI Generate and For You UI generation from existing opportunities. URL onboarding/scraping reliability, Brand Intelligence Context and Hunter quality/provider work are explicitly deferred."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-98@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The recovery reuses approved private S3-compatible object storage, Brand isolation, existing Presenter authority, existing public discovery policy and existing agent-runtime boundaries. It introduces no new credential scope, publishing authority or cross-Brand intelligence policy."
+      "rationale": "The narrowed recovery reuses approved private S3-compatible object storage, Brand isolation, existing Presenter authority and existing content-generation boundaries. It introduces no new credential scope, publishing authority, scraping authority or cross-Brand data policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-98@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T02:32:00+02:00",
-      "rationale": "Product Owner explicitly said to go ahead and implement the corrected approved functionality properly."
+      "at": "2026-08-26T03:36:05+02:00",
+      "rationale": "Product Owner explicitly instructed implementation to continue under the narrowed Home UI/media scope."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-98@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Separate exact-SHA gate after the approved authenticated journeys pass."
+      "rationale": "Separate exact-SHA gate after the narrowed authenticated Home creation journeys pass."
     },
     {
       "type": "release",
       "status": "pending",
-      "version": "VS-98@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -119,7 +107,7 @@
     {
       "type": "production-enable",
       "status": "pending",
-      "version": "VS-98@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -127,7 +115,7 @@
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":5,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":75,"testing":0,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
@@ -136,10 +124,10 @@
     "specification": "docs/slices/VS-98.md",
     "implementationPr": null,
     "evidence": [
-      "product/PRD.md FR-02/03/04/06/07/09/11/18",
-      "product/TRD.md private object storage, Brand isolation, Global Hunter and AgentRuntime boundaries",
-      "product/DESIGN.md Home, Brand onboarding and human+intelligent interaction baseline",
-      "Product Owner correction and implementation authorization 2026-08-26"
+      "product/PRD.md FR-09/11/18",
+      "product/TRD.md private object storage and Brand isolation boundaries",
+      "product/DESIGN.md Home and human+intelligent interaction baseline",
+      "Product Owner correction, implementation authorization and scope narrowing 2026-08-26"
     ]
   },
   "maxAttempts": 3
