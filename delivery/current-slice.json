@@ -1,160 +1,180 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-98",
-  "title": "Approved Home Creation Recovery",
-  "status": "completed",
-  "lifecycle": "validated",
-  "riskLevel": "high",
-  "implementationMode": "production-enabled",
-  "requirements": ["FR-09", "FR-11", "FR-18"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
-  "dependencies": ["VS-90", "VS-91", "VS-97"],
+  "sliceId": "VS-99",
+  "title": "VS-99 — Common Source Intelligence Foundation",
+  "status": "active",
+  "lifecycle": "certified",
+  "riskLevel": "medium",
+  "implementationMode": "runtime-enabled",
+  "requirements": [
+    "FR-02",
+    "FR-03",
+    "FR-04",
+    "FR-06",
+    "FR-08",
+    "FR-20"
+  ],
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": "Operations Owner",
+    "security": "Security Owner"
+  },
+  "dependencies": [
+    "VS-02",
+    "VS-03",
+    "VS-04",
+    "VS-13",
+    "VS-84",
+    "VS-98"
+  ],
   "blockers": [],
   "allowedPaths": [
-    "apps/api/migrations/0030_home_media_inputs.sql",
-    "apps/api/src/home-media.ts",
-    "apps/api/src/home-media-factory.ts",
-    "apps/api/src/private-object-storage.ts",
-    "apps/api/src/simple-creation.ts",
-    "apps/api/src/simple-creation-postgres.ts",
-    "apps/api/src/simple-creation-routes.ts",
+    "packages/agent-contracts/src/**",
+    "packages/domain/src/**",
+    "apps/worker/src/discovery-provider.ts",
+    "apps/worker/src/**.test.ts",
+    "apps/api/src/public-brand-reference.ts",
+    "apps/api/src/public-brand-reference.test.ts",
+    "apps/api/src/source-intelligence.ts",
+    "apps/api/src/source-intelligence.test.ts",
+    "apps/api/src/hunter-tool-gateway.ts",
+    "apps/api/src/hunter-tool-gateway.test.ts",
+    "apps/api/src/guided-brand-brain-routes.ts",
     "apps/api/src/server.ts",
-    "apps/api/src/**.test.ts",
-    "apps/web/app/page.tsx",
-    "apps/web/app/my-idea-composer.tsx",
-    "apps/web/app/for-you-create-action.tsx",
-    "apps/web/app/for-you-create-action.module.css",
-    "apps/web/app/api/home/my-idea/route.ts",
-    "apps/web/app/api/home/media/route.ts",
-    "apps/web/app/home-media.module.css",
-    "apps/web/src/lib/home-creation-format.ts",
-    "apps/web/src/lib/home-media-api.ts",
-    "apps/web/src/lib/simple-creation-api.ts",
-    "apps/web/src/lib/home-frozen-ui.test.ts",
-    "apps/web/src/lib/**.test.ts",
-    "packages/domain/src/campaign-service.ts",
-    "packages/domain/src/**.test.ts",
-    "scripts/start-api.mjs",
-    "docs/slices/VS-98.md",
-    "docs/plans/VS-98-implementation.md",
+    "docs/slices/VS-99.md",
+    "docs/plans/VS-99-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
   "protectedPaths": [
-    ".github/workflows/release.yml",
-    "infrastructure/**",
-    "services/**",
-    "apps/api/migrations/0001_identity_workspace_brand.sql",
-    "apps/api/migrations/0002_brand_brain_knowledge.sql",
-    "apps/api/migrations/0003_hunter_discover.sql"
+    ".github/workflows/release.yml"
   ],
   "impact": {
-    "areas": ["frontend", "api", "database", "customer-flow", "sensitive-data"],
+    "areas": [
+      "architecture",
+      "api",
+      "sensitive-data",
+      "customer-flow",
+      "operations-support"
+    ],
     "notes": [
-      "Corrects the released Home flow to the Product Owner-approved Auto/Post/Carousel/Reel/Video plus AI Generate interaction and removes the incorrect Recommend format step.",
-      "Enables URL input, Photo, Video and reusable Media on My Idea while explicitly deferring URL scraping/onboarding reliability improvements.",
-      "Reuses the existing private S3-compatible object-storage boundary used with Cloudflare R2 in production; PostgreSQL remains authoritative media metadata storage.",
-      "Adds Brand-scoped media validation, conditional existing Presenter UI and direct Content Preview routing.",
-      "Adds direct generation controls to already-persisted For You opportunities without changing Hunter discovery, source routing or qualification behavior.",
-      "Production rollout applied presenter/media migrations 0029 and 0030 and completed with a clean Render deployment.",
-      "Preserves VS-97 release history; this slice is corrective and does not rewrite prior certification evidence."
+      "Creates one provider-neutral source-intelligence boundary shared by onboarding, Research/My Idea and later Hunter enrichment.",
+      "Preserves the existing secure HTTP/PDF reader as the final fallback and does not change frozen UI.",
+      "Treats all fetched content as untrusted evidence and preserves Workspace/Brand scope, provenance and credential isolation.",
+      "Platform-specific deep extraction, media analysis and Hunter scheduling remain deferred to later approved batches."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-98@1.1",
+      "version": "VS-99@1.0",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T03:36:05+02:00",
-      "rationale": "Product Owner narrowed VS-98 to Home UI, My Idea URL input, private Photo/Video/Media uploads and reuse, Auto/Post/Carousel/Reel/Video, conditional Presenter, direct AI Generate and For You UI generation from existing opportunities. URL onboarding/scraping reliability, Brand Intelligence Context and Hunter quality/provider work are explicitly deferred."
+      "at": "2026-08-26T09:20:55+02:00",
+      "rationale": "Product Owner supplied the complete Brand Onboarding → Source Intelligence → Hunter execution brief, approved the six-batch plan and explicitly instructed Work Chat to proceed with implementation."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-98@1.1",
+      "version": "VS-99@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The narrowed recovery reuses approved private S3-compatible object storage, Brand isolation, existing Presenter authority and existing content-generation boundaries. It introduces no new credential scope, publishing authority, scraping authority or cross-Brand data policy."
+      "rationale": "VS-99 implements already-approved DEC-005, DEC-006, DEC-009, DEC-010 and DEC-011 boundaries. It adds no publishing authority, private-session scraping, cross-Brand sharing policy or new credential scope."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-98@1.1",
+      "version": "VS-99@1.0",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T03:36:05+02:00",
-      "rationale": "Product Owner explicitly instructed implementation to continue under the narrowed Home UI/media scope."
+      "at": "2026-08-26T09:20:55+02:00",
+      "rationale": "Product Owner repeatedly instructed implementation to proceed after VS-98 closed. Authorization covers Batch 1 only; later certification, merge, release and production enablement remain separate gates."
     },
     {
       "type": "certification",
       "status": "approved",
-      "version": "VS-98@1.1",
-      "commitSha": "79a12869d805cbea9004af160f2e45ef5c38cafa",
+      "version": "VS-99@1.0",
+      "commitSha": "ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4",
       "by": "Product Owner",
-      "at": "2026-08-26T04:13:00+02:00",
-      "rationale": "Exact release-preparation candidate passed Product Intake, Security baseline and CI before production rollout."
+      "at": "2026-08-26T09:35:00+02:00",
+      "rationale": "Product Owner approved the exact PR candidate after Product Intake 32943266122, Security baseline 32943266180 and CI 32943266123 completed successfully."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-98@1.1",
-      "commitSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
-      "by": "Product Owner",
-      "at": "2026-08-26T08:27:00+02:00",
-      "rationale": "Product Owner explicitly approved production rollout and subsequently instructed VS-98 to be closed."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-98@1.1",
-      "commitSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
-      "by": "Product Owner",
-      "at": "2026-08-26T08:27:00+02:00",
-      "rationale": "Production API rollout completed successfully after applying migrations 0029 and 0030; final clean Render deployment is live."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     }
   ],
-  "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":100},
+  "decisionIds": [
+    "DEC-005",
+    "DEC-006",
+    "DEC-009",
+    "DEC-010",
+    "DEC-011"
+  ],
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
+    "release": 0,
+    "validation": 0
+  },
   "certification": {
-    "status":"passed",
-    "commitSha":"79a12869d805cbea9004af160f2e45ef5c38cafa",
-    "evidence":[
-      "docs/plans/VS-98-implementation.md",
-      "apps/web/src/lib/home-frozen-ui.test.ts",
-      "apps/web/src/lib/home-creation-format.test.ts",
-      "apps/api/src/simple-creation.test.ts",
-      "apps/api/src/private-object-storage.test.ts",
-      "GitHub Actions Product Intake run 32921588366",
-      "GitHub Actions Security baseline run 32921588476",
-      "GitHub Actions CI run 32921588361"
+    "status": "passed",
+    "commitSha": "ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4",
+    "evidence": [
+      "product/PRD.md FR-02/03/04/06/08/20",
+      "product/TRD.md source, provenance, ToolGateway and tenant-isolation boundaries",
+      "Product Owner Batch 1 execution approval on 2026-08-26",
+      "packages/agent-contracts/src/source-intelligence.test.ts",
+      "apps/api/src/source-intelligence.test.ts",
+      "apps/worker/src/discovery-provider.test.ts",
+      "Full repository tests: 771 passed, 38 expected skips",
+      "Affected and repository-wide TypeScript checks passed",
+      "API and Next.js production builds passed",
+      "Governance, JSON, dashboard, lockfile and script syntax checks passed",
+      "GitHub Actions Product Intake run 32943266122",
+      "GitHub Actions Security baseline run 32943266180",
+      "GitHub Actions CI run 32943266123",
+      "Product Owner certification approval bound to ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4"
     ]
   },
-  "release": {"status":"released","releaseId":"REL-009"},
-  "rollback": {"status":"ready","rollbackId":"RB-009"},
+  "release": {
+    "status": "not-authorized",
+    "releaseId": null
+  },
+  "rollback": {
+    "status": "not-applicable",
+    "rollbackId": null
+  },
   "postRelease": {
-    "status":"validated",
-    "reviewAt":"2026-08-26T08:27:00+02:00",
-    "expectedOutcome":"Approved Home creation UI and private media support are live with required database schema and clean API startup.",
-    "metrics":[
-      "Render migration deploy dep-da78iq0ae00c73b1q2eg applied 0029/0030 and reached live",
-      "Render clean deploy dep-da78j7u7bikc739s9cmg reached live",
-      "Production migration registry contains 0029_brand_presenters.sql and 0030_home_media_inputs.sql"
-    ]
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": null,
+    "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-98.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/205",
-    "evidence": [
-      "product/PRD.md FR-09/11/18",
-      "product/TRD.md private object storage and Brand isolation boundaries",
-      "product/DESIGN.md Home and human+intelligent interaction baseline",
-      "Release-preparation PR https://github.com/ksazid/kairo/pull/206",
-      "Migration correction PR https://github.com/ksazid/kairo/pull/207",
-      "Production deploy dep-da78j7u7bikc739s9cmg"
-    ]
+    "specification": "docs/slices/VS-99.md",
+    "implementationPr": null,
+    "evidence": []
   },
   "maxAttempts": 3
 }
