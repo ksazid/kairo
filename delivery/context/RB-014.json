@@ -1,0 +1,18 @@
+{
+  "id": "RB-014",
+  "releaseId": "REL-014",
+  "status": "ready",
+  "reason": "Rollback readiness for the medium-risk VS-103 Brand Intelligence V2 and Topic Graph production release.",
+  "owner": "Operations Owner",
+  "targetReleaseSha": "fbc9ea984df526104f8b815524f62d1fd55109e2",
+  "previousKnownGoodSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7",
+  "migrationPolicy": "Do not destructively reverse 0031_brand_intelligence_topic_graph.sql. Prefer runtime rollback or forward recovery while preserving Brand/source/provenance and graph lineage data.",
+  "verification": [
+    "API starts successfully on final cleanup deployment dep-da7dkf2d0e5s73e8dhk0.",
+    "Instagram publisher starts successfully.",
+    "Migration 0031 applied successfully during dep-da7dj2gae00c73bh85n0.",
+    "Exact runtime SHA remains fbc9ea984df526104f8b815524f62d1fd55109e2 after startup migration cleanup."
+  ],
+  "initiatedBy": null,
+  "initiatedAt": null
+}
