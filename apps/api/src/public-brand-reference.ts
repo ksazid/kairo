@@ -125,7 +125,8 @@ export class PublicBrandReferenceHttpReader implements PublicBrandReferenceReade
       ? extractJsonContext(text)
       : contentType && contentType.startsWith("text/") && contentType !== "text/html"
         ? { excerpt: normalizeWhitespace(text).slice(0, MAX_EXCERPT) }
-        : extractHtmlContext(text);
+        : extractHtmlContext(text, url);
+    const links = "links" in context && Array.isArray(context.links) ? context.links as string[] : undefined;
     if (!context.excerpt) throw new PublicBrandReferenceError("invalid-response", "Public Brand reference contained no usable text");
 
     return {
@@ -134,6 +135,7 @@ export class PublicBrandReferenceHttpReader implements PublicBrandReferenceReade
       ...(context.summary ? { summary: context.summary } : {}),
       excerpt: context.excerpt,
       retrievedAt: this.now().toISOString(),
+      ...(links?.length ? { links } : {}),
     };
   }
 }
@@ -247,7 +249,7 @@ function isPublicAddress(address: string, family: 4 | 6): boolean {
   return isIP(normalized) === 6;
 }
 
-function extractHtmlContext(html: string): { title?: string; summary?: string; excerpt: string } {
+function extractHtmlContext(html: string, pageUrl: URL): { title?: string; summary?: string; excerpt: string; links?: string[] } {
   const title = firstNonEmpty([
     metaValue(html, "property", "og:title"),
     metaValue(html, "name", "twitter:title"),
@@ -267,7 +269,27 @@ function extractHtmlContext(html: string): { title?: string; summary?: string; e
   const body = firstMatch(withoutNoise, /<body\b[^>]*>([\s\S]*?)<\/body>/i) || withoutNoise;
   const visible = normalizeWhitespace(decodeEntities(body.replace(/<[^>]+>/g, " ")));
   const excerpt = joinUnique([title, summary, structured, visible]).slice(0, MAX_EXCERPT);
-  return { ...(title ? { title } : {}), ...(summary ? { summary } : {}), excerpt };
+  const links = extractSameDomainLinks(html, pageUrl);
+  return { ...(title ? { title } : {}), ...(summary ? { summary } : {}), excerpt, ...(links.length ? { links } : {}) };
+}
+
+function extractSameDomainLinks(html: string, pageUrl: URL): string[] {
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const match of html.matchAll(/<a\b[^>]*\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))[^>]*>/gi)) {
+    const href = decodeEntities(match[1] ?? match[2] ?? match[3] ?? "").trim();
+    if (!href) continue;
+    try {
+      const candidate = new URL(href, pageUrl);
+      candidate.hash = "";
+      if (!['http:', 'https:'].includes(candidate.protocol) || candidate.hostname.toLowerCase() !== pageUrl.hostname.toLowerCase()) continue;
+      if (candidate.username || candidate.password || /\.(?:zip|exe|dmg|jpg|jpeg|png|gif|webp|mp4|mp3)$/i.test(candidate.pathname)) continue;
+      const normalized = candidate.toString();
+      if (!seen.has(normalized) && normalized !== pageUrl.toString()) { seen.add(normalized); result.push(normalized); }
+      if (result.length >= 100) break;
+    } catch { /* malformed links are ignored */ }
+  }
+  return result;
 }
 
 function metaValue(html: string, attributeName: "name" | "property", target: string): string | undefined {

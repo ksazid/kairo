@@ -10,6 +10,7 @@ import {
 } from "@kairo/agent-contracts";
 import type { PublicBrandReference, PublicBrandReferenceReader } from "@kairo/domain/brand-brain-bootstrap";
 import { PublicBrandReferenceHttpReader } from "./public-brand-reference";
+import { GitHubAdapter, HackerNewsAdapter, RssSubstackAdapter, WebsiteAdapter } from "./source-adapters";
 
 const ADAPTER_VERSION = "secure-http-v2";
 const PARSER_VERSION = "public-brand-reference-v2";
@@ -58,7 +59,13 @@ export class SecureHttpSourceAdapter implements SourceAdapter {
 
 export function createSourceIntelligenceRouter(options: { reader?: PublicBrandReferenceReader; cache?: NormalizedSourceCache } = {}) {
   const reader = options.reader ?? new PublicBrandReferenceHttpReader();
-  return new SourceRouter([new SecureHttpSourceAdapter(reader)], options.cache ?? new InMemoryNormalizedSourceCache());
+  return new SourceRouter([
+    new GitHubAdapter(),
+    new HackerNewsAdapter({ linkedReader: reader }),
+    new RssSubstackAdapter(),
+    new WebsiteAdapter({ reader }),
+    new SecureHttpSourceAdapter(reader),
+  ], options.cache ?? new InMemoryNormalizedSourceCache());
 }
 
 export class SourceIntelligenceBrandReferenceReader implements PublicBrandReferenceReader {
@@ -84,5 +91,6 @@ function compactReference(reference: PublicBrandReference) {
     excerpt: reference.excerpt,
     ...(reference.contentType ? { contentType: reference.contentType } : {}),
     ...(reference.sizeBytes !== undefined ? { sizeBytes: reference.sizeBytes } : {}),
+    ...(reference.links?.length ? { links: reference.links } : {}),
   };
 }

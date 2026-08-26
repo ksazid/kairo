@@ -71,7 +71,7 @@ export class RssAtomDiscoveryProvider implements DiscoverySourceProvider {
           if (!response.ok) continue;
           const xml = await readBoundedText(response, this.maxResponseBytes);
           if (/<!DOCTYPE|<!ENTITY/i.test(xml)) continue;
-          const entries = parseFeed(xml, feed.url);
+          const entries = parseRssAtomFeed(xml, feed.url);
           for (const entry of entries) {
             if (!entry.title || !entry.url) continue;
             if (!textMatches(`${entry.title} ${entry.summary ?? ""}`, queryTokens)) continue;
@@ -341,16 +341,17 @@ export class YouTubeDiscoveryProvider implements DiscoverySourceProvider {
   }
 }
 
-interface FeedEntry {
+export interface ParsedFeedEntry {
   title?: string;
   url?: string;
   summary?: string;
   author?: string;
   publisher?: string;
   publishedAt?: string;
+  tags?: string[];
 }
 
-function parseFeed(xml: string, baseUrl: string): FeedEntry[] {
+export function parseRssAtomFeed(xml: string, baseUrl: string): ParsedFeedEntry[] {
   const rssItems = blocks(xml, "item");
   if (rssItems.length) {
     const channel = firstTag(xml, "title");
@@ -361,6 +362,7 @@ function parseFeed(xml: string, baseUrl: string): FeedEntry[] {
       author: cleanXmlText(firstTag(item, "dc:creator") ?? firstTag(item, "author")),
       publisher: cleanXmlText(channel),
       publishedAt: normalizeDate(cleanXmlText(firstTag(item, "pubDate") ?? firstTag(item, "dc:date"))),
+      tags: categoryValues(item),
     }));
   }
 
@@ -374,9 +376,26 @@ function parseFeed(xml: string, baseUrl: string): FeedEntry[] {
       author: cleanXmlText(firstTag(firstTag(entry, "author") ?? "", "name") ?? firstTag(entry, "author")),
       publisher,
       publishedAt: normalizeDate(cleanXmlText(firstTag(entry, "published") ?? firstTag(entry, "updated"))),
+      tags: categoryValues(entry),
     }));
   }
   throw new PublicDiscoveryAdapterError("invalid-response", "RSS/Atom feed contains no supported entries");
+}
+
+function attributeValue(value: string, name: string): string | undefined {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return decodeEntities(new RegExp(`\\b${escaped}\\s*=\\s*["']([^"']+)["']`, "i").exec(value)?.[1] ?? "") || undefined;
+}
+
+function categoryValues(xml: string): string[] {
+  const values: string[] = [];
+  for (const match of xml.matchAll(/<category\b([^>]*)>([\s\S]*?)<\/category\s*>|<category\b([^>]*)\/\s*>/gi)) {
+    const attrs = match[1] ?? match[3] ?? "";
+    const value = cleanXmlText(match[2]) ?? attributeValue(attrs, "term");
+    if (value && !values.includes(value)) values.push(value);
+    if (values.length >= 20) break;
+  }
+  return values;
 }
 
 function blocks(xml: string, tag: string): string[] {

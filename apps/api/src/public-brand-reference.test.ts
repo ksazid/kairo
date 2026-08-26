@@ -37,7 +37,7 @@ describe("PublicBrandReferenceHttpReader", () => {
         return {
           status: 200,
           headers: { "content-type": "text/html; charset=utf-8" },
-          body: `<!doctype html><html lang="en"><head><title>The Duke 390</title><meta name="description" content="Rider-first Duke 390 ownership and riding content"></head><body><main><h1>Duke 390</h1><p>Rides, ownership, modifications and rider questions.</p><script>ignore me</script></main></body></html>`,
+          body: `<!doctype html><html lang="en"><head><title>The Duke 390</title><meta name="description" content="Rider-first Duke 390 ownership and riding content"></head><body><main><h1>Duke 390</h1><p>Rides, ownership, modifications and rider questions.</p><a href="/products">Products</a><a href="https://other.example/about">Other</a><script>ignore me</script></main></body></html>`,
         };
       },
     });
@@ -46,8 +46,9 @@ describe("PublicBrandReferenceHttpReader", () => {
       url: "https://example.com/about",
       title: "The Duke 390",
       summary: "Rider-first Duke 390 ownership and riding content",
-      excerpt: "The Duke 390 Rider-first Duke 390 ownership and riding content Duke 390 Rides, ownership, modifications and rider questions.",
+      excerpt: "The Duke 390 Rider-first Duke 390 ownership and riding content Duke 390 Rides, ownership, modifications and rider questions. Products Other",
       retrievedAt: "2026-08-15T18:23:00.000Z",
+      links: ["https://example.com/products"],
     });
     expect(calls).toEqual([{ url: "https://example.com/about", address: "93.184.216.34", family: 4 }]);
   });

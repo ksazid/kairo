@@ -1,11 +1,11 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-99",
-  "title": "VS-99 — Common Source Intelligence Foundation",
-  "status": "completed",
-  "lifecycle": "validated",
+  "sliceId": "VS-100",
+  "title": "VS-100 — Core Source Intelligence Adapters",
+  "status": "active",
+  "lifecycle": "certified",
   "riskLevel": "medium",
-  "implementationMode": "production-enabled",
+  "implementationMode": "runtime-enabled",
   "requirements": [
     "FR-02",
     "FR-03",
@@ -21,29 +21,24 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-02",
-    "VS-03",
-    "VS-04",
     "VS-13",
     "VS-84",
-    "VS-98"
+    "VS-99"
   ],
   "blockers": [],
   "allowedPaths": [
     "packages/agent-contracts/src/**",
-    "packages/domain/src/**",
-    "apps/worker/src/discovery-provider.ts",
-    "apps/worker/src/**.test.ts",
+    "packages/domain/src/brand-brain-bootstrap.ts",
     "apps/api/src/public-brand-reference.ts",
     "apps/api/src/public-brand-reference.test.ts",
     "apps/api/src/source-intelligence.ts",
     "apps/api/src/source-intelligence.test.ts",
-    "apps/api/src/hunter-tool-gateway.ts",
-    "apps/api/src/hunter-tool-gateway.test.ts",
-    "apps/api/src/guided-brand-brain-routes.ts",
-    "apps/api/src/server.ts",
-    "docs/slices/VS-99.md",
-    "docs/plans/VS-99-implementation.md",
+    "apps/api/src/source-adapters.ts",
+    "apps/api/src/source-adapters.test.ts",
+    "apps/worker/src/public-discovery-adapters.ts",
+    "apps/worker/src/public-discovery-adapters.test.ts",
+    "docs/slices/VS-100.md",
+    "docs/plans/VS-100-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -59,66 +54,65 @@
       "operations-support"
     ],
     "notes": [
-      "Creates one provider-neutral source-intelligence boundary shared by onboarding, Research/My Idea and later Hunter enrichment.",
-      "Preserves the existing secure HTTP/PDF reader as the final fallback and does not change frozen UI.",
-      "Treats all fetched content as untrusted evidence and preserves Workspace/Brand scope, provenance and credential isolation.",
-      "Platform-specific deep extraction, media analysis and Hunter scheduling remain deferred to later approved batches."
+      "Adds bounded public Website, GitHub, Hacker News and RSS/Substack adapters behind the VS-99 shared source boundary.",
+      "Preserves secure HTTP/PDF as the final fallback and changes no frozen UI or publishing authority.",
+      "Remote content remains untrusted evidence with provider versions and provenance."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-99@1.0",
+      "version": "VS-100@1.0",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T09:20:55+02:00",
-      "rationale": "Product Owner supplied the complete Brand Onboarding → Source Intelligence → Hunter execution brief, approved the six-batch plan and explicitly instructed Work Chat to proceed with implementation."
+      "at": "2026-08-26T10:00:00+02:00",
+      "rationale": "Product Owner supplied the complete execution brief, approved the batch plan and instructed Work Chat to go next."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-99@1.0",
+      "version": "VS-100@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "VS-99 implements already-approved DEC-005, DEC-006, DEC-009, DEC-010 and DEC-011 boundaries. It adds no publishing authority, private-session scraping, cross-Brand sharing policy or new credential scope."
+      "rationale": "Implements existing public-source, provenance, credential-isolation and fallback decisions without expanding publishing or private-session authority."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-99@1.0",
+      "version": "VS-100@1.0",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T09:20:55+02:00",
-      "rationale": "Product Owner repeatedly instructed implementation to proceed after VS-98 closed. Authorization covers Batch 1 only; later certification, merge, release and production enablement remain separate gates."
+      "at": "2026-08-26T10:00:00+02:00",
+      "rationale": "Product Owner explicitly instructed implementation to proceed with the next approved batch."
     },
     {
       "type": "certification",
       "status": "approved",
-      "version": "VS-99@1.0",
-      "commitSha": "ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4",
+      "version": "VS-100@1.0",
+      "commitSha": "037d19e0ec53080e1a3d89c41fbbce600b664c3b",
       "by": "Product Owner",
-      "at": "2026-08-26T09:35:00+02:00",
-      "rationale": "Product Owner approved the exact PR candidate after Product Intake 32943266122, Security baseline 32943266180 and CI 32943266123 completed successfully."
+      "at": "2026-08-26T10:15:00+02:00",
+      "rationale": "Product Owner approved certification of the exact Batch 2 implementation candidate after local verification passed."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-99@1.0",
-      "commitSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
-      "by": "Product Owner",
-      "at": "2026-08-26T09:39:00+02:00",
-      "rationale": "Product Owner explicitly approved the Batch 1 production release after certified PR #209 merged."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-99@1.0",
-      "commitSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
-      "by": "Product Owner",
-      "at": "2026-08-26T09:39:00+02:00",
-      "rationale": "Render deploy dep-da79gvh42hec73aok0qg reached live on the exact merge SHA; API health returned 200, startup completed normally and no post-deploy error logs were present."
+      "status": "pending",
+      "version": null,
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": null
     }
   ],
   "decisionIds": [
@@ -134,59 +128,43 @@
     "implementation": 100,
     "testing": 100,
     "certification": 100,
-    "release": 100,
-    "validation": 100
+    "release": 0,
+    "validation": 0
   },
   "certification": {
     "status": "passed",
-    "commitSha": "ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4",
+    "commitSha": "037d19e0ec53080e1a3d89c41fbbce600b664c3b",
     "evidence": [
-      "product/PRD.md FR-02/03/04/06/08/20",
-      "product/TRD.md source, provenance, ToolGateway and tenant-isolation boundaries",
-      "Product Owner Batch 1 execution approval on 2026-08-26",
-      "packages/agent-contracts/src/source-intelligence.test.ts",
+      "apps/api/src/source-adapters.test.ts",
+      "apps/api/src/public-brand-reference.test.ts",
       "apps/api/src/source-intelligence.test.ts",
-      "apps/worker/src/discovery-provider.test.ts",
-      "Full repository tests: 771 passed, 38 expected skips",
-      "Affected and repository-wide TypeScript checks passed",
+      "apps/worker/src/public-discovery-adapters.test.ts",
+      "Focused adapter and security tests: 25 passed",
+      "Full repository tests: 778 passed, 38 expected skips",
+      "Repository-wide TypeScript checks passed",
       "API and Next.js production builds passed",
       "Governance, JSON, dashboard, lockfile and script syntax checks passed",
-      "GitHub Actions Product Intake run 32943266122",
-      "GitHub Actions Security baseline run 32943266180",
-      "GitHub Actions CI run 32943266123",
-      "Product Owner certification approval bound to ccb6d9d45cc9cdd69af6ebf2c86d40945dac98b4"
+      "Product Owner certification approval bound to 037d19e0ec53080e1a3d89c41fbbce600b664c3b"
     ]
   },
   "release": {
-    "status": "released",
-    "releaseId": "REL-010"
+    "status": "not-authorized",
+    "releaseId": null
   },
   "rollback": {
-    "status": "ready",
-    "rollbackId": "RB-010"
+    "status": "not-applicable",
+    "rollbackId": null
   },
   "postRelease": {
-    "status": "validated",
-    "reviewAt": "2026-08-26T09:43:00+02:00",
-    "expectedOutcome": "Brand onboarding and agent tooling use the common source-intelligence foundation while preserving secure fallback behavior.",
-    "metrics": [
-      "Render deploy dep-da79gvh42hec73aok0qg is live on merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
-      "Production /health returned HTTP 200 with status ok",
-      "Production startup completed with API listening and Instagram publisher running",
-      "No error-level logs were present in the post-deploy verification window"
-    ]
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": null,
+    "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-99.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/209",
-    "evidence": [
-      "GitHub Actions Product Intake 32943590653",
-      "GitHub Actions Security baseline 32943590649",
-      "GitHub Actions CI 32943590636",
-      "Render deploy dep-da79gvh42hec73aok0qg",
-      "Production /health HTTP 200",
-      "Clean post-deploy error-log query"
-    ]
+    "specification": "docs/slices/VS-100.md",
+    "implementationPr": null,
+    "evidence": []
   },
   "maxAttempts": 3
 }
