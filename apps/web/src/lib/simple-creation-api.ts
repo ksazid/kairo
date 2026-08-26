@@ -12,6 +12,7 @@ export interface SimpleCreationView {
   recommendation?:{title?:string;framing?:string;format?:string;channel?:string;reason?:string;supportingClaimIds?:string[];alternatives?:Array<{title:string;framing:string;format:string;channel:string}>};
   campaignId?:string;
   assetId?:string;
+  failureReason?:string;
   canRetry?:boolean;
   createdAt:string;
   updatedAt:string;
