@@ -5,6 +5,8 @@ import { KairoIcon } from "./kairo-icons";
 import { MyIdeaComposer } from "./my-idea-composer";
 import { ForYouCreateAction } from "./for-you-create-action";
 import { ForYouRecommendationsAction } from "./for-you-recommendations-action";
+import { ForYouBookmarkAction } from "./for-you-bookmark-action";
+import { RecommendationSeen } from "./recommendation-seen";
 import {
   getBrandNotifications,
   getBrands,
@@ -153,10 +155,11 @@ function RecommendationCard({ item, scores, brandId, eligiblePresenter }: { item
   const tone = format === "reel" || format === "video" ? "reel" : format === "image" ? "post" : "carousel";
   return (
     <article className={styles.recommendationCard}>
+      <RecommendationSeen brandId={brandId} opportunityId={item.id} />
       <div className={styles.recommendationThumb} data-tone={tone} aria-label={`${homeFormatLabel(format)} recommendation`}>
         <KairoIcon name={format === "reel" || format === "video" ? "video" : "image"} />
         <span className={styles.formatPill}>{homeFormatLabel(format)}</span>
-        <button className={styles.bookmarkButton} type="button" disabled aria-label={`Save recommendation: ${item.title}`} aria-pressed={scores?.status === "saved"}><KairoIcon name="bookmark" /></button>
+        <ForYouBookmarkAction brandId={brandId} opportunityId={item.id} saved={scores?.status === "saved"} />
       </div>
       <div className={styles.recommendationBody}>
         <h3>{item.title}</h3>
@@ -165,7 +168,7 @@ function RecommendationCard({ item, scores, brandId, eligiblePresenter }: { item
           <span data-tone={impactTone(scores?.overall)}><KairoIcon name="eye" />{scores ? impactLabel(scores.overall) : "Impact"}</span>
           <span data-tone="fit">{scores ? fitLabel(scores.audienceFit) : "Fit"}</span>
         </div>
-        <ForYouCreateAction brandId={brandId} title={item.title} direction={item.direction} initialFormat={format} eligiblePresenter={eligiblePresenter} />
+        <ForYouCreateAction brandId={brandId} opportunityId={item.id} title={item.title} direction={item.direction} initialFormat={format} eligiblePresenter={eligiblePresenter} />
       </div>
     </article>
   );

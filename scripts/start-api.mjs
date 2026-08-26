@@ -6,6 +6,7 @@ const approvedMigrations = new Set([
   "0030_home_media_inputs.sql",
   "0031_brand_intelligence_topic_graph.sql",
   "0032_hunter_opportunity_details.sql",
+  "0033_opportunity_feedback_closed_loop.sql",
 ]);
 const approvedRanges = new Set([
   "0023_meta_multichannel_connections.sql..0028_performance_pattern_memory.sql",
@@ -94,7 +95,7 @@ if (requestedMigration) {
   }
   await runStartupScript(
     new URL("./authorize-marketing-shadow-quality-evaluation.mjs", import.meta.url),
-    `Marketing Lab quality authorization ${requestedMarketingQualityAuthorization}`,
+    `Marketing Lab quality evaluation ${requestedMarketingQualityAuthorization}`,
   );
   runBackgroundScript(
     new URL("../apps/api/dist/marketing-shadow-quality-evaluation-worker.js", import.meta.url),

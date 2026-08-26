@@ -57,6 +57,8 @@ export interface StartSimpleCreationInput {
   contentPreference?: ContentPreference;
   presenterId?: string;
   mediaAssetIds?: string[];
+  /** Existing Brand-scoped Idea to continue. Used by For You to preserve Opportunity lineage. */
+  ideaId?: string;
 }
 
 export class SimpleCreationService {
@@ -84,6 +86,7 @@ export class SimpleCreationService {
     const source = optional(raw?.source, 2000);
     const preference = raw?.contentPreference ?? "auto";
     const presenterId = optional(raw?.presenterId, 200);
+    const ideaId = optional(raw?.ideaId, 200);
     const mediaAssetIds = normalizeHomeMediaIds(raw?.mediaAssetIds);
     if (!( ["auto", "carousel", "reel", "image", "video", "campaign"] as string[]).includes(preference)) {
       throw new DomainValidationError("contentPreference must be auto, carousel, reel, image, video, or campaign");
@@ -96,12 +99,19 @@ export class SimpleCreationService {
       if (!this.store.homeMedia) throw new DomainValidationError("Brand media is not configured");
       await this.store.homeMedia.requireAssets(accountId, brandId, mediaAssetIds);
     }
+    if (ideaId) {
+      const bundle = await this.research.getIdea(accountId, brandId, ideaId);
+      if (!bundle || bundle.idea.workspaceId !== workspaceId || bundle.idea.brandId !== brandId) {
+        throw new ResourceNotFoundError("Idea not found");
+      }
+    }
     const at = this.now().toISOString();
     return this.store.create({
       id: randomUUID(), accountId, workspaceId, brandId, goal,
       ...(input ? { input } : {}), ...(source ? { source } : {}),
       contentPreference: preference, ...(presenterId ? { presenterId } : {}),
-      ...(mediaAssetIds.length ? { mediaAssetIds } : {}), status: "queued", attempt: 0, createdAt: at, updatedAt: at,
+      ...(mediaAssetIds.length ? { mediaAssetIds } : {}), ...(ideaId ? { ideaId } : {}),
+      status: "queued", attempt: 0, createdAt: at, updatedAt: at,
     });
   }
 

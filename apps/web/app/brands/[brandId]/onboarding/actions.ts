@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import type { BrandBrainSection } from "@kairo/contracts";
 import { getBrand, getBrandBrain, putBrandBrainField } from "../../../../src/lib/kairo-api";
+import { requestRecommendations } from "../../../../src/lib/closed-loop-api";
 
 const CONFIRMABLE_SECTIONS = new Set<BrandBrainSection>([
   "identity",
@@ -25,5 +26,13 @@ export async function confirmOnboardingBrandAction(brandId: string): Promise<voi
     });
   }
 
-  redirect(`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}&notice=${encodeURIComponent("Brand ready")}`);
+  let notice = "Brand ready";
+  try {
+    const run = await requestRecommendations(brand.id);
+    notice = run.opportunityCount > 0 ? "Brand ready. For you is ready." : "Brand ready. Hunter completed its first run.";
+  } catch {
+    notice = "Brand ready. Hunter will retry when recommendations refresh.";
+  }
+
+  redirect(`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}&notice=${encodeURIComponent(notice)}`);
 }
