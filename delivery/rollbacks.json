@@ -112,6 +112,20 @@
       "verification": ["API health returns 200","Authentication and tenant isolation remain intact","Supported public Brand references remain readable through the prior secure reader","Existing Hunter search remains available","Publishing remains capability-gated and approval-bound"],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-011",
+      "releaseId": "REL-011",
+      "status": "ready",
+      "reason": "Rollback readiness for the medium-risk VS-100 core source adapter release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "e4162533df44117791c42cd414201259ad5dd6ad",
+      "lastKnownGoodSha": "9232e4cd3ce34768e1faec0a58b5518b7bae9a3f",
+      "triggers": ["API health or startup regresses","Website onboarding extraction regresses","GitHub, Hacker News or RSS adapter failures bypass secure fallback","Source evidence loses provenance or untrusted handling"],
+      "procedure": ["Preserve Brand, source, provenance, content and audit state.","Redeploy previous known-good API SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.","No database rollback is required.","Re-verify health, source SSRF controls, tenant isolation and fallback behavior."],
+      "verification": ["API health returns 200","Brand onboarding remains available","Secure HTTP/PDF fallback remains active","Source evidence remains provenance-bound and untrusted","Publishing remains capability-gated"],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }

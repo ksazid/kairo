@@ -140,6 +140,20 @@
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T09:39:00+02:00",
       "productionVerification": {"status":"passed","evidence":["Render deploy dep-da79gvh42hec73aok0qg is live on exact merge SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f.","Production /health returned HTTP 200.","API startup completed normally.","Post-deploy error-log query returned no errors."]}
+    },
+    {
+      "id": "REL-011",
+      "sliceIds": ["VS-100"],
+      "status": "released",
+      "commitSha": "e4162533df44117791c42cd414201259ad5dd6ad",
+      "migrations": [],
+      "configurationChanges": ["Deployed the VS-100 API merge SHA through the existing Render service with no credential, migration, frontend or publishing-authority changes."],
+      "featureFlags": ["Website, GitHub, Hacker News and RSS/Substack adapters are registered ahead of secure HTTP/PDF fallback.","Media analysis, social adapters, richer onboarding and scheduled Hunter remain deferred to later approved batches."],
+      "smokeTests": ["Product Intake 32946470168, Security baseline 32946470252 and CI 32946470213 passed.","Render deploy dep-da7a1kh5efls73ckksog reached live on exact merge SHA e4162533df44117791c42cd414201259ad5dd6ad.","Production /health returned HTTP 200 and no error-level logs were present after deployment."],
+      "rollbackStrategy": {"summary":"RB-011 is ready. If core adapter routing regresses, redeploy previous known-good API SHA 9232e4cd3ce34768e1faec0a58b5518b7bae9a3f. No database rollback is required."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-26T10:16:00+02:00",
+      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7a1kh5efls73ckksog is live on exact merge SHA.","Production health returned 200.","Startup completed normally and the post-deploy error query was clean."]}
     }
   ]
 }
