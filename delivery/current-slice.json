@@ -3,7 +3,7 @@
   "sliceId": "VS-103",
   "title": "VS-103 — Brand Brain V2 and Brand Intelligence Topic Graph",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "released",
   "riskLevel": "medium",
   "implementationMode": "production-enabled",
   "requirements": ["FR-03", "FR-04", "FR-06", "FR-07", "FR-20"],
@@ -22,11 +22,11 @@
     {"type": "production-enable", "status": "approved", "version": "VS-103@1.0", "commitSha": "ec026f26f9eddc7306f9ae088abf1f7c98738c70", "by": "Product Owner", "at": "2026-08-26T13:26:00+02:00", "rationale": "Product Owner explicitly approved production enablement for Batch 5."}
   ],
   "decisionIds": ["DEC-003", "DEC-005", "DEC-006", "DEC-009", "DEC-010", "DEC-011"],
-  "progress": {"discovery": 100, "decisions": 100, "implementation": 100, "testing": 100, "certification": 100, "release": 50, "validation": 0},
-  "certification": {"status": "passed", "commitSha": "e0a7920aac16e32299243f53a3b6a5a65764b273", "evidence": ["Product Intake 32961796413 passed", "Security baseline 32961796331 passed", "CI 32961796327 passed", "Product Owner certification approval bound to exact candidate e0a7920aac16e32299243f53a3b6a5a65764b273", "Migration 0031 release-plumbing fix is undergoing its own exact-SHA verification before merge and production migration execution."]},
-  "release": {"status": "not-authorized", "releaseId": null},
-  "rollback": {"status": "not-applicable", "rollbackId": null},
-  "postRelease": {"status": "not-started", "reviewAt": null, "expectedOutcome": "Confirmed and inferred Brand evidence produces a deterministic, provenance-aware Topic Graph that improves later Hunter query/ranking without a second ingestion pipeline.", "metrics": []},
-  "links": {"specification": "docs/slices/VS-103.md", "implementationPr": "https://github.com/ksazid/kairo/pull/215", "evidence": ["Product Intake 32961796413", "Security baseline 32961796331", "CI 32961796327", "Render deploy dep-da7cqiu1egvs73e816ng live on exact runtime SHA ec026f26f9eddc7306f9ae088abf1f7c98738c70", "delivery/context/VS-103-production-migration-blocker.md", "delivery/context/VS-103-production-migration-fix-plan.md"]},
+  "progress": {"discovery": 100, "decisions": 100, "implementation": 100, "testing": 100, "certification": 100, "release": 100, "validation": 0},
+  "certification": {"status": "passed", "commitSha": "e0a7920aac16e32299243f53a3b6a5a65764b273", "evidence": ["Product Intake 32961796413 passed", "Security baseline 32961796331 passed", "CI 32961796327 passed", "Product Owner certification approval bound to exact candidate e0a7920aac16e32299243f53a3b6a5a65764b273", "Migration release-plumbing fix passed Product Intake 32966149264, Security baseline 32966149286 and CI 32966149238 on exact fix SHA 8fd65a688a7f45ee0595abd1ff9f30fed9ec4d40."]},
+  "release": {"status": "released", "releaseId": "REL-014"},
+  "rollback": {"status": "ready", "rollbackId": "RB-014"},
+  "postRelease": {"status": "observing", "reviewAt": null, "expectedOutcome": "Confirmed and inferred Brand evidence produces a deterministic, provenance-aware Topic Graph that improves later Hunter query/ranking without a second ingestion pipeline.", "metrics": []},
+  "links": {"specification": "docs/slices/VS-103.md", "implementationPr": "https://github.com/ksazid/kairo/pull/215", "evidence": ["Product Intake 32961796413", "Security baseline 32961796331", "CI 32961796327", "PR #216 merged as fbc9ea984df526104f8b815524f62d1fd55109e2", "Migration 0031 applied successfully in Render deploy dep-da7dj2gae00c73bh85n0", "Final clean Render deploy dep-da7dkf2d0e5s73e8dhk0 live on fbc9ea984df526104f8b815524f62d1fd55109e2", "delivery/context/VS-103-REL-014-production-evidence.md", "delivery/context/VS-103-RB-014-rollback.md"]},
   "maxAttempts": 3
 }
