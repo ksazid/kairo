@@ -2,10 +2,10 @@
   "schemaVersion": 2,
   "sliceId": "VS-98",
   "title": "Approved Home Creation Recovery",
-  "status": "active",
-  "lifecycle": "certified",
+  "status": "closed",
+  "lifecycle": "validated",
   "riskLevel": "high",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": ["FR-09", "FR-11", "FR-18"],
   "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
   "dependencies": ["VS-90", "VS-91", "VS-97"],
@@ -56,7 +56,7 @@
       "Reuses the existing private S3-compatible object-storage boundary used with Cloudflare R2 in production; PostgreSQL remains authoritative media metadata storage.",
       "Adds Brand-scoped media validation, conditional existing Presenter UI and direct Content Preview routing.",
       "Adds direct generation controls to already-persisted For You opportunities without changing Hunter discovery, source routing or qualification behavior.",
-      "Release preparation authorizes only exact migration 0030 through the existing release-SHA-bound startup migration mechanism; it adds no new product capability.",
+      "Production rollout applied presenter/media migrations 0029 and 0030 and completed with a clean Render deployment.",
       "Preserves VS-97 release history; this slice is corrective and does not rewrite prior certification evidence."
     ]
   },
@@ -86,7 +86,7 @@
       "commitSha": null,
       "by": "Product Owner",
       "at": "2026-08-26T03:36:05+02:00",
-      "rationale": "Product Owner explicitly instructed implementation to continue under the narrowed Home UI/media scope and later instructed the checked candidate to be deployed to production; the exact migration startup authorization is necessary release plumbing for approved migration 0030."
+      "rationale": "Product Owner explicitly instructed implementation to continue under the narrowed Home UI/media scope."
     },
     {
       "type": "certification",
@@ -95,29 +95,29 @@
       "commitSha": "79a12869d805cbea9004af160f2e45ef5c38cafa",
       "by": "Product Owner",
       "at": "2026-08-26T04:13:00+02:00",
-      "rationale": "Product Owner instructed the checked VS-98 release to be deployed to production. Exact release-preparation candidate 79a12869d805cbea9004af160f2e45ef5c38cafa passed Product Intake 32921588366, Security baseline 32921588476 and CI 32921588361. The only runtime delta from the previously certified Home candidate is bounded authorization for exact migration 0030 through the existing release-SHA check."
+      "rationale": "Exact release-preparation candidate passed Product Intake, Security baseline and CI before production rollout."
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-98@1.1",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded after merge."
+      "commitSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
+      "by": "Product Owner",
+      "at": "2026-08-26T08:27:00+02:00",
+      "rationale": "Product Owner explicitly approved production rollout and subsequently instructed VS-98 to be closed."
     },
     {
       "type": "production-enable",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-98@1.1",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Authorized by the Product Owner deployment instruction; exact release SHA will be recorded before production rollout."
+      "commitSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
+      "by": "Product Owner",
+      "at": "2026-08-26T08:27:00+02:00",
+      "rationale": "Production API rollout completed successfully after applying migrations 0029 and 0030; final clean Render deployment is live."
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":100},
   "certification": {
     "status":"passed",
     "commitSha":"79a12869d805cbea9004af160f2e45ef5c38cafa",
@@ -129,13 +129,21 @@
       "apps/api/src/private-object-storage.test.ts",
       "GitHub Actions Product Intake run 32921588366",
       "GitHub Actions Security baseline run 32921588476",
-      "GitHub Actions CI run 32921588361",
-      "Product Owner certification/deployment instruction on 2026-08-26 bound to 79a12869d805cbea9004af160f2e45ef5c38cafa"
+      "GitHub Actions CI run 32921588361"
     ]
   },
-  "release": {"status":"not-authorized","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
-  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
+  "release": {"status":"released","releaseId":"67923919335d74a5d7f09c702b108b5f2cbb9f6a"},
+  "rollback": {"status":"ready","rollbackId":"dep-da730eafngtc73c579vg"},
+  "postRelease": {
+    "status":"validated",
+    "reviewAt":"2026-08-26T08:27:00+02:00",
+    "expectedOutcome":"Approved Home creation UI and private media support are live with required database schema and clean API startup.",
+    "metrics":[
+      "Render migration deploy dep-da78iq0ae00c73b1q2eg applied 0029/0030 and reached live",
+      "Render clean deploy dep-da78j7u7bikc739s9cmg reached live",
+      "Production migration registry contains 0029_brand_presenters.sql and 0030_home_media_inputs.sql"
+    ]
+  },
   "links": {
     "specification": "docs/slices/VS-98.md",
     "implementationPr": "https://github.com/ksazid/kairo/pull/205",
@@ -143,8 +151,9 @@
       "product/PRD.md FR-09/11/18",
       "product/TRD.md private object storage and Brand isolation boundaries",
       "product/DESIGN.md Home and human+intelligent interaction baseline",
-      "Product Owner correction, implementation authorization, scope narrowing and production deployment instruction 2026-08-26",
-      "Release-preparation PR https://github.com/ksazid/kairo/pull/206"
+      "Release-preparation PR https://github.com/ksazid/kairo/pull/206",
+      "Migration correction PR https://github.com/ksazid/kairo/pull/207",
+      "Production deploy dep-da78j7u7bikc739s9cmg"
     ]
   },
   "maxAttempts": 3
