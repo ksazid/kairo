@@ -151,10 +151,12 @@ export class BrandBrainBootstrapService {
     successfulReferences.push(...privateExtracts);
 
     if (!this.generator) {
+      const fallback = fallbackProposals(successfulReferences);
+      const brain = await this.persistFallback(accountId, brandId, fallback);
       return {
-        brain: await this.repository.listBrandBrainFields(accountId, brandId),
-        generatorStatus: "unavailable",
-        proposedCount: 0,
+        brain,
+        generatorStatus: fallback.length ? "generated" : "unavailable",
+        proposedCount: fallback.length,
         skippedConfirmedCount: 0,
         sourceIds: successfulReferences.map((item) => item.sourceId),
       };
@@ -173,10 +175,12 @@ export class BrandBrainBootstrapService {
         references: successfulReferences,
       });
     } catch {
+      const fallback = fallbackProposals(successfulReferences);
+      const brain = await this.persistFallback(accountId, brandId, fallback);
       return {
-        brain: await this.repository.listBrandBrainFields(accountId, brandId),
-        generatorStatus: "unavailable",
-        proposedCount: 0,
+        brain,
+        generatorStatus: fallback.length ? "generated" : "unavailable",
+        proposedCount: fallback.length,
         skippedConfirmedCount: 0,
         sourceIds: successfulReferences.map((item) => item.sourceId),
       };
@@ -224,6 +228,18 @@ export class BrandBrainBootstrapService {
       skippedConfirmedCount,
       sourceIds: inspectedSourceIds,
     };
+  }
+
+  private async persistFallback(accountId: string, brandId: string, proposals: BrandBrainProposal[]) {
+    for (const proposal of proposals) {
+      const existing = (await this.repository.listBrandBrainFields(accountId, brandId)).find((field) => field.fieldKey === proposal.fieldKey);
+      if (existing?.state === "confirmed") continue;
+      await this.repository.recordInferredBrandBrainField(accountId, brandId, {
+        section: proposal.section, fieldKey: proposal.fieldKey, value: proposal.value, sourceIds: proposal.sourceIds,
+        ...(existing ? { expectedVersion: existing.version } : {}),
+      });
+    }
+    return this.repository.listBrandBrainFields(accountId, brandId);
   }
 
   private async readActiveKnowledgeExtracts(
@@ -301,6 +317,25 @@ function optionalText(value: unknown, maxLength: number): string | undefined {
   if (!normalized) return undefined;
   if (normalized.length > maxLength) throw new DomainValidationError("ownerBoundary is too long");
   return normalized;
+}
+
+function fallbackProposals(references: Array<PublicBrandReference & { sourceId: string }>): BrandBrainProposal[] {
+  const github = references.find((reference) => {
+    try { return new URL(reference.url).hostname.toLowerCase() === "github.com"; } catch { return false; }
+  });
+  if (!github) return [];
+  const title = github.title?.trim() || "Public GitHub repository";
+  const excerpt = github.excerpt.trim().replace(/\s+/g, " ").slice(0, 800);
+  const sourceIds = [github.sourceId];
+  return [
+    { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: "Open-source software and developer tools", sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: "Software developers and technical practitioners interested in this repository's subject", sourceIds },
+    { section: "voice", fieldKey: "voice.tone", value: "Clear, practical and technically precise", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: "Open-source software, developer tutorials, implementation examples and project updates", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Repository capabilities, APIs, usage examples, releases and developer workflows", sourceIds },
+    { section: "content-strategy", fieldKey: "content.channels", value: "Developer communities, technical blogs, LinkedIn and YouTube", sourceIds },
+  ];
 }
 
 function optionalUrl(value: unknown): string | undefined {
