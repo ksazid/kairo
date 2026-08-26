@@ -1,5 +1,6 @@
 import type { BrandOpportunityDto } from "@kairo/contracts";
 import { opportunityAction } from "./opportunity-actions";
+import { RecommendationSeen } from "./recommendation-seen";
 
 export function OpportunityList({
   brandId,
@@ -30,6 +31,7 @@ function OpportunityCard({ brandId, item, returnTo }: { brandId: string; item: B
 
   return (
     <article className={`opportunity-card ${terminal ? "muted-card" : ""}`} aria-labelledby={titleId}>
+      <RecommendationSeen brandId={brandId} opportunityId={item.id} />
       <div className="opportunity-meta" aria-label="Opportunity signals">
         <span className={`signal-chip ${relevance.tone}`}>{relevance.label} relevance</span>
         <span className={`signal-chip ${evidence.tone}`}>{evidence.label} evidence</span>
