@@ -26,6 +26,17 @@ import {
 export class PgKairoRepository implements KairoRepository {
   constructor(private readonly pool: Pool) {}
 
+  async deleteBrand(accountId: string, brandId: string): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("begin");
+      const workspaceId = await requireBrandWorkspace(client, accountId, brandId);
+      const result = await client.query(`delete from brands where id=$1 and workspace_id=$2`, [brandId, workspaceId]);
+      if (!result.rowCount) throw new ResourceNotFoundError("Brand not found");
+      await client.query("commit");
+    } catch (error) { await safeRollback(client); throw error; } finally { client.release(); }
+  }
+
   async resolveAccount(identity: ExternalIdentity): Promise<AccountDto> {
     const client = await this.pool.connect();
     try {

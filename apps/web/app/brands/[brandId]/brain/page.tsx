@@ -8,6 +8,7 @@ import { fieldAnchor } from "../../../../src/lib/brand-brain-view-model";
 import { KairoProductShell } from "../../../kairo-product-shell";
 import { InlineBrandField } from "./inline-brand-field";
 import { refreshInstagramBrandSourceAction } from "./actions";
+import { deleteBrandAction } from "../brand-brain-control/actions";
 import {
   addKnowledgeSourceAction,
   removeKnowledgeSourceAction,
@@ -63,6 +64,18 @@ export default async function BrandPage({ params, searchParams }: { params: Para
             <span><strong>{summary.stale}</strong> Needs refresh</span>
           </div>
         </header>
+
+        <details className="brand-danger-zone">
+          <summary className="tertiary-button">Delete Brand</summary>
+          <div className="notice error">
+            <strong>Permanently delete this Brand and its Brand Intelligence.</strong>
+            <p>This removes sources, Brand Brain fields, recommendations, ideas, research, content, media references, reviews, approvals and publishing records for this Brand.</p>
+            <form action={deleteBrandAction.bind(null, brand.id)}>
+              <label>Type <code>DELETE BRAND</code> to confirm<input name="confirmation" required autoComplete="off" /></label>
+              <button className="tertiary-button" type="submit">Permanently delete Brand</button>
+            </form>
+          </div>
+        </details>
 
         {messages.notice ? <div className="notice success" role="status">{messages.notice}</div> : null}
         {messages.error ? <div className="notice error" role="alert">{messages.error}</div> : null}

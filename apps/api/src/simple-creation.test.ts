@@ -14,6 +14,28 @@ const availableProvider: AvatarProvider = {
 };
 
 describe("simple creation", () => {
+  it.each([["post", "image"], ["carousel", "carousel"], ["reel", "reel"], ["video", "video"]])("accepts the %s creation path and preserves Brand-scoped media", async (label, rawPreference) => {
+    const contentPreference = rawPreference as "image" | "carousel" | "reel" | "video";
+    const store = new MemoryStore();
+    const service = new SimpleCreationService(store, {} as never, {} as never, { develop: async () => {} });
+    const created = await service.start("a", "w", "b", {
+      goal: `Create a ${label}`,
+      contentPreference,
+      mediaAssetIds: ["media-a", "media-b", "media-a"],
+    });
+    expect(created.contentPreference).toBe(contentPreference);
+    expect(created.mediaAssetIds).toEqual(["media-a", "media-b"]);
+    expect(store.mediaCalls.at(-1)).toEqual({ accountId: "a", brandId: "b", ids: ["media-a", "media-b"] });
+  });
+
+  it("rejects unsupported formats before creating an Idea or reserving media", async () => {
+    const store = new MemoryStore();
+    const service = new SimpleCreationService(store, {} as never, {} as never, { develop: async () => {} });
+    await expect(service.start("a", "w", "b", { goal: "Create it", contentPreference: "podcast" as never })).rejects.toThrow();
+    expect(store.rows).toHaveLength(0);
+    expect(store.mediaCalls).toHaveLength(0);
+  });
+
   it("validates a compact creation brief without requiring a presenter", async () => {
     const store = new MemoryStore();
     const service = new SimpleCreationService(store, {} as never, {} as never, { develop: async () => {} });

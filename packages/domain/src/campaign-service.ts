@@ -14,10 +14,18 @@ export interface CampaignRepository {
   appendVersion(accountId: string, brandId: string, campaignId: string, assetId: string, expectedVersion: number, build: (asset: ContentAsset, parent: ContentVersion) => ContentVersion): Promise<CampaignDetail>;
 }
 export type GenerateContentAction = "initial-draft"|"alternative"|"simplify"|"expand"|"adjust-depth"|"strengthen-opening"|"regenerate-section";
-export interface ContentGenerationPort { generate(input:{workspaceId:string;brandId:string;brandContextVersion:string;campaign:Campaign;asset:ContentAsset;parent:ContentVersion;action:GenerateContentAction;section?:string;claims:Array<{id:string;text:string;classification:string;verificationState:string}>}):Promise<ContentVersion> }
+export interface ContentGenerationPort { generate(input:{workspaceId:string;brandId:string;brandContextVersion:string;campaign:Campaign;asset:ContentAsset;parent:ContentVersion;action:GenerateContentAction;section?:string;claims:Array<{id:string;text:string;classification:string;verificationState:string}>;brandBrain?:Array<{fieldKey:string;value:string;state:string}>}):Promise<ContentVersion> }
+
+export function validateBrandDnaForGeneration(fields: readonly { fieldKey: string; value: string; state: string }[], format?: string): void {
+  const active = new Map(fields.filter((field) => field.state !== "stale" && field.value.trim()).map((field) => [field.fieldKey, field.value.trim()]));
+  const required = ["audience.primary", "voice.tone", "content.pillars", "content.preferred-topics"];
+  if (["carousel", "reel", "video"].includes((format ?? "").toLowerCase())) required.push("content.visual-direction");
+  const missing = required.filter((key) => !active.has(key));
+  if (missing.length) throw new DomainValidationError("Brand DNA is incomplete. Complete Brand Brain before generating content: " + missing.join(", "));
+}
 
 export class CampaignService {
-  constructor(private readonly campaigns: CampaignRepository, private readonly research: ResearchRepository, private readonly generator?:ContentGenerationPort, private readonly now: () => Date = () => new Date()) {}
+  constructor(private readonly campaigns: CampaignRepository, private readonly research: ResearchRepository, private readonly generator?:ContentGenerationPort, private readonly now: () => Date = () => new Date(), private readonly brandBrain?: (accountId:string, brandId:string) => Promise<Array<{fieldKey:string;value:string;state:string}>>) {}
   async createFromSelectedAngle(accountId: string, brandId: string, ideaId: string, input: { name: string; objective: string }): Promise<Campaign> {
     const bundle = await this.research.getIdeaBundle(accountId, brandId, ideaId);
     if (!bundle?.research) throw new ResourceNotFoundError("Research-ready Idea not found");
@@ -89,7 +97,9 @@ export class CampaignService {
     const bundle=await this.research.getIdeaBundle(accountId,brandId,detail.campaign.ideaId);if(!bundle?.research)throw new ResourceNotFoundError("Campaign Research not found");const research=bundle.research;
     const entry=detail.assets.find(item=>item.asset.id===assetId);if(!entry)throw new ResourceNotFoundError("Content Asset not found");if(entry.asset.currentVersion!==input.expectedVersion)throw new ConcurrencyConflictError("Content Version is stale");const parent=entry.versions.at(-1);if(!parent)throw new ResourceNotFoundError("Content Version not found");
     const parentProject=videoProjectOrNull(parent.content);if(parentProject){assertProjectForAsset(parentProject,entry.asset);throw new DomainValidationError("Structured Reel Video Projects must be edited through Video Studio; generic AI transformations are not timeline-aware")}
-    const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset:entry.asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))});
+    const brandBrain = this.brandBrain ? await this.brandBrain(accountId, brandId) : undefined;
+    if (brandBrain?.length) validateBrandDnaForGeneration(brandBrain, entry.asset.format);
+    const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset:entry.asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState})),...(brandBrain ? {brandBrain} : {})});
     const inherited={...generated,libraryAssetRefs:normalizeLibraryAssetRefs(parent.libraryAssetRefs??[])};
     return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,()=>inherited);
   }

@@ -91,6 +91,14 @@ export class MemoryKairoRepository implements KairoRepository {
     return brand;
   }
 
+  async deleteBrand(accountId: string, brandId: string): Promise<void> {
+    const brand = await this.getBrandForAccount(accountId, brandId);
+    if (!brand) throw new ResourceNotFoundError("Brand not found");
+    this.brands.delete(brandId);
+    for (const [key, field] of this.brainFields) if (field.brandId === brandId) this.brainFields.delete(key);
+    for (const [key, source] of this.sources) if (source.brandId === brandId) this.sources.delete(key);
+  }
+
   async listBrandBrainFields(accountId: string, brandId: string): Promise<BrandBrainFieldDto[]> {
     await this.requireBrand(accountId, brandId);
     return [...this.brainFields.values()].filter((field) => field.brandId === brandId).sort((a, b) => a.fieldKey.localeCompare(b.fieldKey)).map(copyField);

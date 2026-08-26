@@ -149,14 +149,25 @@ export class BrandBrainBootstrapService {
     ]);
     const privateExtracts = await this.readActiveKnowledgeExtracts(accountId, brandId, new Set(successfulReferences.map((item) => item.sourceId)));
     successfulReferences.push(...privateExtracts);
-    if (!successfulReferences.length && (brand.publicProfileUrl || brand.publicSourceUrl)) {
-      successfulReferences.push({
-        url: brand.publicProfileUrl || brand.publicSourceUrl!,
+    let syntheticFallback = false;
+    const fallbackUrl = brand.publicProfileUrl || brand.publicSourceUrl;
+    const fallbackHost = fallbackUrl ? new URL(fallbackUrl).hostname.toLowerCase() : "";
+    const isSocialFallback = fallbackHost === "instagram.com" || fallbackHost === "www.instagram.com"
+      || fallbackHost === "facebook.com" || fallbackHost === "www.facebook.com";
+    const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
+      || fallbackHost === "on.substack.com";
+    if (!successfulReferences.length && fallbackUrl) {
+      const fallbackReference = {
+        url: fallbackUrl,
         title: brand.name,
         excerpt: `Public social profile for ${brand.name}. Detailed profile evidence is unavailable until the source is connected or refreshed.`,
         retrievedAt: new Date().toISOString(),
-        sourceId: "",
-      });
+      };
+      // Keep conservative fallback proposals source-backed so PostgreSQL can
+      // persist them and the Brand Brain UI can render them as suggestions.
+      const source = await this.ensureSource(accountId, brandId, fallbackReference, await this.repository.listKnowledgeSources(accountId, brandId));
+      successfulReferences.push({ ...fallbackReference, sourceId: source.id });
+      syntheticFallback = true;
     }
 
     if (!this.generator) {
@@ -246,7 +257,7 @@ export class BrandBrainBootstrapService {
       generatorStatus: "generated",
       proposedCount,
       skippedConfirmedCount,
-      sourceIds: inspectedSourceIds.filter(Boolean),
+      sourceIds: syntheticFallback ? [] : inspectedSourceIds.filter(Boolean),
     };
   }
 
@@ -346,9 +357,16 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   const social = references.find((reference) => {
     try { return ["instagram.com", "facebook.com", "www.instagram.com", "www.facebook.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
   });
-  const reference = github ?? social;
+  const substack = references.find((reference) => {
+    try {
+      const host = new URL(reference.url).hostname.toLowerCase();
+      return host === "substack.com" || host.endsWith(".substack.com");
+    } catch { return false; }
+  });
+  const reference = github ?? social ?? substack ?? references[0];
   if (!reference) return [];
   const isSocial = reference === social;
+  const isSubstack = reference === substack;
   const title = reference.title?.trim() || (isSocial ? "Public social profile" : "Public GitHub repository");
   const excerpt = reference.excerpt.trim().replace(/\s+/g, " ").slice(0, 800);
   const sourceIds = [reference.sourceId];
@@ -360,6 +378,24 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     { section: "content-strategy", fieldKey: "content.pillars", value: "Rides and vehicles, ownership advice, lifestyle stories and community moments", sourceIds },
     { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Bike and car features, riding tips, maintenance, routes and community stories", sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Instagram, Facebook, YouTube and automotive communities", sourceIds },
+  ];
+  if (isSubstack) return [
+    { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: "Independent publishing and newsletter media", sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: "Readers interested in the publication's subject and perspective", sourceIds },
+    { section: "voice", fieldKey: "voice.tone", value: "Clear, thoughtful and editorial", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: "Editorial stories, analysis, practical guidance and community perspectives", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Publication themes, timely analysis, useful explainers and reader questions", sourceIds },
+    { section: "content-strategy", fieldKey: "content.channels", value: "Substack, email newsletters, web articles and social communities", sourceIds },
+  ];
+  if (!isSocial && !isSubstack && !github) return [
+    { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: "Business or organization website", sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: "People interested in this Brand's products, services or subject", sourceIds },
+    { section: "voice", fieldKey: "voice.tone", value: "Clear, useful and audience-focused", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: "Brand story, products or services, practical guidance and customer value", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "What the Brand offers, customer questions, useful advice and relevant updates", sourceIds },
+    { section: "content-strategy", fieldKey: "content.channels", value: "Website, email, social communities and relevant professional channels", sourceIds },
   ];
   return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },

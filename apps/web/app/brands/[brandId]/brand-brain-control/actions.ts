@@ -7,6 +7,7 @@ import {
   putBrandBrainField,
   removeKnowledgeSource,
   setKnowledgeSourceEnabled,
+  deleteBrand,
 } from "../../../../src/lib/kairo-api";
 import { fieldAnchor } from "../../../../src/lib/brand-brain-view-model";
 
@@ -14,6 +15,14 @@ function target(brandId: string, key: "notice" | "error", value: string, anchor?
   const params = new URLSearchParams({ [key]: value.slice(0, 180) });
   const hash = anchor ? `#${anchor}` : "";
   redirect(`/brands/${encodeURIComponent(brandId)}/brain?${params.toString()}${hash}`);
+}
+
+export async function deleteBrandAction(brandId: string, formData: FormData): Promise<void> {
+  if (String(formData.get("confirmation") ?? "").trim() !== "DELETE BRAND") {
+    return target(brandId, "error", "Type DELETE BRAND exactly to permanently remove this Brand.");
+  }
+  try { await deleteBrand(brandId); } catch (error) { return target(brandId, "error", error instanceof Error ? error.message : "Unable to delete Brand"); }
+  redirect("/?notice=Brand%20and%20all%20related%20data%20deleted");
 }
 
 export async function addKnowledgeSourceAction(brandId: string, formData: FormData): Promise<void> {

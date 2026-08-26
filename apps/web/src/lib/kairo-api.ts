@@ -77,6 +77,15 @@ export async function getBrand(brandId: string): Promise<BrandDto | null> {
   return (await response.json()) as BrandDto;
 }
 
+export async function deleteBrand(brandId: string): Promise<void> {
+  const response = await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}`, { method: "DELETE" });
+  if (!response) throw new KairoApiError("Authentication is required", 401);
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
+    throw new KairoApiError(body?.detail ?? "Unable to delete Brand", response.status);
+  }
+}
+
 export async function searchCommands(query: string, options: { brandId?: string; limit?: number } = {}): Promise<CommandSearchResponse> {
   const params = new URLSearchParams({ q: query });
   if (options.brandId) params.set("brandId", options.brandId);
