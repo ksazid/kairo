@@ -84,6 +84,20 @@
       "verification": ["API and web production runtimes are healthy","Auth0 login redirect and authenticated session bootstrap succeed","Presenter remains unavailable for selection without a healthy configured AvatarProvider","Existing creation with None remains functional","Cross-Brand Presenter access remains denied","Existing publishing remains capability-gated and human-approval-bound","Vercel Git auto-deploy is disabled after recovery"],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-009",
+      "releaseId": "REL-009",
+      "status": "ready",
+      "reason": "Rollback readiness for the high-risk VS-98 approved Home creation recovery and private media production release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
+      "lastKnownGoodSha": "d9aefc46679d72e51183ad2de67f7876e6ffac3a",
+      "triggers": ["Home My Idea or For You creation flow becomes unusable","Photo, Video or reusable Media violates Brand isolation or signed-access boundaries","Presenter selection reaches unsupported formats or bypasses eligibility checks","API startup, readiness or release provenance regresses","Existing Content Preview, approval or publishing safeguards regress"],
+      "procedure": ["Preserve Brand, media, content, publishing and audit state; do not delete MediaAsset or Presenter records as a rollback mechanism.","Keep additive migrations 0029 and 0030 in place and use forward recovery for schema defects.","Restore the previous known-good web/API runtime for the affected component if forward recovery cannot be completed safely.","Keep publishing capability gates and human approval controls unchanged.","Re-verify authentication, Brand isolation, media access, existing creation and publishing safeguards before reopening the changed flow."],
+      "verification": ["Web and API production runtimes are healthy","Authentication/session bootstrap succeeds","Cross-Brand media and Presenter access remains denied","Photo/Video/Media access remains private and signed","Existing Content Preview and publishing safeguards remain intact"],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }
