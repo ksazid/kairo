@@ -69,7 +69,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       if (!run) {
         run = options.runner.runForAuthorizedBrand(input).then(async (result) => {
           if (result.opportunityCount === 0) {
-            const starterCount = await createProfileStarters(options.store, account.id, brand.id, input, brain);
+            const starterCount = await createProfileStarters(options.store, account.id, brand, input, brain);
             if (starterCount) return { ...result, candidateCount: result.candidateCount + starterCount, opportunityCount: starterCount };
           }
           return result;
@@ -118,9 +118,10 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   );
 }
 
-async function createProfileStarters(repository: KairoRepository, accountId: string, brandId: string, input: HunterRunInput, brain: readonly BrandBrainFieldDto[]) {
-  const source = (await repository.listKnowledgeSources(accountId, brandId)).find((item) => item.status === "active" && item.sourceUrl);
-  if (!source?.sourceUrl) return 0;
+async function createProfileStarters(repository: KairoRepository, accountId: string, brand: { id: string; publicSourceUrl?: string; publicProfileUrl?: string }, input: HunterRunInput, brain: readonly BrandBrainFieldDto[]) {
+  const source = (await repository.listKnowledgeSources(accountId, brand.id)).find((item) => item.status === "active" && item.sourceUrl);
+  const sourceUrl = source?.sourceUrl ?? brand.publicProfileUrl ?? brand.publicSourceUrl;
+  if (!sourceUrl) return 0;
   const topics = brain.find((field) => field.fieldKey === "content.preferred-topics")?.value?.trim() || "the Brand's core topics";
   const audience = brain.find((field) => field.fieldKey === "audience.primary")?.value?.trim() || "the Brand audience";
   const service = new DiscoveryService(repository as unknown as ConstructorParameters<typeof DiscoveryService>[0]);
@@ -131,7 +132,7 @@ async function createProfileStarters(repository: KairoRepository, accountId: str
   ];
   let created = 0;
   for (const [title, rationale, whyNow, direction] of ideas) {
-    const result = await service.recordCandidate(accountId, brandId, { signal: { title, summary: rationale, sourceUrl: source.sourceUrl, platform: source.sourceUrl.includes("instagram") ? "instagram" : "web", retrievedAt: new Date().toISOString(), provider: "brand-profile-fallback", providerVersion: "v1" }, title, rationale, whyNow, developmentDirection: direction, brandContextVersion: input.brand.contextVersion, scores: { relevance: .78, evidence: .55, novelty: .68, timeliness: .62, brandAuthority: .72, audienceFit: .78 }, details: { topic: topics, proposedAngle: direction, hook: title, targetAudience: audience, objective: "Grow audience", confidence: .62, estimatedEffort: "low", recommendedFormat: "carousel", recommendedChannel: "instagram" } });
+    const result = await service.recordCandidate(accountId, brand.id, { signal: { title, summary: rationale, sourceUrl, platform: sourceUrl.includes("instagram") ? "instagram" : "web", retrievedAt: new Date().toISOString(), provider: "brand-profile-fallback", providerVersion: "v1" }, title, rationale, whyNow, developmentDirection: direction, brandContextVersion: input.brand.contextVersion, scores: { relevance: .78, evidence: .55, novelty: .68, timeliness: .62, brandAuthority: .72, audienceFit: .78 }, details: { topic: topics, proposedAngle: direction, hook: title, targetAudience: audience, objective: "Grow audience", confidence: .62, estimatedEffort: "low", recommendedFormat: "carousel", recommendedChannel: "instagram" } });
     if (result.opportunity) created++;
   }
   return created;
