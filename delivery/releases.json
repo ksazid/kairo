@@ -112,6 +112,20 @@
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-25T00:06:00+02:00",
       "productionVerification": {"status":"passed","evidence":["Neon migration 2e7c3721-aa35-4243-973e-e97c68fdf14f applied successfully to production database kairo after temporary-branch verification.","Render deploy dep-da6ch3ek1f9s73fetht0 is live at runtime-equivalent commit f4bd21753e406ecb82252b0aac50d8711007c348 with clean startup and no new deployment-window errors.","Vercel production deployment dpl_5VBJbgVj25vfUxqYrE7ipuXWhhqQ is READY at runtime-equivalent commit 3ac634f337653fce92e5ae177c2d534d80d11d5e.","Production /api/version returned HTTP 200 and Auth0 production redirect returned HTTP 307 as expected.","Vercel runtime error aggregation found no errors in the immediate post-release window.","Both Vercel Git deployment gates are restored to false on current main.","Authenticated functional/visual observation is explicitly deferred to issue #192; VS-90 remains observed rather than validated."]}
+    },
+    {
+      "id": "REL-009",
+      "sliceIds": ["VS-98"],
+      "status": "released",
+      "commitSha": "67923919335d74a5d7f09c702b108b5f2cbb9f6a",
+      "migrations": ["apps/api/migrations/0029_brand_presenters.sql","apps/api/migrations/0030_home_media_inputs.sql"],
+      "configurationChanges": ["Render API release provenance was set to main merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a for the VS-98 production rollout.","The bounded startup migration range 0029_brand_presenters.sql..0030_home_media_inputs.sql was enabled for the migration deployment and cleared immediately after successful application.","The final clean Render deployment ran with no one-shot migration flag; the web Home changes were already live on Vercel."],
+      "featureFlags": ["Home My Idea uses Auto/Post/Carousel/Reel/Video and a single AI Generate action.","Photo and Video upload plus reusable Media remain Brand-scoped and private through signed object-storage access.","Presenter remains optional and conditional for Reel/Video.","URL scraping/onboarding reliability and Hunter quality/provider changes remain explicitly deferred from VS-98."],
+      "smokeTests": ["VS-98 implementation and release-preparation candidates passed Product Intake, Security baseline and CI before production rollout.","Production migration registry contains 0029_brand_presenters.sql and 0030_home_media_inputs.sql.","Render migration deployment dep-da78iq0ae00c73b1q2eg applied the bounded presenter/media migration range and reached live.","Render clean deployment dep-da78j7u7bikc739s9cmg reached live on merge SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a after the one-shot migration flag was cleared.","Final API startup logs show the server listening normally with the existing Instagram publisher starting successfully."],
+      "rollbackStrategy": {"summary":"RB-009 is ready. If VS-98 Home creation or media behavior regresses, preserve Brand/media/content/audit state, keep additive migrations 0029 and 0030 in place, restore the previous known-good web/API runtime for the affected component, and use forward recovery for schema defects. Re-verify authentication, Brand isolation, existing publishing safeguards and media access before reopening the changed flow."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-26T08:27:00+02:00",
+      "productionVerification": {"status":"passed","evidence":["Render migration deployment dep-da78iq0ae00c73b1q2eg reached live after applying 0029/0030.","Production migration registry verification confirmed both 0029_brand_presenters.sql and 0030_home_media_inputs.sql.","One-time migration environment configuration was cleared after successful schema application.","Render clean deployment dep-da78j7u7bikc739s9cmg reached live on SHA 67923919335d74a5d7f09c702b108b5f2cbb9f6a.","Final clean startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening normally."]}
     }
   ]
 }
