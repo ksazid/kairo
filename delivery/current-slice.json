@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "sliceId": "VS-100",
   "title": "VS-100 — Core Source Intelligence Adapters",
-  "status": "active",
-  "lifecycle": "certified",
+  "status": "completed",
+  "lifecycle": "validated",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -98,21 +98,21 @@
     },
     {
       "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-100@1.0",
+      "commitSha": "e4162533df44117791c42cd414201259ad5dd6ad",
+      "by": "Product Owner",
+      "at": "2026-08-26T10:16:00+02:00",
+      "rationale": "Product Owner approved production release after certified PR #211 merged."
     },
     {
       "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-100@1.0",
+      "commitSha": "e4162533df44117791c42cd414201259ad5dd6ad",
+      "by": "Product Owner",
+      "at": "2026-08-26T10:16:00+02:00",
+      "rationale": "Render deploy reached live on the exact merge SHA; health and post-deploy logs passed."
     }
   ],
   "decisionIds": [
@@ -128,8 +128,8 @@
     "implementation": 100,
     "testing": 100,
     "certification": 100,
-    "release": 0,
-    "validation": 0
+    "release": 100,
+    "validation": 100
   },
   "certification": {
     "status": "passed",
@@ -148,23 +148,35 @@
     ]
   },
   "release": {
-    "status": "not-authorized",
-    "releaseId": null
+    "status": "released",
+    "releaseId": "REL-011"
   },
   "rollback": {
-    "status": "not-applicable",
-    "rollbackId": null
+    "status": "ready",
+    "rollbackId": "RB-011"
   },
   "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
+    "status": "validated",
+    "reviewAt": "2026-08-26T10:18:00+02:00",
+    "expectedOutcome": "Public Website, GitHub, Hacker News and RSS/Substack sources normalize through the shared SourceRouter with secure fallback.",
+    "metrics": [
+      "Render deploy dep-da7a1kh5efls73ckksog is live on exact merge SHA e4162533df44117791c42cd414201259ad5dd6ad",
+      "Production /health returned HTTP 200 with status ok",
+      "API startup and Instagram publisher startup completed normally",
+      "Post-deploy error-log query returned no errors"
+    ]
   },
   "links": {
     "specification": "docs/slices/VS-100.md",
-    "implementationPr": null,
-    "evidence": []
+    "implementationPr": "https://github.com/ksazid/kairo/pull/211",
+    "evidence": [
+      "GitHub Actions Product Intake 32946470168",
+      "GitHub Actions Security baseline 32946470252",
+      "GitHub Actions CI 32946470213",
+      "Render deploy dep-da7a1kh5efls73ckksog",
+      "Production /health HTTP 200",
+      "Clean post-deploy error-log query"
+    ]
   },
   "maxAttempts": 3
 }
