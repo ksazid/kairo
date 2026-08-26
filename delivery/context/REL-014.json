@@ -1,0 +1,38 @@
+{
+  "id": "REL-014",
+  "sliceIds": ["VS-103"],
+  "status": "released",
+  "commitSha": "fbc9ea984df526104f8b815524f62d1fd55109e2",
+  "migrations": ["0031_brand_intelligence_topic_graph.sql"],
+  "configurationChanges": [
+    "KAIRO_RELEASE_SHA set to fbc9ea984df526104f8b815524f62d1fd55109e2 on the Render API service.",
+    "KAIRO_STARTUP_MIGRATION was set to 0031_brand_intelligence_topic_graph.sql for one exact-SHA deployment, then cleared after successful application.",
+    "No frozen UI, OAuth scope, publishing authority or scheduler change was introduced."
+  ],
+  "featureFlags": [
+    "Brand Intelligence V2 and versioned Topic Graph persistence are enabled.",
+    "Sector packs remain low-precedence configurable seeds and confirmed Brand evidence/exclusions retain precedence.",
+    "Hunter ranking behavior is not changed by VS-103."
+  ],
+  "smokeTests": [
+    "Product Intake 32966149264, Security baseline 32966149286 and CI 32966149238 passed on exact release-plumbing fix SHA 8fd65a688a7f45ee0595abd1ff9f30fed9ec4d40.",
+    "PR #216 merged as fbc9ea984df526104f8b815524f62d1fd55109e2.",
+    "Render deployment dep-da7dj2gae00c73bh85n0 applied 0031_brand_intelligence_topic_graph.sql successfully.",
+    "Cleanup deployment dep-da7dkf2d0e5s73e8dhk0 reached live after clearing KAIRO_STARTUP_MIGRATION while retaining the exact release SHA.",
+    "API server and Instagram publisher started normally on the final deployment."
+  ],
+  "rollbackStrategy": {
+    "summary": "RB-014 is ready. If Brand Intelligence V2 or Topic Graph persistence regresses, preserve Brand/source/provenance data, disable affected graph usage if needed, and redeploy the preceding known-good Batch 4 runtime f0bb76ad12522611c138283ec03d1564b1a6f7b7. Do not reverse migration 0031 destructively; prefer forward recovery or runtime rollback."
+  },
+  "approvedBy": "Sazid Khan",
+  "approvedAt": "2026-08-26T13:57:00+02:00",
+  "productionVerification": {
+    "status": "passed",
+    "evidence": [
+      "Migration deployment dep-da7dj2gae00c73bh85n0 was live on exact merge SHA fbc9ea984df526104f8b815524f62d1fd55109e2 and logged applied 0031_brand_intelligence_topic_graph.sql.",
+      "Final cleanup deployment dep-da7dkf2d0e5s73e8dhk0 is live on the same exact SHA.",
+      "Final startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and API server listening on port 10000.",
+      "No new OAuth, publishing-authority, scheduler or frozen-UI change was introduced by the release-plumbing fix."
+    ]
+  }
+}
