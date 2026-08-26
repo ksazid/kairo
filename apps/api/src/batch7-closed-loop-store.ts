@@ -24,11 +24,22 @@ export interface HunterClosedLoopStore {
 }
 
 let environmentStore: PgHunterClosedLoopStore | undefined;
+let environmentPool: Pool | undefined;
+let shutdownRegistered = false;
 
 export function hunterClosedLoopStoreFromEnvironment(): HunterClosedLoopStore | undefined {
   const connectionString = process.env.DATABASE_URL?.trim();
   if (!connectionString) return undefined;
-  environmentStore ??= new PgHunterClosedLoopStore(new Pool({ connectionString }));
+  if (!environmentStore) {
+    environmentPool = new Pool({ connectionString });
+    environmentStore = new PgHunterClosedLoopStore(environmentPool);
+  }
+  if (!shutdownRegistered) {
+    shutdownRegistered = true;
+    const close = () => { if (environmentPool) void environmentPool.end().catch(() => undefined); };
+    process.once("SIGTERM", close);
+    process.once("SIGINT", close);
+  }
   return environmentStore;
 }
 
@@ -92,7 +103,7 @@ export class PgHunterClosedLoopStore implements HunterClosedLoopStore {
       );
       const row = current.rows[0];
       if (!row) throw new ResourceNotFoundError("Opportunity not found");
-      await client.query(
+      const inserted = await client.query(
         `insert into opportunity_feedback_events(id,workspace_id,brand_id,opportunity_id,account_id,action)
          values($1,$2,$3,$4,$5,$6)
          on conflict(workspace_id,brand_id,opportunity_id,account_id,action) do nothing`,
@@ -102,6 +113,7 @@ export class PgHunterClosedLoopStore implements HunterClosedLoopStore {
       if (status !== row.status) {
         await client.query(`update brand_opportunities set status=$1,updated_at=now() where workspace_id=$2 and brand_id=$3 and id=$4`, [status, workspaceId, brandId, opportunityId]);
       }
+      if (inserted.rowCount) await audit(client, workspaceId, accountId, `opportunity.feedback.${action}`, opportunityId);
       await client.query("commit");
       return { opportunityId, action, status };
     } catch (error) {
@@ -142,6 +154,7 @@ export class PgHunterClosedLoopStore implements HunterClosedLoopStore {
         [ideaId, workspaceId, brandId, source.title, premise, opportunityId],
       );
       await client.query(`update brand_opportunities set status='developing',updated_at=now() where workspace_id=$1 and brand_id=$2 and id=$3`, [workspaceId, brandId, opportunityId]);
+      await audit(client, workspaceId, accountId, "opportunity.development.idea-created", opportunityId);
       await client.query("commit");
       return { ideaId, opportunityId, status: "developing", reused: false };
     } catch (error) {
@@ -151,6 +164,13 @@ export class PgHunterClosedLoopStore implements HunterClosedLoopStore {
       client.release();
     }
   }
+}
+
+async function audit(client: PoolClient, workspaceId: string, accountId: string, eventType: string, subjectId: string): Promise<void> {
+  await client.query(
+    `insert into audit_events(id,workspace_id,account_id,event_type,subject_id) values($1,$2,$3,$4,$5)`,
+    [randomUUID(), workspaceId, accountId, eventType, subjectId],
+  );
 }
 
 async function requireBrandWorkspace(client: PoolClient, accountId: string, brandId: string): Promise<string> {
