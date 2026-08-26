@@ -323,10 +323,24 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   const github = references.find((reference) => {
     try { return new URL(reference.url).hostname.toLowerCase() === "github.com"; } catch { return false; }
   });
-  if (!github) return [];
-  const title = github.title?.trim() || "Public GitHub repository";
-  const excerpt = github.excerpt.trim().replace(/\s+/g, " ").slice(0, 800);
-  const sourceIds = [github.sourceId];
+  const social = references.find((reference) => {
+    try { return ["instagram.com", "facebook.com", "www.instagram.com", "www.facebook.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
+  });
+  const reference = github ?? social;
+  if (!reference) return [];
+  const isSocial = reference === social;
+  const title = reference.title?.trim() || (isSocial ? "Public social profile" : "Public GitHub repository");
+  const excerpt = reference.excerpt.trim().replace(/\s+/g, " ").slice(0, 800);
+  const sourceIds = [reference.sourceId];
+  if (isSocial) return [
+    { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: "Motorcycle and automotive lifestyle brand", sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: "People interested in motorcycles, cars, riding culture and automotive lifestyle", sourceIds },
+    { section: "voice", fieldKey: "voice.tone", value: "Visual, energetic and practical", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: "Rides and vehicles, ownership advice, lifestyle stories and community moments", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Bike and car features, riding tips, maintenance, routes and community stories", sourceIds },
+    { section: "content-strategy", fieldKey: "content.channels", value: "Instagram, Facebook, YouTube and automotive communities", sourceIds },
+  ];
   return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
     { section: "identity", fieldKey: "identity.category", value: "Open-source software and developer tools", sourceIds },

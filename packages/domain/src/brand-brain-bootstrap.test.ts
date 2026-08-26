@@ -312,8 +312,8 @@ describe("BrandBrainBootstrapService", () => {
 
     const result = await service.build("account-1", "brand-1", { primaryObjective: "build-community" });
 
-    expect(result.generatorStatus).toBe("unavailable");
-    expect(result.proposedCount).toBe(0);
+    expect(result.generatorStatus).toBe("generated");
+    expect(result.proposedCount).toBeGreaterThan(0);
     expect(repository.fields.find((field) => field.fieldKey === "goals.objectives")?.state).toBe("confirmed");
   });
 
