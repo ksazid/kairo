@@ -165,8 +165,26 @@ export class HunterOrchestrator {
       budget: { maxOutputTokens: 2_000, maxToolCalls: 0, maxCostUsd: 0.08, timeoutMs: 30_000 },
     });
 
-    const judgment = await this.runtime.invoke<HunterJudgmentOutput>(invocation);
-    if (!isHunterJudgmentOutput(judgment.output)) throw new Error("Hunter output failed domain validation");
+    let judgment: Awaited<ReturnType<AgentRuntimePort["invoke"]>>;
+    try {
+      judgment = await this.runtime.invoke<HunterJudgmentOutput>(invocation);
+    } catch {
+      // A provider/model contract failure must not turn a recommendation refresh into a
+      // server error. The evidence fetch was still useful, but no trustworthy opportunities
+      // can be persisted without a valid judgment.
+      return withDegraded({
+        evidenceCount: evidence.length,
+        candidateCount: 0,
+        opportunityCount: 0,
+      }, new Set([...degradedSources, "hunter-model"]));
+    }
+    if (!isHunterJudgmentOutput(judgment.output)) {
+      return withDegraded({
+        evidenceCount: evidence.length,
+        candidateCount: 0,
+        opportunityCount: 0,
+      }, new Set([...degradedSources, "hunter-model"]));
+    }
 
     const byUrl = new Map(evidence.map((item) => [item.sourceUrl, item]));
     let opportunityCount = 0;

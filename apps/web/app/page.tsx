@@ -7,10 +7,13 @@ import { ForYouCreateAction } from "./for-you-create-action";
 import { ForYouRecommendationsAction } from "./for-you-recommendations-action";
 import { ForYouBookmarkAction } from "./for-you-bookmark-action";
 import { RecommendationSeen } from "./recommendation-seen";
+import { ForYouBatchAction } from "./for-you-batch-action";
 import {
   getBrandNotifications,
   getBrands,
   getChannelAccounts,
+  getCampaigns,
+  getIdeas,
   getOpportunities,
   getPerformance,
   getSession,
@@ -22,6 +25,7 @@ import {
   buildAttentionItems,
   buildForYou,
   type HomeForYouItem,
+  buildContinue,
 } from "../src/lib/home-intelligence";
 import styles from "./home-vs85.module.css";
 
@@ -57,17 +61,20 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     );
   }
 
-  const [opportunities, performance, notificationResult, channelResult, presenterResult] = await Promise.all([
+  const [opportunities, performance, notificationResult, channelResult, presenterResult, campaigns, ideas] = await Promise.all([
     getOpportunities(brand.id).catch(() => []),
     getPerformance(brand.id).catch(() => []),
     getBrandNotifications(brand.id).catch(() => ({ brandId: brand.id, items: [] })),
     getChannelAccounts(brand.id).then((items) => ({ available: true as const, items })).catch(() => ({ available: false as const, items: [] })),
     getBrandPresenter(brand.id).catch(() => null),
+    getCampaigns(brand.id).catch(() => []),
+    getIdeas(brand.id).catch(() => []),
   ]);
 
   const hasConnectedChannel = channelResult.available ? channelResult.items.some((channel) => channel.status === "connected") : true;
   const attention = buildAttentionItems({ brandId: brand.id, notifications: notificationResult.items, hasConnectedChannel })[0];
   const forYou = buildForYou(opportunities);
+  const continueItems = buildContinue(brand.id, campaigns, ideas);
   const scores = new Map<string, RecommendationScores>(opportunities.map((item) => [item.id, { overall: item.scores.overall, audienceFit: item.scores.audienceFit, status: item.status }]));
   const metrics = buildHomeMetrics(performance);
   const eligiblePresenter: EligiblePresenter | undefined = presenterResult?.presenter && presenterResult.eligibility?.status === "eligible"
@@ -77,7 +84,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Home">
       <main id="kairo-main-content" tabIndex={-1} className={styles.home}>
-        <h1 className={styles.srOnly}>Home</h1>
+        <header className={styles.homeHero}><h1>Home</h1><p>Turn what matters into what to say next.</p></header>
 
         {params.notice ? <p className={styles.notice} role="status">{params.notice}</p> : null}
         {params.error ? <p className={`${styles.notice} ${styles.error}`} role="alert">{params.error}</p> : null}
@@ -116,6 +123,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <p>Smart recommendations based on your brand and goals.</p>
             </div>
             <ForYouRecommendationsAction brandId={brand.id} hasRecommendations={forYou.length > 0} />
+            <Link className={styles.viewAll} href={`/brands/${encodeURIComponent(brand.id)}/discover`}>View all</Link>
           </div>
 
           {forYou.length ? (
@@ -123,12 +131,15 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
               <div className={styles.recommendationRail}>
                 {forYou.map((item) => <RecommendationCard key={item.id} item={item} scores={scores.get(item.id)} brandId={brand.id} eligiblePresenter={eligiblePresenter} />)}
               </div>
+              <ForYouBatchAction brandId={brand.id} items={forYou} />
               <div className={styles.railProgress} aria-hidden="true"><span /></div>
             </>
           ) : (
             <div className={styles.compactEmpty}><strong>No recommendation is ready yet.</strong><span>Use My idea or ask Kairo to find worthwhile opportunities for this Brand.</span></div>
           )}
         </section>
+
+        {continueItems.length ? <section className={styles.continueSection} aria-labelledby="home-continue-title"><div className={styles.sectionHeadingRow}><div className={styles.sectionHeading}><h2 id="home-continue-title">Continue</h2><p>Your unfinished ideas and drafts.</p></div><Link className={styles.viewAll} href={`/brands/${encodeURIComponent(brand.id)}/content`}>View all</Link></div><div className={styles.continueGrid}>{continueItems.map((item) => <Link className={styles.continueCard} key={`${item.kind}:${item.id}`} href={item.href}><strong>{item.title}</strong><span>{item.context}</span><small>{item.actionLabel} →</small></Link>)}</div></section> : null}
 
         <section className={styles.workingSection} aria-labelledby="home-working-title">
           <div className={styles.workingHeadingRow}>
@@ -162,7 +173,7 @@ function RecommendationCard({ item, scores, brandId, eligiblePresenter }: { item
         <ForYouBookmarkAction brandId={brandId} opportunityId={item.id} saved={scores?.status === "saved"} />
       </div>
       <div className={styles.recommendationBody}>
-        <h3>{item.title}</h3>
+        <h3><Link href={`/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(item.id)}`}>{item.title}</Link></h3>
         <p>{item.reason}</p>
         <div className={styles.indicators}>
           <span data-tone={impactTone(scores?.overall)}><KairoIcon name="eye" />{scores ? impactLabel(scores.overall) : "Impact"}</span>

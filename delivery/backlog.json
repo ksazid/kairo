@@ -222,5 +222,35 @@
       "links": {"specification":"docs/slices/VS-90.md","implementationPr":"https://github.com/ksazid/kairo/pull/186","evidence":["delivery/context/VS-90.md","docs/plans/VS-90-implementation.md","docs/plans/VS-90-architecture-decision.md","delivery/context/VS-90-release.md","product/DESIGN.md","product/DESIGN-APPROVALS.md","https://github.com/ksazid/kairo/issues/187","https://github.com/ksazid/kairo/issues/188","https://github.com/ksazid/kairo/issues/192"]},
       "maxAttempts": 3
     }
+    ,{
+      "schemaVersion": 2,
+      "sliceId": "VS-105",
+      "title": "For You Recommendation Preview and Continue Workspace",
+      "status": "inactive",
+      "lifecycle": "proposed",
+      "riskLevel": "low",
+      "implementationMode": "runtime-enabled",
+      "requirements": ["FR-02", "FR-04"],
+      "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
+      "dependencies": ["VS-103R"],
+      "blockers": [],
+      "decisionIds": [],
+      "approvals": [
+        {"type":"scope","status":"approved","version":"VS-105@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-27T05:00:00Z","rationale":"The Product Owner approved implementation of recommendation preview and unfinished-draft continuation UI."},
+        {"type":"implementation","status":"approved","version":"VS-105@1.0","commitSha":null,"by":"Sazid Khan","at":"2026-08-27T05:00:00Z","rationale":"The Product Owner explicitly requested these UI fixes."},
+        {"type":"policy","status":"not-required","version":"VS-105@1.0","commitSha":null,"by":null,"at":null,"rationale":"This is a UI-only, human-initiated workflow with no publishing or permission changes."},
+        {"type":"certification","status":"pending","version":"VS-105@1.0","commitSha":null,"by":null,"at":null,"rationale":"Awaiting exact candidate verification."},
+        {"type":"release","status":"pending","version":"VS-105@1.0","commitSha":null,"by":null,"at":null,"rationale":"Awaiting certification."},
+        {"type":"production-enable","status":"pending","version":"VS-105@1.0","commitSha":null,"by":null,"at":null,"rationale":"Awaiting release approval."}
+      ],
+      "impact": {"areas":["frontend","customer-flow"],"notes":["Preview remains evidence-linked and AI generation remains explicitly user initiated."]},
+      "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":0,"certification":0,"release":0,"validation":0},
+      "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+      "release": {"status":"not-authorized","releaseId":null},
+      "rollback": {"status":"not-applicable","rollbackId":null},
+      "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":"Preview and unfinished draft continuation are available without changing publishing behavior.","metrics":[]},
+      "links": {"specification":"docs/plans/VS-105-implementation.md","implementationPr":null,"evidence":[]},
+      "maxAttempts": 3
+    }
   ]
 }
