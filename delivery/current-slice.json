@@ -3,7 +3,7 @@
   "sliceId": "VS-98",
   "title": "Approved Home Creation Recovery",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "testing",
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-09", "FR-11", "FR-18"],
@@ -115,14 +115,14 @@
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":75,"testing":0,"certification":0,"release":0,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":90,"testing":10,"certification":0,"release":0,"validation":0},
   "certification": {"status":"not-started","commitSha":null,"evidence":[]},
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
     "specification": "docs/slices/VS-98.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/205",
     "evidence": [
       "product/PRD.md FR-09/11/18",
       "product/TRD.md private object storage and Brand isolation boundaries",
