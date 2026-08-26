@@ -9,3 +9,5 @@ Do not close Batch 7 until all of the following are true:
 5. The one-shot smoke variable is cleared and a clean deployment is live.
 6. Vercel production remains on the approved VS-104 frontend build and the web deployment gate is restored to disabled.
 7. Central release/rollback/current-slice evidence is closed without overstating anything not verified.
+
+All release evidence is bound to exact Git SHAs and named deployment IDs.
