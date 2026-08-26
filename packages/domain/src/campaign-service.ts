@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { ConcurrencyConflictError, DomainValidationError, ResourceNotFoundError } from "./index";
 import type { ResearchRepository } from "./research-service";
-import type { BrandIntelligenceContext } from "./brand-intelligence-context";
 import { appendContentVersion, createCampaign, createContentAsset, createInitialContentVersion, normalizeLibraryAssetRefs, type Campaign, type ContentAsset, type ContentChannel, type ContentLibraryAssetReference, type ContentVersion } from "./campaign";
 import type { ContentAssetLibraryRepository } from "./content-asset-library";
 import { assertVideoProjectScope, parseVideoProject, type VideoProject } from "./video-project";
@@ -15,20 +14,7 @@ export interface CampaignRepository {
   appendVersion(accountId: string, brandId: string, campaignId: string, assetId: string, expectedVersion: number, build: (asset: ContentAsset, parent: ContentVersion) => ContentVersion): Promise<CampaignDetail>;
 }
 export type GenerateContentAction = "initial-draft"|"alternative"|"simplify"|"expand"|"adjust-depth"|"strengthen-opening"|"regenerate-section";
-export interface ContentGenerationPort {
-  generate(input:{
-    workspaceId:string;
-    brandId:string;
-    brandContextVersion:string;
-    brandContext?:BrandIntelligenceContext;
-    campaign:Campaign;
-    asset:ContentAsset;
-    parent?:ContentVersion;
-    action:GenerateContentAction;
-    section?:string;
-    claims:Array<{id:string;text:string;classification:string;verificationState:string}>;
-  }):Promise<ContentVersion>;
-}
+export interface ContentGenerationPort { generate(input:{workspaceId:string;brandId:string;brandContextVersion:string;campaign:Campaign;asset:ContentAsset;parent:ContentVersion;action:GenerateContentAction;section?:string;claims:Array<{id:string;text:string;classification:string;verificationState:string}>}):Promise<ContentVersion> }
 
 export class CampaignService {
   constructor(private readonly campaigns: CampaignRepository, private readonly research: ResearchRepository, private readonly generator?:ContentGenerationPort, private readonly now: () => Date = () => new Date()) {}
@@ -41,36 +27,37 @@ export class CampaignService {
   }
   list(accountId: string, brandId: string): Promise<Campaign[]> { return this.campaigns.listCampaigns(accountId, brandId); }
   get(accountId: string, brandId: string, campaignId: string): Promise<CampaignDetail | null> { return this.campaigns.getCampaign(accountId, brandId, campaignId); }
-
-  async createAsset(accountId: string, brandId: string, campaignId: string, input: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; content: string }): Promise<CampaignDetail> {
+  async createAsset(accountId: string, brandId: string, campaignId: string, input: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; content: string; libraryAssetRefs?: ContentLibraryAssetReference[] }): Promise<CampaignDetail> {
     const detail = await this.campaigns.getCampaign(accountId, brandId, campaignId);
     if (!detail) throw new ResourceNotFoundError("Campaign not found");
     if (videoProjectOrNull(input.content)) throw new DomainValidationError("Create the Reel Content Asset first, then initialize its Video Project in Video Studio");
     const asset = createContentAsset({ id: randomUUID(), campaign: detail.campaign, channel: input.channel, format: input.format, audience: input.audience, topic: input.topic, hookType: input.hookType, cta: input.cta, createdAt: this.now().toISOString() });
-    const version = createInitialContentVersion({ id: randomUUID(), asset, content: input.content, supportingClaimIds: detail.campaign.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString(), libraryAssetRefs: [] });
+    const version = createInitialContentVersion({ id: randomUUID(), asset, content: input.content, supportingClaimIds: detail.campaign.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString(), libraryAssetRefs: normalizeLibraryAssetRefs(input.libraryAssetRefs ?? []) });
     return this.campaigns.saveAssetWithVersion(accountId, { ...asset, currentVersion: 1 }, version);
   }
-
-  async createGeneratedAsset(accountId:string,brandId:string,campaignId:string,input:{
-    channel:ContentChannel;
-    format:string;
-    audience:string;
-    topic:string;
-    hookType:string;
-    cta:string;
-    brandContextVersion:string;
-    brandContext?:BrandIntelligenceContext;
-    libraryAssetRefs?:ContentLibraryAssetReference[];
-  }):Promise<CampaignDetail>{
-    if(!this.generator)throw new DomainValidationError("Content generation is not configured");
-    const detail=await this.campaigns.getCampaign(accountId,brandId,campaignId);if(!detail)throw new ResourceNotFoundError("Campaign not found");
-    const bundle=await this.research.getIdeaBundle(accountId,brandId,detail.campaign.ideaId);if(!bundle?.research)throw new ResourceNotFoundError("Campaign Research not found");
-    const asset=createContentAsset({id:randomUUID(),campaign:detail.campaign,channel:input.channel,format:input.format,audience:input.audience,topic:input.topic,hookType:input.hookType,cta:input.cta,createdAt:this.now().toISOString()});
-    const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,...(input.brandContext?{brandContext:input.brandContext}:{}),campaign:detail.campaign,asset,action:"initial-draft",claims:bundle.research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))});
-    const version={...generated,libraryAssetRefs:normalizeLibraryAssetRefs(input.libraryAssetRefs??[])};
-    return this.campaigns.saveAssetWithVersion(accountId,{...asset,currentVersion:1},version);
+  async createGeneratedAsset(accountId: string, brandId: string, campaignId: string, input: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; seedContent: string; brandContextVersion: string; libraryAssetRefs?: ContentLibraryAssetReference[] }): Promise<CampaignDetail> {
+    if (!this.generator) throw new DomainValidationError("Content generation is not configured");
+    const before = await this.campaigns.getCampaign(accountId, brandId, campaignId);
+    if (!before) throw new ResourceNotFoundError("Campaign not found");
+    const knownAssetIds = new Set(before.assets.map((entry) => entry.asset.id));
+    const seeded = await this.createAsset(accountId, brandId, campaignId, {
+      channel: input.channel,
+      format: input.format,
+      audience: input.audience,
+      topic: input.topic,
+      hookType: input.hookType,
+      cta: input.cta,
+      content: input.seedContent,
+      libraryAssetRefs: input.libraryAssetRefs,
+    });
+    const created = seeded.assets.find((entry) => !knownAssetIds.has(entry.asset.id));
+    if (!created) throw new ResourceNotFoundError("Generated Content Asset was not persisted");
+    return this.generateVersion(accountId, brandId, campaignId, created.asset.id, {
+      expectedVersion: created.asset.currentVersion,
+      action: "initial-draft",
+      brandContextVersion: input.brandContextVersion,
+    });
   }
-
   appendManualEdit(accountId: string, brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; content: string }): Promise<CampaignDetail> {
     if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
     return this.campaigns.appendVersion(accountId, brandId, campaignId, assetId, input.expectedVersion, (asset, parent) => {
@@ -84,15 +71,14 @@ export class CampaignService {
       return appendContentVersion({ id: randomUUID(), asset, parent, expectedVersion: input.expectedVersion, content: input.content, supportingClaimIds: parent.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString() });
     });
   }
-
-  async generateVersion(accountId:string,brandId:string,campaignId:string,assetId:string,input:{expectedVersion:number;action:GenerateContentAction;section?:string;brandContextVersion:string;brandContext?:BrandIntelligenceContext}):Promise<CampaignDetail>{
+  async generateVersion(accountId:string,brandId:string,campaignId:string,assetId:string,input:{expectedVersion:number;action:GenerateContentAction;section?:string;brandContextVersion:string}):Promise<CampaignDetail>{
     if(!this.generator)throw new DomainValidationError("Content generation is not configured");
     if(!Number.isInteger(input.expectedVersion)||input.expectedVersion<1)throw new DomainValidationError("expectedVersion must be a positive integer");
     const detail=await this.campaigns.getCampaign(accountId,brandId,campaignId);if(!detail)throw new ResourceNotFoundError("Campaign not found");
     const bundle=await this.research.getIdeaBundle(accountId,brandId,detail.campaign.ideaId);if(!bundle?.research)throw new ResourceNotFoundError("Campaign Research not found");const research=bundle.research;
     const entry=detail.assets.find(item=>item.asset.id===assetId);if(!entry)throw new ResourceNotFoundError("Content Asset not found");if(entry.asset.currentVersion!==input.expectedVersion)throw new ConcurrencyConflictError("Content Version is stale");const parent=entry.versions.at(-1);if(!parent)throw new ResourceNotFoundError("Content Version not found");
     const parentProject=videoProjectOrNull(parent.content);if(parentProject){assertProjectForAsset(parentProject,entry.asset);throw new DomainValidationError("Structured Reel Video Projects must be edited through Video Studio; generic AI transformations are not timeline-aware")}
-    const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,...(input.brandContext?{brandContext:input.brandContext}:{}),campaign:detail.campaign,asset:entry.asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))});
+    const generated=await this.generator.generate({workspaceId:detail.campaign.workspaceId,brandId,brandContextVersion:input.brandContextVersion,campaign:detail.campaign,asset:entry.asset,parent,action:input.action,...(input.section?{section:input.section}:{}),claims:research.claims.map(c=>({id:c.id,text:c.text,classification:c.classification,verificationState:c.verificationState}))});
     const inherited={...generated,libraryAssetRefs:normalizeLibraryAssetRefs(parent.libraryAssetRefs??[])};
     return this.campaigns.appendVersion(accountId,brandId,campaignId,assetId,input.expectedVersion,()=>inherited);
   }
