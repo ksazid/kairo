@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       id: creation.id,
       status: creation.status,
-      message: creation.progress.message,
+      message: creation.status === "needs-attention" ? friendlyFailure(creation.failureReason) : creation.progress.message,
       ...(creation.campaignId ? { campaignId: creation.campaignId } : {}),
       ...(creation.assetId ? { assetId: creation.assetId } : {}),
     });
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   const mediaKinds = kinds(body.mediaKinds);
   const presenterId = optionalText(body.presenterId, 200);
   if (!brandId) return NextResponse.json({ error: "Brand is required." }, { status: 400 });
-  if (!idea && !source && !mediaAssetIds.length) return NextResponse.json({ error: "Add an idea, link or media first." }, { status: 400 });
+  if (!idea && !source && !mediaAssetIds.length && !mediaKinds.length) return NextResponse.json({ error: "Add an idea, link or media first." }, { status: 400 });
   if (source && !isPublicHttpUrl(source)) return NextResponse.json({ error: "Use a public http(s) link." }, { status: 400 });
 
   const brand = await getBrand(brandId).catch(() => null);
@@ -75,3 +75,9 @@ function optionalText(value: unknown, max: number) { const result = text(value, 
 function ids(value: unknown) { if (!Array.isArray(value)) return []; return [...new Set(value.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean))].slice(0, 12); }
 function kinds(value: unknown): Array<"image"|"video"> { if (!Array.isArray(value)) return []; return [...new Set(value.filter((item): item is "image"|"video" => item === "image" || item === "video"))]; }
 function isPublicHttpUrl(value: string) { try { const url = new URL(value); return url.protocol === "http:" || url.protocol === "https:"; } catch { return false; } }
+function friendlyFailure(reason?: string) {
+  const value = reason?.toLowerCase() ?? "";
+  if (/public brand reference|explicit-url|source.*url|fetch|returned \d{3}/.test(value)) return "Kairo couldn’t read that URL. Remove it and continue with your idea or media, or try another public link.";
+  if (/evidence|research/.test(value)) return "Kairo couldn’t find enough reliable information to finish this version. Try adding a little more detail or media.";
+  return "Kairo couldn’t finish this creation. Your idea and media are still safe; adjust the input and try again.";
+}
