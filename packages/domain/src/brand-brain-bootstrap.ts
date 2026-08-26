@@ -149,6 +149,15 @@ export class BrandBrainBootstrapService {
     ]);
     const privateExtracts = await this.readActiveKnowledgeExtracts(accountId, brandId, new Set(successfulReferences.map((item) => item.sourceId)));
     successfulReferences.push(...privateExtracts);
+    if (!successfulReferences.length && (brand.publicProfileUrl || brand.publicSourceUrl)) {
+      successfulReferences.push({
+        url: brand.publicProfileUrl || brand.publicSourceUrl!,
+        title: brand.name,
+        excerpt: `Public social profile for ${brand.name}. Detailed profile evidence is unavailable until the source is connected or refreshed.`,
+        retrievedAt: new Date().toISOString(),
+        sourceId: "",
+      });
+    }
 
     if (!this.generator) {
       const fallback = fallbackProposals(successfulReferences);
@@ -158,7 +167,7 @@ export class BrandBrainBootstrapService {
         generatorStatus: fallback.length ? "generated" : "unavailable",
         proposedCount: fallback.length,
         skippedConfirmedCount: 0,
-        sourceIds: successfulReferences.map((item) => item.sourceId),
+        sourceIds: successfulReferences.map((item) => item.sourceId).filter(Boolean),
       };
     }
 
@@ -182,7 +191,7 @@ export class BrandBrainBootstrapService {
         generatorStatus: fallback.length ? "generated" : "unavailable",
         proposedCount: fallback.length,
         skippedConfirmedCount: 0,
-        sourceIds: successfulReferences.map((item) => item.sourceId),
+        sourceIds: successfulReferences.map((item) => item.sourceId).filter(Boolean),
       };
     }
     if (!proposals.length) {
@@ -193,7 +202,7 @@ export class BrandBrainBootstrapService {
         generatorStatus: fallback.length ? "generated" : "unavailable",
         proposedCount: fallback.length,
         skippedConfirmedCount: 0,
-        sourceIds: successfulReferences.map((item) => item.sourceId),
+        sourceIds: successfulReferences.map((item) => item.sourceId).filter(Boolean),
       };
     }
 
@@ -237,7 +246,7 @@ export class BrandBrainBootstrapService {
       generatorStatus: "generated",
       proposedCount,
       skippedConfirmedCount,
-      sourceIds: inspectedSourceIds,
+      sourceIds: inspectedSourceIds.filter(Boolean),
     };
   }
 
