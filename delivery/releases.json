@@ -168,6 +168,20 @@
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T11:37:00+02:00",
       "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7b9im7bikc73a57oq0 is live on db596a9eebb05ee433bf53742072b55ca839cf3f.","API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.","Post-deploy error/fatal log queries returned no entries.","Deployed runtime is code-equivalent to the approved VS-101 merge; only delivery/current-slice.json changed after merge."]}
+    },
+    {
+      "id": "REL-013",
+      "sliceIds": ["VS-102"],
+      "status": "released",
+      "commitSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7",
+      "migrations": [],
+      "configurationChanges": ["Deployed Batch 4 to the existing Render Kairo API service from main with no database migration, credential, OAuth-scope, frontend or publishing-authority changes."],
+      "featureFlags": ["Provider-neutral MediaAnalyzer is enabled in the shared Source Intelligence pipeline.","Onboarding evidence sampling is bounded to recent <=20, deep <=5 and total <=32 with canonical URL/content-hash deduplication.","No scheduler, autonomous publishing, new OAuth authority or frozen UI behavior is enabled by VS-102."],
+      "smokeTests": ["Product Intake 32956048584, Security baseline 32956048556 and CI 32956048472 passed on certified candidate 9bf055109c66431fb3609d91e3132e6c8023e171.","PR #214 merged as f0bb76ad12522611c138283ec03d1564b1a6f7b7.","Render deploy dep-da7bm667bikc73a6hplg reached live on f0bb76ad12522611c138283ec03d1564b1a6f7b7.","Production startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and the API listening normally.","No error-level or fatal logs were present in the post-deploy verification window."],
+      "rollbackStrategy": {"summary":"RB-013 is ready. If MediaAnalyzer or onboarding sampling regresses, preserve Brand/source/provenance state and redeploy previous known-good API SHA db596a9eebb05ee433bf53742072b55ca839cf3f. No database rollback is required. Keep existing publishing capability gates and credentials unchanged."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-26T12:08:00+02:00",
+      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7bm667bikc73a6hplg is live on f0bb76ad12522611c138283ec03d1564b1a6f7b7.","API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.","Post-deploy error/fatal log queries returned no entries."]}
     }
   ]
 }
