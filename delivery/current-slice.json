@@ -5,7 +5,7 @@
   "status": "active",
   "lifecycle": "certified",
   "riskLevel": "medium",
-  "implementationMode": "runtime-enabled",
+  "implementationMode": "production-enabled",
   "requirements": [
     "FR-02",
     "FR-03",
@@ -24,9 +24,7 @@
     "operations": "Operations Owner",
     "security": "Security Owner"
   },
-  "dependencies": [
-    "VS-103"
-  ],
+  "dependencies": ["VS-103"],
   "blockers": [],
   "allowedPaths": [
     "apps/api/migrations/0033_opportunity_feedback_closed_loop.sql",
@@ -49,18 +47,9 @@
     "delivery/**",
     ".engineering/STATE.json"
   ],
-  "protectedPaths": [
-    ".github/workflows/release.yml"
-  ],
+  "protectedPaths": [".github/workflows/release.yml"],
   "impact": {
-    "areas": [
-      "architecture",
-      "api",
-      "database",
-      "customer-flow",
-      "analytics",
-      "operations-support"
-    ],
+    "areas": ["architecture", "api", "database", "customer-flow", "analytics", "operations-support"],
     "notes": [
       "Completes Brand confirmation to Hunter to For You to development wiring without introducing a second retrieval pipeline.",
       "Accepted performance learning and recommendation feedback remain Brand-private and are consumed only as Hunter guidance, never as public evidence.",
@@ -70,100 +59,34 @@
     ]
   },
   "approvals": [
-    {
-      "type": "policy",
-      "status": "not-required",
-      "version": "VS-104@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Reuses approved Brand isolation, provenance, learning acceptance, source-safety and human publishing policies; private learning is not exposed to public retrieval."
-    },
-    {
-      "type": "scope",
-      "status": "approved",
-      "version": "VS-104@1.0",
-      "commitSha": null,
-      "by": "Product Owner",
-      "at": "2026-08-26T16:43:33+02:00",
-      "rationale": "Product Owner explicitly instructed Batch 7 end-to-end and required a final completed/left/percentage/blockers report."
-    },
-    {
-      "type": "implementation",
-      "status": "approved",
-      "version": "VS-104@1.0",
-      "commitSha": null,
-      "by": "Product Owner",
-      "at": "2026-08-26T16:43:33+02:00",
-      "rationale": "Product Owner explicitly instructed continuing until Batch 7 is complete rather than stopping at foundational implementation."
-    },
-    {
-      "type": "certification",
-      "status": "approved",
-      "version": "VS-104@1.0",
-      "commitSha": "3c9a8913fc7852858b0462ecca072c35244e8a86",
-      "by": "Product Owner",
-      "at": "2026-08-26T16:56:25+02:00",
-      "rationale": "Product Owner instructed Go next after exact-SHA Product Intake, Security and CI evidence passed for the VS-104 implementation candidate."
-    },
-    {
-      "type": "release",
-      "status": "pending",
-      "version": "VS-104@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Release occurs only after the certified implementation is merged."
-    },
-    {
-      "type": "production-enable",
-      "status": "pending",
-      "version": "VS-104@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Production enablement requires the certified merge SHA, exact migration execution and production verification."
-    }
+    {"type":"policy","status":"not-required","version":"VS-104@1.0","commitSha":null,"by":null,"at":null,"rationale":"Reuses approved Brand isolation, provenance, learning acceptance, source-safety and human publishing policies; private learning is not exposed to public retrieval."},
+    {"type":"scope","status":"approved","version":"VS-104@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-26T16:43:33+02:00","rationale":"Product Owner explicitly instructed Batch 7 end-to-end and required a final completed/left/percentage/blockers report."},
+    {"type":"implementation","status":"approved","version":"VS-104@1.0","commitSha":null,"by":"Product Owner","at":"2026-08-26T16:43:33+02:00","rationale":"Product Owner explicitly instructed continuing until Batch 7 is complete rather than stopping at foundational implementation."},
+    {"type":"certification","status":"approved","version":"VS-104@1.0","commitSha":"3c9a8913fc7852858b0462ecca072c35244e8a86","by":"Product Owner","at":"2026-08-26T16:56:25+02:00","rationale":"Product Owner instructed Go next after exact-SHA Product Intake, Security and CI evidence passed for the VS-104 implementation candidate."},
+    {"type":"release","status":"approved","version":"VS-104@1.0","commitSha":"9d133d814109e881d66685c4be96eea8d6be1240","by":"Product Owner","at":"2026-08-26T17:03:30+02:00","rationale":"Product Owner instructed Go next; PR #218 was certified and merged as exact runtime SHA 9d133d814109e881d66685c4be96eea8d6be1240."},
+    {"type":"production-enable","status":"approved","version":"VS-104@1.0","commitSha":"9d133d814109e881d66685c4be96eea8d6be1240","by":"Product Owner","at":"2026-08-26T17:03:30+02:00","rationale":"Product Owner instructed continued execution to 100%, authorizing the exact migration and production rollout after certified merge."}
   ],
-  "decisionIds": [
-    "DEC-003",
-    "DEC-005",
-    "DEC-006",
-    "DEC-009",
-    "DEC-010",
-    "DEC-011"
-  ],
-  "progress": {
-    "discovery": 100,
-    "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 100,
-    "release": 0,
-    "validation": 0
-  },
+  "decisionIds": ["DEC-003","DEC-005","DEC-006","DEC-009","DEC-010","DEC-011"],
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
   "certification": {
-    "status": "passed",
-    "commitSha": "3c9a8913fc7852858b0462ecca072c35244e8a86",
-    "evidence": [
+    "status":"passed",
+    "commitSha":"3c9a8913fc7852858b0462ecca072c35244e8a86",
+    "evidence":[
       "Product Intake 32983032028 passed on exact candidate 3c9a8913fc7852858b0462ecca072c35244e8a86.",
       "Security baseline 32983031812 passed on exact candidate 3c9a8913fc7852858b0462ecca072c35244e8a86.",
       "CI 32983031908 passed on exact candidate 3c9a8913fc7852858b0462ecca072c35244e8a86.",
+      "Post-certification governance head f1d8f8414a81573dfc5c524488e07f2b00562b4d also passed Product Intake 32983493755, Security baseline 32983493742 and CI 32983493743.",
       "Clean PostgreSQL 18 verification applied migration 0033_opportunity_feedback_closed_loop.sql successfully.",
       "Runtime typechecks, tests, build, governance/preflight and dashboard build passed; the frozen Home bookmark contract was verified through the functional bookmark component without visual redesign."
     ]
   },
-  "release": {
-    "status": "not-authorized"
-  },
-  "rollback": {
-    "status": "not-applicable"
-  },
+  "release":{"status":"not-authorized","releaseId":null},
+  "rollback":{"status":"not-applicable","rollbackId":null},
   "postRelease": {
-    "status": "not-started",
-    "reviewAt": null,
-    "expectedOutcome": "A confirmed Brand automatically receives evidence-backed For You opportunities, user feedback and accepted performance learning improve later Hunter decisions, and developed content retains full Opportunity lineage.",
-    "metrics": [
+    "status":"not-started",
+    "reviewAt":null,
+    "expectedOutcome":"A confirmed Brand automatically receives evidence-backed For You opportunities, user feedback and accepted performance learning improve later Hunter decisions, and developed content retains full Opportunity lineage.",
+    "metrics":[
       "First Hunter run attempted after Brand confirmation",
       "For You Seen/Save/Ignore/Develop feedback persists",
       "Developed content retains Opportunity-to-Idea lineage",
@@ -171,13 +94,17 @@
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-104.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/218",
-    "evidence": [
+    "specification":"docs/slices/VS-104.md",
+    "implementationPr":"https://github.com/ksazid/kairo/pull/218",
+    "evidence":[
       "Product Intake 32983032028",
       "Security baseline 32983031812",
-      "CI 32983031908"
+      "CI 32983031908",
+      "Product Intake 32983493755",
+      "Security baseline 32983493742",
+      "CI 32983493743",
+      "PR #218 merged as 9d133d814109e881d66685c4be96eea8d6be1240"
     ]
   },
-  "maxAttempts": 3
+  "maxAttempts":3
 }
