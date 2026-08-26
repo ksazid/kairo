@@ -35,28 +35,39 @@ export class CampaignService {
     const version = createInitialContentVersion({ id: randomUUID(), asset, content: input.content, supportingClaimIds: detail.campaign.supportingClaimIds, actor: "user", action: "manual-edit", createdAt: this.now().toISOString(), libraryAssetRefs: normalizeLibraryAssetRefs(input.libraryAssetRefs ?? []) });
     return this.campaigns.saveAssetWithVersion(accountId, { ...asset, currentVersion: 1 }, version);
   }
-  async createGeneratedAsset(accountId: string, brandId: string, campaignId: string, input: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; seedContent: string; brandContextVersion: string; libraryAssetRefs?: ContentLibraryAssetReference[] }): Promise<CampaignDetail> {
+  async createGeneratedAsset(accountId: string, brandId: string, campaignId: string, input: { channel: ContentChannel; format: string; audience: string; topic: string; hookType: string; cta: string; seedContent: string; brandContextVersion: string; libraryAssetRefs?: ContentLibraryAssetReference[] }): Promise<{ detail: CampaignDetail; assetId: string }> {
     if (!this.generator) throw new DomainValidationError("Content generation is not configured");
-    const before = await this.campaigns.getCampaign(accountId, brandId, campaignId);
-    if (!before) throw new ResourceNotFoundError("Campaign not found");
-    const knownAssetIds = new Set(before.assets.map((entry) => entry.asset.id));
-    const seeded = await this.createAsset(accountId, brandId, campaignId, {
+    const detail = await this.campaigns.getCampaign(accountId, brandId, campaignId);
+    if (!detail) throw new ResourceNotFoundError("Campaign not found");
+    if (videoProjectOrNull(input.seedContent)) throw new DomainValidationError("Generated content seed must be plain content");
+    const asset = createContentAsset({
+      id: randomUUID(),
+      campaign: detail.campaign,
       channel: input.channel,
       format: input.format,
       audience: input.audience,
       topic: input.topic,
       hookType: input.hookType,
       cta: input.cta,
-      content: input.seedContent,
-      libraryAssetRefs: input.libraryAssetRefs,
+      createdAt: this.now().toISOString(),
     });
-    const created = seeded.assets.find((entry) => !knownAssetIds.has(entry.asset.id));
-    if (!created) throw new ResourceNotFoundError("Generated Content Asset was not persisted");
-    return this.generateVersion(accountId, brandId, campaignId, created.asset.id, {
-      expectedVersion: created.asset.currentVersion,
+    const version = createInitialContentVersion({
+      id: randomUUID(),
+      asset,
+      content: input.seedContent,
+      supportingClaimIds: detail.campaign.supportingClaimIds,
+      actor: "user",
+      action: "manual-edit",
+      createdAt: this.now().toISOString(),
+      libraryAssetRefs: normalizeLibraryAssetRefs(input.libraryAssetRefs ?? []),
+    });
+    await this.campaigns.saveAssetWithVersion(accountId, { ...asset, currentVersion: 1 }, version);
+    const generated = await this.generateVersion(accountId, brandId, campaignId, asset.id, {
+      expectedVersion: 1,
       action: "initial-draft",
       brandContextVersion: input.brandContextVersion,
     });
+    return { detail: generated, assetId: asset.id };
   }
   appendManualEdit(accountId: string, brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; content: string }): Promise<CampaignDetail> {
     if (!Number.isInteger(input.expectedVersion) || input.expectedVersion < 1) throw new DomainValidationError("expectedVersion must be a positive integer");
