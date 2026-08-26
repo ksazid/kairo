@@ -52,7 +52,7 @@
       "configurationChanges": ["KAIRO_RELEASE_SHA set to ec01d4b08bc58e92a615f90a8e18c221f2c45610 on the Render API service.","The bounded startup migration range was enabled for one deployment and cleared immediately after successful application.","Instagram publishing remained explicitly enabled; Reel execution no longer depends on carousel-only object storage."],
       "featureFlags": ["Instagram publishing remains destination-bound, exact-version approved and media-fingerprint locked.","Carousel publishing continues to fail closed unless approved rendered media delivery is configured."],
       "smokeTests": ["All CI and Security checks passed on PRs #155 through #160 before exact-SHA merge approvals.","Fresh-Idea concurrent Research verification persisted one dossier and exactly two candidate Angles.","Render deploy dep-da4tf8v40ujc73a0p8tg reached live on the final runtime SHA.","Instagram publisher logged KAIRO_INSTAGRAM_PUBLISHER_STARTED and processed the pending Reel command.","Reel command 95783df8-11df-4e6f-8143-857b63c5d791 displayed Published in Calendar for @_dukeman390.","Results displayed six available Instagram observations with fresh provider evidence."],
-      "rollbackStrategy": {"summary":"If the final publisher runtime regresses, disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED and redeploy ec01d4b08bc58e92a615f90a8e18c221f2c45610 or the preceding certified runtime. Do not roll back applied migrations; preserve publish commands, provider IDs, audit lineage and metric snapshots before recovery."},
+      "rollbackStrategy": {"summary":"If the final publisher runtime regresses, disable KAIRO_INSTAGRAM_PUBLISHER_ENABLED and redeploy ec01d4b08bc58e92a615f90a8e18c221f2c45610 or the preceding certified runtime. Do not roll back migrations 0023 through 0028; preserve publish commands, provider IDs, audit lineage and metric snapshots before recovery."},
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-22T19:07:00+02:00",
       "productionVerification": {"status":"passed","evidence":["Final Render deployment is live at ec01d4b08bc58e92a615f90a8e18c221f2c45610.","Provider-backed Reel command reached Published after one deterministic worker attempt.","Calendar and Results verification passed in the authenticated TheDukeMan Brand scope.","Temporary PR #141 and issue #142 were closed after evidence preservation."]}
@@ -154,6 +154,20 @@
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T10:16:00+02:00",
       "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7a1kh5efls73ckksog is live on exact merge SHA.","Production health returned 200.","Startup completed normally and the post-deploy error query was clean."]}
+    },
+    {
+      "id": "REL-012",
+      "sliceIds": ["VS-101"],
+      "status": "released",
+      "commitSha": "db596a9eebb05ee433bf53742072b55ca839cf3f",
+      "migrations": [],
+      "configurationChanges": ["Deployed Batch 3 to the existing Render Kairo API service from main with no database migration, credential, OAuth-scope, frontend or publishing-authority changes.","The deployed commit db596a9eebb05ee433bf53742072b55ca839cf3f differs from certified runtime merge 62058194b98cc3739ba6a931864dfdb295f61ae4 only by VS-101 governance metadata."],
+      "featureFlags": ["Dedicated YouTube, Instagram, Facebook and LinkedIn Source Intelligence adapters are enabled ahead of generic Website/secure HTTP fallback.","Public social evidence remains untrusted and authwall/login-only content is rejected rather than promoted to Brand truth.","No scheduler, new OAuth authority or frozen UI behavior is enabled by VS-101."],
+      "smokeTests": ["Product Intake 32953454847, Security baseline 32953454919 and CI 32953454925 passed on certified candidate d127fa6b482aa0792d7c24cdde39e436f357bcd5.","PR #213 merged as 62058194b98cc3739ba6a931864dfdb295f61ae4.","Git compare 62058194b98cc3739ba6a931864dfdb295f61ae4..db596a9eebb05ee433bf53742072b55ca839cf3f changes only delivery/current-slice.json.","Render deploy dep-da7b9im7bikc73a57oq0 reached live on db596a9eebb05ee433bf53742072b55ca839cf3f.","Production startup logs show KAIRO_INSTAGRAM_PUBLISHER_STARTED and the API listening normally.","No error-level or fatal logs were present in the post-deploy verification window."],
+      "rollbackStrategy": {"summary":"RB-012 is ready. If social/video Source Intelligence routing regresses, preserve Brand/source/provenance state and redeploy previous known-good API SHA e4162533df44117791c42cd414201259ad5dd6ad. No database rollback is required. Keep existing publishing capability gates and credentials unchanged."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-26T11:37:00+02:00",
+      "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7b9im7bikc73a57oq0 is live on db596a9eebb05ee433bf53742072b55ca839cf3f.","API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.","Post-deploy error/fatal log queries returned no entries.","Deployed runtime is code-equivalent to the approved VS-101 merge; only delivery/current-slice.json changed after merge."]}
     }
   ]
 }
