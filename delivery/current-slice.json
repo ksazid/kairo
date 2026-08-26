@@ -132,8 +132,8 @@
       "GitHub Actions CI run 32921588361"
     ]
   },
-  "release": {"status":"released","releaseId":"67923919335d74a5d7f09c702b108b5f2cbb9f6a"},
-  "rollback": {"status":"ready","rollbackId":"dep-da730eafngtc73c579vg"},
+  "release": {"status":"released","releaseId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {
     "status":"validated",
     "reviewAt":"2026-08-26T08:27:00+02:00",
