@@ -7,7 +7,7 @@
   "riskLevel": "high",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-09", "FR-11", "FR-18"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
+  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
   "dependencies": ["VS-90", "VS-91", "VS-97"],
   "blockers": [],
   "allowedPaths": [
