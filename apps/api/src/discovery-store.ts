@@ -52,6 +52,7 @@ export class MemoryDiscoveryRepository implements DiscoveryRepository {
       signalIds: [...new Set(input.signalIds)],
       scores: { ...input.scores },
       brandContextVersion: input.brandContextVersion,
+      ...(input.details ? { details: structuredClone(input.details) } : {}),
       createdAt: now,
       updatedAt: now,
     };
@@ -85,5 +86,5 @@ function copySignal(signal: PublicSignalDto): PublicSignalDto {
 }
 
 function copyOpportunity(opportunity: BrandOpportunityDto): BrandOpportunityDto {
-  return { ...opportunity, signalIds: [...opportunity.signalIds], scores: { ...opportunity.scores } };
+  return { ...opportunity, signalIds: [...opportunity.signalIds], scores: { ...opportunity.scores }, ...(opportunity.details ? { details: structuredClone(opportunity.details) } : {}) };
 }

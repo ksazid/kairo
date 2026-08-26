@@ -69,15 +69,31 @@ export interface PublicContentFetchPort {
 
 export class InMemoryNormalizedSourceCache implements NormalizedSourceCache {
   private readonly values = new Map<string, NormalizedSourceDocument>();
-  constructor(private readonly maxEntries = 500) {
+  private readonly writtenAt = new Map<string, number>();
+  constructor(private readonly maxEntries = 500, private readonly latestTtlMs = 15 * 60_000, private readonly now = () => Date.now()) {
     if (!Number.isInteger(maxEntries) || maxEntries < 1 || maxEntries > 10_000) throw new SourceContractError("maxEntries must be from 1 to 10000");
+    if (!Number.isFinite(latestTtlMs) || latestTtlMs < 0) throw new SourceContractError("latestTtlMs must be non-negative");
   }
   async get(key: string) { const value = this.values.get(key); return value ? structuredClone(value) : undefined; }
   async set(key: string, value: NormalizedSourceDocument) {
-    if (!this.values.has(key) && this.values.size >= this.maxEntries) this.values.delete(this.values.keys().next().value as string);
+    if (!this.values.has(key) && this.values.size >= this.maxEntries) {
+      const oldest = this.values.keys().next().value as string;
+      this.values.delete(oldest);
+      this.writtenAt.delete(oldest);
+    }
     this.values.set(key, structuredClone(value));
+    this.writtenAt.set(key, this.now());
   }
-  async getLatest(key: string) { return this.get(`latest:${key}`); }
+  async getLatest(key: string) {
+    const storageKey = `latest:${key}`;
+    const writtenAt = this.writtenAt.get(storageKey);
+    if (writtenAt === undefined || this.now() - writtenAt > this.latestTtlMs) {
+      this.values.delete(storageKey);
+      this.writtenAt.delete(storageKey);
+      return undefined;
+    }
+    return this.get(storageKey);
+  }
   async setLatest(key: string, value: NormalizedSourceDocument) { await this.set(`latest:${key}`, value); }
 }
 

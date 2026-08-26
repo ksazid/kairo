@@ -6,6 +6,13 @@ import type { DiscoverySourceDefinition } from "./source-policy";
  */
 export const DEFAULT_SOURCE_REGISTRY = [
   {
+    key: "github",
+    capabilities: ["discovery"],
+    enabled: true,
+    requiresCredential: false,
+    maxQueriesPerRun: 2,
+  },
+  {
     key: "agent-reach",
     capabilities: ["discovery"],
     enabled: true,

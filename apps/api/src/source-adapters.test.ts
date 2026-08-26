@@ -27,3 +27,23 @@ describe("VS-101 YouTubeAdapter", () => {
 
 function json(value: unknown) { return new Response(JSON.stringify(value), { status: 200, headers: { "content-type": "application/json" } }); }
 function fixedNow() { return new Date("2026-08-26T08:00:00.000Z"); }
+
+describe("corrective source behavior", () => {
+  it("keeps hashes stable across retrieval times and preserves sampled-page provenance", async () => {
+    let retrieval = 0;
+    const reader: PublicBrandReferenceReader = { read: async (url) => ({ url, excerpt: url.endsWith("/about") ? "About" : "Home", retrievedAt: new Date(1_700_000_000_000 + retrieval++ * 1_000).toISOString(), links: url.endsWith("/") ? ["https://brand.example/about"] : [] }) };
+    const adapter = new WebsiteAdapter({ reader, maxPages: 2 });
+    const first = await adapter.fetch({ url: "https://brand.example/", scope, timeoutMs: 1_000 });
+    const second = await adapter.fetch({ url: "https://brand.example/", scope, timeoutMs: 1_000 });
+    expect(first.contentHash).toBe(second.contentHash);
+    const document = await adapter.normalize(first, adapter.identify(new URL(first.canonicalUrl)));
+    expect(document.provenance.map((item) => item.sourceUrl)).toEqual(["https://brand.example/", "https://brand.example/about"]);
+  });
+
+  it("retains a valid GitHub repository when optional activity enrichment fails", async () => {
+    const adapter = new GitHubAdapter({ now: fixedNow, fetchImpl: async (input) => input.toString().endsWith("/events?per_page=15") ? new Response("down", { status: 500 }) : json(input.toString().endsWith("/readme") ? { content: Buffer.from("# Valid").toString("base64") } : input.toString().endsWith("/languages") ? { TypeScript: 1 } : input.toString().includes("/releases") ? [] : { full_name: "acme/valid", name: "valid", owner: { login: "acme" }, html_url: "https://github.com/acme/valid" }) });
+    const result = await new SourceRouter([adapter]).fetch({ url: "https://github.com/acme/valid", scope, timeoutMs: 1_000 });
+    expect(result.document.title).toBe("acme/valid");
+    expect(result.document.extractionWarnings).toContain("GitHub optional events enrichment unavailable");
+  });
+});

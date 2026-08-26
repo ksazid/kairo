@@ -1,32 +1,202 @@
 {
   "schemaVersion": 2,
   "sliceId": "VS-103",
-  "title": "VS-103 — Brand Brain V2 and Brand Intelligence Topic Graph",
+  "title": "VS-103R — Source Intelligence remediation and Hunter evidence integration",
   "status": "active",
-  "lifecycle": "released",
+  "lifecycle": "certified",
   "riskLevel": "medium",
-  "implementationMode": "production-enabled",
-  "requirements": ["FR-03", "FR-04", "FR-06", "FR-07", "FR-20"],
-  "owners": {"product": "Product Owner", "engineering": "Engineering Owner", "operations": "Operations Owner", "security": "Security Owner"},
-  "dependencies": ["VS-99", "VS-100", "VS-101", "VS-102"],
-  "blockers": [],
-  "allowedPaths": ["packages/domain/src/brand-intelligence.ts", "packages/domain/src/brand-intelligence.test.ts", "packages/domain/package.json", "packages/domain/src/sector-packs.ts", "packages/domain/src/source-policy.ts", "apps/api/migrations/0031_brand_intelligence_topic_graph.sql", "apps/api/src/**", "packages/contracts/src/**", "scripts/start-api.mjs", "docs/slices/VS-103.md", "docs/plans/VS-103-implementation.md", "delivery/**", ".engineering/STATE.json"],
-  "protectedPaths": [".github/workflows/release.yml"],
-  "impact": {"areas": ["architecture", "api", "database", "analytics", "customer-flow", "operations-support"], "notes": ["Upgrades Brand intelligence using evidence already captured by the shared Source Intelligence pipeline.", "Adds deterministic versioned Topic Graph intelligence and lineage for Hunter without changing Hunter ranking in this slice.", "Sector packs are configurable low-precedence seeds and cannot override confirmed Brand facts or exclusions.", "No frozen UI, new retrieval pipeline, OAuth scope, scheduler or autonomous publishing change is authorized.", "Production release plumbing explicitly allows migration 0031 through the existing exact-migration startup mechanism while preserving exact-SHA guards."]},
-  "approvals": [
-    {"type": "scope", "status": "approved", "version": "VS-103@1.0", "commitSha": null, "by": "Product Owner", "at": "2026-08-26T13:05:00+02:00", "rationale": "Product Owner explicitly instructed Go 5, authorizing Batch 5 Brand Brain V2, Brand Intelligence Topic Graph and sector-pack scope."},
-    {"type": "policy", "status": "not-required", "version": "VS-103@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Reuses existing provenance, untrusted-source, deletion, tenant-isolation and human-publishing decisions; sector packs are seeds rather than truth."},
-    {"type": "implementation", "status": "approved", "version": "VS-103@1.0", "commitSha": null, "by": "Product Owner", "at": "2026-08-26T13:05:00+02:00", "rationale": "Product Owner explicitly instructed Go 5."},
-    {"type": "certification", "status": "approved", "version": "VS-103@1.0", "commitSha": "e0a7920aac16e32299243f53a3b6a5a65764b273", "by": "Product Owner", "at": "2026-08-26T13:25:00+02:00", "rationale": "Product Owner approved after Product Intake, Security baseline and CI completed successfully on the exact candidate."},
-    {"type": "release", "status": "approved", "version": "VS-103@1.0", "commitSha": "ec026f26f9eddc7306f9ae088abf1f7c98738c70", "by": "Product Owner", "at": "2026-08-26T13:26:00+02:00", "rationale": "Product Owner explicitly approved release after the certified implementation was merged."},
-    {"type": "production-enable", "status": "approved", "version": "VS-103@1.0", "commitSha": "ec026f26f9eddc7306f9ae088abf1f7c98738c70", "by": "Product Owner", "at": "2026-08-26T13:26:00+02:00", "rationale": "Product Owner explicitly approved production enablement for Batch 5."}
+  "implementationMode": "runtime-enabled",
+  "requirements": [
+    "FR-03",
+    "FR-04",
+    "FR-06",
+    "FR-07",
+    "FR-20"
   ],
-  "decisionIds": ["DEC-003", "DEC-005", "DEC-006", "DEC-009", "DEC-010", "DEC-011"],
-  "progress": {"discovery": 100, "decisions": 100, "implementation": 100, "testing": 100, "certification": 100, "release": 100, "validation": 0},
-  "certification": {"status": "passed", "commitSha": "e0a7920aac16e32299243f53a3b6a5a65764b273", "evidence": ["Product Intake 32961796413 passed", "Security baseline 32961796331 passed", "CI 32961796327 passed", "Product Owner certification approval bound to exact candidate e0a7920aac16e32299243f53a3b6a5a65764b273", "Migration release-plumbing fix passed Product Intake 32966149264, Security baseline 32966149286 and CI 32966149238 on exact fix SHA 8fd65a688a7f45ee0595abd1ff9f30fed9ec4d40."]},
-  "release": {"status": "released", "releaseId": "REL-014"},
-  "rollback": {"status": "ready", "rollbackId": "RB-014"},
-  "postRelease": {"status": "observing", "reviewAt": null, "expectedOutcome": "Confirmed and inferred Brand evidence produces a deterministic, provenance-aware Topic Graph that improves later Hunter query/ranking without a second ingestion pipeline.", "metrics": []},
-  "links": {"specification": "docs/slices/VS-103.md", "implementationPr": "https://github.com/ksazid/kairo/pull/215", "evidence": ["Product Intake 32961796413", "Security baseline 32961796331", "CI 32961796327", "PR #216 merged as fbc9ea984df526104f8b815524f62d1fd55109e2", "Migration 0031 applied successfully in Render deploy dep-da7dj2gae00c73bh85n0", "Final clean Render deploy dep-da7dkf2d0e5s73e8dhk0 live on fbc9ea984df526104f8b815524f62d1fd55109e2", "delivery/context/VS-103-REL-014-production-evidence.md", "delivery/context/VS-103-RB-014-rollback.md"]},
+  "owners": {
+    "product": "Product Owner",
+    "engineering": "Engineering Owner",
+    "operations": "Operations Owner",
+    "security": "Security Owner"
+  },
+  "dependencies": [
+    "VS-99",
+    "VS-100",
+    "VS-101",
+    "VS-102"
+  ],
+  "blockers": [],
+  "allowedPaths": [
+    "packages/domain/src/brand-intelligence.ts",
+    "packages/domain/src/brand-intelligence.test.ts",
+    "packages/domain/package.json",
+    "packages/domain/src/sector-packs.ts",
+    "packages/domain/src/source-policy.ts",
+    "packages/domain/src/source-policy.test.ts",
+    "packages/domain/src/discovery-service.ts",
+    "packages/domain/src/discovery-service.test.ts",
+    "packages/domain/src/discovery.ts",
+    "packages/domain/src/discovery.test.ts",
+    "packages/domain/src/source-registry.ts",
+    "packages/domain/src/index.ts",
+    "packages/agent-contracts/src/source-intelligence.ts",
+    "packages/agent-contracts/src/source-intelligence.test.ts",
+    "packages/agent-contracts/src/index.ts",
+    "apps/worker/src/hunter.ts",
+    "apps/worker/src/hunter.test.ts",
+    "apps/worker/src/brand-brain-builder.ts",
+    "apps/worker/src/brand-brain-builder.test.ts",
+    "packages/domain/src/brand-brain-bootstrap.ts",
+    "packages/domain/src/brand-brain-bootstrap.test.ts",
+    "apps/worker/src/public-discovery-adapters.ts",
+    "apps/worker/src/public-discovery-adapters.test.ts",
+    "apps/api/migrations/0031_brand_intelligence_topic_graph.sql",
+    "apps/api/migrations/0032_hunter_opportunity_details.sql",
+    "apps/api/src/**",
+    "packages/contracts/src/**",
+    "scripts/start-api.mjs",
+    "docs/slices/VS-103.md",
+    "docs/plans/VS-103-implementation.md",
+    "delivery/**",
+    ".engineering/STATE.json"
+  ],
+  "protectedPaths": [
+    ".github/workflows/release.yml"
+  ],
+  "impact": {
+    "areas": [
+      "architecture",
+      "api",
+      "database",
+      "analytics",
+      "customer-flow",
+      "operations-support"
+    ],
+    "notes": [
+      "Upgrades Brand intelligence using evidence already captured by the shared Source Intelligence pipeline.",
+      "Adds deterministic versioned Topic Graph intelligence and lineage for Hunter without changing Hunter ranking in this slice.",
+      "Sector packs are configurable low-precedence seeds and cannot override confirmed Brand facts or exclusions.",
+      "No frozen UI, new retrieval pipeline, OAuth scope, scheduler or autonomous publishing change is authorized.",
+      "Production release plumbing explicitly allows migration 0031 through the existing exact-migration startup mechanism while preserving exact-SHA guards.",
+      "Corrective revision fixes verified Batch 2–5 defects and implements Batch 6 Hunter discovery, evidence enrichment, query intent and ranking integration without UI, scheduler or publishing changes."
+    ]
+  },
+  "approvals": [
+    {
+      "type": "policy",
+      "status": "not-required",
+      "version": "VS-103@1.1",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Reuses existing provenance, untrusted-source, deletion, tenant-isolation and human-publishing decisions; sector packs are seeds rather than truth."
+    },
+    {
+      "type": "scope",
+      "status": "approved",
+      "version": "VS-103@1.1",
+      "commitSha": null,
+      "by": "Product Owner",
+      "at": "2026-08-26T14:30:00+02:00",
+      "rationale": "Product Owner explicitly instructed fixing the verified Batch 2–5 gaps together with Batch 6; YouTube credentials remain optional and deferred."
+    },
+    {
+      "type": "implementation",
+      "status": "approved",
+      "version": "VS-103@1.1",
+      "commitSha": null,
+      "by": "Product Owner",
+      "at": "2026-08-26T14:30:00+02:00",
+      "rationale": "Product Owner explicitly authorized corrective runtime implementation and Batch 6."
+    },
+    {
+      "type": "certification",
+      "status": "approved",
+      "version": "VS-103@1.1",
+      "commitSha": "30da0fccaacb8f0477700b87419294b07da0dd70",
+      "by": "Product Owner",
+      "at": "2026-08-26T15:21:00+02:00",
+      "rationale": "Product Owner explicitly approved and processed certification for exact corrective candidate 30da0fccaacb8f0477700b87419294b07da0dd70; the historical VS-103@1.0 certification is superseded."
+    },
+    {
+      "type": "release",
+      "status": "revoked",
+      "version": "VS-103@1.0",
+      "commitSha": "ec026f26f9eddc7306f9ae088abf1f7c98738c70",
+      "by": "Product Owner",
+      "at": "2026-08-26T13:26:00+02:00",
+      "rationale": "Historical VS-103@1.0 release approval; it does not authorize the corrective VS-103@1.1 candidate."
+    },
+    {
+      "type": "production-enable",
+      "status": "revoked",
+      "version": "VS-103@1.0",
+      "commitSha": "ec026f26f9eddc7306f9ae088abf1f7c98738c70",
+      "by": "Product Owner",
+      "at": "2026-08-26T13:26:00+02:00",
+      "rationale": "Historical VS-103@1.0 production enablement; it does not authorize the corrective VS-103@1.1 candidate."
+    }
+  ],
+  "decisionIds": [
+    "DEC-003",
+    "DEC-005",
+    "DEC-006",
+    "DEC-009",
+    "DEC-010",
+    "DEC-011"
+  ],
+  "progress": {
+    "discovery": 100,
+    "decisions": 100,
+    "implementation": 100,
+    "testing": 100,
+    "certification": 100,
+    "release": 0,
+    "validation": 0
+  },
+  "certification": {
+    "status": "passed",
+    "commitSha": "30da0fccaacb8f0477700b87419294b07da0dd70",
+    "evidence": [
+      "Product Intake 32961796413 passed",
+      "Security baseline 32961796331 passed",
+      "CI 32961796327 passed",
+      "Product Owner certification approval bound to exact candidate e0a7920aac16e32299243f53a3b6a5a65764b273",
+      "Migration release-plumbing fix passed Product Intake 32966149264, Security baseline 32966149286 and CI 32966149238 on exact fix SHA 8fd65a688a7f45ee0595abd1ff9f30fed9ec4d40.",
+      "VS-103@1.1 focused verification passed; six unrelated UI contract failures were reproduced unchanged on base SHA 10382963460013f431b712ba36093d01c996aff7.",
+      "104 focused tests, affected TypeScript checks, JSON validation, governance and dashboard checks passed on exact candidate 30da0fccaacb8f0477700b87419294b07da0dd70.",
+      "Product Owner approved and processed exact candidate 30da0fccaacb8f0477700b87419294b07da0dd70."
+    ]
+  },
+  "release": {
+    "status": "not-authorized"
+  },
+  "rollback": {
+    "status": "ready",
+    "rollbackId": "RB-014"
+  },
+  "postRelease": {
+    "status": "iterate",
+    "reviewAt": "2026-08-27T14:00:00+02:00",
+    "expectedOutcome": "Confirmed and inferred Brand evidence produces a deterministic, provenance-aware Topic Graph that improves later Hunter query/ranking without a second ingestion pipeline.",
+    "metrics": [
+      "Topic Graph schema applied successfully",
+      "API startup and health remained green"
+    ]
+  },
+  "links": {
+    "specification": "docs/slices/VS-103.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/215",
+    "evidence": [
+      "Product Intake 32961796413",
+      "Security baseline 32961796331",
+      "CI 32961796327",
+      "PR #216 merged as fbc9ea984df526104f8b815524f62d1fd55109e2",
+      "Migration 0031 applied successfully in Render deploy dep-da7dj2gae00c73bh85n0",
+      "Final clean Render deploy dep-da7dkf2d0e5s73e8dhk0 live on fbc9ea984df526104f8b815524f62d1fd55109e2",
+      "delivery/context/VS-103-REL-014-production-evidence.md",
+      "delivery/context/VS-103-RB-014-rollback.md"
+    ]
+  },
   "maxAttempts": 3
 }

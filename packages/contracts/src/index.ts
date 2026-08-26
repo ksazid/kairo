@@ -163,6 +163,21 @@ export interface OpportunityScoresDto {
   scoringVersion: string;
 }
 
+export interface OpportunityDetailsDto {
+  topic: string;
+  proposedAngle: string;
+  hook: string;
+  targetAudience: string;
+  objective: string;
+  recommendedFormat: string;
+  recommendedChannel: string;
+  supportingSourceIds: string[];
+  confidence: number;
+  expiresAt?: string;
+  estimatedEffort: "low" | "medium" | "high";
+  intelligenceVersion?: number;
+}
+
 export interface BrandOpportunityDto {
   id: string;
   workspaceId: string;
@@ -175,6 +190,7 @@ export interface BrandOpportunityDto {
   signalIds: string[];
   scores: OpportunityScoresDto;
   brandContextVersion: string;
+  details?: OpportunityDetailsDto;
   createdAt: string;
   updatedAt: string;
 }

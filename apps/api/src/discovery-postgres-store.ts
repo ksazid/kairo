@@ -88,13 +88,14 @@ export class PgDiscoveryRepository implements DiscoveryRepository {
       const id = randomUUID();
       await client.query(
         `insert into brand_opportunities
-          (id,workspace_id,brand_id,title,rationale,why_now,development_direction,status,relevance,evidence,novelty,timeliness,brand_authority,audience_fit,overall,scoring_version,brand_context_version)
-         values ($1,$2,$3,$4,$5,$6,$7,'new',$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+          (id,workspace_id,brand_id,title,rationale,why_now,development_direction,status,relevance,evidence,novelty,timeliness,brand_authority,audience_fit,overall,scoring_version,brand_context_version,brand_intelligence_graph_version,opportunity_details)
+         values ($1,$2,$3,$4,$5,$6,$7,'new',$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb)`,
         [
           id, workspaceId, brandId, input.title, input.rationale, input.whyNow, input.developmentDirection,
           input.scores.relevance, input.scores.evidence, input.scores.novelty, input.scores.timeliness,
           input.scores.brandAuthority, input.scores.audienceFit, input.scores.overall,
-          input.scores.scoringVersion, input.brandContextVersion,
+          input.scores.scoringVersion, input.brandContextVersion, input.details?.intelligenceVersion ?? null,
+          input.details ? JSON.stringify(input.details) : null,
         ],
       );
       await client.query(
@@ -158,12 +159,13 @@ type OpportunityRow = {
   development_direction: string; status: OpportunityStatus; relevance: number; evidence: number; novelty: number;
   timeliness: number; brand_authority: number; audience_fit: number; overall: number; scoring_version: string;
   brand_context_version: string; created_at: Date | string; updated_at: Date | string; signal_ids: string[];
+  opportunity_details: import("@kairo/contracts").OpportunityDetailsDto | null;
 };
 
 function opportunitySelect(tail: string): string {
   return `select o.id,o.workspace_id,o.brand_id,o.title,o.rationale,o.why_now,o.development_direction,o.status,
                  o.relevance,o.evidence,o.novelty,o.timeliness,o.brand_authority,o.audience_fit,o.overall,
-                 o.scoring_version,o.brand_context_version,o.created_at,o.updated_at,
+                 o.scoring_version,o.brand_context_version,o.opportunity_details,o.created_at,o.updated_at,
                  coalesce(array_agg(os.signal_id order by os.signal_id) filter (where os.signal_id is not null),'{}'::text[]) as signal_ids
             from brand_opportunities o
             left join brand_opportunity_signals os on os.opportunity_id=o.id and os.workspace_id=o.workspace_id and os.brand_id=o.brand_id
@@ -238,6 +240,7 @@ function toOpportunity(row: OpportunityRow): BrandOpportunityDto {
       brandAuthority: Number(row.brand_authority), audienceFit: Number(row.audience_fit), overall: Number(row.overall), scoringVersion: row.scoring_version,
     },
     brandContextVersion: row.brand_context_version,
+    ...(row.opportunity_details ? { details: row.opportunity_details } : {}),
     createdAt: iso(row.created_at),
     updatedAt: iso(row.updated_at),
   };

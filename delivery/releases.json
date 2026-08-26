@@ -182,6 +182,20 @@
       "approvedBy": "Sazid Khan",
       "approvedAt": "2026-08-26T12:08:00+02:00",
       "productionVerification": {"status":"passed","evidence":["Render deploy dep-da7bm667bikc73a6hplg is live on f0bb76ad12522611c138283ec03d1564b1a6f7b7.","API startup completed normally and the existing Instagram publisher started on Meta Graph v24.0.","Post-deploy error/fatal log queries returned no entries."]}
+    },
+    {
+      "id": "REL-014",
+      "sliceIds": ["VS-103"],
+      "status": "released",
+      "commitSha": "fbc9ea984df526104f8b815524f62d1fd55109e2",
+      "migrations": ["apps/api/migrations/0031_brand_intelligence_topic_graph.sql"],
+      "configurationChanges": ["Applied migration 0031 through the bounded startup migration mechanism and cleared the one-shot setting after success."],
+      "featureFlags": ["Brand Intelligence V2 and Topic Graph persistence enabled; Hunter ranking unchanged in this release."],
+      "smokeTests": ["Render deployment dep-da7dkf2d0e5s73e8dhk0 reached live on the exact merge SHA after migration 0031 applied successfully."],
+      "rollbackStrategy": {"summary":"RB-014 is ready; preserve additive graph data and prefer runtime rollback or forward recovery."},
+      "approvedBy": "Sazid Khan",
+      "approvedAt": "2026-08-26T13:57:00+02:00",
+      "productionVerification": {"status":"passed","evidence":["Migration 0031 is present in production and the final cleanup deployment is live."]}
     }
   ]
 }

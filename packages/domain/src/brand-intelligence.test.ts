@@ -16,6 +16,11 @@ describe("VS-103 Brand Brain V2", () => {
     expect(brain.sector).toBe("AI infrastructure");
     expect(brain.products).toEqual(["Agents", "APIs"]);
   });
+  it("projects the dotted keys produced by the runtime Brand Brain generator", () => {
+    const brain = buildBrandBrainV2([field("identity.sector", "Developer Technology"), field("content.core-topics", "AI agents, RAG")]);
+    expect(brain.sector).toBe("Developer Technology");
+    expect(brain.coreTopics).toEqual(["AI agents", "RAG"]);
+  });
 });
 
 describe("VS-103 Topic Graph", () => {
@@ -45,6 +50,8 @@ describe("VS-103 Topic Graph", () => {
     expect(graph.nodes.length).toBeGreaterThan(0);
     expect(graph.nodes.every((node) => node.origin !== "sector-pack" || node.sourceIds.length === 0)).toBe(true);
     expect(graph.nodes.every((node) => node.origin !== "sector-pack" || node.confidence === undefined)).toBe(true);
+    expect(graph).toMatchObject({ interestGraph: expect.any(Array), exclusions: [], explorationTopics: expect.any(Array), authorityZones: [], performanceWeights: {} });
+    expect(graph.nodes.every((node) => Array.isArray(node.preferredSources) && Boolean(node.authorityLevel))).toBe(true);
   });
 
   it("increments versions only for material graph changes", () => {

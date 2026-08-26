@@ -15,6 +15,8 @@ import{registerReadinessRoutes}from"./readiness-routes";
 import{registerGuidedBrandBrainRoutes}from"./guided-brand-brain-routes";
 import{registerHunterRecommendationRoutes}from"./hunter-recommendation-routes";
 import{createHunterToolGateway}from"./hunter-tool-gateway";
+import{PgBrandIntelligenceGraphStore}from"./brand-intelligence-graph-store";
+import{createSourceIntelligenceRouter}from"./source-intelligence";
 import{PgChannelAccountGroupRepository}from"./channel-account-group-postgres-store";
 import{registerChannelAccountGroupRoutes}from"./channel-account-group-routes";
 import{PgContentAssetLibraryRepository}from"./content-asset-library-postgres-store";
@@ -86,6 +88,7 @@ const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const coreStore=new PgKairoRepository(pool);
 const discoveryStore=new PgDiscoveryRepository(pool);
 const discoveryService=new DiscoveryService(discoveryStore);
+const brandIntelligenceGraphStore=new PgBrandIntelligenceGraphStore(pool);
 const researchStore=new PgResearchRepository(pool);
 const campaignStore=new PgCampaignRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
@@ -100,6 +103,7 @@ const agentOutputValidators={
   "critic-review@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
   "hunter-opportunities@1":isHunterJudgmentOutput,
+  "hunter-opportunities@2":isHunterJudgmentOutput,
   "research-dossier@1":isResearcherOutput,
   "strategist-angles@1":isStrategistOutput,
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
@@ -115,8 +119,9 @@ const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRunt
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
 const hunter=runtime?new HunterOrchestrator(createHunterToolGateway(),runtime,discoveryService):undefined;
-const researchTools=createResearchToolGateway();
 const publicReferenceReader=new PublicBrandReferenceHttpReader({timeoutMs:10_000,maxBytes:2_000_000,maxRedirects:2});
+const sharedSourceRouter=createSourceIntelligenceRouter({reader:publicReferenceReader});
+const researchTools=createResearchToolGateway();
 const researcher=runtime?new ResearcherOrchestrator(researchTools,runtime,researchStore):undefined;
 const strategist=runtime?new StrategistOrchestrator(runtime,researchStore):undefined;
 const ideaDevelopmentLock=new PgIdeaDevelopmentLock(pool);
@@ -179,7 +184,7 @@ registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier})
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
-registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,...(hunter?{runner:hunter}:{})});
+registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,graphStore:brandIntelligenceGraphStore,...(hunter?{runner:hunter}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
@@ -363,25 +368,26 @@ function createResearchToolGateway(){
       return [];
     },
   };
-  return new SourceRoutingToolGateway(fallback,{openalex:openAlex,crossref});
+  return new SourceRoutingToolGateway(fallback,{openalex:openAlex,crossref},sharedSourceRouter);
 }
 
 async function loadExplicitResearchEvidence(idea:{title:string;premise:string}){
   const urls=extractResearchUrls(idea);
   if(!urls.length)return[];
-  const references=await Promise.all(urls.map(url=>publicReferenceReader.read(url)));
-  return references.map(reference=>{
-    const publisher=new URL(reference.url).hostname.toLowerCase();
-    const summary=[reference.summary,reference.excerpt].filter((value):value is string=>typeof value==="string"&&value.trim().length>0).join("\n").slice(0,8_000);
+  const documents=await Promise.all(urls.map(async url=>(await sharedSourceRouter.fetch({url,scope:{visibility:"global-public"},timeoutMs:20_000})).document));
+  return documents.map(document=>{
+    const publisher=document.publisher??new URL(document.canonicalUrl).hostname.toLowerCase();
+    const summary=[document.description,document.transcript,document.body].filter((value):value is string=>typeof value==="string"&&value.trim().length>0).join("\n").slice(0,8_000);
     return{
-      title:reference.title?.trim()||publisher,
+      title:document.title?.trim()||publisher,
       ...(summary?{summary}:{}),
-      sourceUrl:reference.url,
-      platform:"web",
+      sourceUrl:document.canonicalUrl,
+      platform:document.platform,
       publisher,
-      retrievedAt:reference.retrievedAt,
-      provider:"explicit-url",
-      providerVersion:"public-brand-reference@2",
+      retrievedAt:document.retrievedAt,
+      provider:document.provider,
+      providerVersion:document.providerVersion,
+      contentHash:document.contentHash.replace(/^sha256:/,""),
     };
   });
 }

@@ -64,8 +64,8 @@ const EXCLUDED_TOPIC_KEYS = /(excluded|prohibited|avoid|sensitive).*(topic|subje
 export function projectBrandIntelligenceProfile(fields: readonly BrandBrainFieldDto[]): BrandIntelligenceProfile {
   const active = fields.filter((field) => field.state !== "stale");
   const identity = active.filter((field) => field.section === "identity");
-  const sector = firstValue(identity, (field) => SECTOR_KEYS.has(field.fieldKey.toLowerCase()));
-  const subsector = firstValue(identity, (field) => SUBSECTOR_KEYS.has(field.fieldKey.toLowerCase()));
+  const sector = firstValue(identity, (field) => SECTOR_KEYS.has(fieldKeyLeaf(field.fieldKey)));
+  const subsector = firstValue(identity, (field) => SUBSECTOR_KEYS.has(fieldKeyLeaf(field.fieldKey)));
 
   const geographies = collectValues(active.filter((field) => field.section === "identity" && GEOGRAPHY_KEYS.test(field.fieldKey)));
   const languages = collectValues(active.filter((field) =>
@@ -291,3 +291,4 @@ function requireText(value: unknown, label: string): string {
   if (typeof value !== "string" || !value.trim()) throw new DomainValidationError(`${label} is required`);
   return value.trim();
 }
+function fieldKeyLeaf(value: string) { return value.toLowerCase().split(".").at(-1) ?? value.toLowerCase(); }

@@ -18,7 +18,11 @@ import { SourceProviderError } from "./source-adapters";
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 type SocialPlatform = Extract<SourcePlatform, "instagram" | "facebook" | "linkedin">;
 
-interface PublicSocialAdapterOptions { reader: PublicBrandReferenceReader; }
+export interface AuthorizedSocialEvidenceProvider {
+  health(): Promise<SourceHealth>;
+  readPublicEvidence(url: string): Promise<PublicBrandReference>;
+}
+export interface PublicSocialAdapterOptions { reader: PublicBrandReferenceReader; authorizedProvider?: AuthorizedSocialEvidenceProvider; }
 
 abstract class PublicSocialAdapter implements SourceAdapter {
   abstract readonly id: string;
@@ -32,9 +36,18 @@ abstract class PublicSocialAdapter implements SourceAdapter {
 
   async fetch(request: SourceFetchRequest): Promise<RawSourceDocument> {
     const canonicalUrl = canonicalizePublicSocialUrl(request.url);
-    const reference = await this.options.reader.read(canonicalUrl);
+    let reference: PublicBrandReference | undefined;
+    const warnings: string[] = [];
+    if (this.options.authorizedProvider) {
+      const health = await this.options.authorizedProvider.health();
+      if (health.status !== "unavailable") {
+        try { reference = await this.options.authorizedProvider.readPublicEvidence(canonicalUrl); }
+        catch { warnings.push("Authorized social enrichment unavailable; used public evidence fallback"); }
+      }
+    }
+    reference ??= await this.options.reader.read(canonicalUrl);
     if (isBlockedPublicEvidence(this.platform, reference)) throw new SourceProviderError("unavailable", `${platformName(this.platform)} public evidence is blocked or login-only`);
-    return raw(canonicalUrl, reference.retrievedAt, { reference: compactReference({ ...reference, url: canonicalUrl }) });
+    return raw(canonicalUrl, reference.retrievedAt, { reference: compactReference({ ...reference, url: canonicalUrl }) }, warnings);
   }
 
   async normalize(value: RawSourceDocument, identity: SourceIdentity): Promise<NormalizedSourceDocument> {
@@ -170,7 +183,7 @@ export class YouTubeAdapter implements SourceAdapter {
 function normalized(rawValue: RawSourceDocument, identity: SourceIdentity, provider: string, version: string, fields: Partial<NormalizedSourceDocument> & { confidence: number }): NormalizedSourceDocument {
   return prepareNormalizedSourceDocument({ canonicalUrl: rawValue.canonicalUrl, platform: identity.platform, sourceType: identity.sourceType, retrievedAt: rawValue.retrievedAt, contentHash: rawValue.contentHash, provider, providerVersion: version, parserVersion: version, provenance: [{ provider, providerVersion: version, sourceUrl: rawValue.canonicalUrl, retrievedAt: rawValue.retrievedAt }], extractionWarnings: rawValue.warnings ?? [], ...fields });
 }
-function raw(canonicalUrl: string, retrievedAt: string, payload: JsonValue, warnings: string[] = []): RawSourceDocument { return { canonicalUrl: normalizeCanonicalUrl(canonicalUrl), retrievedAt, contentHash: `sha256:${createHash("sha256").update(JSON.stringify(payload)).digest("hex")}`, payload, ...(warnings.length ? { warnings } : {}) }; }
+function raw(canonicalUrl: string, retrievedAt: string, payload: JsonValue, warnings: string[] = []): RawSourceDocument { return { canonicalUrl: normalizeCanonicalUrl(canonicalUrl), retrievedAt, contentHash: `sha256:${createHash("sha256").update(JSON.stringify(stableHashValue(payload))).digest("hex")}`, payload, ...(warnings.length ? { warnings } : {}) }; }
 function compactReference(reference: PublicBrandReference): JsonValue { return { url: reference.url, ...(reference.title ? { title: reference.title } : {}), ...(reference.summary ? { summary: reference.summary } : {}), excerpt: reference.excerpt, retrievedAt: reference.retrievedAt, ...(reference.links?.length ? { links: reference.links } : {}) }; }
 function asReference(value: unknown): PublicBrandReference | undefined { const item = record(value); const url = text(item.url); const excerpt = text(item.excerpt); const retrievedAt = text(item.retrievedAt); if (!url || !excerpt || !retrievedAt) return undefined; return { url, excerpt, retrievedAt, ...(text(item.title) ? { title: text(item.title)! } : {}), ...(text(item.summary) ? { summary: text(item.summary)! } : {}), ...(stringArray(item.links).length ? { links: stringArray(item.links) } : {}) }; }
 function isBlockedPublicEvidence(platform: SocialPlatform | "youtube", reference: PublicBrandReference): boolean { const haystack = [reference.title, reference.summary, reference.excerpt].filter(Boolean).join(" ").toLowerCase().replace(/\s+/g, " "); if (!haystack.trim()) return true; const patterns: Record<SocialPlatform | "youtube", RegExp[]> = { linkedin: [/sign in.*linkedin/, /join linkedin/, /linkedin login/, /authwall/, /sign up.*linkedin/], instagram: [/login.*instagram/, /log in.*instagram/, /sign up.*instagram/, /instagram login/], facebook: [/log into facebook/, /facebook login/, /sign up for facebook/, /you must log in/], youtube: [/before you continue to youtube/, /sign in.*youtube/] }; return patterns[platform].some((pattern) => pattern.test(haystack)); }
@@ -187,5 +200,6 @@ function stringArray(value: unknown): string[] { return Array.isArray(value) ? v
 function numeric(value: unknown): number | undefined { if (typeof value === "number" && Number.isFinite(value)) return value; if (typeof value === "string" && /^\d+(?:\.\d+)?$/.test(value)) return Number(value); return undefined; }
 function numericRecord(value: Record<string, unknown>): Record<string, number> { return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1]))); }
 function boundedInteger(value: number, min: number, max: number, name: string) { if (!Number.isInteger(value) || value < min || value > max) throw new Error(`${name} must be from ${min} to ${max}`); return value; }
+function stableHashValue(value: JsonValue): JsonValue { if (Array.isArray(value)) return value.map(stableHashValue); if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).filter(([key]) => key !== "retrievedAt").map(([key, item]) => [key, stableHashValue(item as JsonValue)])) as JsonValue; return value; }
 async function readText(response: Response, maxBytes: number) { const declared = Number(response.headers.get("content-length") ?? 0); if (declared > maxBytes) throw new SourceProviderError("invalid-response", "Source response exceeded size limit"); const value = await response.text(); if (Buffer.byteLength(value) > maxBytes) throw new SourceProviderError("invalid-response", "Source response exceeded size limit"); return value; }
 async function readJson(response: Response, maxBytes: number): Promise<JsonValue> { try { return JSON.parse(await readText(response, maxBytes)) as JsonValue; } catch (error) { if (error instanceof SourceProviderError) throw error; throw new SourceProviderError("invalid-response", "Source returned invalid JSON"); } }
