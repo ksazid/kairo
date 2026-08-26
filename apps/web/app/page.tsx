@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { KairoProductShell } from "./kairo-product-shell";
 import { KairoIcon } from "./kairo-icons";
 import { MyIdeaComposer } from "./my-idea-composer";
+import { ForYouCreateAction } from "./for-you-create-action";
 import { ForYouRecommendationsAction } from "./for-you-recommendations-action";
 import {
   getBrandNotifications,
@@ -13,10 +14,11 @@ import {
   getSession,
   type PerformanceMetricView,
 } from "../src/lib/kairo-api";
+import { getBrandPresenter } from "../src/lib/presenter-api";
+import { homeFormatLabel, type HomeCreationFormat } from "../src/lib/home-creation-format";
 import {
   buildAttentionItems,
   buildForYou,
-  type HomeCreationFormat,
   type HomeForYouItem,
 } from "../src/lib/home-intelligence";
 import styles from "./home-vs85.module.css";
@@ -24,6 +26,7 @@ import styles from "./home-vs85.module.css";
 type SearchParams = Promise<{ workspace?: string; brand?: string; notice?: string; error?: string; idea?: string }>;
 type RecommendationScores = { overall: number; audienceFit: number; status: string };
 type HomeMetric = { label: "Reach" | "Saves" | "Shares" | "Engagement rate"; value?: number };
+type EligiblePresenter = { id: string; displayName: string; mode: string };
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const session = await getSession();
@@ -52,11 +55,12 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
     );
   }
 
-  const [opportunities, performance, notificationResult, channelResult] = await Promise.all([
+  const [opportunities, performance, notificationResult, channelResult, presenterResult] = await Promise.all([
     getOpportunities(brand.id).catch(() => []),
     getPerformance(brand.id).catch(() => []),
     getBrandNotifications(brand.id).catch(() => ({ brandId: brand.id, items: [] })),
     getChannelAccounts(brand.id).then((items) => ({ available: true as const, items })).catch(() => ({ available: false as const, items: [] })),
+    getBrandPresenter(brand.id).catch(() => null),
   ]);
 
   const hasConnectedChannel = channelResult.available ? channelResult.items.some((channel) => channel.status === "connected") : true;
@@ -64,6 +68,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const forYou = buildForYou(opportunities);
   const scores = new Map<string, RecommendationScores>(opportunities.map((item) => [item.id, { overall: item.scores.overall, audienceFit: item.scores.audienceFit, status: item.status }]));
   const metrics = buildHomeMetrics(performance);
+  const eligiblePresenter: EligiblePresenter | undefined = presenterResult?.presenter && presenterResult.eligibility?.status === "eligible"
+    ? { id: presenterResult.presenter.id, displayName: presenterResult.presenter.displayName, mode: presenterResult.presenter.mode }
+    : undefined;
 
   return (
     <KairoProductShell brandId={brand.id} workspaceId={workspace.id} active="Home">
@@ -95,9 +102,9 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         <section id="my-idea" className={styles.ideaSection} aria-labelledby="home-my-idea-title">
           <div className={styles.sectionHeading}>
             <h2 id="home-my-idea-title">My idea</h2>
-            <p>Share your thought and let Kairo recommend the best format.</p>
+            <p>Add your idea, link or media. Kairo selects a format automatically and you can change it.</p>
           </div>
-          <MyIdeaComposer brandId={brand.id} initialText={params.idea ?? ""} />
+          <MyIdeaComposer brandId={brand.id} initialText={params.idea ?? ""} eligiblePresenter={eligiblePresenter} />
         </section>
 
         <section className={styles.forYouSection} aria-labelledby="home-for-you-title">
@@ -112,7 +119,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           {forYou.length ? (
             <>
               <div className={styles.recommendationRail}>
-                {forYou.map((item) => <RecommendationCard key={item.id} item={item} scores={scores.get(item.id)} workspaceId={workspace.id} brandId={brand.id} />)}
+                {forYou.map((item) => <RecommendationCard key={item.id} item={item} scores={scores.get(item.id)} brandId={brand.id} eligiblePresenter={eligiblePresenter} />)}
               </div>
               <div className={styles.railProgress} aria-hidden="true"><span /></div>
             </>
@@ -141,14 +148,14 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   );
 }
 
-function RecommendationCard({ item, scores, workspaceId, brandId }: { item: HomeForYouItem; scores?: RecommendationScores; workspaceId: string; brandId: string }) {
-  const format = item.format ? formatLabel(item.format) : "Idea";
-  const tone = item.format === "reel" ? "reel" : item.format === "image" ? "post" : "carousel";
+function RecommendationCard({ item, scores, brandId, eligiblePresenter }: { item: HomeForYouItem; scores?: RecommendationScores; brandId: string; eligiblePresenter?: EligiblePresenter }) {
+  const format = recommendationFormat(item);
+  const tone = format === "reel" || format === "video" ? "reel" : format === "image" ? "post" : "carousel";
   return (
     <article className={styles.recommendationCard}>
-      <div className={styles.recommendationThumb} data-tone={tone} aria-label="Recommendation preview unavailable">
-        <KairoIcon name={item.format === "reel" ? "video" : "image"} />
-        <span className={styles.formatPill}>{format}</span>
+      <div className={styles.recommendationThumb} data-tone={tone} aria-label={`${homeFormatLabel(format)} recommendation`}>
+        <KairoIcon name={format === "reel" || format === "video" ? "video" : "image"} />
+        <span className={styles.formatPill}>{homeFormatLabel(format)}</span>
         <button className={styles.bookmarkButton} type="button" disabled aria-label={`Save recommendation: ${item.title}`} aria-pressed={scores?.status === "saved"}><KairoIcon name="bookmark" /></button>
       </div>
       <div className={styles.recommendationBody}>
@@ -158,7 +165,7 @@ function RecommendationCard({ item, scores, workspaceId, brandId }: { item: Home
           <span data-tone={impactTone(scores?.overall)}><KairoIcon name="eye" />{scores ? impactLabel(scores.overall) : "Impact"}</span>
           <span data-tone="fit">{scores ? fitLabel(scores.audienceFit) : "Fit"}</span>
         </div>
-        <Link className={styles.useIdeaLink} href={seedIdeaHref(workspaceId, brandId, item.title)} aria-label={`Use idea: ${item.title}`} />
+        <ForYouCreateAction brandId={brandId} title={item.title} direction={item.direction} initialFormat={format} eligiblePresenter={eligiblePresenter} />
       </div>
     </article>
   );
@@ -186,11 +193,13 @@ function buildHomeMetrics(metrics: PerformanceMetricView[]): HomeMetric[] {
   });
 }
 
-function seedIdeaHref(workspaceId: string, brandId: string, idea: string) {
-  const query = new URLSearchParams({ workspace: workspaceId, brand: brandId, idea });
-  return `/?${query.toString()}#my-idea`;
+function recommendationFormat(item: HomeForYouItem): HomeCreationFormat {
+  const value = `${item.title} ${item.direction}`.toLowerCase();
+  if (/\b(video|youtube|long-form|long form)\b/.test(value) && !/\b(reel|short-form|short form)\b/.test(value)) return "video";
+  if (item.format === "reel" || /\b(reel|short-form|short form|voiceover|motion|demo)\b/.test(value)) return "reel";
+  if (item.format === "carousel" || /\b(carousel|slides?|listicle|steps?|breakdown)\b/.test(value)) return "carousel";
+  return "image";
 }
-function formatLabel(format: HomeCreationFormat) { return format === "image" ? "Post" : format.charAt(0).toUpperCase() + format.slice(1); }
 function impactTone(value?: number) { if (value === undefined) return "neutral"; const n = value <= 1 ? value * 100 : value; return n >= 75 ? "high" : n >= 50 ? "medium" : "neutral"; }
 function impactLabel(value: number) { const n = value <= 1 ? value * 100 : value; return n >= 75 ? "High impact" : n >= 50 ? "Medium impact" : "Impact"; }
 function fitLabel(value: number) { const n = value <= 1 ? value * 100 : value; return n >= 80 ? "Best match" : n >= 60 ? "Great fit" : "Good fit"; }

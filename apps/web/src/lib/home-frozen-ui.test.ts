@@ -26,33 +26,45 @@ describe("approved Home screenshot contract", () => {
     expect(css).toContain("height:30px");
   });
 
-  it("matches the approved My idea hierarchy and four source cells", () => {
+  it("locks the approved My idea URL/media/Auto format flow", () => {
     const page = read("app/page.tsx");
     const composer = read("app/my-idea-composer.tsx");
     const css = read("app/home-vs85.module.css");
     expect(page).toContain("My idea");
-    expect(page).toContain("Share your thought and let Kairo recommend the best format.");
+    expect(page).toContain("Add your idea, link or media. Kairo selects a format automatically and you can change it.");
     expect(composer).toContain('placeholder="What do you want to create?"');
     expect(composer).toContain('KairoIcon name="link"');
     expect(composer).toContain('KairoIcon name="image"');
     expect(composer).toContain('KairoIcon name="video"');
     expect(composer).toContain('KairoIcon name="plus"');
-    expect(composer).toContain("Recommend format");
-    expect(composer).toContain("Kairo recommends the format before it creates anything.");
+    expect(composer).toContain('["image","carousel","reel","video"]');
+    expect(composer).toContain('setMode("auto")');
+    expect(composer).toContain('"AI Generate"');
+    expect(composer).toContain('accept="image/jpeg,image/png,image/webp"');
+    expect(composer).toContain('accept="video/mp4,video/quicktime,video/webm"');
+    expect(composer).toContain("openMediaLibrary");
+    expect(composer).not.toContain("Recommend format");
+    expect(composer).not.toContain("Photo attachments are not connected yet");
+    expect(composer).not.toContain("Video attachments are not connected yet");
+    expect(composer).not.toContain("Existing media selection is not connected yet");
     expect(css).toContain("grid-template-columns: repeat(4, minmax(0, 1fr))");
     expect(css).toContain("height:38px");
   });
 
-  it("keeps the dense approved For you rail on mobile", () => {
+  it("keeps the For you rail and adds direct creation without exposing workflow internals", () => {
     const page = read("app/page.tsx");
-    const action = read("app/for-you-recommendations-action.tsx");
+    const recommendationAction = read("app/for-you-recommendations-action.tsx");
+    const createAction = read("app/for-you-create-action.tsx");
     const css = read("app/home-vs85.module.css");
     expect(page).toContain("For you");
     expect(page).toContain("Smart recommendations based on your brand and goals.");
     expect(page).toContain("ForYouRecommendationsAction");
-    expect(action).toContain("Get recommendations");
-    expect(action).toContain("Refresh recommendations");
-    expect(action).toContain('KairoIcon name="sparkles"');
+    expect(page).toContain("ForYouCreateAction");
+    expect(recommendationAction).toContain("Get recommendations");
+    expect(recommendationAction).toContain("Refresh recommendations");
+    expect(createAction).toContain("Use idea");
+    expect(createAction).toContain("AI Generate");
+    expect(createAction).toContain('["image", "carousel", "reel", "video"]');
     expect(page).toContain('KairoIcon name="bookmark"');
     expect(page).toContain("railProgress");
     expect(css).toContain("grid-auto-flow: column");

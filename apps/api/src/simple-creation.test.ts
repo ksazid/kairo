@@ -34,6 +34,32 @@ describe("simple creation", () => {
     ).rejects.toThrow("goal is required");
   });
 
+  it("accepts the approved Video format and preserves validated media ids", async () => {
+    const store = new MemoryStore();
+    const service = new SimpleCreationService(store, {} as never, {} as never, { develop: async () => {} });
+    const created = await service.start("a", "w", "b", {
+      goal: "Create the product walkthrough",
+      contentPreference: "video",
+      mediaAssetIds: ["media-1", "media-1", "media-2"],
+    });
+    expect(created).toMatchObject({
+      contentPreference: "video",
+      mediaAssetIds: ["media-1", "media-2"],
+    });
+    expect(store.mediaCalls).toEqual([{ accountId: "a", brandId: "b", ids: ["media-1", "media-2"] }]);
+  });
+
+  it("does not allow a Presenter on Post or Carousel", async () => {
+    const store = new MemoryStore();
+    const service = new SimpleCreationService(store, {} as never, {} as never, { develop: async () => {} });
+    await expect(service.start("a", "w", "b", {
+      goal: "Launch",
+      contentPreference: "image",
+      presenterId: "p1",
+    })).rejects.toThrow("Presenter is available only for Reel or Video creation");
+    expect(store.rows).toHaveLength(0);
+  });
+
   it("persists an eligible presenter and exposes only its public identity", async () => {
     const store = new MemoryStore();
     store.presenter = presenter({ status: "ready" });
@@ -101,6 +127,13 @@ describe("simple creation", () => {
 class MemoryStore implements SimpleCreationStore {
   rows: SimpleCreationRequest[] = [];
   presenter: BrandPresenterDto | null = null;
+  mediaCalls: Array<{ accountId: string; brandId: string; ids: string[] }> = [];
+  homeMedia: NonNullable<SimpleCreationStore["homeMedia"]> = {
+    requireAssets: async (accountId, brandId, ids) => {
+      this.mediaCalls.push({ accountId, brandId, ids: [...ids] });
+      return [];
+    },
+  };
 
   async create(value: SimpleCreationRequest) {
     this.rows.push(value);

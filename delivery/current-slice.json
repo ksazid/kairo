@@ -1,143 +1,147 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-97",
-  "title": "Home Hunter Recommendations Trigger",
+  "sliceId": "VS-98",
+  "title": "Approved Home Creation Recovery",
   "status": "active",
-  "lifecycle": "observed",
-  "riskLevel": "medium",
-  "implementationMode": "production-enabled",
-  "requirements": ["FR-03", "FR-06", "FR-07"],
-  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":null,"security":null},
-  "dependencies": ["VS-03", "VS-91"],
+  "lifecycle": "certified",
+  "riskLevel": "high",
+  "implementationMode": "runtime-enabled",
+  "requirements": ["FR-09", "FR-11", "FR-18"],
+  "owners": {"product":"Product Owner","engineering":"Engineering Owner","operations":"Operations Owner","security":"Security Owner"},
+  "dependencies": ["VS-90", "VS-91", "VS-97"],
   "blockers": [],
   "allowedPaths": [
+    "apps/api/migrations/0030_home_media_inputs.sql",
+    "apps/api/src/home-media.ts",
+    "apps/api/src/home-media-factory.ts",
+    "apps/api/src/private-object-storage.ts",
+    "apps/api/src/simple-creation.ts",
+    "apps/api/src/simple-creation-postgres.ts",
+    "apps/api/src/simple-creation-routes.ts",
     "apps/api/src/server.ts",
-    "apps/api/src/hunter-recommendation-routes.ts",
-    "apps/api/src/hunter-recommendation-routes.test.ts",
-    "apps/api/src/hunter-tool-gateway.ts",
+    "apps/api/src/**.test.ts",
     "apps/web/app/page.tsx",
     "apps/web/app/my-idea-composer.tsx",
-    "apps/web/app/for-you-recommendations-action.tsx",
-    "apps/web/app/for-you-recommendations-action.module.css",
-    "apps/web/app/api/home/recommendations/route.ts",
+    "apps/web/app/for-you-create-action.tsx",
+    "apps/web/app/for-you-create-action.module.css",
+    "apps/web/app/api/home/my-idea/route.ts",
+    "apps/web/app/api/home/media/route.ts",
+    "apps/web/app/home-media.module.css",
+    "apps/web/src/lib/home-creation-format.ts",
+    "apps/web/src/lib/home-media-api.ts",
+    "apps/web/src/lib/simple-creation-api.ts",
     "apps/web/src/lib/home-frozen-ui.test.ts",
-    "docs/slices/VS-97.md",
-    "docs/plans/VS-97-implementation.md",
+    "apps/web/src/lib/**.test.ts",
+    "packages/domain/src/campaign-service.ts",
+    "packages/domain/src/**.test.ts",
+    "docs/slices/VS-98.md",
+    "docs/plans/VS-98-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
   "protectedPaths": [
     ".github/workflows/release.yml",
     "infrastructure/**",
-    "apps/api/migrations/**",
-    "apps/worker/**",
-    "packages/contracts/**",
-    "packages/domain/**"
+    "services/**",
+    "apps/api/migrations/0001_identity_workspace_brand.sql",
+    "apps/api/migrations/0002_brand_brain_knowledge.sql",
+    "apps/api/migrations/0003_hunter_discover.sql"
   ],
   "impact": {
-    "areas": ["frontend", "api", "customer-flow"],
+    "areas": ["frontend", "api", "database", "customer-flow", "sensitive-data"],
     "notes": [
-      "Adds one explicit Home action that invokes the already-approved Hunter/Discover capability for the active Brand and refreshes the existing For You ranking.",
-      "Uses the existing Brand Brain projection, sector/source policy, public discovery adapters, Hunter scoring, evidence lineage and opportunity deduplication; no new discovery policy or provider authority is introduced.",
-      "Brands without a matching Sector Intelligence Pack use a bounded explicit public query instead of blocking the Home action.",
-      "Renames the My Idea format recommendation action so it is not confused with Hunter discovery.",
-      "Concurrent duplicate clicks are coalesced in-process and authoritative opportunity deduplication remains in the existing DiscoveryService.",
-      "Updates the frozen Home contract test only for the two explicitly approved CTA changes: My Idea uses Recommend format, and For You exposes the Hunter recommendations action instead of the inert View all label.",
-      "No database migration, publishing authority, credential scope, autonomous publishing or hidden reasoning exposure is added."
+      "Corrects the released Home flow to the Product Owner-approved Auto/Post/Carousel/Reel/Video plus AI Generate interaction and removes the incorrect Recommend format step.",
+      "Enables URL input, Photo, Video and reusable Media on My Idea while explicitly deferring URL scraping/onboarding reliability improvements.",
+      "Reuses the existing private S3-compatible object-storage boundary used with Cloudflare R2 in production; PostgreSQL remains authoritative media metadata storage.",
+      "Adds Brand-scoped media validation, conditional existing Presenter UI and direct Content Preview routing.",
+      "Adds direct generation controls to already-persisted For You opportunities without changing Hunter discovery, source routing or qualification behavior.",
+      "Preserves VS-97 release history; this slice is corrective and does not rewrite prior certification evidence."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-97@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T01:47:00+02:00",
-      "rationale": "Product Owner approved the exact Home flow discussed in chat: Get recommendations invokes Hunter, persists qualified Brand Opportunities, then refreshes For You; AI Generate remains a separate downstream creation action. This operationalises approved FR-06/FR-07 without expanding product scope."
+      "at": "2026-08-26T03:36:05+02:00",
+      "rationale": "Product Owner narrowed VS-98 to Home UI, My Idea URL input, private Photo/Video/Media uploads and reuse, Auto/Post/Carousel/Reel/Video, conditional Presenter, direct AI Generate and For You UI generation from existing opportunities. URL onboarding/scraping reliability, Brand Intelligence Context and Hunter quality/provider work are explicitly deferred."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-97@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The slice reuses existing Hunter source policy, provider boundaries, budgets, evidence lineage and Brand isolation."
+      "rationale": "The narrowed recovery reuses approved private S3-compatible object storage, Brand isolation, existing Presenter authority and existing content-generation boundaries. It introduces no new credential scope, publishing authority, scraping authority or cross-Brand data policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-97@1.0",
+      "version": "VS-98@1.1",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T01:47:00+02:00",
-      "rationale": "Product Owner said Good to go immediately after the exact implementation flow was proposed, authorising implementation of this bounded Hunter trigger only. Certification, merge, release and production enablement remain separate gates."
+      "at": "2026-08-26T03:36:05+02:00",
+      "rationale": "Product Owner explicitly instructed implementation to continue under the narrowed Home UI/media scope."
     },
     {
       "type": "certification",
       "status": "approved",
-      "version": "VS-97@1.0",
-      "commitSha": "484c3a2c665afa47ed7a9839dc2de55cbcccf6c2",
+      "version": "VS-98@1.1",
+      "commitSha": "b68ffa6743279ef176fbb33335da38adde47ca52",
       "by": "Product Owner",
-      "at": "2026-08-26T02:04:00+02:00",
-      "rationale": "Product Owner explicitly approved certification of exact candidate 484c3a2c665afa47ed7a9839dc2de55cbcccf6c2 after Product Intake 32913117529, Security baseline 32913117534 and CI 32913117597 passed, with no unresolved PR review threads."
+      "at": "2026-08-26T03:59:25+02:00",
+      "rationale": "Product Owner instructed Kairo to check the final candidate and deploy to production. Exact candidate b68ffa6743279ef176fbb33335da38adde47ca52 passed Product Intake 32920828402, Security baseline 32920828446 and CI 32920828479 after correcting the Auto-format video signal regression."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-97@1.0",
-      "commitSha": "b5fedffc5a194554396e51cdd292a709d1738781",
-      "by": "Product Owner",
-      "at": "2026-08-26T02:09:00+02:00",
-      "rationale": "Product Owner explicitly approved merge and production deployment after certification. PR #202 was merged as b5fedffc5a194554396e51cdd292a709d1738781; the merge differs from the certified implementation candidate only by the certification governance record."
+      "status": "pending",
+      "version": "VS-98@1.1",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded after merge."
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-97@1.0",
-      "commitSha": "b5fedffc5a194554396e51cdd292a709d1738781",
-      "by": "Product Owner",
-      "at": "2026-08-26T02:09:00+02:00",
-      "rationale": "Product Owner explicitly requested deployment to production. The API and web were rolled out through their existing approval-only production gates, and the Vercel deployment gate was restored after the successful web rollout."
+      "status": "pending",
+      "version": "VS-98@1.1",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Authorized by the Product Owner deployment instruction; exact merge SHA will be recorded before production rollout."
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":100,"validation":0},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
   "certification": {
     "status":"passed",
-    "commitSha":"484c3a2c665afa47ed7a9839dc2de55cbcccf6c2",
+    "commitSha":"b68ffa6743279ef176fbb33335da38adde47ca52",
     "evidence":[
-      "docs/plans/VS-97-implementation.md",
-      "apps/api/src/hunter-recommendation-routes.test.ts",
+      "docs/plans/VS-98-implementation.md",
       "apps/web/src/lib/home-frozen-ui.test.ts",
-      "GitHub Actions Product Intake run 32913117529",
-      "GitHub Actions Security baseline run 32913117534",
-      "GitHub Actions CI run 32913117597",
-      "Product Owner certification approval at 2026-08-26T02:04:00+02:00 bound to 484c3a2c665afa47ed7a9839dc2de55cbcccf6c2"
+      "apps/web/src/lib/home-creation-format.test.ts",
+      "apps/api/src/simple-creation.test.ts",
+      "apps/api/src/private-object-storage.test.ts",
+      "GitHub Actions Product Intake run 32920828402",
+      "GitHub Actions Security baseline run 32920828446",
+      "GitHub Actions CI run 32920828479",
+      "Product Owner certification/deployment instruction at 2026-08-26T03:59:25+02:00 bound to b68ffa6743279ef176fbb33335da38adde47ca52"
     ]
   },
-  "release": {"status":"released","releaseId":null},
-  "rollback": {"status":"ready","rollbackId":null},
-  "postRelease": {
-    "status":"observing",
-    "reviewAt":null,
-    "expectedOutcome":"Authenticated Home Hunter discovery can refresh truthful For You recommendations without changing the frozen Home design or bypassing existing Brand isolation and evidence lineage.",
-    "metrics":[]
-  },
+  "release": {"status":"not-authorized","releaseId":null},
+  "rollback": {"status":"not-applicable","rollbackId":null},
+  "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
   "links": {
-    "specification": "docs/slices/VS-97.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/202",
+    "specification": "docs/slices/VS-98.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/205",
     "evidence": [
-      "product/PRD.md FR-06 Hunter / Discover",
-      "product/PRD.md Home: Kairo-led discovery begins from For You",
-      "product/TRD.md Global Hunter and bounded AgentRuntime",
-      "product/DESIGN.md Home / For You interaction baseline",
-      "Merge commit b5fedffc5a194554396e51cdd292a709d1738781",
-      "Render production deploy dep-da730eafngtc73c579vg live; KAIRO_RELEASE_SHA=b5fedffc5a194554396e51cdd292a709d1738781",
-      "Vercel production deployment dpl_E2sm79mWebSAJBTG1L4oSgALWe7j READY on release gate commit ac2ed90c63c6d4c9bdf910e74981a6661750dcdc",
-      "Vercel /api/version returned 200 with releaseSha ac2ed90c63c6d4c9bdf910e74981a6661750dcdc",
-      "Vercel approval-only deployment gate restored by d9aefc46679d72e51183ad2de67f7876e6ffac3a; net tree is identical to merge b5fedffc5a194554396e51cdd292a709d1738781"
+      "product/PRD.md FR-09/11/18",
+      "product/TRD.md private object storage and Brand isolation boundaries",
+      "product/DESIGN.md Home and human+intelligent interaction baseline",
+      "Product Owner correction, implementation authorization and scope narrowing 2026-08-26"
     ]
   },
   "maxAttempts": 3

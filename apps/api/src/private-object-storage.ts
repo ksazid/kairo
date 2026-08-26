@@ -35,6 +35,15 @@ export class S3TemporaryObjectSigner implements TemporaryObjectSigner {
   }
 }
 
+export class S3PrivateUploadSigner {
+  private readonly client:S3SigV4Client;
+  constructor(config:S3PrivateObjectStorageConfig,options:Pick<Options,"now">={}){this.client=new S3SigV4Client(config,options)}
+  async signPut(input:{objectKey:string;contentType:string;expiresInSeconds:number}):Promise<string>{return this.client.presignPut(input.objectKey,input.contentType,input.expiresInSeconds)}
+}
+
+export function privateMediaObjectKey(workspaceId:string,brandId:string,assetId:string){return `workspaces/${segment(workspaceId,"workspaceId",200)}/brands/${segment(brandId,"brandId",200)}/media/${segment(assetId,"assetId",200)}/original`}
+export function privateMediaDerivativeObjectKey(workspaceId:string,brandId:string,assetId:string,derivative:"thumbnail.webp"|"poster.webp"){return `workspaces/${segment(workspaceId,"workspaceId",200)}/brands/${segment(brandId,"brandId",200)}/media/${segment(assetId,"assetId",200)}/${derivative}`}
+
 class S3SigV4Client {
   private readonly endpoint:URL;
   private readonly fetcher:typeof fetch;
@@ -56,6 +65,12 @@ class S3SigV4Client {
     const canonicalQuery=canonicalSearch(url.searchParams),canonicalRequest=`GET\n${url.pathname}\n${canonicalQuery}\nhost:${url.host}\n\nhost\nUNSIGNED-PAYLOAD`,signature=sign(this.config.secretAccessKey,day,this.config.region,`AWS4-HMAC-SHA256\n${date}\n${scope}\n${sha256(canonicalRequest)}`);url.searchParams.set("X-Amz-Signature",signature);
     return url.toString();
   }
+  presignPut(key:string,contentTypeInput:string,ttlInput:number):string{
+    const contentType=label(contentTypeInput,"contentType",200).toLowerCase(),ttl=Math.max(60,Math.min(3600,Math.floor(ttlInput))),now=validNow(this.now()),date=amzDate(now),day=date.slice(0,8),url=this.objectUrl(key),scope=`${day}/${this.config.region}/s3/aws4_request`,signedHeaders="content-type;host";
+    url.searchParams.set("X-Amz-Algorithm","AWS4-HMAC-SHA256");url.searchParams.set("X-Amz-Credential",`${this.config.accessKeyId}/${scope}`);url.searchParams.set("X-Amz-Date",date);url.searchParams.set("X-Amz-Expires",String(ttl));url.searchParams.set("X-Amz-SignedHeaders",signedHeaders);
+    const canonicalQuery=canonicalSearch(url.searchParams),canonicalHeaders=`content-type:${contentType}\nhost:${url.host}\n`,canonicalRequest=`PUT\n${url.pathname}\n${canonicalQuery}\n${canonicalHeaders}\n${signedHeaders}\nUNSIGNED-PAYLOAD`,signature=sign(this.config.secretAccessKey,day,this.config.region,`AWS4-HMAC-SHA256\n${date}\n${scope}\n${sha256(canonicalRequest)}`);url.searchParams.set("X-Amz-Signature",signature);
+    return url.toString();
+  }
   private objectUrl(keyInput:string){const key=objectKey(keyInput),url=new URL(this.endpoint);url.pathname=`${this.endpoint.pathname.replace(/\/$/,"")}/${encodeURIComponent(this.config.bucket)}/${key.split("/").map(encodeURIComponent).join("/")}`;url.search="";url.hash="";return url}
 }
 
@@ -70,6 +85,7 @@ export function s3PrivateObjectStorageConfigFromEnv(env:NodeJS.ProcessEnv):S3Pri
 function validateConfig(input:S3PrivateObjectStorageConfig):S3PrivateObjectStorageConfig{let endpoint:URL;try{endpoint=new URL(input.endpoint)}catch{throw new Error("OBJECT_STORAGE_ENDPOINT must be a valid URL")}if(endpoint.protocol!=="https:"||endpoint.username||endpoint.password||!endpoint.hostname||endpoint.search||endpoint.hash)throw new Error("OBJECT_STORAGE_ENDPOINT must be credential-free HTTPS");const region=label(input.region,"OBJECT_STORAGE_REGION",100),bucket=label(input.bucket,"OBJECT_STORAGE_BUCKET",255),accessKeyId=label(input.accessKeyId,"OBJECT_STORAGE_ACCESS_KEY_ID",300),secretAccessKey=label(input.secretAccessKey,"OBJECT_STORAGE_SECRET_ACCESS_KEY",500);if(!/^[A-Za-z0-9][A-Za-z0-9._-]{1,254}$/.test(bucket))throw new Error("OBJECT_STORAGE_BUCKET is invalid");return{endpoint:endpoint.toString(),region,bucket,accessKeyId,secretAccessKey,provider:provider(input.provider)}}
 function scopedKey(workspaceId:string,brandId:string,key:string){const expected=createHash("sha256").update(`${label(workspaceId,"workspaceId",200)}\u0000${label(brandId,"brandId",200)}`).digest("hex").slice(0,24),normalized=objectKey(key);if(!normalized.startsWith(`generated/${expected}/`))throw new Error("Private creative object key is outside Brand scope");return normalized}
 function objectKey(value:string){const normalized=label(value,"objectKey",1000);if(normalized.startsWith("/")||normalized.includes("\\")||normalized.split("/").some(part=>!part||part==="."||part===".."))throw new Error("objectKey is invalid");return normalized}
+function segment(value:string,field:string,max:number){const normalized=label(value,field,max);if(!/^[A-Za-z0-9._-]+$/.test(normalized))throw new Error(`${field} is invalid`);return normalized}
 function provider(value:string){const normalized=label(value,"storageProvider",100);if(!/^[A-Za-z0-9._-]+$/.test(normalized))throw new Error("storageProvider is invalid");return normalized}
 function label(value:string,field:string,max:number){if(typeof value!=="string"||!value.trim()||value.trim().length>max)throw new Error(`${field} is required`);return value.trim()}
 function validNow(value:Date){if(!(value instanceof Date)||Number.isNaN(value.getTime()))throw new Error("Object-storage clock is invalid");return value}
