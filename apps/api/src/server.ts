@@ -13,6 +13,8 @@ import{PgOperationsRepository}from"./operations-postgres-store";
 import{registerOperationsRoutes}from"./operations-routes";
 import{registerReadinessRoutes}from"./readiness-routes";
 import{registerGuidedBrandBrainRoutes}from"./guided-brand-brain-routes";
+import{registerHunterRecommendationRoutes}from"./hunter-recommendation-routes";
+import{createHunterToolGateway}from"./hunter-tool-gateway";
 import{PgChannelAccountGroupRepository}from"./channel-account-group-postgres-store";
 import{registerChannelAccountGroupRoutes}from"./channel-account-group-routes";
 import{PgContentAssetLibraryRepository}from"./content-asset-library-postgres-store";
@@ -32,6 +34,7 @@ import{PgOperationsTelemetrySink}from"./operations-telemetry-postgres";
 import{PgBrandCreator}from"./brand-creator";
 import{registerBrandRoutes}from"./brand-routes";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
+import{HunterOrchestrator,isHunterJudgmentOutput}from"@kairo/worker/hunter";
 import{ResearcherOrchestrator,extractResearchUrls,isResearcherOutput}from"@kairo/worker/researcher";
 import{StrategistOrchestrator,isStrategistOutput}from"@kairo/worker/strategist";
 import{PgIdeaDevelopmentLock}from"./idea-development-lock";
@@ -39,6 +42,7 @@ import{deterministicFallbackAngles}from"./deterministic-angle-fallback";
 import{SourceRoutingToolGateway}from"@kairo/worker/discovery-provider";
 import{CrossrefResearchEvidenceProvider,OpenAlexResearchEvidenceProvider}from"@kairo/worker/research-evidence-adapters";
 import{RetryingDiscoverySourceProvider}from"@kairo/worker/retrying-discovery-provider";
+import{DiscoveryService}from"@kairo/domain/discovery-service";
 import{validateCarouselPlan}from"@kairo/domain/creative-formats";
 import{PerformanceCollectionWorker}from"@kairo/worker/performance";
 import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
@@ -79,6 +83,8 @@ function requiredEnv(name: string): string {
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 const coreStore=new PgKairoRepository(pool);
+const discoveryStore=new PgDiscoveryRepository(pool);
+const discoveryService=new DiscoveryService(discoveryStore);
 const researchStore=new PgResearchRepository(pool);
 const campaignStore=new PgCampaignRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
@@ -92,6 +98,7 @@ const agentOutputValidators={
   "content-draft@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{content?:unknown}).content==="string"&&Array.isArray((value as{supportingClaimIds?:unknown}).supportingClaimIds),
   "critic-review@1":(value:unknown)=>!!value&&typeof value==="object"&&typeof(value as{passed?:unknown}).passed==="boolean"&&typeof(value as{score?:unknown}).score==="number"&&Array.isArray((value as{findings?:unknown}).findings),
   "brand-brain-proposals@1":(value:unknown)=>!!value&&typeof value==="object"&&Array.isArray((value as{proposals?:unknown}).proposals),
+  "hunter-opportunities@1":isHunterJudgmentOutput,
   "research-dossier@1":isResearcherOutput,
   "strategist-angles@1":isStrategistOutput,
   "marketing-carousel-plan@1":(value:unknown)=>{try{validateCarouselPlan(value as Parameters<typeof validateCarouselPlan>[0]);return true}catch{return false}},
@@ -106,6 +113,7 @@ const hermesRuntime=hermesBridgeRuntimeFromEnv(agentOutputValidators);
 const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRuntime,directRuntime):(hermesRuntime??directRuntime??undefined);
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
+const hunter=runtime?new HunterOrchestrator(createHunterToolGateway(),runtime,discoveryService):undefined;
 const researchTools=createResearchToolGateway();
 const publicReferenceReader=new PublicBrandReferenceHttpReader({timeoutMs:10_000,maxBytes:2_000_000,maxRedirects:2});
 const researcher=runtime?new ResearcherOrchestrator(researchTools,runtime,researchStore):undefined;
@@ -148,7 +156,7 @@ const identityVerifier=new OidcJwtVerifier({
 });
 const app = buildApp({
   store:coreStore,
-  discoveryStore: new PgDiscoveryRepository(pool),
+  discoveryStore,
   researchStore,
   ...(ideaDeveloper?{ideaDeveloper}:{}),
   campaignStore,
@@ -169,6 +177,7 @@ registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier})
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
+registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,...(hunter?{runner:hunter}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});

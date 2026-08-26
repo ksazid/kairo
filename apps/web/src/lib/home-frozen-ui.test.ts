@@ -37,7 +37,7 @@ describe("approved Home screenshot contract", () => {
     expect(composer).toContain('KairoIcon name="image"');
     expect(composer).toContain('KairoIcon name="video"');
     expect(composer).toContain('KairoIcon name="plus"');
-    expect(composer).toContain("Get recommendations");
+    expect(composer).toContain("Recommend format");
     expect(composer).toContain("Kairo recommends the format before it creates anything.");
     expect(css).toContain("grid-template-columns: repeat(4, minmax(0, 1fr))");
     expect(css).toContain("height:38px");
@@ -45,10 +45,14 @@ describe("approved Home screenshot contract", () => {
 
   it("keeps the dense approved For you rail on mobile", () => {
     const page = read("app/page.tsx");
+    const action = read("app/for-you-recommendations-action.tsx");
     const css = read("app/home-vs85.module.css");
     expect(page).toContain("For you");
     expect(page).toContain("Smart recommendations based on your brand and goals.");
-    expect(page).toContain("View all");
+    expect(page).toContain("ForYouRecommendationsAction");
+    expect(action).toContain("Get recommendations");
+    expect(action).toContain("Refresh recommendations");
+    expect(action).toContain('KairoIcon name="sparkles"');
     expect(page).toContain('KairoIcon name="bookmark"');
     expect(page).toContain("railProgress");
     expect(css).toContain("grid-auto-flow: column");
