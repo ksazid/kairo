@@ -18,15 +18,15 @@
     {"type": "policy", "status": "not-required", "version": "VS-101@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Implements existing public-source, credential-isolation and onboarding decisions without expanding private-session or publishing authority."},
     {"type": "implementation", "status": "approved", "version": "VS-101@1.0", "commitSha": null, "by": "Product Owner", "at": "2026-08-26T11:00:00+02:00", "rationale": "Product Owner instructed: Go ahead."},
     {"type": "certification", "status": "approved", "version": "VS-101@1.0", "commitSha": "d127fa6b482aa0792d7c24cdde39e436f357bcd5", "by": "Product Owner", "at": "2026-08-26T11:36:00+02:00", "rationale": "Product Owner explicitly approved certification after Product Intake, Security baseline, CI, preflight, runtime verification, dashboard build, PostgreSQL 18 migrations and production dependency audit passed for the exact implementation candidate."},
-    {"type": "release", "status": "pending", "version": "VS-101@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Release remains a separate authorization gate."},
+    {"type": "release", "status": "approved", "version": "VS-101@1.0", "commitSha": "62058194b98cc3739ba6a931864dfdb295f61ae4", "by": "Product Owner", "at": "2026-08-26T11:36:00+02:00", "rationale": "Product Owner explicitly approved merge and release after VS-101 certification."},
     {"type": "production-enable", "status": "pending", "version": "VS-101@1.0", "commitSha": null, "by": null, "at": null, "rationale": "Production enablement remains a separate authorization gate."}
   ],
   "decisionIds": ["DEC-005", "DEC-006", "DEC-009", "DEC-010", "DEC-011"],
-  "progress": {"discovery": 100, "decisions": 100, "implementation": 100, "testing": 100, "certification": 100, "release": 0, "validation": 0},
+  "progress": {"discovery": 100, "decisions": 100, "implementation": 100, "testing": 100, "certification": 100, "release": 25, "validation": 0},
   "certification": {"status": "passed", "commitSha": "d127fa6b482aa0792d7c24cdde39e436f357bcd5", "evidence": ["GitHub Actions Product Intake 32953454847 passed", "GitHub Actions Security baseline 32953454919 passed", "GitHub Actions CI 32953454925 passed", "Preflight passed", "Runtime verification passed", "Dashboard build passed", "PostgreSQL 18 migration verification passed", "Production dependency audit reported 0 vulnerabilities", "Product Owner certification approval bound to d127fa6b482aa0792d7c24cdde39e436f357bcd5"]},
-  "release": {"status": "not-authorized", "releaseId": null},
+  "release": {"status": "pending", "releaseId": null},
   "rollback": {"status": "not-applicable", "rollbackId": null},
   "postRelease": {"status": "not-started", "reviewAt": null, "expectedOutcome": "Supported social/video public URLs normalize through dedicated adapters and onboarding consumes useful public evidence when available while failing safely when providers block access.", "metrics": []},
-  "links": {"specification": "docs/slices/VS-101.md", "implementationPr": "https://github.com/ksazid/kairo/pull/213", "evidence": ["GitHub Actions Product Intake 32953454847", "GitHub Actions Security baseline 32953454919", "GitHub Actions CI 32953454925"]},
+  "links": {"specification": "docs/slices/VS-101.md", "implementationPr": "https://github.com/ksazid/kairo/pull/213", "evidence": ["GitHub Actions Product Intake 32953454847", "GitHub Actions Security baseline 32953454919", "GitHub Actions CI 32953454925", "PR #213 merged as 62058194b98cc3739ba6a931864dfdb295f61ae4"]},
   "maxAttempts": 3
 }
