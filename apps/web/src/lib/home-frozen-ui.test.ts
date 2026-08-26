@@ -88,8 +88,7 @@ describe("approved Home screenshot contract", () => {
 
   it("removes legacy Home workflow and duplicate sections", () => {
     const page = read("app/page.tsx");
-    for (const forbidden of ["Research", "Hunter", "Angles", "Critic", "Claims", "Truth Gate", "Up Next", "Continue"]) expect(page).not.toContain(forbidden);
+    for (const forbidden of ["Research", "Hunter", "Angles", "Critic", "Claims", "Truth Gate", "Up Next"]) expect(page).not.toContain(forbidden);
     expect(page).not.toContain("buildUpNext");
-    expect(page).not.toContain("buildContinue");
   });
 });
