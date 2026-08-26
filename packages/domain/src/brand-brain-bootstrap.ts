@@ -154,7 +154,9 @@ export class BrandBrainBootstrapService {
     const fallbackHost = fallbackUrl ? new URL(fallbackUrl).hostname.toLowerCase() : "";
     const isSocialFallback = fallbackHost === "instagram.com" || fallbackHost === "www.instagram.com"
       || fallbackHost === "facebook.com" || fallbackHost === "www.facebook.com";
-    if (!successfulReferences.length && fallbackUrl && isSocialFallback) {
+    const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
+      || fallbackHost === "on.substack.com";
+    if (!successfulReferences.length && fallbackUrl && (isSocialFallback || isSubstackFallback)) {
       const fallbackReference = {
         url: fallbackUrl,
         title: brand.name,
@@ -355,9 +357,13 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   const social = references.find((reference) => {
     try { return ["instagram.com", "facebook.com", "www.instagram.com", "www.facebook.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
   });
-  const reference = github ?? social;
+  const substack = references.find((reference) => {
+    try { return ["substack.com", "www.substack.com", "on.substack.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
+  });
+  const reference = github ?? social ?? substack;
   if (!reference) return [];
   const isSocial = reference === social;
+  const isSubstack = reference === substack;
   const title = reference.title?.trim() || (isSocial ? "Public social profile" : "Public GitHub repository");
   const excerpt = reference.excerpt.trim().replace(/\s+/g, " ").slice(0, 800);
   const sourceIds = [reference.sourceId];
@@ -369,6 +375,15 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     { section: "content-strategy", fieldKey: "content.pillars", value: "Rides and vehicles, ownership advice, lifestyle stories and community moments", sourceIds },
     { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Bike and car features, riding tips, maintenance, routes and community stories", sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Instagram, Facebook, YouTube and automotive communities", sourceIds },
+  ];
+  if (isSubstack) return [
+    { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: "Independent publishing and newsletter media", sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: "Readers interested in the publication's subject and perspective", sourceIds },
+    { section: "voice", fieldKey: "voice.tone", value: "Clear, thoughtful and editorial", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: "Editorial stories, analysis, practical guidance and community perspectives", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Publication themes, timely analysis, useful explainers and reader questions", sourceIds },
+    { section: "content-strategy", fieldKey: "content.channels", value: "Substack, email newsletters, web articles and social communities", sourceIds },
   ];
   return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
