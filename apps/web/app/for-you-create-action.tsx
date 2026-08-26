@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { homeFormatLabel, type HomeCreationFormat } from "../src/lib/home-creation-format";
 import { KairoIcon } from "./kairo-icons";
+import { prepareOpportunityDevelopmentAction } from "./opportunity-actions";
 import styles from "./for-you-create-action.module.css";
 
 type EligiblePresenter = { id: string; displayName: string; mode: string };
 type Props = {
   brandId: string;
+  opportunityId: string;
   title: string;
   direction: string;
   initialFormat: HomeCreationFormat;
@@ -18,7 +20,7 @@ type StartResponse = { creationId?: string; error?: string };
 type ProgressResponse = { status?: string; message?: string; campaignId?: string; assetId?: string; error?: string };
 const FORMATS: HomeCreationFormat[] = ["image", "carousel", "reel", "video"];
 
-export function ForYouCreateAction({ brandId, title, direction, initialFormat, eligiblePresenter }: Props) {
+export function ForYouCreateAction({ brandId, opportunityId, title, direction, initialFormat, eligiblePresenter }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<HomeCreationFormat>(initialFormat);
@@ -32,11 +34,13 @@ export function ForYouCreateAction({ brandId, title, direction, initialFormat, e
     setBusy(true);
     setError("");
     try {
+      const development = await prepareOpportunityDevelopmentAction(brandId, opportunityId);
       const response = await fetch("/api/home/my-idea", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           brandId,
+          ideaId: development.ideaId,
           text: [title, direction].filter(Boolean).join("\n\n"),
           format,
           presenterId: showPresenter && presenterId ? presenterId : undefined,
