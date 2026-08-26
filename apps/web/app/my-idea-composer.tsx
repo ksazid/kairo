@@ -1,109 +1,53 @@
 "use client";
 
-import { useState } from "react";
+/* eslint-disable @next/next/no-img-element */
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { HomeCreationFormat, MyIdeaRecommendation } from "../src/lib/home-intelligence";
+import { homeFormatLabel, type HomeCreationFormat, type HomeFormatRecommendation } from "../src/lib/home-creation-format";
 import { KairoIcon } from "./kairo-icons";
 import styles from "./home-vs85.module.css";
+import mediaStyles from "./home-media.module.css";
 
-type Props = { brandId: string; initialText?: string };
-type RecommendResponse = { recommendation?: MyIdeaRecommendation; error?: string };
-type CreateResponse = { href?: string; error?: string };
-const formatLabels: Record<HomeCreationFormat, string> = { carousel: "Carousel", reel: "Reel", image: "Post" };
+type EligiblePresenter={id:string;displayName:string;mode:string};
+type Props={brandId:string;initialText?:string;eligiblePresenter?:EligiblePresenter};
+type HomeMediaAsset={id:string;name:string;kind:"image"|"video";source?:string;mimeType:string;sizeBytes:number;previewUrl:string;createdAt:string};
+type RecommendResponse={recommendation?:HomeFormatRecommendation;error?:string};
+type StartResponse={creationId?:string;status?:string;error?:string};
+type ProgressResponse={status?:string;message?:string;campaignId?:string;assetId?:string;error?:string};
+type BeginUploadResponse={mediaAssetId?:string;uploadUrl?:string;headers?:{"content-type"?:string};error?:string};
+const FORMATS:HomeCreationFormat[]=["image","carousel","reel","video"],MAX_MEDIA=12;
 
-export function MyIdeaComposer({ brandId, initialText = "" }: Props) {
-  const router = useRouter();
-  const [idea, setIdea] = useState(initialText);
-  const [source, setSource] = useState("");
-  const [showUrl, setShowUrl] = useState(false);
-  const [recommendation, setRecommendation] = useState<MyIdeaRecommendation | null>(null);
-  const [format, setFormat] = useState<HomeCreationFormat | "">("");
-  const [state, setState] = useState<"idle" | "recommending" | "creating">("idle");
-  const [error, setError] = useState("");
-  const canRecommend = idea.trim().length >= 4 || isHttpUrl(source.trim());
-
-  function invalidateRecommendation() { setRecommendation(null); setFormat(""); setError(""); }
-
-  async function recommend() {
-    if (!canRecommend || state !== "idle") return;
-    setState("recommending"); setError("");
-    try {
-      const response = await fetch("/api/home/my-idea", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ brandId, text: idea.trim(), source: source.trim() || undefined }) });
-      const body = (await response.json().catch(() => ({}))) as RecommendResponse;
-      if (!response.ok || !body.recommendation) throw new Error(body.error ?? "Kairo could not recommend a format.");
-      setRecommendation(body.recommendation); setFormat(body.recommendation.format); setState("idle");
-    } catch (caught) {
-      setRecommendation(null); setFormat(""); setState("idle"); setError(caught instanceof Error ? caught.message : "Kairo could not recommend a format.");
-    }
-  }
-
-  async function create() {
-    if (!recommendation || !format || state !== "idle") return;
-    setState("creating"); setError("");
-    try {
-      const response = await fetch("/api/home/my-idea", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ brandId, text: idea.trim(), source: source.trim() || undefined, format }) });
-      const body = (await response.json().catch(() => ({}))) as CreateResponse;
-      if (!response.ok || !body.href) throw new Error(body.error ?? "Kairo could not start this creation.");
-      router.push(body.href);
-    } catch (caught) {
-      setState("idle"); setError(caught instanceof Error ? caught.message : "Kairo could not start this creation.");
-    }
-  }
-
-  return (
-    <div className={styles.ideaComposerWrap}>
-      <div className={styles.ideaComposer}>
-        <textarea
-          id="home-my-idea"
-          aria-label="Your idea"
-          value={idea}
-          onChange={(event) => { setIdea(event.target.value); invalidateRecommendation(); }}
-          placeholder="What do you want to create?"
-          rows={2}
-          maxLength={4000}
-        />
-        {showUrl ? (
-          <input
-            className={styles.urlField}
-            aria-label="Idea source URL"
-            type="url"
-            value={source}
-            onChange={(event) => { setSource(event.target.value); invalidateRecommendation(); }}
-            placeholder="https://…"
-            maxLength={2000}
-            inputMode="url"
-          />
-        ) : null}
-        <div className={styles.composerTools} aria-label="Idea sources">
-          <button className={styles.toolButton} data-tone="url" type="button" aria-pressed={showUrl} onClick={() => { setShowUrl((value) => !value); if (showUrl) setSource(""); invalidateRecommendation(); }}><KairoIcon name="link" /><span>URL</span></button>
-          <button className={styles.toolButton} data-tone="photo" type="button" disabled title="Photo attachments are not connected yet"><KairoIcon name="image" /><span>Photo</span></button>
-          <button className={styles.toolButton} data-tone="video" type="button" disabled title="Video attachments are not connected yet"><KairoIcon name="video" /><span>Video</span></button>
-          <button className={styles.toolButton} data-tone="media" type="button" disabled title="Existing media selection is not connected yet"><KairoIcon name="plus" /><span>Media</span></button>
-        </div>
-      </div>
-
-      <button className={styles.recommendButton} type="button" onClick={recommend} disabled={!canRecommend || state !== "idle"}>
-        <KairoIcon name="sparkles" />
-        <span>{state === "recommending" ? "Recommending format…" : recommendation ? "Update format" : "Recommend format"}</span>
-      </button>
-
-      <p className={styles.recommendationHint}><KairoIcon name="shield" /><span>Kairo recommends the format before it creates anything.</span></p>
-
-      <div className={styles.recommendationSlot} aria-live="polite" aria-atomic="true">
-        {recommendation ? (
-          <div className={styles.recommendationResult}>
-            <div><span>Kairo recommends</span><strong>{formatLabels[recommendation.format]}</strong><p>{recommendation.reason}</p></div>
-            <label><span>Format</span><select value={format} onChange={(event) => setFormat(event.target.value as HomeCreationFormat)}>{recommendation.choices.map((choice) => <option key={choice} value={choice}>{formatLabels[choice]}</option>)}</select></label>
-            <button type="button" onClick={create} disabled={!format || state !== "idle"}>{state === "creating" ? "Creating…" : format ? `Create ${formatLabels[format].toLowerCase()}` : "Create"}</button>
-          </div>
-        ) : null}
-      </div>
-      {error ? <p className={styles.inlineError} role="alert">{error}</p> : null}
-    </div>
-  );
+export function MyIdeaComposer({brandId,initialText="",eligiblePresenter}:Props){
+ const router=useRouter(),photoInput=useRef<HTMLInputElement>(null),videoInput=useRef<HTMLInputElement>(null),dialogRef=useRef<HTMLDialogElement>(null),recommendSeq=useRef(0);
+ const[idea,setIdea]=useState(initialText),[source,setSource]=useState(""),[showUrl,setShowUrl]=useState(false),[recommendation,setRecommendation]=useState<HomeFormatRecommendation|null>(null),[mode,setMode]=useState<"auto"|HomeCreationFormat>("auto"),[presenterId,setPresenterId]=useState(""),[attachedMedia,setAttachedMedia]=useState<HomeMediaAsset[]>([]),[library,setLibrary]=useState<HomeMediaAsset[]>([]),[librarySelection,setLibrarySelection]=useState<string[]>([]),[mediaOpen,setMediaOpen]=useState(false),[libraryState,setLibraryState]=useState<"idle"|"loading"|"ready"|"error">("idle"),[uploading,setUploading]=useState<"image"|"video"|null>(null),[generating,setGenerating]=useState(false),[autoLoading,setAutoLoading]=useState(false),[error,setError]=useState(""),[mediaError,setMediaError]=useState("");
+ const canCreate=idea.trim().length>=4||isHttpUrl(source.trim())||attachedMedia.length>0,busy=generating||uploading!==null,actualFormat:HomeCreationFormat=mode==="auto"?(recommendation?.format??fallbackFormat(attachedMedia)):mode,showPresenter=Boolean(eligiblePresenter)&&["reel","video"].includes(actualFormat);
+ useEffect(()=>{const dialog=dialogRef.current;if(!dialog)return;if(mediaOpen&&!dialog.open)dialog.showModal();if(!mediaOpen&&dialog.open)dialog.close();},[mediaOpen]);
+ useEffect(()=>{if(!showPresenter&&presenterId)setPresenterId("");},[showPresenter,presenterId]);
+ useEffect(()=>{if(!canCreate){setRecommendation(null);setAutoLoading(false);return;}const seq=++recommendSeq.current;setAutoLoading(true);const timer=window.setTimeout(async()=>{try{const response=await fetch("/api/home/my-idea",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,text:idea.trim(),source:source.trim()||undefined,mediaKinds:[...new Set(attachedMedia.map(item=>item.kind))]})});const body=await response.json().catch(()=>({}))as RecommendResponse;if(seq!==recommendSeq.current)return;if(response.ok&&body.recommendation){setRecommendation(body.recommendation);setError("");}}catch{}finally{if(seq===recommendSeq.current)setAutoLoading(false);}},420);return()=>window.clearTimeout(timer);},[brandId,idea,source,attachedMedia,canCreate]);
+ async function uploadFile(file:File,expected:"image"|"video"){if(attachedMedia.length>=MAX_MEDIA){setMediaError(`You can attach up to ${MAX_MEDIA} media items.`);return;}setUploading(expected);setMediaError("");try{const begin=await fetch("/api/home/media",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,name:file.name,mimeType:file.type,sizeBytes:file.size})}),started=await begin.json().catch(()=>({}))as BeginUploadResponse;if(!begin.ok||!started.mediaAssetId||!started.uploadUrl)throw new Error(started.error??"Kairo could not prepare the upload.");const stored=await fetch(started.uploadUrl,{method:"PUT",headers:{"content-type":started.headers?.["content-type"]??file.type},body:file});if(!stored.ok)throw new Error("The media upload did not complete.");const complete=await fetch("/api/home/media",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,action:"complete",mediaAssetId:started.mediaAssetId})}),item=await complete.json().catch(()=>({}))as HomeMediaAsset&{error?:string};if(!complete.ok||!item.id)throw new Error(item.error??"Kairo could not verify the uploaded media.");setAttachedMedia(items=>uniqueMedia([...items,item]).slice(0,MAX_MEDIA));setLibrary(items=>uniqueMedia([item,...items]));}catch(caught){setMediaError(caught instanceof Error?caught.message:"Kairo could not upload this media.");}finally{setUploading(null);}}
+ async function openMediaLibrary(){if(busy)return;setLibrarySelection(attachedMedia.map(item=>item.id));setMediaError("");setMediaOpen(true);setLibraryState("loading");try{const response=await fetch(`/api/home/media?brandId=${encodeURIComponent(brandId)}`,{cache:"no-store"}),body=await response.json().catch(()=>null)as HomeMediaAsset[]|{error?:string}|null;if(!response.ok||!Array.isArray(body))throw new Error(!Array.isArray(body)?body?.error??"Media library is unavailable.":"Media library is unavailable.");setLibrary(body);setLibraryState("ready");}catch(caught){setLibrary([]);setLibraryState("error");setMediaError(caught instanceof Error?caught.message:"Media library is unavailable.");}}
+ function toggleLibraryItem(id:string){setLibrarySelection(items=>items.includes(id)?items.filter(item=>item!==id):items.length>=MAX_MEDIA?items:[...items,id]);}
+ function applyLibrarySelection(){setAttachedMedia(library.filter(item=>librarySelection.includes(item.id)).slice(0,MAX_MEDIA));setMediaOpen(false);}
+ async function generate(){if(!canCreate||busy)return;setGenerating(true);setError("");try{let resolved=recommendation;if(mode==="auto"&&!resolved){const auto=await fetch("/api/home/my-idea",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,text:idea.trim(),source:source.trim()||undefined,mediaKinds:[...new Set(attachedMedia.map(item=>item.kind))]})}),body=await auto.json().catch(()=>({}))as RecommendResponse;if(!auto.ok||!body.recommendation)throw new Error(body.error??"Kairo could not choose a format.");resolved=body.recommendation;setRecommendation(body.recommendation);}const format=mode==="auto"?resolved!.format:mode;const response=await fetch("/api/home/my-idea",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,text:idea.trim(),source:source.trim()||undefined,format,presenterId:showPresenter&&presenterId?presenterId:undefined,mediaAssetIds:attachedMedia.map(item=>item.id),mediaKinds:[...new Set(attachedMedia.map(item=>item.kind))]})}),body=await response.json().catch(()=>({}))as StartResponse;if(!response.ok||!body.creationId)throw new Error(body.error??"Kairo could not start this creation.");await waitForCreation(body.creationId);}catch(caught){setGenerating(false);setError(caught instanceof Error?caught.message:"Kairo could not generate this content.");}}
+ async function waitForCreation(creationId:string){const deadline=Date.now()+120_000;while(Date.now()<deadline){await delay(1100);const response=await fetch(`/api/home/my-idea?brandId=${encodeURIComponent(brandId)}&creationId=${encodeURIComponent(creationId)}`,{cache:"no-store"}),body=await response.json().catch(()=>({}))as ProgressResponse;if(!response.ok)throw new Error(body.error??"Kairo could not read this creation.");if(body.status==="ready"&&body.campaignId&&body.assetId){router.push(`/brands/${encodeURIComponent(brandId)}/content/${encodeURIComponent(body.campaignId)}/${encodeURIComponent(body.assetId)}`);return;}if(body.status==="needs-attention")throw new Error(body.message??"Kairo could not finish this creation.");}setGenerating(false);setError("Generation is still running. You can leave this page and check Content shortly.");}
+ return <div className={styles.ideaComposerWrap}>
+  <div className={styles.ideaComposer}>
+   <textarea id="home-my-idea" aria-label="Your idea" value={idea} onChange={e=>setIdea(e.target.value)} placeholder="What do you want to create?" rows={2} maxLength={4000}/>
+   {showUrl?<input className={styles.urlField} aria-label="Idea source URL" type="url" value={source} onChange={e=>setSource(e.target.value)} placeholder="https://…" maxLength={2000} inputMode="url"/>:null}
+   {attachedMedia.length?<div className={mediaStyles.attachmentStrip} aria-label="Attached media">{attachedMedia.map(item=><div className={mediaStyles.attachmentChip} key={item.id}><span className={mediaStyles.attachmentPreview}>{item.kind==="image"?<img src={item.previewUrl} alt=""/>:<KairoIcon name="video"/>}</span><span className={mediaStyles.attachmentName}>{item.name}</span><button type="button" onClick={()=>setAttachedMedia(items=>items.filter(value=>value.id!==item.id))} aria-label={`Remove ${item.name}`}>×</button></div>)}</div>:null}
+   <div className={styles.composerTools} aria-label="Idea sources"><button className={styles.toolButton} data-tone="url" type="button" aria-pressed={showUrl} onClick={()=>{setShowUrl(v=>!v);if(showUrl)setSource("");}}><KairoIcon name="link"/><span>URL</span></button><button className={styles.toolButton} data-tone="photo" type="button" disabled={busy} onClick={()=>photoInput.current?.click()}><KairoIcon name="image"/><span>{uploading==="image"?"Uploading…":"Photo"}</span></button><button className={styles.toolButton} data-tone="video" type="button" disabled={busy} onClick={()=>videoInput.current?.click()}><KairoIcon name="video"/><span>{uploading==="video"?"Uploading…":"Video"}</span></button><button className={styles.toolButton} data-tone="media" type="button" disabled={busy} onClick={openMediaLibrary}><KairoIcon name="plus"/><span>Media</span></button></div>
+   <input ref={photoInput} className={mediaStyles.fileInput} type="file" accept="image/jpeg,image/png,image/webp" tabIndex={-1} onChange={e=>{const f=e.currentTarget.files?.[0];e.currentTarget.value="";if(f)void uploadFile(f,"image");}}/><input ref={videoInput} className={mediaStyles.fileInput} type="file" accept="video/mp4,video/quicktime,video/webm" tabIndex={-1} onChange={e=>{const f=e.currentTarget.files?.[0];e.currentTarget.value="";if(f)void uploadFile(f,"video");}}/>
+  </div>
+  {mediaError&&!mediaOpen?<p className={mediaStyles.mediaError} role="alert">{mediaError}</p>:null}
+  <div className={mediaStyles.formatBlock}><div className={mediaStyles.controlHeading}><span>Format</span>{mode==="auto"?<small>{autoLoading?"Choosing…":`Auto · ${homeFormatLabel(actualFormat)}`}</small>:<small>Manual</small>}</div><div className={mediaStyles.formatOptions} role="group" aria-label="Content format"><button type="button" data-selected={mode==="auto"} aria-pressed={mode==="auto"} onClick={()=>setMode("auto")}>Auto</button>{FORMATS.map(format=><button key={format} type="button" data-selected={mode===format} aria-pressed={mode===format} onClick={()=>setMode(format)}>{homeFormatLabel(format)}</button>)}</div>{recommendation&&mode==="auto"?<p className={mediaStyles.formatHint}>{recommendation.reason}</p>:null}</div>
+  {showPresenter&&eligiblePresenter?<div className={mediaStyles.presenterRow}><span>Presenter</span><div><button type="button" data-selected={!presenterId} aria-pressed={!presenterId} onClick={()=>setPresenterId("")}>None</button><button type="button" data-selected={presenterId===eligiblePresenter.id} aria-pressed={presenterId===eligiblePresenter.id} onClick={()=>setPresenterId(eligiblePresenter.id)}>{eligiblePresenter.displayName}</button></div></div>:null}
+  <button className={mediaStyles.generateButton} type="button" onClick={generate} disabled={!canCreate||busy}><KairoIcon name="sparkles"/><span>{generating?"Generating…":"AI Generate"}</span></button>
+  {error?<p className={styles.inlineError} role="alert">{error}</p>:null}
+  <dialog ref={dialogRef} className={mediaStyles.mediaDialog} onClose={()=>setMediaOpen(false)} aria-labelledby="home-media-title"><div className={mediaStyles.dialogHeader}><div><h3 id="home-media-title">Media</h3><p>Reuse photos and videos already saved for this Brand.</p></div><button type="button" className={mediaStyles.closeButton} onClick={()=>setMediaOpen(false)} aria-label="Close media library">×</button></div><div className={mediaStyles.dialogBody}>{libraryState==="loading"?<p className={mediaStyles.libraryState} role="status">Loading media…</p>:null}{libraryState==="error"?<p className={mediaStyles.libraryState} role="alert">{mediaError||"Media library is unavailable."}</p>:null}{libraryState==="ready"&&!library.length?<p className={mediaStyles.libraryState}>No media yet. Upload a Photo or Video and it will appear here.</p>:null}{libraryState==="ready"&&library.length?<div className={mediaStyles.mediaGrid}>{library.map(item=>{const selected=librarySelection.includes(item.id);return <button key={item.id} type="button" className={mediaStyles.mediaItem} data-selected={selected} aria-pressed={selected} onClick={()=>toggleLibraryItem(item.id)}><span className={mediaStyles.mediaThumb} data-kind={item.kind}>{item.kind==="image"?<img src={item.previewUrl} alt=""/>:<KairoIcon name="video"/>}{selected?<span className={mediaStyles.selectedMark}><KairoIcon name="check"/></span>:null}</span><span className={mediaStyles.mediaItemName}>{item.name}</span><span className={mediaStyles.mediaItemMeta}>{item.kind==="image"?"Photo":"Video"} · {formatBytes(item.sizeBytes)}</span></button>})}</div>:null}</div><div className={mediaStyles.dialogFooter}><span>{librarySelection.length} selected</span><button type="button" onClick={applyLibrarySelection} disabled={libraryState!=="ready"}>Use media</button></div></dialog>
+ </div>;
 }
-
-function isHttpUrl(value: string) {
-  try { const parsed = new URL(value); return parsed.protocol === "http:" || parsed.protocol === "https:"; }
-  catch { return false; }
-}
+function uniqueMedia(items:HomeMediaAsset[]){const seen=new Set<string>();return items.filter(item=>!seen.has(item.id)&&!!seen.add(item.id));}
+function fallbackFormat(items:HomeMediaAsset[]):HomeCreationFormat{return items.some(item=>item.kind==="video")?"reel":items.some(item=>item.kind==="image")?"image":"image";}
+function isHttpUrl(value:string){try{const parsed=new URL(value);return parsed.protocol==="http:"||parsed.protocol==="https:";}catch{return false;}}
+function formatBytes(bytes:number){if(!Number.isFinite(bytes)||bytes<=0)return"—";if(bytes<1024*1024)return`${Math.max(1,Math.round(bytes/1024))} KB`;return`${(bytes/(1024*1024)).toFixed(bytes>=10*1024*1024?0:1)} MB`;}
+function delay(ms:number){return new Promise(resolve=>setTimeout(resolve,ms));}
