@@ -4,6 +4,7 @@ import {
   HackerNewsDiscoveryProvider,
   YouTubeDiscoveryProvider,
 } from "@kairo/worker/public-discovery-adapters";
+import { createSourceIntelligenceRouter } from "./source-intelligence";
 
 /**
  * Runtime discovery wiring for Home recommendations.
@@ -38,5 +39,5 @@ export function createHunterToolGateway(env: NodeJS.ProcessEnv = process.env) {
     "hacker-news": hackerNews,
     bluesky,
     ...(youtube ? { youtube } : {}),
-  });
+  }, createSourceIntelligenceRouter());
 }
