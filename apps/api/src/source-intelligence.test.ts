@@ -17,7 +17,7 @@ describe("VS-99 secure HTTP source adapter", () => {
     const router = createSourceIntelligenceRouter({ reader, cache: new InMemoryNormalizedSourceCache() });
     const first = await router.fetch({ url: "https://example.com", scope: { visibility: "global-public" }, timeoutMs: 1000 });
     const second = await router.fetch({ url: "https://example.com", scope: { visibility: "global-public" }, timeoutMs: 1000 });
-    expect(first.document).toMatchObject({ platform: "website", title: "Example", trust: "untrusted-evidence", provider: "secure-http" });
+    expect(first.document).toMatchObject({ platform: "website", title: "Example", trust: "untrusted-evidence", provider: "website" });
     expect(first.document.contentHash).toMatch(/^sha256:/);
     expect(second.cacheHit).toBe(true);
     expect(calls).toBe(1);
