@@ -1,16 +1,21 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-103",
-  "title": "VS-103R — Source Intelligence remediation and Hunter evidence integration",
+  "sliceId": "VS-104",
+  "title": "VS-104 — Batch 7 closed-loop recommendations",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
+    "FR-02",
     "FR-03",
-    "FR-04",
     "FR-06",
-    "FR-07",
+    "FR-08",
+    "FR-09",
+    "FR-10",
+    "FR-11",
+    "FR-16",
+    "FR-18",
     "FR-20"
   ],
   "owners": {
@@ -20,43 +25,27 @@
     "security": "Security Owner"
   },
   "dependencies": [
-    "VS-99",
-    "VS-100",
-    "VS-101",
-    "VS-102"
+    "VS-103"
   ],
   "blockers": [],
   "allowedPaths": [
-    "packages/domain/src/brand-intelligence.ts",
-    "packages/domain/src/brand-intelligence.test.ts",
-    "packages/domain/package.json",
-    "packages/domain/src/sector-packs.ts",
-    "packages/domain/src/source-policy.ts",
-    "packages/domain/src/source-policy.test.ts",
-    "packages/domain/src/discovery-service.ts",
-    "packages/domain/src/discovery-service.test.ts",
-    "packages/domain/src/discovery.ts",
-    "packages/domain/src/discovery.test.ts",
-    "packages/domain/src/source-registry.ts",
-    "packages/domain/src/index.ts",
-    "packages/agent-contracts/src/source-intelligence.ts",
-    "packages/agent-contracts/src/source-intelligence.test.ts",
-    "packages/agent-contracts/src/index.ts",
+    "apps/api/migrations/0033_opportunity_feedback_closed_loop.sql",
+    "apps/api/src/**",
     "apps/worker/src/hunter.ts",
     "apps/worker/src/hunter.test.ts",
-    "apps/worker/src/brand-brain-builder.ts",
-    "apps/worker/src/brand-brain-builder.test.ts",
-    "packages/domain/src/brand-brain-bootstrap.ts",
-    "packages/domain/src/brand-brain-bootstrap.test.ts",
-    "apps/worker/src/public-discovery-adapters.ts",
-    "apps/worker/src/public-discovery-adapters.test.ts",
-    "apps/api/migrations/0031_brand_intelligence_topic_graph.sql",
-    "apps/api/migrations/0032_hunter_opportunity_details.sql",
-    "apps/api/src/**",
-    "packages/contracts/src/**",
+    "apps/web/app/page.tsx",
+    "apps/web/app/opportunity-actions.ts",
+    "apps/web/app/opportunity-list.tsx",
+    "apps/web/app/recommendation-seen.tsx",
+    "apps/web/app/for-you-bookmark-action.tsx",
+    "apps/web/app/for-you-create-action.tsx",
+    "apps/web/app/api/home/my-idea/route.ts",
+    "apps/web/app/brands/[brandId]/onboarding/actions.ts",
+    "apps/web/src/lib/closed-loop-api.ts",
+    "apps/web/src/lib/simple-creation-api.ts",
     "scripts/start-api.mjs",
-    "docs/slices/VS-103.md",
-    "docs/plans/VS-103-implementation.md",
+    "docs/slices/VS-104.md",
+    "docs/plans/VS-104-implementation.md",
     "delivery/**",
     ".engineering/STATE.json"
   ],
@@ -68,73 +57,72 @@
       "architecture",
       "api",
       "database",
-      "analytics",
       "customer-flow",
+      "analytics",
       "operations-support"
     ],
     "notes": [
-      "Upgrades Brand intelligence using evidence already captured by the shared Source Intelligence pipeline.",
-      "Adds deterministic versioned Topic Graph intelligence and lineage for Hunter without changing Hunter ranking in this slice.",
-      "Sector packs are configurable low-precedence seeds and cannot override confirmed Brand facts or exclusions.",
-      "No frozen UI, new retrieval pipeline, OAuth scope, scheduler or autonomous publishing change is authorized.",
-      "Production release plumbing explicitly allows migration 0031 through the existing exact-migration startup mechanism while preserving exact-SHA guards.",
-      "Corrective revision fixes verified Batch 2–5 defects and implements Batch 6 Hunter discovery, evidence enrichment, query intent and ranking integration without UI, scheduler or publishing changes."
+      "Completes Brand confirmation to Hunter to For You to development wiring without introducing a second retrieval pipeline.",
+      "Accepted performance learning and recommendation feedback remain Brand-private and are consumed only as Hunter guidance, never as public evidence.",
+      "For You development reuses an opportunity-linked Idea so Campaign, Content, Publish, Performance and Learning lineage remains queryable.",
+      "The frozen Home visual hierarchy is preserved; existing controls are enabled/wired rather than redesigned.",
+      "No scheduler, autonomous publishing, new OAuth scope or publishing-authority expansion is authorized."
     ]
   },
   "approvals": [
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-103@1.1",
+      "version": "VS-104@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Reuses existing provenance, untrusted-source, deletion, tenant-isolation and human-publishing decisions; sector packs are seeds rather than truth."
+      "rationale": "Reuses approved Brand isolation, provenance, learning acceptance, source-safety and human publishing policies; private learning is not exposed to public retrieval."
     },
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-103@1.1",
+      "version": "VS-104@1.0",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T14:30:00+02:00",
-      "rationale": "Product Owner explicitly instructed fixing the verified Batch 2–5 gaps together with Batch 6; YouTube credentials remain optional and deferred."
+      "at": "2026-08-26T16:43:33+02:00",
+      "rationale": "Product Owner explicitly instructed Batch 7 end-to-end and required a final completed/left/percentage/blockers report."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-103@1.1",
+      "version": "VS-104@1.0",
       "commitSha": null,
       "by": "Product Owner",
-      "at": "2026-08-26T14:30:00+02:00",
-      "rationale": "Product Owner explicitly authorized corrective runtime implementation and Batch 6."
+      "at": "2026-08-26T16:43:33+02:00",
+      "rationale": "Product Owner explicitly instructed continuing until Batch 7 is complete rather than stopping at foundational implementation."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-103@1.1",
-      "commitSha": "30da0fccaacb8f0477700b87419294b07da0dd70",
-      "by": "Product Owner",
-      "at": "2026-08-26T15:21:00+02:00",
-      "rationale": "Product Owner explicitly approved and processed certification for exact corrective candidate 30da0fccaacb8f0477700b87419294b07da0dd70; the historical VS-103@1.0 certification is superseded."
+      "status": "pending",
+      "version": "VS-104@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Awaiting exact-SHA Product Intake, Security and CI evidence."
     },
     {
       "type": "release",
-      "status": "revoked",
-      "version": "VS-103@1.0",
-      "commitSha": "ec026f26f9eddc7306f9ae088abf1f7c98738c70",
-      "by": "Product Owner",
-      "at": "2026-08-26T13:26:00+02:00",
-      "rationale": "Historical VS-103@1.0 release approval; it does not authorize the corrective VS-103@1.1 candidate."
+      "status": "pending",
+      "version": "VS-104@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Release occurs only after exact-SHA certification."
     },
     {
       "type": "production-enable",
-      "status": "revoked",
-      "version": "VS-103@1.0",
-      "commitSha": "ec026f26f9eddc7306f9ae088abf1f7c98738c70",
-      "by": "Product Owner",
-      "at": "2026-08-26T13:26:00+02:00",
-      "rationale": "Historical VS-103@1.0 production enablement; it does not authorize the corrective VS-103@1.1 candidate."
+      "status": "pending",
+      "version": "VS-104@1.0",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Production enablement requires certified implementation and exact migration/deployment evidence."
     }
   ],
   "decisionIds": [
@@ -148,55 +136,38 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "implementation": 90,
+    "testing": 70,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "30da0fccaacb8f0477700b87419294b07da0dd70",
-    "evidence": [
-      "Product Intake 32961796413 passed",
-      "Security baseline 32961796331 passed",
-      "CI 32961796327 passed",
-      "Product Owner certification approval bound to exact candidate e0a7920aac16e32299243f53a3b6a5a65764b273",
-      "Migration release-plumbing fix passed Product Intake 32966149264, Security baseline 32966149286 and CI 32966149238 on exact fix SHA 8fd65a688a7f45ee0595abd1ff9f30fed9ec4d40.",
-      "VS-103@1.1 focused verification passed; six unrelated UI contract failures were reproduced unchanged on base SHA 10382963460013f431b712ba36093d01c996aff7.",
-      "104 focused tests, affected TypeScript checks, JSON validation, governance and dashboard checks passed on exact candidate 30da0fccaacb8f0477700b87419294b07da0dd70.",
-      "Product Owner approved and processed exact candidate 30da0fccaacb8f0477700b87419294b07da0dd70."
-    ]
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
   },
   "release": {
     "status": "not-authorized"
   },
   "rollback": {
-    "status": "ready",
-    "rollbackId": "RB-014"
+    "status": "not-applicable"
   },
   "postRelease": {
-    "status": "iterate",
-    "reviewAt": "2026-08-27T14:00:00+02:00",
-    "expectedOutcome": "Confirmed and inferred Brand evidence produces a deterministic, provenance-aware Topic Graph that improves later Hunter query/ranking without a second ingestion pipeline.",
+    "status": "not-started",
+    "reviewAt": null,
+    "expectedOutcome": "A confirmed Brand automatically receives evidence-backed For You opportunities, user feedback and accepted performance learning improve later Hunter decisions, and developed content retains full Opportunity lineage.",
     "metrics": [
-      "Topic Graph schema applied successfully",
-      "API startup and health remained green"
+      "First Hunter run attempted after Brand confirmation",
+      "For You Seen/Save/Ignore/Develop feedback persists",
+      "Developed content retains Opportunity-to-Idea lineage",
+      "Accepted performance learning is consumed by later Hunter runs"
     ]
   },
   "links": {
-    "specification": "docs/slices/VS-103.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/215",
-    "evidence": [
-      "Product Intake 32961796413",
-      "Security baseline 32961796331",
-      "CI 32961796327",
-      "PR #216 merged as fbc9ea984df526104f8b815524f62d1fd55109e2",
-      "Migration 0031 applied successfully in Render deploy dep-da7dj2gae00c73bh85n0",
-      "Final clean Render deploy dep-da7dkf2d0e5s73e8dhk0 live on fbc9ea984df526104f8b815524f62d1fd55109e2",
-      "delivery/context/VS-103-REL-014-production-evidence.md",
-      "delivery/context/VS-103-RB-014-rollback.md"
-    ]
+    "specification": "docs/slices/VS-104.md",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/218",
+    "evidence": []
   },
   "maxAttempts": 3
 }
