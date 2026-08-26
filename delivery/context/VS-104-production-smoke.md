@@ -15,3 +15,5 @@ It verifies:
 - Full rollback cleanup of the temporary account, workspace, membership, Brand, opportunity, feedback and Idea.
 
 The smoke never requires or modifies a real Brand opportunity, never publishes content, changes OAuth authority, changes scheduler behavior, or leaves test data behind.
+
+PR #221 is the exact self-contained remediation candidate replacing the failed production assumption and must pass the existing Product Intake, Security baseline and CI certification gates before merge.
