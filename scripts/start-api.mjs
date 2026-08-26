@@ -1,5 +1,7 @@
+import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { Pool } from "pg";
 
 const approvedMigrations = new Set([
   "0022_marketing_shadow_evidence_authorizations.sql",
@@ -15,11 +17,13 @@ const approvedRanges = new Set([
 const approvedMarketingAuthorization = "vs23-qualification-20260820-d";
 const approvedMarketingEvidenceExport = "vs23-qualification-20260820-d";
 const approvedMarketingQualityAuthorization = "vs65-quality-evaluation-20260820-b";
+const approvedClosedLoopSmoke = "vs104-closed-loop-production-smoke-20260826";
 const requestedMigration = process.env.KAIRO_STARTUP_MIGRATION?.trim();
 const requestedRange = process.env.KAIRO_STARTUP_MIGRATION_RANGE?.trim();
 const requestedMarketingAuthorization = process.env.KAIRO_STARTUP_MARKETING_SHADOW_AUTHORIZATION?.trim();
 const requestedMarketingEvidenceExport = process.env.KAIRO_STARTUP_MARKETING_SHADOW_EVIDENCE_EXPORT?.trim();
 const requestedMarketingQualityAuthorization = process.env.KAIRO_STARTUP_MARKETING_SHADOW_QUALITY_AUTHORIZATION?.trim();
+const requestedClosedLoopSmoke = process.env.KAIRO_STARTUP_CLOSED_LOOP_SMOKE?.trim();
 const instagramPublisherEnabled = process.env.KAIRO_INSTAGRAM_PUBLISHER_ENABLED?.trim() === "true";
 
 const startupActionCount = [
@@ -28,9 +32,10 @@ const startupActionCount = [
   requestedMarketingAuthorization,
   requestedMarketingEvidenceExport,
   requestedMarketingQualityAuthorization,
+  requestedClosedLoopSmoke,
 ].filter(Boolean).length;
 if (startupActionCount > 1) {
-  throw new Error("Configure only one startup action: exact migration, migration range, Marketing Lab authorization, Marketing Lab evidence export, or Marketing Lab quality authorization");
+  throw new Error("Configure only one startup action: exact migration, migration range, Marketing Lab authorization, Marketing Lab evidence export, Marketing Lab quality authorization, or closed-loop production smoke");
 }
 
 const startupActionRequested = startupActionCount === 1;
@@ -67,6 +72,113 @@ function runBackgroundScript(scriptUrl, label) {
   });
 }
 
+async function runClosedLoopProductionSmoke() {
+  if (requestedClosedLoopSmoke !== approvedClosedLoopSmoke) {
+    throw new Error(`Startup closed-loop production smoke is not approved: ${requestedClosedLoopSmoke}`);
+  }
+  const connectionString = process.env.DATABASE_URL?.trim();
+  if (!connectionString) throw new Error("DATABASE_URL is required for closed-loop production smoke");
+  const pool = new Pool({ connectionString });
+  const client = await pool.connect();
+  let inTransaction = false;
+  let insertedIdeaId;
+  try {
+    await client.query("begin");
+    inTransaction = true;
+    const sample = await client.query(
+      `select m.account_id,b.workspace_id,b.id as brand_id,o.id as opportunity_id,o.title,o.rationale,o.why_now,o.development_direction,o.status
+         from workspace_memberships m
+         join brands b on b.workspace_id=m.workspace_id
+         join brand_opportunities o on o.workspace_id=b.workspace_id and o.brand_id=b.id
+        where m.active=true
+        order by o.updated_at desc,o.id
+        limit 1`,
+    );
+    const row = sample.rows[0];
+    if (!row) throw new Error("Closed-loop production smoke requires one existing authorized Brand opportunity");
+
+    const feedbackId = randomUUID();
+    const firstFeedback = await client.query(
+      `insert into opportunity_feedback_events(id,workspace_id,brand_id,opportunity_id,account_id,action)
+       values($1,$2,$3,$4,$5,'seen')
+       on conflict(workspace_id,brand_id,opportunity_id,account_id,action) do nothing`,
+      [feedbackId, row.workspace_id, row.brand_id, row.opportunity_id, row.account_id],
+    );
+    if (firstFeedback.rowCount !== 1) throw new Error("Closed-loop production smoke could not persist representative Seen feedback");
+    const duplicateFeedback = await client.query(
+      `insert into opportunity_feedback_events(id,workspace_id,brand_id,opportunity_id,account_id,action)
+       values($1,$2,$3,$4,$5,'seen')
+       on conflict(workspace_id,brand_id,opportunity_id,account_id,action) do nothing`,
+      [randomUUID(), row.workspace_id, row.brand_id, row.opportunity_id, row.account_id],
+    );
+    if (duplicateFeedback.rowCount !== 0) throw new Error("Closed-loop production smoke idempotency check failed");
+    const visibleFeedback = await client.query(
+      `select f.action,o.title from opportunity_feedback_events f
+         join brand_opportunities o on o.workspace_id=f.workspace_id and o.brand_id=f.brand_id and o.id=f.opportunity_id
+        where f.id=$1`,
+      [feedbackId],
+    );
+    if (visibleFeedback.rows[0]?.action !== "seen") throw new Error("Closed-loop production smoke feedback lineage check failed");
+
+    const existingIdea = await client.query(
+      `select id from ideas where workspace_id=$1 and brand_id=$2 and source_type='opportunity' and opportunity_id=$3 order by created_at,id limit 1`,
+      [row.workspace_id, row.brand_id, row.opportunity_id],
+    );
+    let ideaId = existingIdea.rows[0]?.id;
+    if (!ideaId) {
+      ideaId = randomUUID();
+      insertedIdeaId = ideaId;
+      const premise = `${row.development_direction}\n\nWhy now: ${row.why_now}\n\nContext: ${row.rationale}`.slice(0, 2_000);
+      await client.query(
+        `insert into ideas(id,workspace_id,brand_id,title,premise,source_type,opportunity_id,status,created_at)
+         values($1,$2,$3,$4,$5,'opportunity',$6,'new',now())`,
+        [ideaId, row.workspace_id, row.brand_id, `[SMOKE] ${row.title}`.slice(0, 300), premise, row.opportunity_id],
+      );
+    }
+    const lineage = await client.query(
+      `select i.id,i.opportunity_id,o.brand_id from ideas i
+         join brand_opportunities o on o.workspace_id=i.workspace_id and o.brand_id=i.brand_id and o.id=i.opportunity_id
+        where i.id=$1 and i.workspace_id=$2 and i.brand_id=$3`,
+      [ideaId, row.workspace_id, row.brand_id],
+    );
+    if (lineage.rows[0]?.opportunity_id !== row.opportunity_id || lineage.rows[0]?.brand_id !== row.brand_id) {
+      throw new Error("Closed-loop production smoke Opportunity-to-Idea lineage check failed");
+    }
+    await client.query(
+      `update brand_opportunities set status='developing',updated_at=now() where workspace_id=$1 and brand_id=$2 and id=$3`,
+      [row.workspace_id, row.brand_id, row.opportunity_id],
+    );
+    const developed = await client.query(
+      `select status from brand_opportunities where workspace_id=$1 and brand_id=$2 and id=$3`,
+      [row.workspace_id, row.brand_id, row.opportunity_id],
+    );
+    if (developed.rows[0]?.status !== "developing") throw new Error("Closed-loop production smoke development-state check failed");
+
+    await client.query("rollback");
+    inTransaction = false;
+    const persistedFeedback = await client.query(`select 1 from opportunity_feedback_events where id=$1`, [feedbackId]);
+    if (persistedFeedback.rowCount !== 0) throw new Error("Closed-loop production smoke rollback left feedback behind");
+    if (insertedIdeaId) {
+      const persistedIdea = await client.query(`select 1 from ideas where id=$1`, [insertedIdeaId]);
+      if (persistedIdea.rowCount !== 0) throw new Error("Closed-loop production smoke rollback left an Idea behind");
+    }
+    const restored = await client.query(
+      `select status from brand_opportunities where workspace_id=$1 and brand_id=$2 and id=$3`,
+      [row.workspace_id, row.brand_id, row.opportunity_id],
+    );
+    if (restored.rows[0]?.status !== row.status) throw new Error("Closed-loop production smoke rollback did not restore opportunity state");
+    console.log(JSON.stringify({ event: "KAIRO_CLOSED_LOOP_SMOKE_PASSED", feedback: true, idempotency: true, opportunityIdeaLineage: true, rollbackClean: true }));
+  } catch (error) {
+    if (inTransaction) {
+      try { await client.query("rollback"); } catch { /* keep original smoke error */ }
+    }
+    throw error;
+  } finally {
+    client.release();
+    await pool.end();
+  }
+}
+
 if (requestedMigration) {
   if (!approvedMigrations.has(requestedMigration)) throw new Error(`Startup migration is not approved: ${requestedMigration}`);
   await runStartupScript(new URL("./migrate-exact.mjs", import.meta.url), `exact migration ${requestedMigration}`);
@@ -101,6 +213,8 @@ if (requestedMigration) {
     new URL("../apps/api/dist/marketing-shadow-quality-evaluation-worker.js", import.meta.url),
     `Marketing Lab quality evaluation ${requestedMarketingQualityAuthorization}`,
   );
+} else if (requestedClosedLoopSmoke) {
+  await runClosedLoopProductionSmoke();
 }
 
 if (instagramPublisherEnabled) {
