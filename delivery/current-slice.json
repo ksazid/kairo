@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "sliceId": "VS-98",
   "title": "Approved Home Creation Recovery",
-  "status": "closed",
+  "status": "completed",
   "lifecycle": "validated",
   "riskLevel": "high",
   "implementationMode": "production-enabled",
@@ -132,8 +132,8 @@
       "GitHub Actions CI run 32921588361"
     ]
   },
-  "release": {"status":"released","releaseId":null},
-  "rollback": {"status":"not-applicable","rollbackId":null},
+  "release": {"status":"released","releaseId":"REL-009"},
+  "rollback": {"status":"ready","rollbackId":"RB-009"},
   "postRelease": {
     "status":"validated",
     "reviewAt":"2026-08-26T08:27:00+02:00",
