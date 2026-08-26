@@ -24,6 +24,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   runner?: HunterRecommendationRunner;
   graphStore?: BrandIntelligenceGraphStore;
   closedLoopStore?: HunterClosedLoopStore;
+  discovery?: DiscoveryService;
 }) {
   const core = new KairoService(options.store);
   const inFlight = new Map<string, Promise<HunterRunResult>>();
@@ -69,7 +70,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       if (!run) {
         run = options.runner.runForAuthorizedBrand(input).then(async (result) => {
           if (result.opportunityCount === 0) {
-            const starterCount = await createProfileStarters(options.store, account.id, brand, input, brain);
+            const starterCount = options.discovery ? await createProfileStarters(options.discovery, options.store, account.id, brand, input, brain) : 0;
             if (starterCount) return { ...result, candidateCount: result.candidateCount + starterCount, opportunityCount: starterCount };
           }
           return result;
@@ -118,13 +119,12 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   );
 }
 
-async function createProfileStarters(repository: KairoRepository, accountId: string, brand: { id: string; publicSourceUrl?: string; publicProfileUrl?: string }, input: HunterRunInput, brain: readonly BrandBrainFieldDto[]) {
+async function createProfileStarters(service: DiscoveryService, repository: KairoRepository, accountId: string, brand: { id: string; publicSourceUrl?: string; publicProfileUrl?: string }, input: HunterRunInput, brain: readonly BrandBrainFieldDto[]) {
   const source = (await repository.listKnowledgeSources(accountId, brand.id)).find((item) => item.status === "active" && item.sourceUrl);
   const sourceUrl = source?.sourceUrl ?? brand.publicProfileUrl ?? brand.publicSourceUrl;
   if (!sourceUrl) return 0;
   const topics = brain.find((field) => field.fieldKey === "content.preferred-topics")?.value?.trim() || "the Brand's core topics";
   const audience = brain.find((field) => field.fieldKey === "audience.primary")?.value?.trim() || "the Brand audience";
-  const service = new DiscoveryService(repository as unknown as ConstructorParameters<typeof DiscoveryService>[0]);
   const ideas: Array<[string, string, string, string]> = [
     [`${input.brand.brandName}: a practical guide for ${topics}`, `Starter opportunity grounded in the Brand's learned topics and public source.`, `The onboarding source is available now, so this is ready to develop.`, `Create an educational carousel for ${audience}.`],
     [`What ${audience} should know about ${topics}`, `Starter opportunity based on the Brand's audience and learned content direction.`, `A clear audience question is available immediately after onboarding.`, `Create a concise Instagram post with one useful takeaway.`],
