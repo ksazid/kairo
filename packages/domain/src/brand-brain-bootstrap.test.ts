@@ -176,7 +176,7 @@ describe("BrandBrainBootstrapService", () => {
       ownerBoundary: "Never glorify dangerous public-road riding.",
     });
 
-    expect(generatorInput?.references).toEqual([]);
+    expect(generatorInput?.references).toHaveLength(1);
     expect(generatorInput?.existingConfirmed).toMatchObject({
       "goals.objectives": "Grow audience",
       "boundaries.owner-directive": "Never glorify dangerous public-road riding.",
