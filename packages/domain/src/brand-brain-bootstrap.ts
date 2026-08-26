@@ -156,7 +156,7 @@ export class BrandBrainBootstrapService {
       || fallbackHost === "facebook.com" || fallbackHost === "www.facebook.com";
     const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
       || fallbackHost === "on.substack.com";
-    if (!successfulReferences.length && fallbackUrl && (isSocialFallback || isSubstackFallback)) {
+    if (!successfulReferences.length && fallbackUrl) {
       const fallbackReference = {
         url: fallbackUrl,
         title: brand.name,
@@ -360,7 +360,7 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   const substack = references.find((reference) => {
     try { return ["substack.com", "www.substack.com", "on.substack.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
   });
-  const reference = github ?? social ?? substack;
+  const reference = github ?? social ?? substack ?? references[0];
   if (!reference) return [];
   const isSocial = reference === social;
   const isSubstack = reference === substack;
@@ -384,6 +384,15 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     { section: "content-strategy", fieldKey: "content.pillars", value: "Editorial stories, analysis, practical guidance and community perspectives", sourceIds },
     { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Publication themes, timely analysis, useful explainers and reader questions", sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Substack, email newsletters, web articles and social communities", sourceIds },
+  ];
+  if (!isSocial && !isSubstack && !github) return [
+    { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: "Business or organization website", sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: "People interested in this Brand's products, services or subject", sourceIds },
+    { section: "voice", fieldKey: "voice.tone", value: "Clear, useful and audience-focused", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: "Brand story, products or services, practical guidance and customer value", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "What the Brand offers, customer questions, useful advice and relevant updates", sourceIds },
+    { section: "content-strategy", fieldKey: "content.channels", value: "Website, email, social communities and relevant professional channels", sourceIds },
   ];
   return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
