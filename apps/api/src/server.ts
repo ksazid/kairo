@@ -119,9 +119,9 @@ const baseRuntime=hermesRuntime&&directRuntime?new AgentRuntimeRouter(hermesRunt
 const runtime=baseRuntime?new ObservedAgentRuntime(baseRuntime,telemetrySink):undefined;
 const contentGenerator=runtime?new DrafterGenerationAdapter(runtime):undefined;const criticEvaluator=runtime?new CriticEvaluationAdapter(runtime):undefined;const brandBrainGenerator=runtime?new BrandBrainBuilder(runtime):undefined;
 const hunter=runtime?new HunterOrchestrator(createHunterToolGateway(),runtime,discoveryService):undefined;
-const researchTools=createResearchToolGateway();
 const publicReferenceReader=new PublicBrandReferenceHttpReader({timeoutMs:10_000,maxBytes:2_000_000,maxRedirects:2});
 const sharedSourceRouter=createSourceIntelligenceRouter({reader:publicReferenceReader});
+const researchTools=createResearchToolGateway();
 const researcher=runtime?new ResearcherOrchestrator(researchTools,runtime,researchStore):undefined;
 const strategist=runtime?new StrategistOrchestrator(runtime,researchStore):undefined;
 const ideaDevelopmentLock=new PgIdeaDevelopmentLock(pool);
