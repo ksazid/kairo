@@ -1,6 +1,7 @@
 import type { BrandBrainFieldDto } from "@kairo/contracts";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { KairoService, type KairoRepository } from "@kairo/domain";
+import { DiscoveryService } from "@kairo/domain/discovery-service";
 import { projectBrandIntelligenceProfile } from "@kairo/domain/source-policy";
 import { selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import type { HunterRunInput, HunterRunResult } from "@kairo/worker/hunter";
@@ -66,7 +67,13 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       const key = `${account.id}:${brand.id}`;
       let run = inFlight.get(key);
       if (!run) {
-        run = options.runner.runForAuthorizedBrand(input).finally(() => inFlight.delete(key));
+        run = options.runner.runForAuthorizedBrand(input).then(async (result) => {
+          if (result.opportunityCount === 0) {
+            const starterCount = await createProfileStarters(options.store, account.id, brand.id, input, brain);
+            if (starterCount) return { ...result, candidateCount: result.candidateCount + starterCount, opportunityCount: starterCount };
+          }
+          return result;
+        }).finally(() => inFlight.delete(key));
         inFlight.set(key, run);
       }
       return run;
@@ -110,6 +117,26 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
     },
   );
 }
+
+async function createProfileStarters(repository: KairoRepository, accountId: string, brandId: string, input: HunterRunInput, brain: readonly BrandBrainFieldDto[]) {
+  const source = (await repository.listKnowledgeSources(accountId, brandId)).find((item) => item.status === "active" && item.sourceUrl);
+  if (!source?.sourceUrl) return 0;
+  const topics = brain.find((field) => field.fieldKey === "content.preferred-topics")?.value?.trim() || "the Brand's core topics";
+  const audience = brain.find((field) => field.fieldKey === "audience.primary")?.value?.trim() || "the Brand audience";
+  const service = new DiscoveryService(repository as unknown as ConstructorParameters<typeof DiscoveryService>[0]);
+  const ideas: Array<[string, string, string, string]> = [
+    [`${input.brand.brandName}: a practical guide for ${topics}`, `Starter opportunity grounded in the Brand's learned topics and public source.`, `The onboarding source is available now, so this is ready to develop.`, `Create an educational carousel for ${audience}.`],
+    [`What ${audience} should know about ${topics}`, `Starter opportunity based on the Brand's audience and learned content direction.`, `A clear audience question is available immediately after onboarding.`, `Create a concise Instagram post with one useful takeaway.`],
+    [`Behind the Brand: ${topics}`, `Starter opportunity using the Brand's own public context as the evidence boundary.`, `The Brand can begin with an owned-context story while broader sources refresh.`, `Create a visual story or Reel draft without making unsupported claims.`],
+  ];
+  let created = 0;
+  for (const [title, rationale, whyNow, direction] of ideas) {
+    const result = await service.recordCandidate(accountId, brandId, { signal: { title, summary: rationale, sourceUrl: source.sourceUrl, platform: source.sourceUrl.includes("instagram") ? "instagram" : "web", retrievedAt: new Date().toISOString(), provider: "brand-profile-fallback", providerVersion: "v1" }, title, rationale, whyNow, developmentDirection: direction, brandContextVersion: input.brand.contextVersion, scores: { relevance: .78, evidence: .55, novelty: .68, timeliness: .62, brandAuthority: .72, audienceFit: .78 }, details: { topic: topics, proposedAngle: direction, hook: title, targetAudience: audience, objective: "Grow audience", confidence: .62, estimatedEffort: "low", recommendedFormat: "carousel", recommendedChannel: "instagram" } });
+    if (result.opportunity) created++;
+  }
+  return created;
+}
+
 
 function isFeedbackAction(value: string): value is RecommendationFeedbackAction {
   return value === "seen" || value === "dismissed";
