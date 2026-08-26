@@ -159,6 +159,8 @@ export interface DiscoverySourceProvider {
   discover(request: DiscoveryRequest): Promise<DiscoveryEvidence[]>;
 }
 
+export * from "./source-intelligence";
+
 const ALLOWED_CAPABILITIES = new Set([
   "public-content-search",
   "public-content-fetch",
