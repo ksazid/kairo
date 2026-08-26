@@ -3,7 +3,7 @@
   "sliceId": "VS-97",
   "title": "Home Hunter Recommendations Trigger",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-03", "FR-06", "FR-07"],
@@ -76,12 +76,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-97@1.0",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Separate exact-SHA gate."
+      "commitSha": "484c3a2c665afa47ed7a9839dc2de55cbcccf6c2",
+      "by": "Product Owner",
+      "at": "2026-08-26T02:04:00+02:00",
+      "rationale": "Product Owner explicitly approved certification of exact candidate 484c3a2c665afa47ed7a9839dc2de55cbcccf6c2 after Product Intake 32913117529, Security baseline 32913117534 and CI 32913117597 passed, with no unresolved PR review threads."
     },
     {
       "type": "release",
@@ -103,8 +103,20 @@
     }
   ],
   "decisionIds": [],
-  "progress": {"discovery":100,"decisions":100,"implementation":95,"testing":25,"certification":0,"release":0,"validation":0},
-  "certification": {"status":"not-started","commitSha":null,"evidence":[]},
+  "progress": {"discovery":100,"decisions":100,"implementation":100,"testing":100,"certification":100,"release":0,"validation":0},
+  "certification": {
+    "status":"passed",
+    "commitSha":"484c3a2c665afa47ed7a9839dc2de55cbcccf6c2",
+    "evidence":[
+      "docs/plans/VS-97-implementation.md",
+      "apps/api/src/hunter-recommendation-routes.test.ts",
+      "apps/web/src/lib/home-frozen-ui.test.ts",
+      "GitHub Actions Product Intake run 32913117529",
+      "GitHub Actions Security baseline run 32913117534",
+      "GitHub Actions CI run 32913117597",
+      "Product Owner certification approval at 2026-08-26T02:04:00+02:00 bound to 484c3a2c665afa47ed7a9839dc2de55cbcccf6c2"
+    ]
+  },
   "release": {"status":"not-authorized","releaseId":null},
   "rollback": {"status":"not-applicable","rollbackId":null},
   "postRelease": {"status":"not-started","reviewAt":null,"expectedOutcome":null,"metrics":[]},
