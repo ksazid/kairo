@@ -3,7 +3,7 @@
   "sliceId": "VS-102",
   "title": "VS-102 — Media Intelligence and Onboarding Sampling",
   "status": "active",
-  "lifecycle": "implementation",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04", "FR-06", "FR-08", "FR-20"],
@@ -27,6 +27,6 @@
   "release": {"status": "not-authorized", "releaseId": null},
   "rollback": {"status": "not-applicable", "rollbackId": null},
   "postRelease": {"status": "not-started", "reviewAt": null, "expectedOutcome": "Media-rich public sources produce bounded evidence and onboarding samples enough recent/deep Brand context without duplicate retrieval pipelines.", "metrics": []},
-  "links": {"specification": "docs/slices/VS-102.md", "implementationPr": null, "evidence": []},
+  "links": {"specification": "docs/slices/VS-102.md", "implementationPr": "https://github.com/ksazid/kairo/pull/214", "evidence": []},
   "maxAttempts": 3
 }
