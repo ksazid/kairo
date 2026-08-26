@@ -23,7 +23,7 @@ export function recommendHomeFormat(input:{text:string;source?:string;mediaKinds
   cue(text,/\b(announcement|launch|quote|poster|single image|photo|visual|showcase|hero image|post)\b/i,scores,reasons,"image",3,"one strong visual can carry the message");
   if(input.source?.trim()){scores.carousel+=2;reasons.carousel.push("the source can be distilled into useful takeaways");}
   const mediaKinds=input.mediaKinds??[];
-  if(mediaKinds.includes("video")){scores.reel+=3;scores.video+=2;reasons.reel.push("you attached video source material");reasons.video.push("you attached video source material");}
+  if(mediaKinds.includes("video")){scores.reel+=4;scores.video+=3;reasons.reel.push("you attached video source material");reasons.video.push("you attached video source material");}
   if(mediaKinds.includes("image")){scores.image+=2;scores.carousel+=1;reasons.image.push("you attached image source material");}
   for(const learning of input.learnings??[]){
     if(learning.status!=="accepted"||learning.confidence<0.55)continue;
