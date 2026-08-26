@@ -140,6 +140,20 @@
       "verification": ["API health returns 200","Supported social/video public URLs fail safely or normalize through their dedicated adapter","Authwall/login-only evidence remains rejected","Source evidence remains provenance-bound and untrusted","Authentication and tenant isolation remain intact","Publishing remains capability-gated and approval-bound"],
       "initiatedBy": null,
       "initiatedAt": null
+    },
+    {
+      "id": "RB-013",
+      "releaseId": "REL-013",
+      "status": "ready",
+      "reason": "Rollback readiness for the medium-risk VS-102 Media Intelligence and bounded onboarding sampling release.",
+      "owner": "Operations Owner",
+      "targetReleaseSha": "f0bb76ad12522611c138283ec03d1564b1a6f7b7",
+      "lastKnownGoodSha": "db596a9eebb05ee433bf53742072b55ca839cf3f",
+      "triggers": ["API health or startup regresses","MediaAnalyzer fabricates evidence or fails to degrade safely when STT/frame/OCR capabilities are unavailable","Onboarding evidence sampling exceeds configured recent/deep/total bounds or fails deduplication","Source provenance/confidence handling regresses","Existing publishing or tenant-isolation behavior regresses"],
+      "procedure": ["Preserve Brand, source, provenance, content, publishing and audit state.","Redeploy previous known-good API SHA db596a9eebb05ee433bf53742072b55ca839cf3f.","No database rollback is required because VS-102 adds no migration.","Keep provider credentials, publishing capability gates and human approval controls unchanged.","Re-verify API health, MediaAnalyzer no-fabrication behavior, bounded sampling, provenance, tenant isolation and existing publishing behavior before reopening."],
+      "verification": ["API health returns 200","MediaAnalyzer continues to prefer supplied captions/transcripts and fails safely when optional capabilities are unavailable","Onboarding sampling remains bounded and deduplicated","Source evidence remains provenance-bound and untrusted","Authentication and tenant isolation remain intact","Publishing remains capability-gated and approval-bound"],
+      "initiatedBy": null,
+      "initiatedAt": null
     }
   ]
 }
