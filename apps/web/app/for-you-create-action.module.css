@@ -66,14 +66,14 @@
 }
 
 .generate {
-  min-height: 34px;
+  min-height: var(--k-button-height-compact);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   border: 0;
-  border-radius: 7px;
-  background: #4c39e8;
+  border-radius: var(--k-button-radius);
+  background: var(--k-primary);
   color: #fff;
   font: inherit;
   font-size: 11px;
