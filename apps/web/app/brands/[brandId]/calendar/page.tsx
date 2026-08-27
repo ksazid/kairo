@@ -82,7 +82,8 @@ export default async function CalendarPage({ params, searchParams }: { params: P
       getCalendar(visibleBrand.id, range.from, range.to),
       getCampaigns(visibleBrand.id),
     ]);
-    const details = await Promise.all(campaigns.map((campaign) => getCampaignDetail(visibleBrand.id, campaign.id).catch(() => null)));
+    const commandCampaignIds = new Set(commands.map((command) => command.campaignId));
+    const details = await Promise.all(campaigns.filter((campaign) => commandCampaignIds.has(campaign.id)).map((campaign) => getCampaignDetail(visibleBrand.id, campaign.id).catch(() => null)));
     const campaignNames = new Map(campaigns.map((campaign) => [campaign.id, campaign.name]));
     const assetDetails = new Map<string, { topic: string; format: string }>();
     for (const detail of details) {
