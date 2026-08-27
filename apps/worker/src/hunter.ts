@@ -68,6 +68,9 @@ export interface HunterRunInput {
   intelligenceGraph?: BrandIntelligenceTopicGraph;
   intelligenceVersion?: number;
   maxEvidence?: number;
+  /** Changes the query rotation without weakening provenance or quality gates. */
+  refreshSeed?: string;
+  existingOpportunityTitles?: string[];
 }
 
 export interface HunterRunResult {
@@ -97,7 +100,7 @@ export class HunterOrchestrator {
 
     // Source Registry/query planning owns the provider request ceilings. maxEvidence bounds the
     // evidence set sent to the model, not which relevant providers are allowed to participate.
-    const maxResultsPerQuery = Math.max(1, Math.min(20, Math.ceil(maxEvidence / plans.length)));
+    const maxResultsPerQuery = Math.max(2, Math.min(20, Math.ceil((maxEvidence * 2) / plans.length)));
     const discovered: DiscoveryEvidence[] = [];
     const degradedSources = new Set<string>();
 
@@ -162,7 +165,7 @@ export class HunterOrchestrator {
         },
       },
       outputSchema: { name: "hunter-opportunities", version: "2" },
-      budget: { maxOutputTokens: 2_000, maxToolCalls: 0, maxCostUsd: 0.08, timeoutMs: 30_000 },
+      budget: { maxOutputTokens: 4_000, maxToolCalls: 0, maxCostUsd: 0.12, timeoutMs: 30_000 },
     });
 
     let judgment: Awaited<ReturnType<AgentRuntimePort["invoke"]>>;
@@ -188,9 +191,11 @@ export class HunterOrchestrator {
 
     const byUrl = new Map(evidence.map((item) => [item.sourceUrl, item]));
     let opportunityCount = 0;
-    for (const candidate of judgment.output.candidates.slice(0, 5)) {
+    for (const candidate of judgment.output.candidates.slice(0, 12)) {
       const source = byUrl.get(candidate.sourceUrl);
       if (!source) continue; // No evidence lineage → cannot create an Opportunity.
+      if (isPreviouslySurfaced(candidate.title, input.existingOpportunityTitles)) continue;
+      if (!passesBrandDnaGate(candidate, source, input)) continue;
       const adjustedScores = evidenceAdjustedScores(candidate.scores, source, enrichedDocuments.get(source.sourceUrl), input.intelligenceGraph);
       const record: OpportunityCandidateInput = {
         signal: {
@@ -248,7 +253,7 @@ function executablePlans(input: HunterRunInput): ExecutableDiscoveryPlan[] {
 }
 
 function normalizeMaxEvidence(value: number | undefined): number {
-  const maxEvidence = value ?? 8;
+  const maxEvidence = value ?? 20;
   if (!Number.isInteger(maxEvidence) || maxEvidence < 1 || maxEvidence > 20) {
     throw new Error("maxEvidence must be an integer from 1 to 20");
   }
@@ -328,17 +333,50 @@ function expandIntentPlans(base: ReturnType<typeof planSourceQueries>, input: Hu
   const aliases = new Map(graphTopics.map((node) => [node.topic.toLowerCase(), node.aliases[0]]));
   const excluded = input.intelligenceProfile?.excludedTopics ?? [];
   const language = input.intelligenceProfile?.languages[0]; const geography = input.intelligenceProfile?.geographies[0];
+  const rotationOffset = refreshRotationOffset(input.refreshSeed);
   return base.flatMap((plan, index) => {
     const node = graphTopics[index % Math.max(1, graphTopics.length)];
     const topic = node?.topic ?? plan.query;
     const alias = aliases.get(topic.toLowerCase());
-    const intent = plan.source === "github" ? "new repo tool" : QUERY_INTENTS[index % QUERY_INTENTS.length];
+    const intent = plan.source === "github" ? "new repo tool" : QUERY_INTENTS[(index + rotationOffset) % QUERY_INTENTS.length];
     const freshness = node?.freshness === "fresh" ? "past week" : "recent";
     const negative = excluded.slice(0, 3).map((item) => `-${quoteQuery(item)}`).join(" ");
     const sourceSyntax = plan.source === "github" ? `in:name,description,readme pushed:>${dateDaysAgo(90)}` : "";
     const query = [topic, alias, intent, freshness, geography, language, negative, sourceSyntax].filter(Boolean).join(" ").replace(/\s+/g, " ").trim().slice(0, 600);
     return [{ source: plan.source, query, explicit: false }];
   });
+}
+function refreshRotationOffset(seed: string | undefined): number {
+  if (!seed) return 0;
+  return [...seed].reduce((total, character) => total + character.charCodeAt(0), 0) % QUERY_INTENTS.length;
+}
+function passesBrandDnaGate(candidate: HunterJudgmentCandidate, source: DiscoveryEvidence, input: HunterRunInput): boolean {
+  const scores = candidate.scores;
+  if (scores.relevance < 0.65 || scores.evidence < 0.55 || scores.audienceFit < 0.60 || scores.novelty < 0.45) return false;
+  if (!input.intelligenceProfile) return true;
+  const dna = [
+    ...input.intelligenceProfile.topics,
+    ...input.intelligenceProfile.audiences,
+    ...input.intelligenceProfile.goals,
+    input.intelligenceProfile.sector,
+    input.intelligenceProfile.subsector,
+  ].filter((value): value is string => Boolean(value));
+  const text = `${candidate.title} ${candidate.rationale} ${candidate.developmentDirection} ${candidate.topic ?? ""} ${candidate.proposedAngle ?? ""} ${source.title} ${source.summary ?? ""}`.toLowerCase();
+  const matches = dna.filter((term) => meaningfulTokens(term).some((token) => text.includes(token))).length;
+  return matches > 0 && scores.brandAuthority >= 0.55;
+}
+function isPreviouslySurfaced(title: string, previous: readonly string[] | undefined): boolean {
+  if (!previous?.length) return false;
+  const candidate = new Set(meaningfulTokens(title));
+  if (candidate.size < 3) return previous.some((item) => item.trim().toLowerCase() === title.trim().toLowerCase());
+  return previous.some((item) => {
+    const prior = new Set(meaningfulTokens(item));
+    const overlap = [...candidate].filter((token) => prior.has(token)).length;
+    return overlap / Math.min(candidate.size, prior.size || 1) >= 0.7;
+  });
+}
+function meaningfulTokens(value: string): string[] {
+  return value.toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length >= 4 && !["about", "with", "from", "that", "this", "your", "into", "using"].includes(token));
 }
 function compactTopicGraph(graph: BrandIntelligenceTopicGraph) { return { schemaVersion: graph.schemaVersion, sectorPack: graph.sectorPack, fingerprint: graph.fingerprint, nodes: graph.nodes.slice(0, 30).map((node) => ({ topic: node.topic, aliases: node.aliases, ...(node.parent ? { parent: node.parent } : {}), priority: node.priority, ...(node.confidence !== undefined ? { confidence: node.confidence } : {}), sourceIds: node.sourceIds, freshness: node.freshness, preferred: node.preferred, excluded: node.excluded, authority: node.authority, origin: node.origin })) }; }
 function enrichDiscoveryEvidence(item: DiscoveryEvidence, document: NormalizedSourceDocument): DiscoveryEvidence {

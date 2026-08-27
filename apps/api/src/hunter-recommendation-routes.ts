@@ -54,6 +54,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       const graphRecord = options.graphStore
         ? await options.graphStore.ensureCurrent(account.id, brand.workspaceId, brand.id, brain, topicGraphPack(pack.id))
         : undefined;
+      const existingOpportunities = options.discovery ? await options.discovery.list(account.id, brand.id) : [];
       const projectedBrand = projectBrandContext(brand, brain);
       const learnedContext = closedLoop ? await closedLoop.learningContext(account.id, brand.id) : undefined;
       const input: HunterRunInput = {
@@ -63,7 +64,9 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
           : projectedBrand,
         intelligenceProfile,
         ...(graphRecord ? { intelligenceGraph: graphRecord.graph, intelligenceVersion: graphRecord.version } : {}),
-        maxEvidence: 8,
+        maxEvidence: 20,
+        refreshSeed: new Date().toISOString(),
+        ...(existingOpportunities.length ? { existingOpportunityTitles: existingOpportunities.map((item) => item.title).slice(0, 100) } : {}),
       };
       const key = `${account.id}:${brand.id}`;
       let run = inFlight.get(key);
