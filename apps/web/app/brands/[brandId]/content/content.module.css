@@ -316,7 +316,36 @@
 .gridRows .channelCell,
 .gridRows .statusCell,
 .gridRows .updatedCell { display: none; }
-.gridRows .moreButton { position: absolute; top: 12px; right: 12px; }
+
+.gridMeta {
+  display: none;
+}
+
+.gridRows .gridMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.gridMeta span {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f1f2f5;
+  color: #5a606b;
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 600;
+}
+
+.gridMeta span[data-status="needs-you"] { background: #fff3df; color: #ae7418; }
+.gridMeta span[data-status="ready"] { background: #eaf7e9; color: #2f8b34; }
+.gridMeta span[data-status="scheduled"] { background: #edf1ff; color: #3d55c8; }
+.gridMeta span[data-status="published"] { background: #e8f6e8; color: #2d812d; }
+.gridMeta span[data-status="drafts"] { background: #eef0f3; color: #555b66; }
 
 .contentCell {
   min-width: 0;
@@ -451,23 +480,6 @@
 .updatedCell > span:last-child { color: #666b75; }
 
 .updatedCell time { color: #555a64; }
-
-.moreButton {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  justify-self: end;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: #24272f;
-  cursor: pointer;
-}
-
-.moreButton:hover { background: #f5f6f8; }
-.moreButton svg { width: 24px; height: 24px; }
 
 .empty {
   min-height: 260px;
@@ -609,7 +621,6 @@
   .gridRows .thumbnail { height: 116px; }
   .gridRows .contentCopy { margin-top: 8px; }
   .gridRows .contentCopy h3 { font-size: 14px; line-height: 18px; }
-  .gridRows .moreButton { top: 8px; right: 8px; }
   .contentCell { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; }
   .thumbnail { width: 92px; height: 76px; }
   .contentCopy h3 { font-size: 15px; line-height: 20px; }
