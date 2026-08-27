@@ -110,13 +110,16 @@ export class PublishingService {
     if (request.contentType === "carousel" && !renderedApproval) {
       throw new ResourceNotFoundError("Approved rendered media not found for Content Asset");
     }
+    const mediaItems = input.mediaItems ?? (version.libraryAssetRefs ?? [])
+      .filter((item) => (item.kind === "image" || item.kind === "video") && item.previewRef)
+      .map((item) => ({ kind: item.kind as "image" | "video", url: item.previewRef! }));
     const commandInput = {
         id: randomUUID(),
         approval,
         currentVersionId: version.id,
         channelAccount: channel,
         contentType: request.contentType,
-        mediaItems: request.mediaItems,
+        mediaItems,
         options: request.options,
         scheduledFor: request.scheduledFor,
         createdAt,
