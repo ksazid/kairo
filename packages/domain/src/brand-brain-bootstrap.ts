@@ -160,7 +160,7 @@ export class BrandBrainBootstrapService {
       const fallbackReference = {
         url: fallbackUrl,
         title: brand.name,
-        excerpt: `Public social profile for ${brand.name}. Detailed profile evidence is unavailable until the source is connected or refreshed.`,
+        excerpt: `Public reference for ${brand.name}. Detailed source evidence is unavailable until the source is connected or refreshed.`,
         retrievedAt: new Date().toISOString(),
       };
       // Keep conservative fallback proposals source-backed so PostgreSQL can
@@ -369,12 +369,12 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   const sourceIds = [reference.sourceId];
   if (isSocial) return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
-    { section: "identity", fieldKey: "identity.category", value: "Motorcycle and automotive lifestyle brand", sourceIds },
-    { section: "audience", fieldKey: "audience.primary", value: "People interested in motorcycles, cars, riding culture and automotive lifestyle", sourceIds },
-    { section: "voice", fieldKey: "voice.tone", value: "Visual, energetic and practical", sourceIds },
-    { section: "content-strategy", fieldKey: "content.pillars", value: "Rides and vehicles, ownership advice, lifestyle stories and community moments", sourceIds },
-    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Bike and car features, riding tips, maintenance, routes and community stories", sourceIds },
-    { section: "content-strategy", fieldKey: "content.channels", value: "Instagram, Facebook, YouTube and automotive communities", sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: "Public social profile — category not yet confirmed", sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: "The Brand's audience, to be confirmed from connected or readable source evidence", sourceIds },
+    { section: "voice", fieldKey: "voice.tone", value: "To be confirmed from the Brand's published content", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: "Topics and themes from the Brand's published content, to be confirmed", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Brand-relevant topics grounded in connected or readable source evidence", sourceIds },
+    { section: "content-strategy", fieldKey: "content.channels", value: "The connected social profile and other channels confirmed by the Brand owner", sourceIds },
   ];
   if (isSubstack) return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
