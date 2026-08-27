@@ -155,7 +155,7 @@ export class BrandBrainBootstrapService {
     const isSocialFallback = fallbackHost === "instagram.com" || fallbackHost === "www.instagram.com"
       || fallbackHost === "facebook.com" || fallbackHost === "www.facebook.com";
     const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
-      || fallbackHost === "on.substack.com";
+      || fallbackHost === "on.substack.com" || fallbackHost.endsWith(".substack.com");
     if (!successfulReferences.length && fallbackUrl) {
       const fallbackReference = {
         url: fallbackUrl,
@@ -358,10 +358,7 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     try { return ["instagram.com", "facebook.com", "www.instagram.com", "www.facebook.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
   });
   const substack = references.find((reference) => {
-    try {
-      const host = new URL(reference.url).hostname.toLowerCase();
-      return host === "substack.com" || host.endsWith(".substack.com");
-    } catch { return false; }
+    try { const host = new URL(reference.url).hostname.toLowerCase(); return host === "substack.com" || host === "www.substack.com" || host === "on.substack.com" || host.endsWith(".substack.com"); } catch { return false; }
   });
   const reference = github ?? social ?? substack ?? references[0];
   if (!reference) return [];
