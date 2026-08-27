@@ -228,4 +228,56 @@ describe("Hunter orchestration", () => {
     expect(result.opportunityCount).toBe(0);
     expect(sink.records).toHaveLength(0);
   });
+
+  it("fails closed when a candidate has strong numeric scores but no Brand DNA match", async () => {
+    const sink = new FakeSink();
+    const hunter = new HunterOrchestrator(new FakeTools(), new FakeRuntime({ candidates: [{
+      sourceUrl: evidence[0]!.sourceUrl,
+      title: "A generic productivity trend",
+      rationale: "Popular with many teams",
+      whyNow: "It is currently discussed",
+      developmentDirection: "Write a broad trend post",
+      scores,
+    }] }), sink as never);
+
+    const result = await hunter.runForAuthorizedBrand({
+      accountId: "account-1",
+      brand,
+      intelligenceProfile: { ...aiProfile, topics: ["zzzz topic"], audiences: ["yyyy audience"], goals: ["xxxx goal"], sector: "qqqq sector" },
+    });
+
+    expect(result.opportunityCount).toBe(0);
+    expect(sink.records).toHaveLength(0);
+  });
+
+  it("rotates automatic queries on refresh without changing the evidence contract", async () => {
+    const baselineTools = new FakeTools([], () => []);
+    const refreshedTools = new FakeTools([], () => []);
+    await new HunterOrchestrator(baselineTools, new FakeRuntime({ candidates: [] }), new FakeSink() as never).runForAuthorizedBrand({
+      accountId: "account-1", brand, intelligenceProfile: aiProfile,
+    });
+    await new HunterOrchestrator(refreshedTools, new FakeRuntime({ candidates: [] }), new FakeSink() as never).runForAuthorizedBrand({
+      accountId: "account-1", brand, intelligenceProfile: aiProfile, refreshSeed: "2026-08-27T13:00:00.000Z",
+    });
+    const baseline = baselineTools.requests.find((request) => request.capability === "public-content-search" && request.input.source !== "github");
+    const refreshed = refreshedTools.requests.find((request) => request.capability === "public-content-search" && request.input.source !== "github");
+    expect(refreshed?.input.query).not.toBe(baseline?.input.query);
+  });
+
+  it("does not recreate a previously surfaced idea with the same substance", async () => {
+    const sink = new FakeSink();
+    const hunter = new HunterOrchestrator(new FakeTools(), new FakeRuntime({ candidates: [{
+      sourceUrl: evidence[0]!.sourceUrl,
+      title: "Persistent agents change SaaS architecture",
+      rationale: "High audience fit",
+      whyNow: "Runtime behavior is changing now",
+      developmentDirection: "Explain multi-tenant architecture tradeoffs",
+      scores,
+    }] }), sink as never);
+    const result = await hunter.runForAuthorizedBrand({
+      accountId: "account-1", brand, query: "AI agents", existingOpportunityTitles: ["Persistent agents change SaaS architecture"],
+    });
+    expect(result.opportunityCount).toBe(0);
+    expect(sink.records).toHaveLength(0);
+  });
 });

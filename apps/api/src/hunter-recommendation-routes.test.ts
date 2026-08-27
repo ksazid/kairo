@@ -81,7 +81,7 @@ describe("VS-97 Hunter recommendations API", () => {
     expect(response.json()).toEqual(emptyResult);
     expect(captured).toMatchObject({
       accountId: account.id,
-      maxEvidence: 8,
+      maxEvidence: 20,
       brand: {
         workspaceId: brand.workspaceId,
         brandId: brand.id,
