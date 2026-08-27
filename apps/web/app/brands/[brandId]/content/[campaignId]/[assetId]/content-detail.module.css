@@ -507,7 +507,12 @@
   gap: 13px;
   margin-top: 12px;
 }
-.aiActions a {
+.aiActions form,
+.aiActions button {
+  min-width: 0;
+}
+.aiActions form { display: contents; }
+.aiActions button {
   min-width: 0;
   height: 50px;
   display: flex;
@@ -524,6 +529,7 @@
   font-weight: 570;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 .aiActions svg { width: 19px; height: 19px; }
 

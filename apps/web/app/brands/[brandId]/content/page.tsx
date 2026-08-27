@@ -21,7 +21,7 @@ import shellStyles from "./content-reference-shell.module.css";
 import styles from "./content.module.css";
 
 type Params = Promise<{ brandId: string }>;
-type SearchParams = Promise<{ filter?: string; q?: string; page?: string; size?: string }>;
+type SearchParams = Promise<{ filter?: string; q?: string; page?: string; size?: string; view?: string }>;
 
 export default async function ContentPage({
   params,
@@ -35,6 +35,7 @@ export default async function ContentPage({
   const filter = isContentFilter(requested.filter) ? requested.filter : "all";
   const query = (requested.q ?? "").trim();
   const pageSize = [10, 20, 50].includes(Number(requested.size)) ? Number(requested.size) : 10;
+  const view = requested.view === "grid" ? "grid" : "list";
   const [brand, campaigns, commands] = await Promise.all([
     getBrand(brandId),
     getCampaigns(brandId),
@@ -99,6 +100,7 @@ export default async function ContentPage({
             <input id="content-search" type="search" name="q" defaultValue={query} placeholder="Search content..." />
             {filter !== "all" ? <input type="hidden" name="filter" value={filter} /> : null}
             {pageSize !== 10 ? <input type="hidden" name="size" value={pageSize} /> : null}
+            {view !== "list" ? <input type="hidden" name="view" value={view} /> : null}
           </form>
 
           <div className={styles.toolbarActions}>
@@ -107,15 +109,15 @@ export default async function ContentPage({
               <div className={styles.filterPopover}>
                 <strong>Status</strong>
                 {CONTENT_FILTERS.map((value) => (
-                  <Link key={value} href={contentHref(base, { filter: value, q: query, size: pageSize })}>
+                  <Link key={value} href={contentHref(base, { filter: value, q: query, size: pageSize, view })}>
                     {contentFilterLabel(value)} <span>{content.counts[value]}</span>
                   </Link>
                 ))}
               </div>
             </details>
             <div className={styles.viewSwitch} aria-label="Content view">
-              <span className={styles.activeView} aria-label="List view" aria-current="true"><KairoIcon name="list" /></span>
-              <button type="button" aria-label="Grid view" title="Grid view is not available yet" disabled><KairoIcon name="grid" /></button>
+              <Link className={view === "list" ? styles.activeView : undefined} aria-label="List view" aria-current={view === "list" ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, view: "list" })}><KairoIcon name="list" /></Link>
+              <Link className={view === "grid" ? styles.activeView : undefined} aria-label="Grid view" aria-current={view === "grid" ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, view: "grid" })}><KairoIcon name="grid" /></Link>
             </div>
           </div>
         </div>
@@ -123,7 +125,7 @@ export default async function ContentPage({
         <nav className={styles.tabs} aria-label="Filter content by status">
           {CONTENT_FILTERS.map((value) => (
             <Link
-              href={contentHref(base, { filter: value, q: query, size: pageSize })}
+              href={contentHref(base, { filter: value, q: query, size: pageSize, view })}
               key={value}
               data-active={value === filter || undefined}
               aria-current={value === filter ? "page" : undefined}
@@ -134,7 +136,7 @@ export default async function ContentPage({
           ))}
         </nav>
 
-        <section className={styles.tableShell} aria-labelledby="content-list-title">
+        <section className={`${styles.tableShell} ${view === "grid" ? styles.gridShell : ""}`} aria-labelledby="content-list-title">
           <h2 className="sr-only" id="content-list-title">{contentFilterLabel(filter)} content</h2>
           <div className={styles.tableHeader} aria-hidden="true">
             <span>Content</span>
@@ -144,7 +146,7 @@ export default async function ContentPage({
             <span />
           </div>
 
-          <div className={styles.rows}>
+          <div className={`${styles.rows} ${view === "grid" ? styles.gridRows : ""}`}>
             {visible.length ? visible.map((item) => {
               const href = `${base}/content/${encodeURIComponent(item.campaignId)}/${encodeURIComponent(item.assetId)}`;
               const thumbnail = thumbnails.get(item.assetId) ?? null;
@@ -192,16 +194,16 @@ export default async function ContentPage({
             <footer className={styles.pagination}>
               <span>Showing {firstShown} to {lastShown} of {filtered.length} results</span>
               <nav className={styles.pageLinks} aria-label="Content pages">
-                <Link aria-label="Previous page" aria-disabled={currentPage === 1} data-disabled={currentPage === 1 || undefined} href={contentHref(base, { filter, q: query, size: pageSize, page: Math.max(1, currentPage - 1) })}><KairoIcon name="arrow-left" /></Link>
+                <Link aria-label="Previous page" aria-disabled={currentPage === 1} data-disabled={currentPage === 1 || undefined} href={contentHref(base, { filter, q: query, size: pageSize, page: Math.max(1, currentPage - 1), view })}><KairoIcon name="arrow-left" /></Link>
                 {pageNumbers(currentPage, totalPages).map((page) => (
-                  <Link key={page} data-active={page === currentPage || undefined} aria-current={page === currentPage ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, page })}>{page}</Link>
+                  <Link key={page} data-active={page === currentPage || undefined} aria-current={page === currentPage ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, page, view })}>{page}</Link>
                 ))}
-                <Link aria-label="Next page" aria-disabled={currentPage === totalPages} data-disabled={currentPage === totalPages || undefined} href={contentHref(base, { filter, q: query, size: pageSize, page: Math.min(totalPages, currentPage + 1) })}><KairoIcon name="arrow-right" /></Link>
+                <Link aria-label="Next page" aria-disabled={currentPage === totalPages} data-disabled={currentPage === totalPages || undefined} href={contentHref(base, { filter, q: query, size: pageSize, page: Math.min(totalPages, currentPage + 1), view })}><KairoIcon name="arrow-right" /></Link>
               </nav>
               <details className={styles.pageSize}>
                 <summary>{pageSize} / page <span>⌄</span></summary>
                 <div>
-                  {[10, 20, 50].map((size) => <Link key={size} href={contentHref(base, { filter, q: query, size, page: 1 })}>{size} / page</Link>)}
+                  {[10, 20, 50].map((size) => <Link key={size} href={contentHref(base, { filter, q: query, size, page: 1, view })}>{size} / page</Link>)}
                 </div>
               </details>
             </footer>
@@ -212,12 +214,13 @@ export default async function ContentPage({
   );
 }
 
-function contentHref(base: string, input: { filter?: string; q?: string; size?: number; page?: number }) {
+function contentHref(base: string, input: { filter?: string; q?: string; size?: number; page?: number; view?: "list" | "grid" }) {
   const params = new URLSearchParams();
   if (input.filter && input.filter !== "all") params.set("filter", input.filter);
   if (input.q) params.set("q", input.q);
   if (input.page && input.page > 1) params.set("page", String(input.page));
   if (input.size && input.size !== 10) params.set("size", String(input.size));
+  if (input.view === "grid") params.set("view", "grid");
   const suffix = params.toString();
   return `${base}/content${suffix ? `?${suffix}` : ""}`;
 }

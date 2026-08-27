@@ -155,7 +155,8 @@
 }
 
 .viewSwitch span,
-.viewSwitch button {
+.viewSwitch button,
+.viewSwitch a {
   width: 57px;
   height: 42px;
   display: grid;
@@ -165,6 +166,7 @@
   border-radius: 8px;
   background: transparent;
   color: #5e6470;
+  text-decoration: none;
 }
 
 .viewSwitch svg { width: 22px; height: 22px; }
@@ -290,6 +292,31 @@
 
 .row:last-child { border-bottom: 0; }
 .row:hover { background: #fefeff; }
+
+.gridShell .tableHeader { display: none; }
+.gridRows {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  padding: 14px;
+}
+.gridRows .row {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e1e4e9;
+  border-radius: 11px;
+}
+.gridRows .contentCell { display: block; }
+.gridRows .thumbnail { width: 100%; height: 170px; }
+.gridRows .contentCopy { margin-top: 12px; }
+.gridRows .channelCell,
+.gridRows .statusCell,
+.gridRows .updatedCell { display: none; }
+.gridRows .moreButton { position: absolute; top: 12px; right: 12px; }
 
 .contentCell {
   min-width: 0;
@@ -577,6 +604,12 @@
     border: 1px solid #e1e4e9;
     border-radius: 11px;
   }
+  .gridRows { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; gap: 10px; }
+  .gridRows .row { display: flex; grid-template-columns: none; padding: 10px; }
+  .gridRows .thumbnail { height: 116px; }
+  .gridRows .contentCopy { margin-top: 8px; }
+  .gridRows .contentCopy h3 { font-size: 14px; line-height: 18px; }
+  .gridRows .moreButton { top: 8px; right: 8px; }
   .contentCell { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; }
   .thumbnail { width: 92px; height: 76px; }
   .contentCopy h3 { font-size: 15px; line-height: 20px; }
