@@ -201,7 +201,7 @@ export function buildForYou(opportunities: BrandOpportunityDto[]): HomeForYouIte
   return opportunities
     .filter((item) => item.status !== "ignored")
     .sort((a, b) => b.scores.overall - a.scores.overall || b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, 4)
+    .slice(0, 6)
     .map((item) => ({
       id: item.id,
       title: item.title,
