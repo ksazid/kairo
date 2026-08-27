@@ -44,10 +44,10 @@ export default async function ContentPage({
 
   if (!brand) {
     return (
-      <main className="auth-page">
-        <section className="auth-card">
+      <main className={styles.main}>
+        <section className={styles.notFound}>
           <h1>Brand not found.</h1>
-          <Link className="primary-button" href="/">Return Home</Link>
+          <Link className={styles.primaryAction} href="/">Return Home</Link>
         </section>
       </main>
     );
@@ -189,7 +189,7 @@ export default async function ContentPage({
               <div className={styles.empty}>
                 <h3>{emptyTitle(content.items.length, filter, query)}</h3>
                 <p>{content.items.length ? "Try a different search or status filter." : "Start from My Idea or For You on Home. New content will appear here when it is ready."}</p>
-                <Link className="secondary-button" href={content.items.length ? `${base}/content` : home}>{content.items.length ? "Clear filters" : "Go to Home"}</Link>
+                <Link className={styles.secondaryAction} href={content.items.length ? `${base}/content` : home}>{content.items.length ? "Clear filters" : "Go to Home"}</Link>
               </div>
             )}
           </div>

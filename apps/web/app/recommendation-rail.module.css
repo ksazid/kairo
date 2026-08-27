@@ -1,0 +1,8 @@
+.frame { display:grid; grid-template-columns:36px minmax(0,1fr) 36px; align-items:center; gap:8px; margin-top:14px; }
+.rail { min-width:0; display:flex; gap:12px; overflow-x:auto; padding:2px 2px 10px; scroll-behavior:smooth; scrollbar-width:thin; scrollbar-color:#b9b5f5 transparent; }
+.rail > * { flex:0 0 min(286px, 30vw); }
+.arrow { width:36px; height:36px; display:grid; place-items:center; padding:0; border:1px solid #dfe1e8; border-radius:50%; background:#fff; color:#4f3de7; cursor:pointer; }
+.arrow:hover:not(:disabled) { border-color:#7162ed; background:#f5f3ff; }
+.arrow:disabled { cursor:default; opacity:.45; }
+.arrow svg { width:18px; height:18px; }
+@media (max-width:720px) { .frame { grid-template-columns:28px minmax(0,1fr) 28px; gap:5px; } .rail { gap:8px; padding-bottom:8px; } .rail > * { flex-basis:calc(100% - 18px); } .arrow { width:28px; height:28px; } .arrow svg { width:15px; height:15px; } }

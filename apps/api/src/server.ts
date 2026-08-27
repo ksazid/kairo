@@ -37,7 +37,7 @@ import{PgBrandCreator}from"./brand-creator";
 import{registerBrandRoutes}from"./brand-routes";
 import {AgentRuntimeRouter,DirectModelRuntime,hermesBridgeRuntimeFromEnv}from"@kairo/worker/agent-runtime";import{openAICompatibleGatewayFromEnv}from"@kairo/worker/model-gateway";import{BrandBrainBuilder}from"@kairo/worker/brand-brain-builder";import{DrafterGenerationAdapter}from"./drafter-adapter";
 import{HunterOrchestrator,isHunterJudgmentOutput}from"@kairo/worker/hunter";
-import{ResearcherOrchestrator,extractResearchUrls,isResearcherOutput}from"@kairo/worker/researcher";
+import{ResearcherOrchestrator,buildFocusedResearchQuery,extractResearchUrls,isResearcherOutput}from"@kairo/worker/researcher";
 import{StrategistOrchestrator,isStrategistOutput}from"@kairo/worker/strategist";
 import{PgIdeaDevelopmentLock}from"./idea-development-lock";
 import{deterministicFallbackAngles}from"./deterministic-angle-fallback";
@@ -393,7 +393,7 @@ async function loadExplicitResearchEvidence(idea:{title:string;premise:string}){
 }
 
 function researchQuery(idea:{title:string;premise:string}){
-  return `${idea.title}. ${idea.premise}`.replace(/\s+/g," ").trim().slice(0,1_000);
+  return buildFocusedResearchQuery(idea);
 }
 
 function metaInstagramConfig(){

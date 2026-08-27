@@ -49,10 +49,7 @@ export function ForYouBatchAction({ brandId, items }: Props) {
   }
 
   return <div className={styles.batch}>
-    <div className={styles.toolbar}>
-      <span>{selected.length ? `${selected.length} selected` : "Select ideas to generate together"}</span>
-      <div className={styles.controls}><button type="button" disabled={!selected.length || running} onClick={generate}><KairoIcon name="sparkles" />{running ? "Generating selected…" : `AI Generate selected${selected.length ? ` (${selected.length})` : ""}`}</button></div>
-    </div>
+    <div className={styles.controls}><button type="button" disabled={!selected.length || running} onClick={generate}><KairoIcon name="sparkles" />{running ? "Generating selected…" : `AI Generate selected${selected.length ? ` (${selected.length})` : ""}`}</button></div>
     {message ? <p className={styles.status} role="status">{message}</p> : null}
   </div>;
 }
