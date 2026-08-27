@@ -46,7 +46,7 @@
 .video-studio-empty h1,.video-studio-empty h2{margin-top:5px}
 .video-studio-empty p{color:var(--k-neutral-700);line-height:23px}
 .video-studio-empty .secondary-button{margin-top:12px}
-.video-scene .tertiary-button,.video-scene-timing .tertiary-button{min-height:44px;border:1px solid var(--k-neutral-200);border-radius:8px;padding:9px 12px;background:var(--k-surface);color:var(--k-neutral-700);font-weight:700;cursor:pointer}
+.video-scene .tertiary-button,.video-scene-timing .tertiary-button{min-height:var(--k-button-height);border:1px solid var(--k-neutral-200);border-radius:var(--k-button-radius);padding:10px 12px;background:var(--k-surface);color:var(--k-neutral-700);font-weight:700;cursor:pointer}
 .video-scene .tertiary-button:hover,.video-scene-timing .tertiary-button:hover{background:var(--k-neutral-50)}
 .video-scene .tertiary-button:focus-visible,.video-scene-timing .tertiary-button:focus-visible{outline:3px solid color-mix(in srgb,var(--k-primary) 24%,transparent);outline-offset:2px}
 
