@@ -358,7 +358,7 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     try { return ["instagram.com", "facebook.com", "www.instagram.com", "www.facebook.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
   });
   const substack = references.find((reference) => {
-    try { return ["substack.com", "www.substack.com", "on.substack.com"].includes(new URL(reference.url).hostname.toLowerCase()); } catch { return false; }
+    try { const host = new URL(reference.url).hostname.toLowerCase(); return host === "substack.com" || host === "www.substack.com" || host === "on.substack.com" || host.endsWith(".substack.com"); } catch { return false; }
   });
   const reference = github ?? social ?? substack ?? references[0];
   if (!reference) return [];
