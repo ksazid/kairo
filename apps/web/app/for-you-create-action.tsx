@@ -23,7 +23,6 @@ const FORMATS: HomeCreationFormat[] = ["image", "carousel", "reel", "video"];
 
 export function ForYouCreateAction({ brandId, opportunityId, title, direction, initialFormat, eligiblePresenter, allowFormatChange = false }: Props) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<HomeCreationFormat>(initialFormat);
   const [presenterId, setPresenterId] = useState("");
   const [busy, setBusy] = useState(false);
@@ -70,10 +69,6 @@ export function ForYouCreateAction({ brandId, opportunityId, title, direction, i
       if (body.status === "needs-attention") throw new Error(body.message ?? "Kairo could not finish this creation.");
     }
     throw new Error("Generation is still running. Check Content shortly.");
-  }
-
-  if (!open) {
-    return <button type="button" className={styles.useIdea} onClick={() => setOpen(true)}>Use idea</button>;
   }
 
   return (
