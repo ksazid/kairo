@@ -5,8 +5,10 @@ import {
   buildForYou,
   buildUpNext,
   buildWhatsWorking,
+  buildContinue,
   recommendMyIdea,
 } from "./home-intelligence";
+import type { CampaignView, IdeaSummary } from "./kairo-api";
 
 function learning(overrides: Partial<LearningView> = {}): LearningView {
   return {
@@ -78,6 +80,21 @@ function command(overrides: Partial<PublishCommandView> = {}): PublishCommandVie
 }
 
 describe("VS-85 Home intelligence", () => {
+  it("keeps Home Continue inside the approved Content surface", () => {
+    const campaign: CampaignView = {
+      id: "campaign-1", workspaceId: "workspace-1", brandId: "brand-1", ideaId: "idea-1",
+      researchId: "research-1", angleId: "angle-1", name: "Draft campaign", objective: "Educate",
+      supportingClaimIds: [], status: "draft", createdAt: "2026-08-23T09:00:00.000Z",
+    };
+    const idea: IdeaSummary = {
+      id: "idea-1", workspaceId: "workspace-1", brandId: "brand-1", title: "Draft idea", premise: "Premise",
+      source: { type: "user" }, status: "new", createdAt: "2026-08-23T08:00:00.000Z",
+    };
+    const items = buildContinue("brand-1", [campaign], [idea]);
+    expect(items[0]?.href).toBe("/brands/brand-1/content");
+    expect(items[0]?.href).not.toContain("/campaigns/");
+  });
+
   it("recommends a format before creation using the actual idea", () => {
     const result = recommendMyIdea({
       text: "Compare three lightweight wheel options and explain the handling tradeoffs, price differences and who each one is for.",
