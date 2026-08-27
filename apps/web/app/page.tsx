@@ -8,6 +8,7 @@ import { ForYouRecommendationsAction } from "./for-you-recommendations-action";
 import { ForYouBookmarkAction } from "./for-you-bookmark-action";
 import { RecommendationSeen } from "./recommendation-seen";
 import { ForYouBatchAction } from "./for-you-batch-action";
+import { ForYouSelectCheckbox } from "./for-you-select-checkbox";
 import {
   getBrandNotifications,
   getBrands,
@@ -73,7 +74,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   const hasConnectedChannel = channelResult.available ? channelResult.items.some((channel) => channel.status === "connected") : true;
   const attention = buildAttentionItems({ brandId: brand.id, notifications: notificationResult.items, hasConnectedChannel })[0];
-  const forYou = buildForYou(opportunities);
+  const forYou = buildForYou(opportunities).slice(0, 4);
   const continueItems = buildContinue(brand.id, campaigns, ideas);
   const scores = new Map<string, RecommendationScores>(opportunities.map((item) => [item.id, { overall: item.scores.overall, audienceFit: item.scores.audienceFit, status: item.status }]));
   const metrics = buildHomeMetrics(performance);
@@ -167,6 +168,7 @@ function RecommendationCard({ item, scores, brandId, eligiblePresenter }: { item
   return (
     <article className={styles.recommendationCard}>
       <RecommendationSeen brandId={brandId} opportunityId={item.id} />
+      <ForYouSelectCheckbox id={item.id} title={item.title} />
       <div className={styles.recommendationThumb} data-tone={tone} aria-label={`${homeFormatLabel(format)} recommendation`}>
         <KairoIcon name={format === "reel" || format === "video" ? "video" : "image"} />
         <span className={styles.formatPill}>{homeFormatLabel(format)}</span>
