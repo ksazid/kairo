@@ -141,7 +141,7 @@ describe("VS-85 Home intelligence", () => {
       opportunity("fourth", 60),
       opportunity("fifth", 50),
     ]);
-    expect(items.map((item) => item.id)).toEqual(["best", "second", "third", "fourth"]);
+    expect(items.map((item) => item.id)).toEqual(["best", "second", "third", "fourth", "fifth", "weak"]);
     expect(items[0]?.format).toBe("carousel");
   });
 
