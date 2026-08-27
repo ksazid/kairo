@@ -36,8 +36,7 @@
 }
 
 .moreActions { position: relative; }
-.moreActions > summary,
-.bookmarkButton {
+.moreActions > summary {
   height: 50px;
   display: flex;
   align-items: center;
@@ -95,13 +94,6 @@
 }
 .moreActions a:hover,
 .moreActions button:hover { background: #f7f8fa; }
-
-.bookmarkButton {
-  width: 50px;
-  padding: 0;
-  cursor: pointer;
-}
-.bookmarkButton svg { width: 23px; height: 23px; }
 
 .notice {
   margin: 14px 25px 0;
@@ -241,13 +233,13 @@
 .deviceToggle {
   height: 48px;
   display: grid;
-  grid-template-columns: repeat(2, 46px);
+  grid-template-columns: 46px;
   padding: 2px;
   border: 1px solid #e0e3e8;
   border-radius: 10px;
   background: #fff;
 }
-.deviceToggle button {
+.deviceToggle span {
   width: 44px;
   height: 42px;
   display: grid;
@@ -259,7 +251,7 @@
   color: #616773;
   cursor: pointer;
 }
-.deviceToggle button svg { width: 22px; height: 22px; }
+.deviceToggle span svg { width: 22px; height: 22px; }
 .deviceToggle .deviceActive { border: 1.5px solid #513ce6; color: #513ce6; }
 
 .destinationTabs {
@@ -507,7 +499,12 @@
   gap: 13px;
   margin-top: 12px;
 }
-.aiActions a {
+.aiActions form,
+.aiActions button {
+  min-width: 0;
+}
+.aiActions form { display: contents; }
+.aiActions button {
   min-width: 0;
   height: 50px;
   display: flex;
@@ -524,6 +521,7 @@
   font-weight: 570;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 .aiActions svg { width: 19px; height: 19px; }
 
@@ -734,7 +732,6 @@
   .main { padding-bottom: 92px; }
   .topActions { height: 58px; padding: 0 16px; }
   .moreActions > summary { min-width: 118px; height: 42px; font-size: 12px; }
-  .bookmarkButton { width: 42px; height: 42px; }
   .contentGrid { width: auto; grid-template-columns: 1fr; gap: 16px; margin: 16px; }
   .assetHeader { min-height: 0; padding: 2px 0 15px; }
   .titleRow h1 { white-space: normal; font-size: 25px; line-height: 31px; }

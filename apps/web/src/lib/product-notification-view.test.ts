@@ -16,7 +16,7 @@ describe("VS-86 product notification routing", () => {
       kind: "publishing-failed",
       context: { campaignId: "campaign/1", failureReason: "Provider rejected media" },
     });
-    expect(view.href).toBe("/brands/brand%2Fa/campaigns/campaign%2F1");
+    expect(view.href).toBe("/brands/brand%2Fa/content");
     expect(view.title).toBe("Publishing failed");
   });
 
@@ -44,8 +44,8 @@ describe("VS-86 product notification routing", () => {
     expect(view.title).toBe("New performance insight");
   });
 
-  it("opens the affected Campaign for content awaiting approval", () => {
+  it("opens Content for content awaiting approval", () => {
     const view = productNotificationView({ ...base, context: { campaignId: "campaign-2" } });
-    expect(view.href).toBe("/brands/brand%2Fa/campaigns/campaign-2");
+    expect(view.href).toBe("/brands/brand%2Fa/content");
   });
 });

@@ -11,6 +11,7 @@ import { KairoProductShell } from "../../../../../kairo-product-shell";
 import { KairoIcon, type KairoIconName } from "../../../../../kairo-icons";
 import {
   approveContentAction,
+  generateVersionAction,
   reviewContentAction,
   scheduleContentAction,
 } from "../../../campaigns/actions";
@@ -92,9 +93,6 @@ export default async function ContentDetailPage({
     ? channelAccounts.find((account) => account.channel === approval.destination.channel && account.accountRef === approval.destination.accountRef && account.status === "connected")
     : null;
   const base = `/brands/${encodeURIComponent(brand.id)}`;
-  const carouselHref = `${base}/campaigns/${encodeURIComponent(campaignId)}/carousel/${encodeURIComponent(asset.id)}`;
-  const videoHref = `${base}/campaigns/${encodeURIComponent(campaignId)}/video/${encodeURIComponent(asset.id)}`;
-  const editorHref = isCarousel ? carouselHref : isMotion ? videoHref : `${base}/campaigns/${encodeURIComponent(campaignId)}`;
   const displayState = approval
     ? { label: "Approved", key: "approved" as const, detail: "This exact version is locked for publishing." }
     : review?.status === "passed"
@@ -119,7 +117,6 @@ export default async function ContentDetailPage({
             <details className={styles.moreActions}>
               <summary>More actions <span>⌄</span></summary>
               <div>
-                <Link href={editorHref}>Edit content</Link>
                 {!review || review.status === "revision-required" ? (
                   <form action={reviewContentAction.bind(null, brand.id, campaignId, asset.id, current.version)}>
                     <button type="submit">{review ? "Check again" : "Check readiness"}</button>
@@ -128,7 +125,6 @@ export default async function ContentDetailPage({
                 <Link href={`${base}/calendar`}>Open Calendar</Link>
               </div>
             </details>
-            <button className={styles.bookmarkButton} type="button" aria-label="Save content" title="Saving this content is not configured yet"><KairoIcon name="bookmark" /></button>
           </div>
         </div>
 
@@ -140,7 +136,6 @@ export default async function ContentDetailPage({
             <header className={styles.assetHeader}>
               <div className={styles.titleRow}>
                 <h1>{asset.topic}</h1>
-                <Link href={editorHref} aria-label="Edit content title"><KairoIcon name="edit" /></Link>
               </div>
               <p>{summaryLine(currentDisplay, detail.campaign.objective)}</p>
               <div className={styles.assetMeta}>
@@ -157,9 +152,8 @@ export default async function ContentDetailPage({
                   <h2 id="preview-title">Preview</h2>
                   <p>Review how your content will look across platforms.</p>
                 </div>
-                <div className={styles.deviceToggle} aria-label="Preview device">
-                  <button className={styles.deviceActive} type="button" aria-label="Mobile preview"><KairoIcon name="device-mobile" /></button>
-                  <button type="button" aria-label="Desktop preview" title="Desktop preview is not configured yet"><KairoIcon name="device-desktop" /></button>
+                <div className={styles.deviceToggle} aria-label="Mobile preview">
+                  <span className={styles.deviceActive} aria-hidden="true"><KairoIcon name="device-mobile" /></span>
                 </div>
               </div>
 
@@ -217,7 +211,7 @@ export default async function ContentDetailPage({
                           <KairoIcon name="image" />
                           <strong>Carousel preview not ready</strong>
                           <p>Render the real carousel to preview it here.</p>
-                          <Link href={carouselHref}>Open carousel editor</Link>
+                          <p>Carousel preview becomes available after the approved render completes.</p>
                         </div>
                       )
                     ) : isMotion && approvedMedia.some((item) => item.kind === "video") ? (
@@ -229,7 +223,7 @@ export default async function ContentDetailPage({
                         <KairoIcon name="video" />
                         <strong>Video preview not ready</strong>
                         <p>Kairo will show a finished video only after a real render is available.</p>
-                        <Link href={videoHref}>Open video editor</Link>
+                        <p>Video preview becomes available after the approved render completes.</p>
                       </div>
                     ) : (
                       <div className={styles.textPreview}><p>{currentDisplay}</p></div>
@@ -262,10 +256,10 @@ export default async function ContentDetailPage({
                   <p>Improve your content with Kairo.</p>
                 </div>
                 <div className={styles.aiActions}>
-                  <Link href={editorHref}><KairoIcon name="sparkles" />Improve copy</Link>
-                  <Link href={editorHref}><KairoIcon name="edit" />Shorten</Link>
-                  <Link href={editorHref}><KairoIcon name="results" />Change tone</Link>
-                  <Link href={editorHref}><KairoIcon name="plus" />More ideas</Link>
+                  <form action={generateVersionAction.bind(null, brand.id, campaignId, asset.id, current.version, "improve-copy")}><button type="submit"><KairoIcon name="sparkles" />Improve copy</button></form>
+                  <form action={generateVersionAction.bind(null, brand.id, campaignId, asset.id, current.version, "shorten")}><button type="submit"><KairoIcon name="edit" />Shorten</button></form>
+                  <form action={generateVersionAction.bind(null, brand.id, campaignId, asset.id, current.version, "change-tone")}><button type="submit"><KairoIcon name="results" />Change tone</button></form>
+                  <form action={generateVersionAction.bind(null, brand.id, campaignId, asset.id, current.version, "more-ideas")}><button type="submit"><KairoIcon name="plus" />More ideas</button></form>
                 </div>
               </div>
             </section>
@@ -273,7 +267,7 @@ export default async function ContentDetailPage({
 
           <aside className={styles.rightRail} aria-label="Content context">
             <section className={styles.railCard}>
-              <header><h2>Content details</h2><Link href={editorHref}>Edit</Link></header>
+              <header><h2>Content details</h2></header>
               <dl className={styles.detailsList}>
                 <div><dt>Type</dt><dd>{formatLabel(asset.format)}</dd></div>
                 <div><dt>Topic</dt><dd>{topicLabel(asset.topic, detail.campaign.name)}</dd></div>
@@ -294,7 +288,7 @@ export default async function ContentDetailPage({
             </section>
 
             <section className={`${styles.railCard} ${styles.cardsRail}`}>
-              <header><h2>{isCarousel ? `Cards (${cards.length})` : "Content"}</h2><Link href={editorHref}>Edit</Link></header>
+              <header><h2>{isCarousel ? `Cards (${cards.length})` : "Content"}</h2></header>
               <ol>
                 {cards.map((card, index) => (
                   <li key={`${card.number}-${card.label}`} data-active={index === 0 || undefined}><span>{card.number}</span><p>{truncate(card.label, 56)}</p></li>

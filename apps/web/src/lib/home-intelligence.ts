@@ -176,7 +176,7 @@ export function buildAttentionItems(input: {
         detail: "A finished item is waiting for your review.",
         actionLabel: "Review",
         href: notification.context.campaignId
-          ? `${base}/campaigns/${encodeURIComponent(notification.context.campaignId)}`
+          ? `${base}/content`
           : `${base}/campaigns`,
         priority: 80,
       });

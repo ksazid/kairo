@@ -23,9 +23,7 @@ export type ProductNotificationView = {
 
 export function productNotificationView(item: ProductNotificationRecord): ProductNotificationView {
   const base = `/brands/${encodeURIComponent(item.brandId)}`;
-  const campaignHref = item.context.campaignId
-    ? `${base}/campaigns/${encodeURIComponent(item.context.campaignId)}`
-    : `${base}/campaigns`;
+  const contentHref = `${base}/content`;
 
   if (item.kind === "publishing-failed") {
     return {
@@ -33,7 +31,7 @@ export function productNotificationView(item: ProductNotificationRecord): Produc
       title: "Publishing failed",
       detail: item.context.failureReason ?? "Open Content to review the failed publish.",
       occurredAt: friendlyOccurredAt(item.occurredAt),
-      href: campaignHref,
+      href: contentHref,
       unread: true,
     };
   }
@@ -68,7 +66,7 @@ export function productNotificationView(item: ProductNotificationRecord): Produc
     title: "Content ready for approval",
     detail: "A reviewed asset is waiting for your decision.",
     occurredAt: friendlyOccurredAt(item.occurredAt),
-    href: campaignHref,
+    href: contentHref,
     unread: true,
   };
 }
