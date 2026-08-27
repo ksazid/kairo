@@ -81,6 +81,9 @@ export default async function ContentDetailPage({
   const isMotion = /reel|video|short/i.test(asset.format);
   const contentScope = { workspaceId: detail.campaign.workspaceId, brandId: brand.id, campaignId, assetId: asset.id };
   const currentDisplay = isMotion ? readableContent(current.content, contentScope) : current.content;
+  const approvedMedia = (current.libraryAssetRefs ?? [])
+    .filter((item) => (item.kind === "image" || item.kind === "video") && item.previewRef)
+    .map((item) => ({ kind: item.kind, url: item.previewRef! }));
   const caption = extractCaption(current.content) ?? extractCaption(currentDisplay) ?? asset.topic;
   const carouselReview = isCarousel ? await getCarouselReview(brand.id, campaignId, asset.id).catch(() => null) : null;
   const renderedSlides = carouselReview?.slides.filter((slide) => Boolean(slide.renderedUrl)) ?? [];
@@ -217,6 +220,10 @@ export default async function ContentDetailPage({
                           <Link href={carouselHref}>Open carousel editor</Link>
                         </div>
                       )
+                    ) : isMotion && approvedMedia.some((item) => item.kind === "video") ? (
+                      <video className={styles.mediaPreview} controls preload="metadata" src={approvedMedia.find((item) => item.kind === "video")!.url} aria-label={`${formatLabel(asset.format)} preview`} />
+                    ) : !isMotion && approvedMedia.some((item) => item.kind === "image") ? (
+                      <img className={styles.mediaPreview} src={approvedMedia.find((item) => item.kind === "image")!.url} alt={`${asset.topic} preview`} />
                     ) : isMotion ? (
                       <div className={styles.unavailableMedia}>
                         <KairoIcon name="video" />
