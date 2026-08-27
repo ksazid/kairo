@@ -155,7 +155,7 @@ export class BrandBrainBootstrapService {
     const isSocialFallback = fallbackHost === "instagram.com" || fallbackHost === "www.instagram.com"
       || fallbackHost === "facebook.com" || fallbackHost === "www.facebook.com";
     const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
-      || fallbackHost === "on.substack.com";
+      || fallbackHost === "on.substack.com" || fallbackHost.endsWith(".substack.com");
     if (!successfulReferences.length && fallbackUrl) {
       const fallbackReference = {
         url: fallbackUrl,
