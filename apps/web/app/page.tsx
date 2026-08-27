@@ -74,7 +74,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
   const hasConnectedChannel = channelResult.available ? channelResult.items.some((channel) => channel.status === "connected") : true;
   const attention = buildAttentionItems({ brandId: brand.id, notifications: notificationResult.items, hasConnectedChannel })[0];
-  const forYou = buildForYou(opportunities).slice(0, 4);
+  const forYou = buildForYou(opportunities).slice(0, 6);
   const continueItems = buildContinue(brand.id, campaigns, ideas);
   const scores = new Map<string, RecommendationScores>(opportunities.map((item) => [item.id, { overall: item.scores.overall, audienceFit: item.scores.audienceFit, status: item.status }]));
   const metrics = buildHomeMetrics(performance);
@@ -129,10 +129,10 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
           {forYou.length ? (
             <>
+              <ForYouBatchAction brandId={brand.id} items={forYou} />
               <div className={styles.recommendationRail}>
                 {forYou.map((item) => <RecommendationCard key={item.id} item={item} scores={scores.get(item.id)} brandId={brand.id} eligiblePresenter={eligiblePresenter} />)}
               </div>
-              <ForYouBatchAction brandId={brand.id} items={forYou} />
               <div className={styles.railProgress} aria-hidden="true"><span /></div>
             </>
           ) : (
