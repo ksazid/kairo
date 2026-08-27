@@ -43,6 +43,8 @@
 .continueSection,
 .workingSection { margin: 0; padding: 18px; border: 1px solid color-mix(in srgb, #4f3de7 12%, #e7e9ed); border-radius: 16px; background: color-mix(in srgb, #4f3de7 3%, #fff); }
 
+.attentionSection { padding: 0; border: 0; border-radius: 0; background: transparent; }
+
 .attentionCard {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto 22px;
@@ -145,6 +147,10 @@
   justify-content: space-between;
   gap: 14px;
 }
+
+.sectionActionRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.sectionActionRow > * { margin-top: 0; }
+.sectionActionRow .viewAll { margin: 0; }
 
 .viewAll {
   flex: none;
@@ -509,6 +515,7 @@
   .attentionChevron svg { width:14px; height:14px; }
 
   .ideaSection, .forYouSection, .continueSection, .workingSection { padding: 13px; }
+  .attentionSection { padding: 0; }
   .ideaSection { margin-top: 20px; }
   .forYouSection { margin-top: 20px; }
   .continueSection, .workingSection { margin-top: 20px; }
@@ -527,6 +534,7 @@
   .recommendationHint svg { width:12px; height:12px; }
 
   .viewAll { margin-top:2px; font-size:11px; line-height:15px; }
+  .sectionActionRow { gap: 6px; margin-top: 9px; }
   .viewAll svg { width:12px; height:12px; }
   .recommendationRail { grid-template-columns: repeat(2, minmax(0, 1fr)); gap:7px; padding-top:10px; padding-bottom:5px; }
   .recommendationCard { border-radius:7px; }

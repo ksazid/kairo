@@ -119,11 +119,11 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         </section>
 
         <section className={styles.forYouSection} aria-labelledby="home-discover-title">
-          <div className={styles.sectionHeadingRow}>
-            <div className={styles.sectionHeading}>
-              <h2 id="home-discover-title">Discover</h2>
-              <p>Smart recommendations based on your brand and goals.</p>
-            </div>
+          <div className={styles.sectionHeading}>
+            <h2 id="home-discover-title">Discover</h2>
+            <p>Smart recommendations based on your brand and goals.</p>
+          </div>
+          <div className={styles.sectionActionRow} aria-label="Discover actions">
             <ForYouBatchAction brandId={brand.id} items={forYou} />
             <ForYouRecommendationsAction brandId={brand.id} hasRecommendations={forYou.length > 0} />
             <Link className={styles.viewAll} href={`/brands/${encodeURIComponent(brand.id)}/discover`}>View all</Link>
@@ -140,14 +140,14 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
           )}
         </section>
 
-        {continueItems.length ? <section className={styles.continueSection} aria-labelledby="home-continue-title"><div className={styles.sectionHeadingRow}><div className={styles.sectionHeading}><h2 id="home-continue-title">Continue</h2><p>Your unfinished ideas and drafts.</p></div><Link className={styles.viewAll} href={`/brands/${encodeURIComponent(brand.id)}/content`}>View all</Link></div><div className={styles.continueGrid}>{continueItems.map((item) => <Link className={styles.continueCard} key={`${item.kind}:${item.id}`} href={item.href}><strong>{item.title}</strong><span>{item.context}</span><small>{item.actionLabel} →</small></Link>)}</div></section> : null}
+        {continueItems.length ? <section className={styles.continueSection} aria-labelledby="home-continue-title"><div className={styles.sectionHeading}><h2 id="home-continue-title">Continue</h2><p>Your unfinished ideas and drafts.</p></div><div className={styles.sectionActionRow} aria-label="Continue actions"><Link className={styles.viewAll} href={`/brands/${encodeURIComponent(brand.id)}/content`}>View all</Link></div><div className={styles.continueGrid}>{continueItems.map((item) => <Link className={styles.continueCard} key={`${item.kind}:${item.id}`} href={item.href}><strong>{item.title}</strong><span>{item.context}</span><small>{item.actionLabel} →</small></Link>)}</div></section> : null}
 
         <section className={styles.workingSection} aria-labelledby="home-working-title">
-          <div className={styles.workingHeadingRow}>
-            <div className={styles.sectionHeading}>
-              <h2 id="home-working-title">What&apos;s working</h2>
-              <p>A quick pulse of your content performance.</p>
-            </div>
+          <div className={styles.sectionHeading}>
+            <h2 id="home-working-title">What&apos;s working</h2>
+            <p>A quick pulse of your content performance.</p>
+          </div>
+          <div className={styles.sectionActionRow} aria-label="Performance actions">
             <label className={styles.periodControl}>
               <span className={styles.srOnly}>Performance period</span>
               <select disabled aria-label="Performance period"><option>Last 7 days</option></select>

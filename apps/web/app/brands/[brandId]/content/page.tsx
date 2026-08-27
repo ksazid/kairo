@@ -116,8 +116,8 @@ export default async function ContentPage({
               </div>
             </details>
             <div className={styles.viewSwitch} aria-label="Content view">
-              <Link className={view === "list" ? styles.activeView : undefined} aria-label="List view" aria-current={view === "list" ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, view: "list" })}><KairoIcon name="list" /></Link>
-              <Link className={view === "grid" ? styles.activeView : undefined} aria-label="Grid view" aria-current={view === "grid" ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, view: "grid" })}><KairoIcon name="grid" /></Link>
+              <a className={view === "list" ? styles.activeView : undefined} aria-label="List view" aria-current={view === "list" ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, view: "list" })}><KairoIcon name="list" /></a>
+              <a className={view === "grid" ? styles.activeView : undefined} aria-label="Grid view" aria-current={view === "grid" ? "page" : undefined} href={contentHref(base, { filter, q: query, size: pageSize, view: "grid" })}><KairoIcon name="grid" /></a>
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default async function ContentPage({
               const thumbnail = thumbnails.get(item.assetId) ?? null;
               return (
                 <article className={styles.row} key={item.assetId} data-status={item.bucket}>
-                  <Link className={styles.contentCell} href={href}>
+                  <a className={styles.contentCell} href={href}>
                     <div className={styles.thumbnail} data-motion={isMotionFormat(item.format) || undefined}>
                       {thumbnail ? <img src={thumbnail} alt="" /> : <KairoIcon name={isMotionFormat(item.format) ? "video" : "image"} />}
                       <span className={styles.thumbnailType}><KairoIcon name={isMotionFormat(item.format) ? "video" : "image"} /></span>
@@ -166,7 +166,7 @@ export default async function ContentPage({
                         <span data-status={item.bucket}>{item.statusLabel}</span>
                       </div>
                     </div>
-                  </Link>
+                  </a>
 
                   <div className={styles.channelCell} data-channel={item.channel.toLowerCase()}>
                     <div><KairoIcon name={channelIcon(item.channel)} /><span>{channelLabel(item.channel)}</span></div>
