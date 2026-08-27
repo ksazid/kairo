@@ -383,6 +383,7 @@
   overflow: hidden;
   background: #f3f4f6;
 }
+.mediaPreview { width: 100%; height: 100%; display: block; object-fit: cover; background: #f0f1f4; }
 
 .carouselTrack {
   width: 100%;
