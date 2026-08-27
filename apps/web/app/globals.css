@@ -64,13 +64,14 @@ h3 { margin: 0; font-size: 20px; line-height: 28px; }
 .auth-card, .onboarding-card { width: min(100%, 620px); padding: clamp(28px, 6vw, 56px); background: var(--k-surface); border: 1px solid var(--k-neutral-200); border-radius: 20px; box-shadow: var(--k-shadow-subtle); }
 .auth-card .eyebrow, .onboarding-card .eyebrow { margin-top: 36px; }
 .auth-card .primary-button { margin-top: 28px; }
-.primary-button, .secondary-button, .tertiary-button, .danger-button, .success-button { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; padding: 10px 16px; text-decoration: none; font-weight: 700; cursor: pointer; }
+.primary-button, .secondary-button, .tertiary-button, .danger-button, .success-button { min-height: var(--k-button-height); display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--k-button-radius); padding: 10px var(--k-button-padding-x); text-decoration: none; font-weight: 700; cursor: pointer; transition: transform 120ms var(--k-ease-out), background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
 .primary-button { border: 0; background: var(--k-primary); color: white; }
 .primary-button:hover { filter: brightness(.96); }
 .secondary-button { border: 1px solid var(--k-neutral-200); background:var(--k-surface); color: var(--k-neutral-900); }
-.tertiary-button { min-height: 38px; border: 1px solid var(--k-neutral-200); background: var(--k-neutral-50); color: var(--k-neutral-700); padding: 7px 11px; font-size: 13px; }
-.danger-button { min-height: 38px; border: 1px solid color-mix(in srgb, var(--k-danger) 25%, var(--k-neutral-200)); background:var(--k-surface); color: var(--k-danger); padding: 7px 11px; font-size: 13px; }
+.tertiary-button { min-height: var(--k-button-height-compact); border: 1px solid var(--k-neutral-200); background: var(--k-neutral-50); color: var(--k-neutral-700); padding: 7px 12px; font-size: 13px; }
+.danger-button { min-height: var(--k-button-height-compact); border: 1px solid color-mix(in srgb, var(--k-danger) 25%, var(--k-neutral-200)); background:var(--k-surface); color: var(--k-danger); padding: 7px 12px; font-size: 13px; }
 .success-button { border: 0; background: var(--k-success); color: #fff; }
+.primary-button:focus-visible, .secondary-button:focus-visible, .tertiary-button:focus-visible, .danger-button:focus-visible, .success-button:focus-visible { outline: 0; box-shadow: var(--k-button-focus); }
 .onboarding-form { display: grid; gap: 18px; margin-top: 28px; }
 .onboarding-form label { display: grid; gap: 7px; color: var(--k-neutral-700); font-size: 14px; font-weight: 650; }
 .onboarding-form label span { color: var(--k-neutral-400); font-weight: 500; }
