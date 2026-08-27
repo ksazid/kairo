@@ -70,8 +70,10 @@ describe("approved Home screenshot contract", () => {
     expect(bookmarkAction).toContain('KairoIcon name="bookmark"');
     expect(bookmarkAction).toContain("styles.bookmarkButton");
     expect(page).toContain("railProgress");
-    expect(css).toContain("grid-auto-flow: column");
-    expect(css).toContain("grid-auto-columns: 114px");
+    expect(css).toContain("grid-template-columns: repeat(4, minmax(0, 1fr))");
+    expect(css).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
+    expect(css).toContain(':has(input[type="checkbox"]:checked)');
+    expect(page).toContain("ForYouSelectCheckbox");
     expect(css).toContain("height:88px");
   });
 
