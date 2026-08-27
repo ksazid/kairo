@@ -125,7 +125,6 @@ export default async function ContentDetailPage({
                 <Link href={`${base}/calendar`}>Open Calendar</Link>
               </div>
             </details>
-            <button className={styles.bookmarkButton} type="button" aria-label="Save content" title="Saving this content is not configured yet"><KairoIcon name="bookmark" /></button>
           </div>
         </div>
 
@@ -153,9 +152,8 @@ export default async function ContentDetailPage({
                   <h2 id="preview-title">Preview</h2>
                   <p>Review how your content will look across platforms.</p>
                 </div>
-                <div className={styles.deviceToggle} aria-label="Preview device">
-                  <button className={styles.deviceActive} type="button" aria-label="Mobile preview"><KairoIcon name="device-mobile" /></button>
-                  <button type="button" aria-label="Desktop preview" title="Desktop preview is not configured yet"><KairoIcon name="device-desktop" /></button>
+                <div className={styles.deviceToggle} aria-label="Mobile preview">
+                  <span className={styles.deviceActive} aria-hidden="true"><KairoIcon name="device-mobile" /></span>
                 </div>
               </div>
 
