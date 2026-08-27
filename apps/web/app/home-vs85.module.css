@@ -4,6 +4,12 @@
   padding: 28px 32px 80px;
   color: var(--k-neutral-900, #0f1115);
   background: var(--k-neutral-50, #f7f8fa);
+  animation: home-enter 260ms cubic-bezier(.23, 1, .32, 1) both;
+}
+
+@keyframes home-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .srOnly {
@@ -46,6 +52,7 @@
   border: 1px solid #f1d7bf;
   border-radius: 12px;
   background: #fffaf5;
+  animation: section-enter 220ms cubic-bezier(.23, 1, .32, 1) 30ms both;
 }
 
 .attentionLabel {
@@ -109,7 +116,8 @@
 .attentionChevron svg { width: 18px; height: 18px; stroke-width: 2.2; }
 
 .ideaSection { margin-top: 22px; }
-.forYouSection { margin-top: 22px; }
+.ideaSection { animation: section-enter 220ms cubic-bezier(.23, 1, .32, 1) 70ms both; }
+.forYouSection { margin-top: 22px; animation: section-enter 220ms cubic-bezier(.23, 1, .32, 1) 110ms both; }
 .workingSection { margin-top: 18px; padding-top: 20px; border-top: 1px solid #e7e9ed; }
 
 .sectionHeading h2 {
@@ -269,14 +277,13 @@
 
 .recommendationRail {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 156px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  overflow-x: auto;
+  overflow: visible;
   overscroll-behavior-inline: contain;
   scrollbar-width: none;
   padding: 12px 1px 8px;
-  scroll-snap-type: inline proximity;
+  scroll-snap-type: none;
 }
 .recommendationRail::-webkit-scrollbar { display: none; }
 .recommendationCard {
@@ -289,7 +296,19 @@
   background: #fff;
   box-shadow: 0 2px 7px rgb(15 17 21 / 6%);
   scroll-snap-align: start;
+  transition: transform 180ms cubic-bezier(.23, 1, .32, 1), box-shadow 180ms ease, border-color 180ms ease;
+  animation: card-enter 220ms cubic-bezier(.23, 1, .32, 1) both;
 }
+.recommendationCard:nth-child(1) { animation-delay: 140ms; }
+.recommendationCard:nth-child(2) { animation-delay: 175ms; }
+.recommendationCard:nth-child(3) { animation-delay: 210ms; }
+.recommendationCard:nth-child(4) { animation-delay: 245ms; }
+.recommendationCard:has(input[type="checkbox"]:checked) {
+  grid-column: span 2;
+  border-color: #7162ed;
+  box-shadow: 0 6px 18px rgb(15 17 21 / 12%);
+}
+.recommendationCard:has(input[type="checkbox"]:checked) .recommendationThumb { height: 150px; }
 .recommendationThumb {
   position: relative;
   height: 108px;
@@ -505,8 +524,10 @@
 
   .viewAll { margin-top:2px; font-size:11px; line-height:15px; }
   .viewAll svg { width:12px; height:12px; }
-  .recommendationRail { grid-auto-columns: 114px; gap:7px; padding-top:10px; padding-bottom:5px; }
+  .recommendationRail { grid-template-columns: repeat(2, minmax(0, 1fr)); gap:7px; padding-top:10px; padding-bottom:5px; }
   .recommendationCard { border-radius:7px; }
+  .recommendationCard:has(input[type="checkbox"]:checked) { grid-column: 1 / -1; }
+  .recommendationCard:has(input[type="checkbox"]:checked) .recommendationThumb { height: 118px; }
   .recommendationThumb { height:88px; }
   .recommendationThumb > svg { width:22px; height:22px; }
   .formatPill { top:5px; left:5px; min-height:18px; padding:2px 5px; border-radius:5px; font-size:8px; line-height:10px; }
@@ -536,14 +557,38 @@
   .home { padding-inline: 12px; }
   .attentionCard { grid-template-columns:minmax(0,1fr) 54px 14px; }
   .retryButton { width:54px; min-width:54px; }
-  .recommendationRail { grid-auto-columns:108px; }
+  .recommendationRail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .metricGrid { gap:5px; }
   .metricCard { padding-inline:6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home, .attentionCard, .ideaSection, .forYouSection, .recommendationCard { animation: none; }
   .recommendationRail { scroll-behavior: auto; }
 }
+
+@keyframes section-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .viewAll { color: #4c39e8; font-size: 11px; font-weight: 750; text-decoration: none; white-space: nowrap; }
+.home :is(button, a, select, textarea):focus-visible { outline: 2px solid #4f3de7; outline-offset: 2px; }
+.home :is(button, a, .recommendationCard, .continueCard):active { transform: scale(.98); transition: transform 100ms cubic-bezier(.23, 1, .32, 1); }
+.home :is(button, a, .recommendationCard, .continueCard) { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.home .recommendationCard:focus-within, .home .continueCard:focus-visible { border-color: #7162ed; box-shadow: 0 0 0 2px rgb(79 61 231 / 14%); }
+.home .viewAll { padding: 10px 6px; margin: -6px -6px -6px 0; }
+.homeHero h1 { font-optical-sizing: auto; }
+@media (pointer: coarse) {
+  .home .viewAll, .home .bookmarkButton { min-height: 44px; }
+  .home .bookmarkButton { min-width: 44px; top: -3px; right: -3px; background: rgb(255 255 255 / 96%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home :is(button, a, .recommendationCard, .continueCard) { transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease; }
+  .home :is(button, a, .recommendationCard, .continueCard):active { transform: none; }
+}
 .viewAll:hover { text-decoration: underline; }
 .homeHero { margin-bottom: 24px; }.homeHero h1 { margin: 0; font-size: 30px; line-height: 36px; letter-spacing: -.035em; }.homeHero p { margin: 5px 0 0; color: #70757f; font-size: 13px; }.continueSection { margin-top: 28px; }.continueGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }.continueCard { display: grid; gap: 5px; padding: 14px; border: 1px solid #e4e5ea; border-radius: 8px; background: #fff; color: #292c32; text-decoration: none; }.continueCard:hover { border-color: #7162ed; }.continueCard span { color: #777c85; font-size: 11px; }.continueCard small { color: #4c39e8; font-size: 10px; font-weight: 750; }@media(max-width:720px){.continueGrid{grid-template-columns:1fr}}
