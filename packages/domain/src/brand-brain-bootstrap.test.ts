@@ -130,8 +130,8 @@ class FakeGenerator implements BrandBrainProposalGenerator {
 
 describe("BrandBrainBootstrapService", () => {
   it.each([
-    ["instagram", "https://www.instagram.com/malta_bikes/", "audience.primary", /motorcycle|rider/i],
-    ["facebook", "https://www.facebook.com/malta.cars/", "audience.primary", /automotive|car/i],
+    ["instagram", "https://www.instagram.com/malta_bikes/", "audience.primary", /to be confirmed|connected|readable/i],
+    ["facebook", "https://www.facebook.com/malta.cars/", "audience.primary", /to be confirmed|connected|readable/i],
     ["substack", "https://example.substack.com/", "identity.category", /independent publishing|newsletter/i],
     ["website", "https://example.com/", "identity.category", /business|organization/i],
   ])("creates a truthful %s fallback when the public source is blocked", async (_kind, url, expectedKey, expectedValue) => {
