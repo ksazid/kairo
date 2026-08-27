@@ -296,7 +296,10 @@ export function buildContinue(
       kind: "campaign" as const,
       title: campaign.name,
       context: "Draft content in progress",
-      href: `${base}/campaigns/${encodeURIComponent(campaign.id)}`,
+      // Content is the approved user-facing home for unfinished work. Keep the
+      // campaign route available for specialist/internal links, but do not
+      // send Home users through the deprecated Campaigns surface.
+      href: `${base}/content`,
       actionLabel: "Continue" as const,
       occurredAt: campaign.createdAt,
     })),
