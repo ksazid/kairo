@@ -132,11 +132,21 @@ async function createProfileStarters(service: DiscoveryService, repository: Kair
     [`${input.brand.brandName}: a practical guide for ${topics}`, `Starter opportunity grounded in the Brand's learned topics and public source.`, `The onboarding source is available now, so this is ready to develop.`, `Create an educational carousel for ${audience}.`],
     [`What ${audience} should know about ${topics}`, `Starter opportunity based on the Brand's audience and learned content direction.`, `A clear audience question is available immediately after onboarding.`, `Create a concise Instagram post with one useful takeaway.`],
     [`Behind the Brand: ${topics}`, `Starter opportunity using the Brand's own public context as the evidence boundary.`, `The Brand can begin with an owned-context story while broader sources refresh.`, `Create a visual story or Reel draft without making unsupported claims.`],
+    [`The ${topics} checklist for ${audience}`, `A practical checklist grounded in the Brand's learned topic and audience context.`, `Checklist structure gives the audience an immediate action to take.`, `Create a saveable carousel with a short checklist.`],
+    [`Common ${topics} mistakes to avoid`, `An educational mistake-prevention angle using the Brand's known authority area.`, `Mistake-led education creates a clear, useful audience entry point.`, `Create a concise post with evidence-backed corrections.`],
+    [`${topics}: myth versus fact`, `A myth-versus-fact angle bounded by the Brand's public source and approved context.`, `The format creates a distinct angle without broad unsupported claims.`, `Create a myth-versus-fact carousel for ${audience}.`],
+    [`How to choose the right ${topics} approach`, `A decision-guide opportunity built from the Brand's topic and audience needs.`, `A decision guide helps the audience move from interest to action.`, `Create a practical decision-guide post.`],
+    [`A behind-the-scenes look at ${topics}`, `An owned-context story that shows how the Brand approaches its subject.`, `Behind-the-scenes content adds personality while staying inside Brand boundaries.`, `Create a short Reel or visual story without unsupported claims.`],
   ];
   let created = 0;
+  const existing = new Set((input.existingOpportunityTitles ?? []).map((title) => title.trim().toLowerCase()));
   for (const [title, rationale, whyNow, direction] of ideas) {
+    if (existing.has(title.toLowerCase())) continue;
     const result = await service.recordCandidate(accountId, brand.id, { signal: { title, summary: rationale, sourceUrl, platform: sourceUrl.includes("instagram") ? "instagram" : "web", retrievedAt: new Date().toISOString(), provider: "brand-profile-fallback", providerVersion: "v1" }, title, rationale, whyNow, developmentDirection: direction, brandContextVersion: input.brand.contextVersion, scores: { relevance: .78, evidence: .55, novelty: .68, timeliness: .62, brandAuthority: .72, audienceFit: .78 }, details: { topic: topics, proposedAngle: direction, hook: title, targetAudience: audience, objective: "Grow audience", confidence: .62, estimatedEffort: "low", recommendedFormat: "carousel", recommendedChannel: "instagram" } });
-    if (result.opportunity) created++;
+    if (result.opportunity) {
+      existing.add(title.toLowerCase());
+      created++;
+    }
   }
   return created;
 }
