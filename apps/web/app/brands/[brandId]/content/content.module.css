@@ -489,6 +489,8 @@
   padding: 32px;
   text-align: center;
 }
+.primaryAction { display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:10px 16px; border-radius:9px; background:#5140e9; color:#fff; font-weight:750; text-decoration:none; }
+.secondaryAction { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:9px 14px; border:1px solid #d5d8de; border-radius:9px; background:#fff; color:#25272c; font-weight:700; text-decoration:none; }
 
 .empty h3 { margin: 0; font-size: 20px; }
 .empty p { max-width: 480px; margin: 8px 0 18px; color: #656b76; }

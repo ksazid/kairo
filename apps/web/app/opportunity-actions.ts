@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import type { OpportunityAction } from "@kairo/contracts";
-import { actOnOpportunity, startIdeaResearch } from "../src/lib/kairo-api";
+import { actOnOpportunity, getOpportunities, startIdeaResearch } from "../src/lib/kairo-api";
 import {
   developOpportunity,
   recordRecommendationFeedback,
@@ -46,7 +46,9 @@ export async function prepareOpportunityDevelopmentAction(
   brandId: string,
   opportunityId: string,
 ): Promise<OpportunityDevelopmentView> {
-  await actOnOpportunity(brandId, opportunityId, "develop");
+  const opportunities = await getOpportunities(brandId);
+  const current = opportunities.find((item) => item.id === opportunityId);
+  if (current?.status !== "developing") await actOnOpportunity(brandId, opportunityId, "develop");
   return developOpportunity(brandId, opportunityId);
 }
 

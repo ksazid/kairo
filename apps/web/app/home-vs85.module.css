@@ -40,7 +40,8 @@
 .attentionSection,
 .ideaSection,
 .forYouSection,
-.workingSection { margin: 0; }
+.continueSection,
+.workingSection { margin: 0; padding: 18px; border: 1px solid color-mix(in srgb, #4f3de7 12%, #e7e9ed); border-radius: 16px; background: color-mix(in srgb, #4f3de7 3%, #fff); }
 
 .attentionCard {
   display: grid;
@@ -115,10 +116,11 @@
 }
 .attentionChevron svg { width: 18px; height: 18px; stroke-width: 2.2; }
 
-.ideaSection { margin-top: 22px; }
+.ideaSection { margin-top: 26px; }
 .ideaSection { animation: section-enter 220ms cubic-bezier(.23, 1, .32, 1) 70ms both; }
-.forYouSection { margin-top: 22px; animation: section-enter 220ms cubic-bezier(.23, 1, .32, 1) 110ms both; }
-.workingSection { margin-top: 18px; padding-top: 20px; border-top: 1px solid #e7e9ed; }
+.forYouSection { margin-top: 26px; animation: section-enter 220ms cubic-bezier(.23, 1, .32, 1) 110ms both; }
+.continueSection { margin-top: 26px; }
+.workingSection { margin-top: 26px; padding-top: 18px; }
 
 .sectionHeading h2 {
   margin: 0;
@@ -128,6 +130,7 @@
   font-weight: 760;
   letter-spacing: -0.03em;
 }
+.sectionHeading { padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, #4f3de7 7%, #fff); }
 .sectionHeading p {
   margin: 4px 0 0;
   color: #3f4249;
@@ -505,9 +508,10 @@
   .attentionChevron { width:16px; height:30px; }
   .attentionChevron svg { width:14px; height:14px; }
 
-  .ideaSection { margin-top: 18px; }
-  .forYouSection { margin-top: 19px; }
-  .workingSection { margin-top: 12px; padding-top: 17px; }
+  .ideaSection, .forYouSection, .continueSection, .workingSection { padding: 13px; }
+  .ideaSection { margin-top: 20px; }
+  .forYouSection { margin-top: 20px; }
+  .continueSection, .workingSection { margin-top: 20px; }
   .sectionHeading h2 { font-size:17px; line-height:21px; }
   .sectionHeading p { margin-top:3px; font-size:11px; line-height:15px; }
 

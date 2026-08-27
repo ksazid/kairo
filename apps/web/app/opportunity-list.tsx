@@ -1,6 +1,7 @@
 import type { BrandOpportunityDto } from "@kairo/contracts";
 import { opportunityAction } from "./opportunity-actions";
 import { RecommendationSeen } from "./recommendation-seen";
+import styles from "./flow-pages.module.css";
 
 export function OpportunityList({
   brandId,
@@ -16,10 +17,10 @@ export function OpportunityList({
   emptyBody?: string;
 }) {
   if (opportunities.length === 0) {
-    return <section className="opportunity-empty" aria-live="polite"><p className="eyebrow">Hunter</p><h3>{emptyTitle}</h3><p>{emptyBody}</p></section>;
+    return <section className={`${styles.empty} ${styles.section}`} aria-live="polite"><p className={styles.eyebrow}>Hunter</p><h3>{emptyTitle}</h3><p>{emptyBody}</p></section>;
   }
 
-  return <div className="opportunity-list">{opportunities.map((item) => <OpportunityCard key={item.id} brandId={brandId} item={item} returnTo={returnTo} />)}</div>;
+  return <div className={styles.list}>{opportunities.map((item) => <OpportunityCard key={item.id} brandId={brandId} item={item} returnTo={returnTo} />)}</div>;
 }
 
 function OpportunityCard({ brandId, item, returnTo }: { brandId: string; item: BrandOpportunityDto; returnTo: string }) {
@@ -30,22 +31,22 @@ function OpportunityCard({ brandId, item, returnTo }: { brandId: string; item: B
   const titleId = `opportunity-${item.id}-title`;
 
   return (
-    <article className={`opportunity-card ${terminal ? "muted-card" : ""}`} aria-labelledby={titleId}>
+    <article className={`${styles.card} ${terminal ? styles.cardMuted : ""}`} aria-labelledby={titleId}>
       <RecommendationSeen brandId={brandId} opportunityId={item.id} />
-      <div className="opportunity-meta" aria-label="Opportunity signals">
-        <span className={`signal-chip ${relevance.tone}`}>{relevance.label} relevance</span>
-        <span className={`signal-chip ${evidence.tone}`}>{evidence.label} evidence</span>
-        <span className="signal-chip neutral">{freshness}</span>
-        {item.status !== "new" ? <span className="signal-chip neutral">{statusLabel(item.status)}</span> : null}
+      <div className={styles.meta} aria-label="Opportunity signals">
+        <span className={styles.chip}>{relevance.label} relevance</span>
+        <span className={styles.chip}>{evidence.label} evidence</span>
+        <span className={`${styles.chip} ${styles.chipNeutral}`}>{freshness}</span>
+        {item.status !== "new" ? <span className={`${styles.chip} ${styles.chipNeutral}`}>{statusLabel(item.status)}</span> : null}
       </div>
       <h3 id={titleId}>{item.title}</h3>
-      <p className="opportunity-rationale">{item.rationale}</p>
-      <div className="why-now"><span>Why now</span><p>{item.whyNow}</p></div>
-      <div className="opportunity-actions">
-        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "develop", returnTo)}><button className="primary-button" type="submit">Develop</button></form> : null}
-        {item.status === "new" ? <form action={opportunityAction.bind(null, brandId, item.id, "save", returnTo)}><button className="secondary-button" type="submit">Save</button></form> : null}
-        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "ignore", returnTo)}><button className="text-action" type="submit">Ignore</button></form> : null}
-        {item.status === "developing" ? <p className="action-note">Ready for deeper Research and Angle development.</p> : null}
+      <p className={styles.rationale}>{item.rationale}</p>
+      <div className={styles.whyNow}><span>Why now</span><p>{item.whyNow}</p></div>
+      <div className={styles.actions}>
+        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "develop", returnTo)}><button className={styles.primary} type="submit">Develop</button></form> : null}
+        {item.status === "new" ? <form action={opportunityAction.bind(null, brandId, item.id, "save", returnTo)}><button className={styles.secondary} type="submit">Save</button></form> : null}
+        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "ignore", returnTo)}><button className={styles.text} type="submit">Ignore</button></form> : null}
+        {item.status === "developing" ? <p className={styles.actionNote}>Ready for deeper Research and Angle development.</p> : null}
       </div>
     </article>
   );

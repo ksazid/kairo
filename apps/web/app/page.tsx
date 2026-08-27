@@ -9,6 +9,7 @@ import { ForYouBookmarkAction } from "./for-you-bookmark-action";
 import { RecommendationSeen } from "./recommendation-seen";
 import { ForYouBatchAction } from "./for-you-batch-action";
 import { ForYouSelectCheckbox } from "./for-you-select-checkbox";
+import { RecommendationRail } from "./recommendation-rail";
 import {
   getBrandNotifications,
   getBrands,
@@ -111,32 +112,31 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
         <section id="my-idea" className={styles.ideaSection} aria-labelledby="home-my-idea-title">
           <div className={styles.sectionHeading}>
-            <h2 id="home-my-idea-title">My idea</h2>
+            <h2 id="home-my-idea-title">Your Idea</h2>
             <p>Add your idea, link or media. Kairo selects a format automatically and you can change it.</p>
           </div>
           <MyIdeaComposer brandId={brand.id} initialText={params.idea ?? ""} eligiblePresenter={eligiblePresenter} />
         </section>
 
-        <section className={styles.forYouSection} aria-labelledby="home-for-you-title">
+        <section className={styles.forYouSection} aria-labelledby="home-discover-title">
           <div className={styles.sectionHeadingRow}>
             <div className={styles.sectionHeading}>
-              <h2 id="home-for-you-title">For you</h2>
+              <h2 id="home-discover-title">Discover</h2>
               <p>Smart recommendations based on your brand and goals.</p>
             </div>
+            <ForYouBatchAction brandId={brand.id} items={forYou} />
             <ForYouRecommendationsAction brandId={brand.id} hasRecommendations={forYou.length > 0} />
             <Link className={styles.viewAll} href={`/brands/${encodeURIComponent(brand.id)}/discover`}>View all</Link>
           </div>
 
           {forYou.length ? (
             <>
-              <ForYouBatchAction brandId={brand.id} items={forYou} />
-              <div className={styles.recommendationRail}>
+              <RecommendationRail count={forYou.length}>
                 {forYou.map((item) => <RecommendationCard key={item.id} item={item} scores={scores.get(item.id)} brandId={brand.id} eligiblePresenter={eligiblePresenter} />)}
-              </div>
-              <div className={styles.railProgress} aria-hidden="true"><span /></div>
+              </RecommendationRail>
             </>
           ) : (
-            <div className={styles.compactEmpty}><strong>No recommendation is ready yet.</strong><span>Use My idea or ask Kairo to find worthwhile opportunities for this Brand.</span></div>
+            <div className={styles.compactEmpty}><strong>No recommendation is ready yet.</strong><span>Use Your Idea or ask Kairo to find worthwhile opportunities for this Brand.</span></div>
           )}
         </section>
 

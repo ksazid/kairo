@@ -50,10 +50,10 @@ export default async function ContentDetailPage({
 
   if (!brand) {
     return (
-      <main className="auth-page">
-        <section className="auth-card">
+      <main className={styles.main}>
+        <section className={styles.notFound}>
           <h1>Brand not found.</h1>
-          <Link className="primary-button" href="/">Return Home</Link>
+          <Link className={styles.primaryAction} href="/">Return Home</Link>
         </section>
       </main>
     );

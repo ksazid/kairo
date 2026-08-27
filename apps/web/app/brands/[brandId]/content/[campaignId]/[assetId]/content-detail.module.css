@@ -717,6 +717,7 @@
 .schedulePopover button { height: 40px; border: 0; border-radius: 8px; background: #4f3de7; color: #fff; font-weight: 650; cursor: pointer; }
 
 .notFound { padding: 48px; }
+.primaryAction { display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:10px 16px; border-radius:9px; background:#5140e9; color:#fff; font-weight:750; text-decoration:none; }
 .notFound h1 { margin: 0 0 18px; }
 .notFound a { color: #4f3de7; }
 
