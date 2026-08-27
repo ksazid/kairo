@@ -160,6 +160,11 @@ export default async function ContentPage({
                     <div className={styles.contentCopy}>
                       <h3>{item.title}</h3>
                       <p>{item.summary}</p>
+                      <div className={styles.gridMeta} aria-label="Content metadata">
+                        <span>{channelLabel(item.channel)}</span>
+                        <span>{formatLabel(item.format)}</span>
+                        <span data-status={item.bucket}>{item.statusLabel}</span>
+                      </div>
                     </div>
                   </Link>
 
@@ -178,7 +183,6 @@ export default async function ContentPage({
                     <span>by {item.updatedBy}</span>
                   </div>
 
-                  <button className={styles.moreButton} type="button" aria-label={`More actions for ${item.title}`} title="More actions"><KairoIcon name="more" /></button>
                 </article>
               );
             }) : (
