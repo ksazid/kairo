@@ -62,9 +62,10 @@ describe("approved Home screenshot contract", () => {
     expect(page).toContain("ForYouRecommendationsAction");
     expect(page).toContain("ForYouCreateAction");
     expect(page).toContain("ForYouBookmarkAction");
-    expect(recommendationAction).toContain("Get recommendations");
-    expect(recommendationAction).toContain("Refresh recommendations");
-    expect(createAction).toContain("Use idea");
+    expect(recommendationAction).toContain("Discover ideas");
+    expect(recommendationAction).toContain("Discover more");
+    expect(createAction).toContain("AI Generate");
+    expect(createAction).not.toContain("Use idea");
     expect(createAction).toContain("AI Generate");
     expect(createAction).toContain('["image", "carousel", "reel", "video"]');
     expect(bookmarkAction).toContain('KairoIcon name="bookmark"');
