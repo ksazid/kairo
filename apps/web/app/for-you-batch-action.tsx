@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { KairoIcon } from "./kairo-icons";
-import { prepareOpportunityDevelopmentAction } from "./opportunity-actions";
 import type { HomeForYouItem } from "../src/lib/home-intelligence";
 import styles from "./for-you-batch-action.module.css";
 
@@ -26,24 +25,38 @@ export function ForYouBatchAction({ brandId, items }: Props) {
   async function generate() {
     if (!selected.length || running) return;
     setRunning(true); setMessage("");
-    let completed = 0;
-    for (const id of selected) {
-      const item = items.find((candidate) => candidate.id === id);
-      if (!item) continue;
-      try {
-        const development = await prepareOpportunityDevelopmentAction(brandId, id);
-        const response = await fetch("/api/home/my-idea", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ brandId, ideaId: development.ideaId, text: [item.title, item.direction].filter(Boolean).join("\n\n") }) });
-        if (response.ok) completed += 1;
-      } catch { /* preserve per-item progress and continue the queue */ }
+    try {
+      const response = await fetch("/api/home/my-idea/batch", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ brandId, items: selected.map((id) => {
+          const item = items.find((candidate) => candidate.id === id);
+          return item ? { opportunityId: item.id, format: formatFor(item) } : null;
+        }).filter(Boolean) }),
+      });
+      const body = (await response.json().catch(() => ({}))) as { startedCount?: number; failedCount?: number; error?: string };
+      if (!response.ok) throw new Error(body.error ?? "Kairo could not start the selected ideas.");
+      const started = body.startedCount ?? 0;
+      const failed = body.failedCount ?? 0;
+      setMessage(`${started} of ${selected.length} drafts queued${failed ? `, ${failed} needs attention` : ""}. Check Content for progress.`);
+      window.dispatchEvent(new CustomEvent("kairo:for-you-selection-cleared"));
+      setSelected([]);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Kairo could not start the selected ideas.");
+    } finally {
+      setRunning(false);
     }
-    setRunning(false); setMessage(`${completed} of ${selected.length} drafts started. Check Content for progress.`);
   }
 
   return <div className={styles.batch}>
     <div className={styles.toolbar}>
       <span>{selected.length ? `${selected.length} selected` : "Select ideas to generate together"}</span>
-      <div className={styles.controls}><button type="button" disabled={!selected.length || running} onClick={generate}><KairoIcon name="sparkles" />{running ? "Starting…" : "Generate selected"}</button></div>
+      <div className={styles.controls}><button type="button" disabled={!selected.length || running} onClick={generate}><KairoIcon name="sparkles" />{running ? "Generating selected…" : `AI Generate selected${selected.length ? ` (${selected.length})` : ""}`}</button></div>
     </div>
     {message ? <p className={styles.status} role="status">{message}</p> : null}
   </div>;
+}
+
+function formatFor(item: HomeForYouItem) {
+  return item.format === "reel" ? "reel" : item.format === "carousel" ? "carousel" : "image";
 }
