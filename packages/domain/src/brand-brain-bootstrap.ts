@@ -388,11 +388,14 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   if (!isSocial && !isSubstack && !github) return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
     { section: "identity", fieldKey: "identity.category", value: "Business or organization website", sourceIds },
-    { section: "audience", fieldKey: "audience.primary", value: "People interested in this Brand's products, services or subject", sourceIds },
+    { section: "identity", fieldKey: "identity.products-services", value: deriveWebsiteOfferings(title, excerpt), sourceIds },
+    { section: "positioning", fieldKey: "positioning.value-proposition", value: deriveWebsitePositioning(title, excerpt), sourceIds },
+    { section: "audience", fieldKey: "audience.primary", value: deriveWebsiteAudience(title, excerpt), sourceIds },
     { section: "voice", fieldKey: "voice.tone", value: "Clear, useful and audience-focused", sourceIds },
     { section: "content-strategy", fieldKey: "content.pillars", value: "Brand story, products or services, practical guidance and customer value", sourceIds },
     { section: "content-strategy", fieldKey: "content.preferred-topics", value: "What the Brand offers, customer questions, useful advice and relevant updates", sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Website, email, social communities and relevant professional channels", sourceIds },
+    { section: "boundaries", fieldKey: "boundaries.excluded-topics", value: "No excluded topics identified in the public reference; confirm before Hunter activation", sourceIds },
   ];
   return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
@@ -403,6 +406,26 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Repository capabilities, APIs, usage examples, releases and developer workflows", sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Developer communities, technical blogs, LinkedIn and YouTube", sourceIds },
   ];
+}
+
+function deriveWebsiteOfferings(title: string, excerpt: string): string {
+  const text = `${title} ${excerpt}`;
+  if (/rental|fleet|vehicle|car|motorcycle/i.test(text)) return "Vehicle rental and fleet booking services, including online reservations";
+  if (/software|platform|api|saas|app/i.test(text)) return "Software products and online platform services described in the public reference";
+  if (/restaurant|menu|food|cafe|dining/i.test(text)) return "Food, dining and restaurant services described in the public reference";
+  return `${title} products or services described in the public reference: ${excerpt.slice(0, 300)}`;
+}
+
+function deriveWebsitePositioning(title: string, excerpt: string): string {
+  const claim = excerpt.match(/[^.!?]*(?:lowest|best|trusted|quality|value|specialist|expert)[^.!?]*/i)?.[0]?.trim();
+  return claim ? `${title}: ${claim}` : `${title} provides the products or services described in its public reference.`;
+}
+
+function deriveWebsiteAudience(title: string, excerpt: string): string {
+  const text = `${title} ${excerpt}`;
+  if (/rental|fleet|vehicle|car|motorcycle/i.test(text)) return "People and businesses seeking vehicle rental, mobility or fleet services";
+  if (/software|platform|api|saas|app/i.test(text)) return "Teams and practitioners seeking the software or platform capabilities described";
+  return `Customers seeking ${title.toLowerCase()} products or services`;
 }
 
 function optionalUrl(value: unknown): string | undefined {
