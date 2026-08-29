@@ -23,6 +23,15 @@
 .confirmForm { margin-top: 28px; }
 .footnote { margin: 14px 0 0; color: var(--k-neutral-400); font-size: 12px; line-height: 18px; }
 .readiness { margin: 22px 0 0; color: var(--k-success, #18794e); font-size: 14px; font-weight: 750; }
+.intelligenceCard { display: grid; gap: 10px; margin-top: 24px; padding: 16px; border: 1px solid var(--k-neutral-200); border-radius: 12px; background: var(--k-neutral-50); }
+.scoreRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.scoreRow strong, .scoreRow span { display: block; }
+.scoreRow strong { color: var(--k-neutral-900); font-size: 14px; }
+.scoreRow span, .scoreMeta { color: var(--k-neutral-400); font-size: 12px; line-height: 18px; }
+.scoreRow b { color: var(--k-neutral-900); font-size: 20px; letter-spacing: -.03em; }
+.meter { height: 7px; overflow: hidden; border-radius: 999px; background: var(--k-neutral-200); }
+.meterFill { display: block; height: 100%; border-radius: inherit; background: var(--k-primary); transition: width 220ms cubic-bezier(.23, 1, .32, 1); }
+.scoreMeta { display: flex; justify-content: space-between; gap: 12px; }
 .readinessNotice { display: grid; gap: 6px; margin-top: 22px; padding: 15px 16px; border: 1px solid color-mix(in srgb, var(--k-warning, #a15c00) 30%, var(--k-neutral-200)); border-radius: 12px; background: color-mix(in srgb, var(--k-warning, #a15c00) 7%, var(--k-surface)); }
 .readinessNotice strong { font-size: 13px; }
 .readinessNotice p { margin: 0; color: var(--k-neutral-500); font-size: 13px; line-height: 19px; }

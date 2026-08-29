@@ -1,7 +1,7 @@
 name: Product intake
 on:
   pull_request:
-    paths: ["product/**", "security/**", "delivery/**", "planning/**", ".engineering/WEB-AI-PROFILE.yaml", "scripts/web-ai-intake.mjs"]
+    paths: ["product/**", "security/**", "delivery/**", "planning/**", "apps/**", "packages/**", ".engineering/WEB-AI-PROFILE.yaml", "scripts/web-ai-intake.mjs"]
   workflow_dispatch:
 permissions:
   contents: read
