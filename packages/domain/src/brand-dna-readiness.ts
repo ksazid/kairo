@@ -34,14 +34,28 @@ export function evaluateBrandDnaReadiness(fields: readonly BrandBrainFieldDto[],
 
   const total = options.geographyRequired ? 7 : 6;
   const score = Math.round(((total - gaps.length) / total) * 100);
+  const relevant = [...usable.values()].filter((field) => FIELD_KEYS[gapForField(field.fieldKey)] !== undefined);
+  const evidenceCoverage = relevant.length ? Math.round((relevant.filter((field) => field.sourceIds.length > 0).length / relevant.length) * 100) : 0;
+  const confidence = relevant.length ? Math.round((relevant.filter((field) => field.state === "confirmed").length / relevant.length) * 100) : 0;
+  const brandIntelligenceScore = Math.round(score * 0.6 + evidenceCoverage * 0.25 + confidence * 0.15);
   const nextAction = nextReadinessAction(gaps, usable);
   return {
     status: gaps.length ? "needs-enrichment" : "ready",
     score,
+    brandIntelligenceScore,
+    evidenceCoverage,
+    confidence,
     gaps,
     ...(nextAction ? { nextAction } : {}),
     evaluatedAt: (options.now ?? (() => new Date()))().toISOString(),
   };
+}
+
+function gapForField(fieldKey: string): BrandDnaReadinessGap {
+  for (const [gap, keys] of Object.entries(FIELD_KEYS) as Array<[BrandDnaReadinessGap, readonly string[]]>) {
+    if (keys.includes(fieldKey)) return gap;
+  }
+  return "business";
 }
 
 function nextReadinessAction(gaps: readonly BrandDnaReadinessGap[], usable: ReadonlyMap<string, BrandBrainFieldDto>): BrandDnaReadinessAction | undefined {

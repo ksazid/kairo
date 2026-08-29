@@ -111,6 +111,9 @@ export type BrandDnaReadinessAction =
 export interface BrandDnaReadinessResponse {
   status: BrandDnaReadinessStatus;
   score: number;
+  brandIntelligenceScore: number;
+  evidenceCoverage: number;
+  confidence: number;
   gaps: BrandDnaReadinessGap[];
   nextAction?: BrandDnaReadinessAction;
   evaluatedAt: string;
