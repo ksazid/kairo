@@ -9,6 +9,7 @@ import {
   setKnowledgeSourceEnabled,
 } from "../../../../src/lib/kairo-api";
 import { refreshInstagramBrandSource } from "../../../../src/lib/instagram-api";
+import { buildBrandBrain } from "../../../../src/lib/guided-brand-brain-api";
 
 function target(brandId: string, key: "notice" | "error", value: string): never {
   const params = new URLSearchParams({ [key]: value.slice(0, 180) });
@@ -48,6 +49,7 @@ export async function addKnowledgeSourceAction(brandId: string, formData: FormDa
       ...(!["url", "website", "document"].includes(type) && content ? { content } : {}),
     };
     await createKnowledgeSource(brandId, input);
+    if ((type === "url" || type === "website") && url) await buildBrandBrain(brandId, { publicReferenceUrl: url });
   } catch (error) {
     return target(brandId, "error", error instanceof Error ? error.message : "Unable to add Knowledge source");
   }
