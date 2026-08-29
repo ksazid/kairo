@@ -12,6 +12,7 @@ import type {
   SessionResponse,
   CommandSearchResponse,
   BrandNotificationsDto,
+  BrandDnaReadinessResponse,
 } from "@kairo/contracts";
 
 export class KairoApiError extends Error {
@@ -101,6 +102,9 @@ export async function createWorkspaceWithBrand(input: CreateWorkspaceWithBrandRe
 
 export async function getBrandBrain(brandId: string): Promise<BrandBrainFieldDto[]> {
   return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/brain`), "Unable to load Brand Brain");
+}
+export async function getBrandDnaReadiness(brandId: string): Promise<BrandDnaReadinessResponse> {
+  return bodyOrError(await authorizedFetch(`/api/v1/brands/${encodeURIComponent(brandId)}/brain/readiness`), "Unable to evaluate Brand DNA readiness");
 }
 
 export async function putBrandBrainField(brandId: string, fieldKey: string, input: PutBrandBrainFieldRequest): Promise<BrandBrainFieldDto> {

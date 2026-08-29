@@ -55,6 +55,7 @@ import{registerInstagramConnectionRoutes}from"./instagram-connection-routes";
 import{MetaDirectInstagramOAuthClient}from"./meta-direct-instagram-oauth";
 import{MetaFacebookOAuthClient}from"./meta-facebook-oauth";
 import{MetaChannelConnectionService}from"./meta-channel-connection";
+import{registerBrandDnaReadinessRoutes}from"./brand-dna-readiness-routes";
 import{PgMetaConnectionRepository}from"./meta-channel-connection-postgres";
 import{registerMetaChannelConnectionRoutes}from"./meta-channel-connection-routes";
 import{InstagramMetricCollectionRunner,PgMetricCollectionJobStore}from"./instagram-metric-runner";
@@ -184,6 +185,7 @@ registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier})
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
+registerBrandDnaReadinessRoutes(app,{store:coreStore,identityVerifier});
 registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,graphStore:brandIntelligenceGraphStore,discovery:discoveryService,...(hunter?{runner:hunter}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});

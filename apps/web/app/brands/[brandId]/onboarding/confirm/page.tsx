@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { getBrand, getBrandBrain, getSession } from "../../../../../src/lib/kairo-api";
+import { getBrand, getBrandBrain, getBrandDnaReadiness, getSession } from "../../../../../src/lib/kairo-api";
 import { KairoLogo } from "../../../../kairo-icons";
 import styles from "../../../../onboarding/onboarding.module.css";
 import confirmStyles from "./confirm.module.css";
-import { confirmOnboardingBrandAction } from "../actions";
+import { confirmOnboardingBrandAction, enrichOnboardingBrandAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export default async function ConfirmBrandPage({ params, searchParams }: { param
   if (!session) redirect("/auth/login?returnTo=/");
 
   const [{ brandId }, query] = await Promise.all([params, searchParams]);
-  const [brand, brain] = await Promise.all([getBrand(brandId), getBrandBrain(brandId).catch(() => [])]);
+  const [brand, brain, readiness] = await Promise.all([getBrand(brandId), getBrandBrain(brandId).catch(() => []), getBrandDnaReadiness(brandId).catch(() => undefined)]);
   if (!brand) redirect("/");
   const workspace = session.workspaces.find((item) => item.id === brand.workspaceId);
   if (!workspace) redirect("/");
@@ -56,9 +56,11 @@ export default async function ConfirmBrandPage({ params, searchParams }: { param
           </div>
         ) : null}
 
+        {readiness?.status === "ready" ? <p className={confirmStyles.readiness} role="status">✓ Brand DNA ready</p> : readiness?.nextAction ? <div className={confirmStyles.readinessNotice} role="status"><strong>Kairo needs one more thing before it can find relevant opportunities.</strong><p>{readiness.nextAction.prompt}</p><form action={enrichOnboardingBrandAction.bind(null, brand.id)} className={confirmStyles.enrichmentForm}>{readiness.nextAction.type === "add-source" ? <><input type="hidden" name="kind" value="source" /><input name="publicReferenceUrl" type="url" required placeholder="https://yourbrand.com" aria-label="Public Brand link" /><button className="secondary-button" type="submit">Add source</button></> : readiness.nextAction.type === "confirm-none" ? <><input type="hidden" name="kind" value="none" /><button className="secondary-button" type="submit">Confirm none</button></> : <><input type="hidden" name="kind" value="field" /><input type="hidden" name="fieldKey" value={readiness.nextAction.fieldKey} /><input name="value" required placeholder="Type your answer" aria-label={readiness.nextAction.prompt} /><button className="secondary-button" type="submit">Save answer</button></>}</form></div> : null}
+
         <form action={action} className={confirmStyles.confirmForm}>
-          <button className={`${styles.primaryAction} primary-button`} type="submit">
-            <span>{summaries.length ? "Looks right" : "Continue to Home"}</span>
+          <button className={`${styles.primaryAction} primary-button`} type="submit" disabled={readiness?.status !== "ready"}>
+            <span>{readiness?.status === "ready" ? "Looks right · Continue" : "Continue"}</span>
             <span className={styles.buttonArrow} aria-hidden="true">→</span>
           </button>
         </form>

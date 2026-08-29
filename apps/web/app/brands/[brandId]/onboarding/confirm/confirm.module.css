@@ -22,6 +22,12 @@
 
 .confirmForm { margin-top: 28px; }
 .footnote { margin: 14px 0 0; color: var(--k-neutral-400); font-size: 12px; line-height: 18px; }
+.readiness { margin: 22px 0 0; color: var(--k-success, #18794e); font-size: 14px; font-weight: 750; }
+.readinessNotice { display: grid; gap: 6px; margin-top: 22px; padding: 15px 16px; border: 1px solid color-mix(in srgb, var(--k-warning, #a15c00) 30%, var(--k-neutral-200)); border-radius: 12px; background: color-mix(in srgb, var(--k-warning, #a15c00) 7%, var(--k-surface)); }
+.readinessNotice strong { font-size: 13px; }
+.readinessNotice p { margin: 0; color: var(--k-neutral-500); font-size: 13px; line-height: 19px; }
+.enrichmentForm { display: flex; gap: 8px; margin-top: 7px; }
+.enrichmentForm input { flex: 1; min-width: 0; padding: 10px 11px; border: 1px solid var(--k-neutral-200); border-radius: 9px; background: var(--k-surface); color: var(--k-neutral-900); font: inherit; font-size: 13px; }
 
 @keyframes row-enter {
   from { opacity: 0; transform: translateY(5px); }
