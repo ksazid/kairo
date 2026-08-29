@@ -256,6 +256,26 @@
   font-size: 13px;
 }
 
+.readiness {
+  margin: 20px 0 0;
+  color: var(--k-success, #18794e);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.readinessNotice {
+  display: grid;
+  gap: 5px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--k-warning, #a15c00) 28%, var(--k-neutral-200));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--k-warning, #a15c00) 7%, var(--k-surface));
+}
+
+.readinessNotice strong { font-size: 13px; }
+.readinessNotice p { margin: 0; color: var(--k-neutral-500); font-size: 13px; line-height: 19px; }
+
 @keyframes surface-enter {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }

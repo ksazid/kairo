@@ -385,3 +385,5 @@ export type {
   PutBrandBrainFieldRequest,
   WorkspaceDto,
 };
+
+export { evaluateBrandDnaReadiness, type BrandDnaReadinessOptions } from "./brand-dna-readiness";

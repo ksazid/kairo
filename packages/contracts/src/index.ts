@@ -101,6 +101,21 @@ export interface BrandBrainBuildResponse {
   sourceIds: string[];
 }
 
+export type BrandDnaReadinessStatus = "ready" | "needs-enrichment";
+export type BrandDnaReadinessGap = "business" | "offerings" | "audience" | "positioning" | "topics" | "boundaries" | "geography";
+export type BrandDnaReadinessAction =
+  | { type: "add-source"; prompt: string; acceptedSource: "website" | "public-link" }
+  | { type: "confirm-field"; fieldKey: string; prompt: string }
+  | { type: "confirm-none"; fieldKey: "boundaries.excluded-topics"; prompt: string };
+
+export interface BrandDnaReadinessResponse {
+  status: BrandDnaReadinessStatus;
+  score: number;
+  gaps: BrandDnaReadinessGap[];
+  nextAction?: BrandDnaReadinessAction;
+  evaluatedAt: string;
+}
+
 export type KnowledgeSourceType = "url" | "website" | "document" | "note" | "pasted" | "research" | "product";
 export type KnowledgeSourceStatus = "active" | "disabled" | "replaced" | "removed" | "quarantined" | "failed";
 
