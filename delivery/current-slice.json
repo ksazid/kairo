@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Focused Home Creation Flow",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04"],
@@ -53,21 +53,21 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-107@1.0",
+      "commitSha": "783cf07585f1cbcd202ca19cc11472a464cc5026",
+      "by": "Sazid Khan",
+      "at": "2026-08-30T04:10:33Z",
+      "rationale": "Product Owner approved completion and merge after Product Intake, Security, CI and deployed visual QA passed."
     },
     {
       "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-107@1.0",
+      "commitSha": "783cf07585f1cbcd202ca19cc11472a464cc5026",
+      "by": "Sazid Khan",
+      "at": "2026-08-30T04:10:33Z",
+      "rationale": "Product Owner explicitly instructed merge to main after all gates passed; production deployment remains manual."
     },
     {
       "type": "production-enable",
@@ -85,17 +85,17 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "783cf07585f1cbcd202ca19cc11472a464cc5026",
+    "evidence": ["GitHub Product Intake run 33291786297", "GitHub Security baseline run 33291786270", "GitHub CI run 33291786247", "Vercel deployment dpl_5BhrbsmDcwM4q9b18xHFceWewhBd", "apps/kairo-ui-v2/design-qa.md"]
   },
   "release": {
-    "status": "not-authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
