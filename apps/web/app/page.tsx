@@ -31,7 +31,7 @@ import {
   type HomeForYouItem,
   buildContinue,
 } from "../src/lib/home-intelligence";
-import styles from "./home-vs85.module.css";
+import styles from "./home-approved.module.css";
 
 type SearchParams = Promise<{ workspace?: string; brand?: string; notice?: string; error?: string; idea?: string; format?: HomeCreationFormat | "campaign" }>;
 type RecommendationScores = { overall: number; audienceFit: number; status: string };

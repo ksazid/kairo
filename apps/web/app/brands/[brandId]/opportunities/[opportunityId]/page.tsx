@@ -5,7 +5,7 @@ import { KairoIcon } from "../../../../kairo-icons";
 import { opportunityAction } from "../../../../opportunity-actions";
 import { homeFormatLabel } from "../../../../../src/lib/home-creation-format";
 import { ForYouCreateAction } from "../../../../for-you-create-action";
-import styles from "../../../../home-vs85.module.css";
+import styles from "../../../../home-approved.module.css";
 
 export default async function OpportunityPreview({ params }: { params: Promise<{ brandId: string; opportunityId: string }> }) {
   const { brandId, opportunityId } = await params;

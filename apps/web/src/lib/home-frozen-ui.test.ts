@@ -17,7 +17,7 @@ describe("approved Home screenshot contract", () => {
 
   it("matches the approved compact attention card", () => {
     const page = read("app/page.tsx");
-    const css = read("app/home-vs85.module.css");
+    const css = read("app/home-approved.module.css");
     expect(page).toContain("Needs attention");
     expect(page).toContain('KairoIcon name="warning"');
     expect(page).toContain("retryButton");
@@ -29,7 +29,7 @@ describe("approved Home screenshot contract", () => {
   it("locks the approved Your Idea URL/media/Auto format flow", () => {
     const page = read("app/page.tsx");
     const composer = read("app/my-idea-composer.tsx");
-    const css = read("app/home-vs85.module.css");
+    const css = read("app/home-approved.module.css");
     expect(page).toContain("Your Idea");
     expect(page).toContain("Add your idea, link or media. Kairo selects a format automatically and you can change it.");
     expect(composer).toContain('placeholder="What do you want to create?"');
@@ -56,7 +56,7 @@ describe("approved Home screenshot contract", () => {
     const recommendationAction = read("app/for-you-recommendations-action.tsx");
     const createAction = read("app/for-you-create-action.tsx");
     const bookmarkAction = read("app/for-you-bookmark-action.tsx");
-    const css = read("app/home-vs85.module.css");
+    const css = read("app/home-approved.module.css");
     expect(page).toContain("Discover");
     expect(page).toContain("Smart recommendations based on your brand and goals.");
     expect(page).toContain("ForYouRecommendationsAction");
@@ -80,7 +80,7 @@ describe("approved Home screenshot contract", () => {
 
   it("keeps all four What’s working cards in one mobile row", () => {
     const page = read("app/page.tsx");
-    const css = read("app/home-vs85.module.css");
+    const css = read("app/home-approved.module.css");
     expect(page).toContain("What&apos;s working");
     expect(page).toContain("A quick pulse of your content performance.");
     expect(page).toContain("Last 7 days");
