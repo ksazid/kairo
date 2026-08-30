@@ -2,6 +2,7 @@ import type { BrandOpportunityDto } from "@kairo/contracts";
 import { opportunityAction } from "./opportunity-actions";
 import { RecommendationSeen } from "./recommendation-seen";
 import styles from "./flow-pages.module.css";
+import Link from "next/link";
 
 export function OpportunityList({
   brandId,
@@ -39,7 +40,7 @@ function OpportunityCard({ brandId, item, returnTo }: { brandId: string; item: B
         <span className={`${styles.chip} ${styles.chipNeutral}`}>{freshness}</span>
         {item.status !== "new" ? <span className={`${styles.chip} ${styles.chipNeutral}`}>{statusLabel(item.status)}</span> : null}
       </div>
-      <h3 id={titleId}>{item.title}</h3>
+      <h3 id={titleId}><Link href={`/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(item.id)}`}>{item.title}</Link></h3>
       <p className={styles.rationale}>{item.rationale}</p>
       <div className={styles.whyNow}><span>Why now</span><p>{item.whyNow}</p></div>
       <div className={styles.actions}>

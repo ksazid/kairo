@@ -15,7 +15,7 @@
   },
   "dependencies": [],
   "blockers": [],
-  "allowedPaths": ["apps/web/app/page.tsx", "apps/web/app/home-format-picker.tsx", "apps/web/app/home-vs85.module.css", "docs/slices/VS-107.md", "docs/plans/VS-107-implementation.md", "delivery/**"],
+  "allowedPaths": ["apps/web/app/page.tsx", "apps/web/app/home-format-picker.tsx", "apps/web/app/home-vs85.module.css", "apps/web/app/opportunity-list.tsx", "apps/web/app/brands/[brandId]/opportunities/[opportunityId]/page.tsx", "apps/web/app/discovery.css", "apps/web/src/lib/home-intelligence.ts", "apps/web/src/lib/product-navigation.ts", "apps/web/src/lib/product-navigation.test.ts", "docs/slices/VS-107.md", "docs/plans/VS-107-implementation.md", "delivery/**"],
   "protectedPaths": [
     ".github/workflows/release.yml"
   ],

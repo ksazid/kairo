@@ -91,8 +91,7 @@ describe("VS-85 Home intelligence", () => {
       source: { type: "user" }, status: "new", createdAt: "2026-08-23T08:00:00.000Z",
     };
     const items = buildContinue("brand-1", [campaign], [idea]);
-    expect(items[0]?.href).toBe("/brands/brand-1/content");
-    expect(items[0]?.href).not.toContain("/campaigns/");
+    expect(items[0]?.href).toBe("/brands/brand-1/campaigns/campaign-1");
   });
 
   it("recommends a format before creation using the actual idea", () => {
