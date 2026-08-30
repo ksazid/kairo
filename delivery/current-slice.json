@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Focused Home, Discover and Content V2 Integration",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -98,12 +98,12 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-107@1.4",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "The VS-107@1.3 evidence is stale after the approved Content List and Content Preview expansion; exact-SHA QA must be rerun."
+      "commitSha": "f23eab0b6c4861da7553ce66c310aef81d199329",
+      "by": "Sazid Khan",
+      "at": "2026-08-30T21:16:26Z",
+      "rationale": "Product Owner approved certification of the exact VS-107@1.4 candidate after Content List and Content Preview visual QA and all exact-SHA repository gates passed."
     },
     {
       "type": "release",
@@ -130,14 +130,20 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "stale",
-    "commitSha": "dfd868748db8af31bac158c49c26491361cdab33",
-    "evidence": ["VS-107@1.3 evidence retained as historical context; VS-107@1.4 Content certification is pending"]
+    "status": "passed",
+    "commitSha": "f23eab0b6c4861da7553ce66c310aef81d199329",
+    "evidence": [
+      "GitHub Actions Product Intake run 33335643938",
+      "GitHub Actions Security baseline run 33335643927",
+      "GitHub Actions CI run 33335643934",
+      "Vercel Preview deployment dpl_9kdo3ioa8jBCVijZQLeEmsTaB5te READY",
+      "Cloud-browser Content List and Content Preview visual and interaction QA passed"
+    ]
   },
   "release": {
     "status": "not-authorized",
