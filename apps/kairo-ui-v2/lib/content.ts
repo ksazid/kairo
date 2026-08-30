@@ -31,7 +31,7 @@ const fallbackContent: ContentItem[] = [
     title: "5 Rental Mistakes to Avoid in Malta", summary: "Five practical mistakes travellers can avoid before collecting their rental car.",
     caption: "Planning a Malta road trip? Avoid these five common rental mistakes and enjoy a smoother journey from the moment you arrive.",
     channel: "Instagram", format: "carousel", formatLabel: "Carousel", status: "draft", statusLabel: "Draft",
-    updatedAt: "2024-05-20T10:15:00Z", image: "/malta-car.webp", media: ["/malta-car.webp", "/malta-drive.webp", "/car-keys.webp", "/malta-harbour.png"], cardCount: 4,
+    updatedAt: "2024-05-20T10:15:00Z", image: "/malta-car.webp", media: ["/malta-car.webp", "/malta-drive.webp", "/car-keys.webp", "/malta-harbour.webp"], cardCount: 4,
     audience: "Travellers planning to rent a car in Malta", objective: "Build trust and drive summer rental bookings", cta: "Save this guide for your Malta trip",
   },
   {
@@ -47,7 +47,7 @@ const fallbackContent: ContentItem[] = [
     title: "Best Car Rental Deals This Summer", summary: "A clear summer offer designed for value-conscious Malta travellers.",
     caption: "Explore more of Malta for less with flexible summer rental options made for your trip.",
     channel: "Facebook", format: "image", formatLabel: "Post", status: "scheduled", statusLabel: "Scheduled",
-    updatedAt: "2024-05-28T09:00:00Z", image: "/malta-harbour.png", media: ["/malta-harbour.png"],
+    updatedAt: "2024-05-28T09:00:00Z", image: "/malta-harbour.webp", media: ["/malta-harbour.webp"],
     audience: "Value-conscious summer travellers", objective: "Convert active travel planners", cta: "View this summer’s rental options",
   },
   {
@@ -55,7 +55,7 @@ const fallbackContent: ContentItem[] = [
     title: "Summer in Malta: Tips for the Perfect Trip", summary: "A save-worthy carousel covering the essentials for a relaxed Malta holiday.",
     caption: "The perfect Malta trip starts with a little local knowledge. Save these six tips before you travel.",
     channel: "LinkedIn", format: "carousel", formatLabel: "Carousel", status: "published", statusLabel: "Published",
-    updatedAt: "2024-05-31T11:30:00Z", image: "/malta-harbour.png", media: ["/malta-harbour.png", "/malta-car.webp", "/malta-drive.webp", "/car-keys.webp"], cardCount: 6,
+    updatedAt: "2024-05-31T11:30:00Z", image: "/malta-harbour.webp", media: ["/malta-harbour.webp", "/malta-car.webp", "/malta-drive.webp", "/car-keys.webp"], cardCount: 6,
     audience: "Business and leisure travellers", objective: "Position the Brand as a trusted Malta guide", cta: "Share this with someone visiting Malta",
   },
 ];
@@ -65,7 +65,7 @@ export function contentFallback(): ContentItem[] {
 }
 
 export function toContentItems(details: CampaignDetailView[], reviews: Record<string, ContentReviewStatusView | null>, commands: PublishCommandView[]): ContentItem[] {
-  const images = ["/malta-car.webp", "/malta-drive.webp", "/malta-harbour.png", "/car-keys.webp"];
+  const images = ["/malta-car.webp", "/malta-drive.webp", "/malta-harbour.webp", "/car-keys.webp"];
   return details.flatMap((detail) => detail.assets.map(({ asset, versions }, index) => {
     const current = versions.at(-1);
     const command = commands.filter((item) => item.assetId === asset.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
