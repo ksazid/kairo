@@ -11,3 +11,4 @@
 9. Add the approved v2 Discover collection with consistent filters, imagery, badges and action rows.
 10. Add v2 Discover Preview, connect Save/Dismiss to existing Opportunity actions, and connect Create with Kairo to the existing creation route.
 11. Route Home Discover entry points into v2 and repeat responsive browser QA.
+12. Expand Discover with the approved detailed Table default plus a persistent Grid alternate using shared records, filters and actions.

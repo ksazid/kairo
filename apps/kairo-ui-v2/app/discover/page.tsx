@@ -1,4 +1,3 @@
-import { Compass, Sparkles } from "lucide-react";
 import { getHomeData } from "../../lib/api";
 import { discoverFallback, toDiscoverCards } from "../../lib/discover";
 import { KairoShell } from "../kairo-shell";
@@ -14,14 +13,6 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Sea
 
   return <KairoShell active="Discover" authenticated={data.authenticated} brandId={data.brandId} brandName={data.brandName} workspaceClassName="discover-workspace">
     {params.authError ? <p className="auth-error" role="alert">{params.authError}</p> : null}
-    <header className="discover-page-header">
-      <div>
-        <span><Compass aria-hidden="true"/>Discover</span>
-        <h1>Find the idea worth creating next</h1>
-        <p>Kairo filters public momentum through your Brand, audience and content strengths.</p>
-      </div>
-      <aside><Sparkles aria-hidden="true"/><span><strong>Brand-fit discovery</strong><small>Strong ideas only · refreshed continuously</small></span></aside>
-    </header>
     <DiscoverClient initialCards={cards} brandId={data.brandId}/>
   </KairoShell>;
 }

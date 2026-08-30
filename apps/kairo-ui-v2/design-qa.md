@@ -1,39 +1,59 @@
-# Kairo UI v2 — Home design QA
+# Kairo UI v2 — Design QA
+
+## Home
 
 Reference: approved Kairo Home mockup supplied by the Product Owner.
 
-## Structural comparison
-
-| Section | Result |
+| Surface | Result |
 | --- | --- |
 | Independent dark shell and dedicated design tokens | Passed |
-| Sidebar logo, navigation, active state and pro tip | Passed |
-| Brand selector, readiness, notification and account controls | Passed |
-| Page heading and four format controls | Passed |
-| Viral-link input and Analyse link | Passed |
-| Three-column Kairo recommendation card | Passed |
-| Mockup image, badges, rationale, trend, actions and source | Passed |
-| Continue Working panel | Passed |
-| What Kairo Learned panel | Passed |
-| Discover More image rail | Passed |
-| Desktop responsive render | Passed on Vercel Preview |
-| Mobile responsive render and bottom navigation | Passed on Vercel Preview |
+| Sidebar, brand controls, creation formats and viral-link analysis | Passed |
+| Three-column recommendation, Continue Working, learning and discovery rail | Passed |
+| Desktop and mobile responsive behavior | Passed |
 
-## Automated checks
+## Discover Table and Grid
 
-- TypeScript: passed
-- Next.js production build: passed
-- Local server: passed
-- Vercel Preview build: passed
-- Desktop visual capture: passed
-- Mobile visual capture: passed
-- Format selection interaction: passed
-- Viral-link Analyse handoff: passed
+Reference: `/workspace/scratch/9b13db4cc8b7/upload/0241D33D-99EC-40CD-8D4F-3240222ADB62.jpeg` (1536 × 1024).
 
-## Evidence
+Implementation: `https://kairo-ui-v2-9tdybjbk3-sazid62-gmailcoms-projects.vercel.app/discover`, captured in the cloud browser at 1363 × 936 in Table state.
 
-- Deployment: `dpl_5BhrbsmDcwM4q9b18xHFceWewhBd`
-- Preview: `https://kairo-ui-v2-gfcwwtmi2-sazid62-gmailcoms-projects.vercel.app`
-- Verified sections: shell, four format choices, viral link, Kairo recommendation, Continue Working, What Kairo Learned and Discover More.
+### Visual comparison
+
+The approved reference and the browser-rendered implementation were reviewed together in one comparison pass. The implementation preserves the reference hierarchy, dark shell, typography scale, image-led opportunity rows, fit and trend evidence, format/source metadata, circular BI confidence, and aligned Preview/Save/Dismiss action row. The approved Table/Grid control is additive. At the narrower QA viewport the filters wrap to a safe second row instead of colliding.
+
+| Surface | Result |
+| --- | --- |
+| Kairo shell, navigation and active Discover state | Passed |
+| Discover heading, search, status filters and Refresh action | Passed |
+| Detailed Table columns and opportunity imagery | Passed |
+| Brand-fit, trend, format, channel, source and BI confidence data | Passed |
+| Preview, Save and Dismiss action alignment | Passed |
+| Alternate visual Grid using the same records and actions | Passed |
+| Table/Grid selection persistence | Passed |
+| Responsive filter wrapping and safe table width | Passed |
+
+### Iteration history
+
+1. Initial comparison found filter collision and clipped Actions at 1363 px (P1).
+2. Filters were moved to a responsive second row below 1400 px and table columns were rebalanced.
+3. Final comparison confirmed all Actions visible, no broken images, no page overflow, and no remaining P0/P1/P2 visual issue.
+
+### Interaction verification
+
+- Table/Grid parity: 6 records in both views.
+- View persistence: Grid persisted across reload; Table restored on selection.
+- Search: `airport` returned the single matching opportunity.
+- Developing filter: returned the road-trip checklist opportunity.
+- Save: changed the selected item to its saved state.
+- Dismiss: reduced the result set from 6 to 5.
+- Refresh discovery: restored all 6 records.
+- Preview: routed to the matching `/discover/[id]` concept-preview page; browser Back returned to Discover.
+- Console: no application-origin warnings or errors. Cloud-browser extension metadata errors were excluded as external tooling noise.
+
+### Accepted responsive differences
+
+- The reference shows 4 rows at 1536 px; the implementation uses 6 realistic records and naturally continues below the viewport.
+- The implementation includes the approved Table/Grid selector and Channel filter.
+- The 1363 px QA viewport uses a two-row filter layout; the 1536 px target retains the wider composition.
 
 final result: passed
