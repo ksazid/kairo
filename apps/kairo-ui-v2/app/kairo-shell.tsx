@@ -24,6 +24,9 @@ export function KairoShell({
   brandName,
   children,
   workspaceClassName = "",
+  proTip = "Connect more channels to get smarter recommendations.",
+  proTipAction = "Connect channels",
+  proTipHref,
 }: {
   active: ActiveDestination;
   authenticated: boolean;
@@ -31,6 +34,9 @@ export function KairoShell({
   brandName: string;
   children: ReactNode;
   workspaceClassName?: string;
+  proTip?: string;
+  proTipAction?: string;
+  proTipHref?: string;
 }) {
   const webUrl = (process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app").replace(/\/$/, "");
   const brandBase = brandId ? `${webUrl}/brands/${encodeURIComponent(brandId)}` : webUrl;
@@ -38,7 +44,7 @@ export function KairoShell({
   const nav = [
     { label: "Home" as const, Icon: HomeIcon, href: brandId ? `/?brand=${encodeURIComponent(brandId)}` : "/" },
     { label: "Discover" as const, Icon: Compass, href: `/discover${discoverQuery}` },
-    { label: "Content" as const, Icon: FileText, href: brandId ? `${brandBase}/content` : webUrl },
+    { label: "Content" as const, Icon: FileText, href: brandId ? `/content?brand=${encodeURIComponent(brandId)}` : "/content" },
     { label: "Campaigns" as const, Icon: Megaphone, href: brandId ? `${brandBase}/campaigns` : webUrl },
     { label: "Calendar" as const, Icon: CalendarDays, href: brandId ? `${brandBase}/calendar` : webUrl },
     { label: "Insights" as const, Icon: BarChart3, href: brandId ? `${brandBase}/performance` : webUrl },
@@ -50,7 +56,7 @@ export function KairoShell({
       <Link className="brand-logo" href={brandId ? `/?brand=${encodeURIComponent(brandId)}` : "/"}><Image src="/kairo-logo.svg" alt="" width="48" height="48" priority/><span>Kairo</span></Link>
       <nav aria-label="Primary navigation">{nav.map(({ label, Icon, href }) => href.startsWith("/") ? <Link key={label} className={active === label ? "active" : ""} href={href}><Icon aria-hidden="true"/>{label}</Link> : <a key={label} className={active === label ? "active" : ""} href={href}><Icon aria-hidden="true"/>{label}</a>)}</nav>
       <a className="classic-link" href={webUrl}><ExternalLink aria-hidden="true"/>Back to Classic Kairo</a>
-      <div className="pro-tip"><span><Sparkles aria-hidden="true"/>Pro tip</span><p>Connect more channels to get smarter recommendations.</p><a href={brandId ? `${brandBase}/channels` : webUrl}>Connect channels <span>›</span></a></div>
+      <div className="pro-tip"><span><Sparkles aria-hidden="true"/>Pro tip</span><p>{proTip}</p><a href={proTipHref ?? (brandId ? `${brandBase}/channels` : webUrl)}>{proTipAction} <span>›</span></a></div>
     </aside>
     <main>
       <header className="topbar">

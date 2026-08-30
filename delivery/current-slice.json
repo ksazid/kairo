@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "sliceId": "VS-107",
-  "title": "VS-107 — Focused Home and Discover V2 Integration",
+  "title": "VS-107 — Focused Home, Discover and Content V2 Integration",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
@@ -64,6 +64,7 @@
       "Connects the isolated v2 Home to existing Brand-scoped recommendations, simple creation and continuation contracts.",
       "Reuses the approved provider-neutral OIDC flow on the v2 hostname without changing identity-provider policy.",
       "Adds the approved v2 Discover collection and Discover Preview using existing Brand-scoped Opportunity contracts.",
+      "Adds the approved v2 Content List and Content Preview using existing Brand-scoped Campaign, Content Asset, review and calendar contracts.",
       "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling."
     ]
   },
@@ -71,16 +72,16 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-107@1.3",
+      "version": "VS-107@1.4",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-30T13:00:00Z",
-      "rationale": "Product Owner approved Home, Discover, and the dual Grid/Table listing expansion in the isolated v2 app."
+      "rationale": "Product Owner approved Home, Discover, the dual Grid/Table listing standard, and the Content List plus Content Preview expansion in the isolated v2 app."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-107@1.3",
+      "version": "VS-107@1.4",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -89,25 +90,25 @@
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-107@1.3",
+      "version": "VS-107@1.4",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-30T13:00:00Z",
-      "rationale": "Product Owner explicitly approved implementing both the detailed Table and visual Grid listing views in v2."
+      "rationale": "Product Owner explicitly approved implementing the detailed Table and visual Grid standard plus Content List and Content Preview in v2."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-107@1.3",
+      "version": "VS-107@1.4",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The VS-107@1.2 certification evidence is stale after the approved dual-view expansion; exact-SHA QA must be rerun."
+      "rationale": "The VS-107@1.3 evidence is stale after the approved Content List and Content Preview expansion; exact-SHA QA must be rerun."
     },
     {
       "type": "release",
       "status": "pending",
-      "version": "VS-107@1.3",
+      "version": "VS-107@1.4",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -127,8 +128,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 100,
-    "testing": 100,
+    "implementation": 90,
+    "testing": 65,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -136,7 +137,7 @@
   "certification": {
     "status": "stale",
     "commitSha": "dfd868748db8af31bac158c49c26491361cdab33",
-    "evidence": ["VS-107@1.2 evidence retained as historical context; VS-107@1.3 dual-view certification is pending"]
+    "evidence": ["VS-107@1.3 evidence retained as historical context; VS-107@1.4 Content certification is pending"]
   },
   "release": {
     "status": "not-authorized",

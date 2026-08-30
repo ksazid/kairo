@@ -101,7 +101,7 @@ export function creationDestination(
   const base = legacyBaseUrl.replace(/\/$/, "");
   const brand = encodeURIComponent(brandId);
   const campaign = encodeURIComponent(creation.campaignId);
-  if (creation.assetId) return `${base}/brands/${brand}/content/${campaign}/${encodeURIComponent(creation.assetId)}`;
+  if (creation.assetId) return `/content/${campaign}/${encodeURIComponent(creation.assetId)}?brand=${brand}`;
   return `${base}/brands/${brand}/campaigns/${campaign}`;
 }
 

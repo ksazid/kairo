@@ -31,6 +31,65 @@ export type HomeData = {
   learning?: { statement: string; interpretation?: string };
 };
 
+export type CampaignView = {
+  id: string;
+  workspaceId: string;
+  brandId: string;
+  ideaId: string;
+  name: string;
+  objective: string;
+  status: "draft";
+  createdAt: string;
+};
+
+export type ContentAssetView = {
+  id: string;
+  campaignId: string;
+  channel: "linkedin" | "instagram" | "facebook" | "manual";
+  format: string;
+  audience: string;
+  topic: string;
+  hookType: string;
+  cta: string;
+  currentVersion: number;
+  status: "draft";
+  createdAt: string;
+};
+
+export type ContentVersionView = {
+  id: string;
+  assetId: string;
+  version: number;
+  content: string;
+  actor: "user" | "ai";
+  createdAt: string;
+  libraryAssetRefs?: Array<{ kind: "image" | "video" | "document" | "other"; previewRef?: string }>;
+};
+
+export type CampaignDetailView = {
+  campaign: CampaignView;
+  assets: Array<{ asset: ContentAssetView; versions: ContentVersionView[] }>;
+};
+
+export type ContentReviewStatusView = {
+  review: { versionId: string; status: "review" | "revision-required" | "passed" | "archived" } | null;
+  approval: { versionId: string; approvedAt: string } | null;
+};
+
+export type PublishCommandView = {
+  assetId: string;
+  versionId: string;
+  scheduledFor: string;
+  status: "scheduled" | "dispatching" | "published" | "failed" | "unknown" | "manual-required" | "cancelled";
+  createdAt: string;
+};
+
+export type ContentData = HomeData & {
+  details: CampaignDetailView[];
+  reviews: Record<string, ContentReviewStatusView | null>;
+  commands: PublishCommandView[];
+};
+
 export type SimpleCreation = {
   id: string;
   status: "queued" | "understanding-goal" | "researching" | "choosing-angle" | "building-campaign" | "ready" | "needs-attention";
@@ -93,6 +152,30 @@ export async function getHomeData(requestedBrandId?: string): Promise<HomeData> 
     continueItems: buildContinueItems(brand.id, campaigns, ideas),
     ...(learning ? { learning: { statement: learning.statement, ...(learning.interpretation ? { interpretation: learning.interpretation } : {}) } } : {}),
   };
+}
+
+export async function getContentData(requestedBrandId?: string): Promise<ContentData> {
+  const identity = await getHomeData(requestedBrandId);
+  if (!identity.authenticated || !identity.brandId) return { ...identity, details: [], reviews: {}, commands: [] };
+  const token = await accessToken();
+  if (!token) return { ...identity, details: [], reviews: {}, commands: [] };
+  const brand = encodeURIComponent(identity.brandId);
+  const [campaignsResponse, commandsResponse] = await Promise.all([
+    api(token, `/api/v1/brands/${brand}/campaigns`),
+    api(token, `/api/v1/brands/${brand}/calendar`),
+  ]);
+  const campaigns = campaignsResponse.ok ? await campaignsResponse.json() as CampaignView[] : [];
+  const commands = commandsResponse.ok ? await commandsResponse.json() as PublishCommandView[] : [];
+  const details = await Promise.all(campaigns.map(async (campaign) => {
+    const response = await api(token, `/api/v1/brands/${brand}/campaigns/${encodeURIComponent(campaign.id)}`);
+    return response.ok ? await response.json() as CampaignDetailView : { campaign, assets: [] };
+  }));
+  const assets = details.flatMap((detail) => detail.assets.map((entry) => entry.asset));
+  const reviews = Object.fromEntries(await Promise.all(assets.map(async (asset) => {
+    const response = await api(token, `/api/v1/brands/${brand}/assets/${encodeURIComponent(asset.id)}/review-status`);
+    return [asset.id, response.ok ? await response.json() as ContentReviewStatusView : null] as const;
+  })));
+  return { ...identity, details, reviews, commands };
 }
 
 export async function startHomeCreation(input: {
