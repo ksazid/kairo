@@ -15,6 +15,6 @@ npm run dev --workspace @kairo/ui-v2 -- --hostname 0.0.0.0 --port 4173
 - Root directory: `apps/kairo-ui-v2`
 - Framework: Next.js
 - Build command: `npm run build`
-- Environment: `KAIRO_API_URL`, `NEXT_PUBLIC_KAIRO_WEB_URL`
+- Environment: `KAIRO_API_URL`, `NEXT_PUBLIC_KAIRO_WEB_URL`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_AUDIENCE`
 
-For authenticated use on a separate hostname, that hostname's `/auth/callback` must be registered with the identity provider. Until that is configured, the page deliberately renders approved concept data when no access-token cookie is available.
+Register `https://<v2-production-domain>/auth/callback` as an allowed callback URL and `https://<v2-production-domain>` as an allowed logout URL with the existing identity provider. Until that is configured, the page deliberately renders approved concept data when no access-token cookie is available.

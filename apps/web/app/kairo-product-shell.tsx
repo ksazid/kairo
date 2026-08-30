@@ -49,6 +49,7 @@ export async function KairoProductShell({
   variant = "default",
   children,
 }: ProductShellProps) {
+  const newUiUrl = process.env.NEXT_PUBLIC_KAIRO_NEW_UI_URL?.trim() || "https://kairo-ui-v2-sazid62-gmailcoms-projects.vercel.app";
   const navigation = buildProductNavigation({ brandId, workspaceId });
   const session = await getSession();
   const workspace = session?.workspaces.find((item) => item.id === workspaceId) ?? session?.workspaces[0];
@@ -102,6 +103,12 @@ export async function KairoProductShell({
           )}
         </nav>
 
+        <a className="k-shell-v2-link" href={newUiUrl}>
+          <KairoIcon name="sparkles" />
+          <span>Try New UI</span>
+          <KairoIcon name="external" />
+        </a>
+
         <div className="k-shell-sidebar-footer" aria-label="Account utilities">
           <NotificationCentre notifications={notifications} />
           <ThemeToggle />
@@ -115,6 +122,7 @@ export async function KairoProductShell({
           <span className="k-shell-mobile-page">{visiblePageLabel}</span>
         </div>
         <div className="k-shell-mobile-actions" aria-label="Account utilities">
+          <a className="k-shell-v2-mobile-link" href={newUiUrl} aria-label="Try New UI"><KairoIcon name="external" /></a>
           <NotificationCentre notifications={notifications} />
           <ThemeToggle />
           <ProfileMenu addBrandHref={addBrandHref} />
