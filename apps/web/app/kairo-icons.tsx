@@ -5,7 +5,7 @@ export type KairoIconName =
   | "instagram" | "facebook" | "linkedin" | "youtube" | "brand" | "profile" | "settings" | "logout"
   | "plus" | "chevron" | "sun" | "moon" | "system" | "density" | "search" | "bell"
   | "link" | "image" | "photo" | "video" | "media" | "attachment" | "bookmark" | "filter" | "grid" | "list"
-  | "arrow-left" | "arrow-right" | "external" | "refresh" | "check" | "warning" | "shield" | "sparkles" | "eye"
+  | "arrow-left" | "arrow-right" | "external" | "refresh" | "check" | "warning" | "shield" | "sparkles" | "eye" | "close"
   | "heart" | "comment" | "send" | "more" | "edit" | "device-mobile" | "device-desktop" | "info" | "target" | "lock";
 
 const paths: Record<KairoIconName, React.ReactNode> = {
@@ -50,6 +50,7 @@ const paths: Record<KairoIconName, React.ReactNode> = {
   shield: <><path d="M12 2.8 20 6v5.8c0 5.1-3.2 8.2-8 10.2-4.8-2-8-5.1-8-10.2V6l8-3.2Z"/><path d="m8.6 12 2.2 2.2 4.6-4.6"/></>,
   sparkles: <><path d="m12 3 1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2L12 3Z"/><path d="m19 13 .7 2.3L22 16l-2.3.7L19 19l-.7-2.3L16 16l2.3-.7L19 13ZM5 14l.8 2.5L8 17l-2.2.5L5 20l-.8-2.5L2 17l2.2-.5L5 14Z"/></>,
   eye: <><path d="M2.8 12s3.4-5.2 9.2-5.2S21.2 12 21.2 12 17.8 17.2 12 17.2 2.8 12 2.8 12Z"/><circle cx="12" cy="12" r="2.3"/></>,
+  close: <><path d="m5 5 14 14M19 5 5 19"/></>,
   heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>,
   comment: <path d="M21 11.5a8.5 8.5 0 0 1-9 8.5 9 9 0 0 1-4-.9L3 21l1.6-4.4A8.5 8.5 0 1 1 21 11.5Z"/>,
   send: <><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></>,

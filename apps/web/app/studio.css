@@ -1,11 +1,12 @@
 .campaigns-main,.studio-main{max-width:1240px}
 .campaign-list,.studio-workspace,.studio-empty{background:var(--k-surface);border:1px solid var(--k-neutral-200);border-radius:var(--k-radius-lg)}
 .campaign-section-heading{align-items:center}
-.campaign-row{display:flex;justify-content:space-between;gap:24px;padding:24px 26px;border-bottom:1px solid var(--k-neutral-200);text-decoration:none}
+.campaign-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 120px auto;align-items:center;justify-content:space-between;gap:24px;padding:24px 26px;border-bottom:1px solid var(--k-neutral-200);text-decoration:none}
 .campaign-row:last-child{border-bottom:0}
 .campaign-row:hover{background:var(--k-neutral-50)}
 .campaign-row h3{margin-top:5px}
 .campaign-row p{max-width:760px;margin:6px 0 0;color:var(--k-neutral-700);line-height:22px}
+.campaign-format-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;color:var(--k-neutral-700);font-size:12px}.campaign-format-list span{display:inline-flex;align-items:center;gap:5px}.campaign-format-list svg{width:15px;height:15px;color:var(--k-primary)}.campaign-progress{display:grid;gap:4px;color:var(--k-neutral-700);font-size:13px}.campaign-progress strong{font-size:20px;color:var(--k-neutral-900)}.campaign-progress span{font-size:11px;color:var(--k-neutral-400)}.campaign-open{white-space:nowrap}
 .campaign-date{flex:0 0 auto;color:var(--k-neutral-400);font-size:12px}
 .campaign-create-disclosure{position:relative;flex:0 0 auto}
 .campaign-create-disclosure>summary{list-style:none;cursor:pointer}
@@ -100,7 +101,7 @@
   .schedule-form>div{grid-column:1/-1}
 }
 @media(max-width:700px){
-  .campaign-section-heading,.campaign-row,.studio-header,.studio-asset-header,.editor-footer,.review-heading{display:grid}
+  .campaign-section-heading,.campaign-row,.studio-header,.studio-asset-header,.editor-footer,.review-heading{display:grid}.campaign-row{grid-template-columns:1fr;gap:12px}.campaign-open{justify-self:start}
   .campaign-create-disclosure{width:100%}
   .campaign-create-disclosure>summary{justify-self:start}
   .campaign-create-panel{position:static;width:100%;margin-top:10px;box-shadow:none}

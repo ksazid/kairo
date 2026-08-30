@@ -28,6 +28,9 @@
 .whyNow span { color:var(--k-primary, #5140e9); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
 .whyNow p { margin:5px 0 0; color:var(--k-neutral-700, #33363d); line-height:1.45; }
 .actions { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:16px; }
+.actions svg { width: 16px; height: 16px; }
+.iconButton { width: 40px; height: 40px; display: inline-grid; place-items: center; border: 1px solid var(--k-neutral-200); border-radius: 9px; background: var(--k-surface); color: var(--k-neutral-700); cursor: pointer; }
+.iconButton:hover { border-color: var(--k-primary); color: var(--k-primary); }
 .primary, .secondary, .text { min-height:var(--k-button-height-compact, 36px); padding:8px 14px; border-radius:var(--k-button-radius, 9px); font:inherit; font-weight:750; cursor:pointer; }
 .primaryAction { display:inline-flex; align-items:center; justify-content:center; min-height:var(--k-button-height, 42px); padding:10px 16px; border-radius:var(--k-button-radius, 9px); background:var(--k-primary, #5140e9); color:#fff; font-weight:750; text-decoration:none; }
 .primary { border:1px solid var(--k-primary, #5140e9); background:var(--k-primary, #5140e9); color:#fff; }
