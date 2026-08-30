@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "sliceId": "VS-107",
-  "title": "VS-107 — Focused Home Creation Flow and V2 Integration",
+  "title": "VS-107 — Focused Home and Discover V2 Integration",
   "status": "active",
   "lifecycle": "testing",
   "riskLevel": "medium",
@@ -63,6 +63,7 @@
       "Reframes Home around one next creation action.",
       "Connects the isolated v2 Home to existing Brand-scoped recommendations, simple creation and continuation contracts.",
       "Reuses the approved provider-neutral OIDC flow on the v2 hostname without changing identity-provider policy.",
+      "Adds the approved v2 Discover collection and Discover Preview using existing Brand-scoped Opportunity contracts.",
       "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling."
     ]
   },
@@ -70,16 +71,16 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-107@1.1",
+      "version": "VS-107@1.2",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-30T13:00:00Z",
-      "rationale": "Product Owner approved completing real Home data, viral-link analysis, creation/preview routing, continuation routing, production authentication verification and legacy/v2 links."
+      "rationale": "Product Owner approved completing Home and continuing the approved Discover mockup in the isolated v2 app."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-107@1.1",
+      "version": "VS-107@1.2",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -88,25 +89,25 @@
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-107@1.1",
+      "version": "VS-107@1.2",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-30T13:00:00Z",
-      "rationale": "Product Owner explicitly said Proceed and approved the Home completion and new UI link implementation."
+      "rationale": "Product Owner explicitly approved continuing the Discover implementation in v2 and instructed completion without intermediate approval stops."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-107@1.1",
+      "version": "VS-107@1.2",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The VS-107@1.0 visual certification is stale after the approved functional expansion."
+      "rationale": "Certification is pending exact-SHA Home and Discover browser QA."
     },
     {
       "type": "release",
       "status": "pending",
-      "version": "VS-107@1.1",
+      "version": "VS-107@1.2",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -153,7 +154,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/253",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/254",
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
       "Vercel deployment dpl_5BhrbsmDcwM4q9b18xHFceWewhBd"

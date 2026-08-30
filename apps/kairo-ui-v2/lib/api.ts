@@ -7,8 +7,19 @@ export type HomeOpportunity = {
   rationale?: string;
   whyNow?: string;
   developmentDirection?: string;
+  status?: "new" | "saved" | "ignored" | "developing";
+  createdAt?: string;
+  updatedAt?: string;
   scores?: { relevance?: number; audienceFit?: number; overall?: number };
-  details?: { recommendedFormat?: string; proposedAngle?: string };
+  details?: {
+    recommendedFormat?: string;
+    recommendedChannel?: string;
+    proposedAngle?: string;
+    hook?: string;
+    targetAudience?: string;
+    objective?: string;
+    confidence?: number;
+  };
 };
 
 export type HomeData = {
@@ -119,4 +130,13 @@ export async function getHomeCreation(brandId: string, creationId: string): Prom
   const token = await accessToken();
   if (!token) throw new Error("Sign in to continue.");
   return bodyOrError<SimpleCreation>(await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/simple-creations/${encodeURIComponent(creationId)}`), "Kairo could not read this creation.");
+}
+
+export async function actOnHomeOpportunity(brandId: string, opportunityId: string, action: "save" | "ignore"): Promise<HomeOpportunity> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to update this opportunity.");
+  return bodyOrError<HomeOpportunity>(
+    await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(opportunityId)}/${action}`, { method: "POST" }),
+    action === "save" ? "Kairo could not save this opportunity." : "Kairo could not dismiss this opportunity.",
+  );
 }
