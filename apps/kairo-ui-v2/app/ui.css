@@ -88,12 +88,12 @@ main { min-width: 0; margin-left: 218px; }
 .recommend-head > div svg { width: 15px; }
 .recommend-grid { display: grid; grid-template-columns: minmax(340px, 1.07fr) minmax(390px, 1.12fr) minmax(230px, .7fr); min-height: 306px; }
 .hero-image { min-width: 0; position: relative; overflow: hidden; border-radius: 12px; isolation: isolate; }
-.hero-image > img { object-fit: cover; object-position: center 58%; z-index: -2; }
-.image-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(4, 8, 12, .28), transparent 75%), linear-gradient(0deg, rgba(4, 8, 12, .3), transparent 45%); }
-.image-copy { position: absolute; top: 26px; left: 26px; display: grid; color: white; font-size: 27px; line-height: 1.1; font-weight: 720; letter-spacing: -.025em; text-shadow: 0 2px 9px #000a; }
+.hero-image > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 58%; z-index: 0; }
+.image-shade { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4, 8, 12, .28), transparent 75%), linear-gradient(0deg, rgba(4, 8, 12, .3), transparent 45%); }
+.image-copy { position: absolute; z-index: 2; top: 26px; left: 26px; display: grid; color: white; font-size: 27px; line-height: 1.1; font-weight: 720; letter-spacing: -.025em; text-shadow: 0 2px 9px #000a; }
 .image-copy strong { color: var(--lime); font-size: 46px; line-height: 1; }
 .image-copy b { color: var(--lime); }
-.hero-image > small { position: absolute; bottom: 16px; left: 16px; height: 34px; border-radius: 999px; background: rgba(7, 11, 17, .78); padding: 0 13px; display: flex; align-items: center; gap: 8px; font-size: 12px; backdrop-filter: blur(8px); }
+.hero-image > small { position: absolute; z-index: 2; bottom: 16px; left: 16px; height: 34px; border-radius: 999px; background: rgba(7, 11, 17, .78); padding: 0 13px; display: flex; align-items: center; gap: 8px; font-size: 12px; backdrop-filter: blur(8px); }
 .hero-image > small svg { width: 14px; }
 .recommend-copy { min-width: 0; padding: 4px 31px 0 34px; }
 .recommend-copy h3 { margin: 0 0 14px; max-width: 440px; font-size: 28px; line-height: 1.05; letter-spacing: -.035em; }
@@ -141,11 +141,12 @@ main { min-width: 0; margin-left: 218px; }
 .discover > header { padding-right: 17px; }
 .discover-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; padding-right: 16px; }
 .idea { min-width: 0; height: 166px; border: 1px solid #263244; border-radius: 10px; overflow: hidden; padding: 8px 10px 10px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; isolation: isolate; }
-.idea::before { content: ""; position: absolute; inset: 0; z-index: -2; background: center / cover no-repeat url('/malta-drive.webp'); transition: transform .25s ease; }
-.idea::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgba(5, 9, 14, .98) 0%, rgba(5, 9, 14, .64) 43%, rgba(5, 9, 14, .1) 74%); }
+.idea::before { content: ""; position: absolute; inset: 0; z-index: 0; background: center / cover no-repeat url('/malta-drive.webp'); transition: transform .25s ease; }
+.idea::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(0deg, rgba(5, 9, 14, .98) 0%, rgba(5, 9, 14, .64) 43%, rgba(5, 9, 14, .1) 74%); }
 .idea-2::before { background-image: url('/car-keys.webp'); }
 .idea-3::before { background-image: url('/malta-car.webp'); background-position: center 64%; }
 .idea:hover::before { transform: scale(1.035); }
+.idea > span, .idea > strong, .idea > small { z-index: 2; }
 .idea > span { position: absolute; top: 7px; left: 7px; right: 7px; display: flex; gap: 4px; }
 .idea i { height: 21px; border-radius: 999px; padding: 0 6px; background: rgba(83, 57, 153, .85); display: flex; align-items: center; gap: 3px; font-size: 8px; font-style: normal; white-space: nowrap; }
 .idea i:last-child { color: var(--lime); background: rgba(98, 113, 40, .87); }

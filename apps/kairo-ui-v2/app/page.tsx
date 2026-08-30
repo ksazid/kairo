@@ -1,6 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
-import { BarChart3, Bell, CalendarDays, ChevronDown, Compass, ExternalLink, FileText, Home as HomeIcon, LayoutGrid, Lightbulb, Megaphone, MoreVertical, Play, PlaySquare, Settings2, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
+import { BarChart3, Bell, CalendarDays, ChevronDown, Compass, ExternalLink, FileText, Home as HomeIcon, Lightbulb, Megaphone, MoreVertical, Play, PlaySquare, Settings2, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
 import { getHomeData } from "../lib/api";
 import { CreateButton, HeroControls } from "./home-controls";
 
@@ -27,7 +26,7 @@ export default async function Home() {
   ];
   return <div className="app-shell">
     <aside className="sidebar">
-      <div className="brand-logo"><Image src="/kairo-logo.svg" alt="" width={48} height={48}/><span>Kairo</span></div>
+      <div className="brand-logo"><img src="/kairo-logo.svg" alt="" width="48" height="48"/><span>Kairo</span></div>
       <nav>{nav.map(({ label, Icon, href }) => <Link key={label} className={label === "Home" ? "active" : ""} href={href}><Icon aria-hidden="true"/>{label}</Link>)}</nav>
       <div className="pro-tip"><span><Sparkles aria-hidden="true"/>Pro tip</span><p>Connect more channels to get smarter recommendations.</p><a href={`${webUrl}/channels`}>Connect channels <span>›</span></a></div>
     </aside>
@@ -38,7 +37,7 @@ export default async function Home() {
         <section className="recommendation">
           <div className="recommend-head"><h2><Sparkles aria-hidden="true"/>Kairo recommends</h2><div><span><TrendingUp aria-hidden="true"/>Trending</span><span><ShieldCheck aria-hidden="true"/>Great fit</span></div></div>
           <div className="recommend-grid">
-            <div className="hero-image"><Image src="/malta-car.webp" alt="White rental car overlooking Valletta, Malta" fill priority sizes="420px"/><div className="image-shade"/><div className="image-copy"><strong>3 mistakes</strong><span>customers make<br/>when renting a<br/>car in <b>Malta</b></span></div><small><Play aria-hidden="true" fill="currentColor"/>0:32</small></div>
+            <div className="hero-image"><img src="/malta-car.webp" alt="White rental car overlooking Valletta, Malta"/><div className="image-shade"/><div className="image-copy"><strong>3 mistakes</strong><span>customers make<br/>when renting a<br/>car in <b>Malta</b></span></div><small><Play aria-hidden="true" fill="currentColor"/>0:32</small></div>
             <div className="recommend-copy"><h3>{featured.title}</h3><h4><ShieldCheck aria-hidden="true"/>Why this fits your Brand</h4><p>{featured.rationale ?? "Your audience plans trips to Malta and looks for trusted, local tips. This positions Sazzid as the helpful expert."}</p><h4 className="trend-copy"><TrendingUp aria-hidden="true"/>Why it is trending</h4><p>{featured.whyNow ?? "Rental car content is surging in Malta as travel season peaks and tourists search for local advice."}</p><div className="actions"><CreateButton brandId={data.brandId}/><a href={`${webUrl}/?brand=${encodeURIComponent(data.brandId ?? "")}`}>See another</a><a href={`${webUrl}/discover`}>View source<ExternalLink aria-hidden="true"/></a></div></div>
             <aside className="recommend-meta"><small>Recommended format</small><strong><PlaySquare aria-hidden="true"/>{featured.details?.recommendedFormat ?? "Reel"}</strong><p>Short, engaging video performs best right now.</p><hr/><small>Source</small><a href={`${webUrl}/discover`}>Google Trends<br/>&amp; Social listening <ExternalLink aria-hidden="true"/></a><p>Updated today</p></aside>
           </div>
