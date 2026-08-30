@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Focused Home Creation Flow",
   "status": "active",
-  "lifecycle": "implementing",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": ["FR-02", "FR-03", "FR-04"],
@@ -15,7 +15,7 @@
   },
   "dependencies": [],
   "blockers": [],
-  "allowedPaths": ["apps/web/app/page.tsx", "apps/web/app/layout.tsx", "apps/web/app/theme-toggle.tsx", "apps/web/app/home-format-picker.tsx", "apps/web/app/home-vs85.module.css", "apps/web/app/opportunity-list.tsx", "apps/web/app/brands/[brandId]/opportunities/[opportunityId]/page.tsx", "apps/web/app/brands/[brandId]/content/**", "apps/web/app/brands/[brandId]/campaigns/**", "apps/web/app/discovery.css", "apps/web/app/studio.css", "apps/web/app/flow-pages.module.css", "apps/web/app/kairo-icons.tsx", "apps/web/app/kairo-product-shell.tsx", "apps/web/src/lib/home-intelligence.ts", "apps/web/src/lib/home-intelligence.test.ts", "apps/web/src/lib/product-navigation.ts", "apps/web/src/lib/product-navigation.test.ts", "docs/slices/VS-107.md", "docs/plans/VS-107-implementation.md", "delivery/**"],
+  "allowedPaths": ["apps/kairo-ui-v2/**", "package-lock.json", "deployment/dependency-lock.sha256", "apps/web/app/page.tsx", "apps/web/app/layout.tsx", "apps/web/app/theme-toggle.tsx", "apps/web/app/home-format-picker.tsx", "apps/web/app/home-vs85.module.css", "apps/web/app/opportunity-list.tsx", "apps/web/app/brands/[brandId]/opportunities/[opportunityId]/page.tsx", "apps/web/app/brands/[brandId]/content/**", "apps/web/app/brands/[brandId]/campaigns/**", "apps/web/app/discovery.css", "apps/web/app/studio.css", "apps/web/app/flow-pages.module.css", "apps/web/app/kairo-icons.tsx", "apps/web/app/kairo-product-shell.tsx", "apps/web/src/lib/home-intelligence.ts", "apps/web/src/lib/home-intelligence.test.ts", "apps/web/src/lib/product-navigation.ts", "apps/web/src/lib/product-navigation.test.ts", "docs/slices/VS-107.md", "docs/plans/VS-107-implementation.md", "delivery/**"],
   "protectedPaths": [
     ".github/workflows/release.yml"
   ],
@@ -53,21 +53,21 @@
     },
     {
       "type": "certification",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-107@1.0",
+      "commitSha": "783cf07585f1cbcd202ca19cc11472a464cc5026",
+      "by": "Sazid Khan",
+      "at": "2026-08-30T04:10:33Z",
+      "rationale": "Product Owner approved completion and merge after Product Intake, Security, CI and deployed visual QA passed."
     },
     {
       "type": "release",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-107@1.0",
+      "commitSha": "783cf07585f1cbcd202ca19cc11472a464cc5026",
+      "by": "Sazid Khan",
+      "at": "2026-08-30T04:10:33Z",
+      "rationale": "Product Owner explicitly instructed merge to main after all gates passed; production deployment remains manual."
     },
     {
       "type": "production-enable",
@@ -84,18 +84,18 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 65,
-    "certification": 0,
+    "testing": 100,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "passed",
+    "commitSha": "783cf07585f1cbcd202ca19cc11472a464cc5026",
+    "evidence": ["GitHub Product Intake run 33291786297", "GitHub Security baseline run 33291786270", "GitHub CI run 33291786247", "Vercel deployment dpl_5BhrbsmDcwM4q9b18xHFceWewhBd", "apps/kairo-ui-v2/design-qa.md"]
   },
   "release": {
-    "status": "not-authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
@@ -110,8 +110,8 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": null,
-    "evidence": []
+    "implementationPr": "https://github.com/ksazid/kairo/pull/253",
+    "evidence": ["apps/kairo-ui-v2/design-qa.md", "Vercel deployment dpl_5BhrbsmDcwM4q9b18xHFceWewhBd"]
   },
   "maxAttempts": 3
 }
