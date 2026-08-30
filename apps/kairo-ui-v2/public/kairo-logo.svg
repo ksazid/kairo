@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Kairo</title>
+  <defs>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#6d3cff"/>
+    </linearGradient>
+  </defs>
+  <path d="M9 9h9v46H9z" rx="4" fill="url(#violet)"/>
+  <path d="M20 32 42 9h13L32 32l23 23H42z" fill="url(#violet)"/>
+  <path d="m20 32 11-11 8 8-4 4 4 4-8 8z" fill="#c8f04a"/>
+</svg>

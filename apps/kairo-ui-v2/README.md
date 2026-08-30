@@ -1,0 +1,20 @@
+# Kairo UI v2
+
+This is an isolated Next.js frontend for the approved Kairo interface. It does not import components, stylesheets, design tokens, or layout code from `apps/web`.
+
+It reads the existing `kairo_access_token` cookie and calls the existing API through `KAIRO_API_URL`. Actions that are not yet reimplemented in v2 hand off to the current application through `NEXT_PUBLIC_KAIRO_WEB_URL`.
+
+## Local development
+
+```bash
+npm run dev --workspace @kairo/ui-v2 -- --hostname 0.0.0.0 --port 4173
+```
+
+## Vercel project settings
+
+- Root directory: `apps/kairo-ui-v2`
+- Framework: Next.js
+- Build command: `npm run build`
+- Environment: `KAIRO_API_URL`, `NEXT_PUBLIC_KAIRO_WEB_URL`
+
+For authenticated use on a separate hostname, that hostname's `/auth/callback` must be registered with the identity provider. Until that is configured, the page deliberately renders approved concept data when no access-token cookie is available.
