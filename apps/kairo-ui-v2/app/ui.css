@@ -124,7 +124,7 @@ main { min-width: 0; margin-left: 218px; }
 .bottom-grid article > header a { color: #b8a1ff; font-size: 12px; }
 .draft { height: 71px; border: 1px solid #253142; border-radius: 10px; display: grid; grid-template-columns: 60px 1fr 20px; align-items: center; gap: 11px; padding: 6px; margin-top: 8px; background: #101925; }
 .draft:hover { border-color: #534275; background: #131e2b; }
-.draft-thumb { width: 60px; height: 57px; border-radius: 7px; background: center / cover no-repeat url('/malta-drive.webp'); }
+.draft-thumb { width: 60px; height: 57px; border-radius: 7px; background: center 24% / cover no-repeat url('/malta-drive.webp'); }
 .draft-thumb.second { background-image: url('/malta-car.webp'); background-position: center 65%; }
 .draft p { min-width: 0; margin: 0; display: grid; gap: 1px; }
 .draft small { width: fit-content; color: #c1a9ff; background: rgba(116, 81, 210, .17); border-radius: 4px; padding: 1px 5px; font-size: 9px; }
@@ -141,9 +141,9 @@ main { min-width: 0; margin-left: 218px; }
 .discover > header { padding-right: 17px; }
 .discover-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; padding-right: 16px; }
 .idea { min-width: 0; height: 166px; border: 1px solid #263244; border-radius: 10px; overflow: hidden; padding: 8px 10px 10px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; isolation: isolate; }
-.idea::before { content: ""; position: absolute; inset: 0; z-index: 0; background: center / cover no-repeat url('/malta-drive.webp'); transition: transform .25s ease; }
-.idea::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(0deg, rgba(5, 9, 14, .98) 0%, rgba(5, 9, 14, .64) 43%, rgba(5, 9, 14, .1) 74%); }
-.idea-2::before { background-image: url('/car-keys.webp'); }
+.idea::before { content: ""; position: absolute; inset: 0; z-index: 0; background: center 25% / cover no-repeat url('/malta-drive.webp'); transition: transform .25s ease; }
+.idea::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(0deg, rgba(5, 9, 14, .92) 0%, rgba(5, 9, 14, .32) 48%, rgba(5, 9, 14, .02) 78%); }
+.idea-2::before { background-image: url('/car-keys.webp'); background-position: center 58%; }
 .idea-3::before { background-image: url('/malta-car.webp'); background-position: center 64%; }
 .idea:hover::before { transform: scale(1.035); }
 .idea > span, .idea > strong, .idea > small { z-index: 2; }
