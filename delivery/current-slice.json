@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Focused Home and Discover V2 Integration",
   "status": "active",
-  "lifecycle": "testing",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -128,15 +128,21 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 85,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "not-started",
-    "commitSha": null,
-    "evidence": []
+    "status": "running",
+    "commitSha": "dfd868748db8af31bac158c49c26491361cdab33",
+    "evidence": [
+      "GitHub Actions Product Intake run 33319054014 passed on dfd868748db8af31bac158c49c26491361cdab33",
+      "GitHub Actions Security baseline run 33319054079 passed on dfd868748db8af31bac158c49c26491361cdab33",
+      "GitHub Actions CI run 33319053997 passed on dfd868748db8af31bac158c49c26491361cdab33",
+      "Vercel Preview dpl_DrQ8VbvVoNEpnVTnddKjHCeUA3VW reached READY",
+      "Deployed browser QA: six cards, filters, Save, Dismiss, Preview, Home routing, images and overflow passed"
+    ]
   },
   "release": {
     "status": "not-authorized",
@@ -157,7 +163,8 @@
     "implementationPr": "https://github.com/ksazid/kairo/pull/254",
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
-      "Vercel deployment dpl_5BhrbsmDcwM4q9b18xHFceWewhBd"
+      "Vercel deployment dpl_DrQ8VbvVoNEpnVTnddKjHCeUA3VW",
+      "GitHub exact candidate dfd868748db8af31bac158c49c26491361cdab33"
     ]
   },
   "maxAttempts": 3
