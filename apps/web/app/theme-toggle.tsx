@@ -6,7 +6,7 @@ import { KairoIcon } from "./kairo-icons";
 type Theme = "light" | "dark";
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
     const saved = localStorage.getItem("kairo-theme");
@@ -14,9 +14,7 @@ export function ThemeToggle() {
       ? "dark"
       : saved === "light"
         ? "light"
-        : matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+        : "dark";
 
     setTheme(resolved);
     localStorage.setItem("kairo-theme", resolved);

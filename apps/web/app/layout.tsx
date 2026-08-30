@@ -35,7 +35,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(()=>{try{const t=localStorage.getItem('kairo-theme');const r=t==='dark'||t==='light'?t:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=r;document.documentElement.style.colorScheme=r}catch{}})()`,
+            __html: `(()=>{try{const t=localStorage.getItem('kairo-theme');const r=t==='dark'||t==='light'?t:'dark';document.documentElement.dataset.theme=r;document.documentElement.style.colorScheme=r}catch{}})()`,
           }}
         />
       </head>

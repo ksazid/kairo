@@ -15,7 +15,7 @@
   },
   "dependencies": [],
   "blockers": [],
-  "allowedPaths": ["apps/web/app/page.tsx", "apps/web/app/home-format-picker.tsx", "apps/web/app/home-vs85.module.css", "apps/web/app/opportunity-list.tsx", "apps/web/app/brands/[brandId]/opportunities/[opportunityId]/page.tsx", "apps/web/app/discovery.css", "apps/web/app/kairo-product-shell.tsx", "apps/web/src/lib/home-intelligence.ts", "apps/web/src/lib/product-navigation.ts", "apps/web/src/lib/product-navigation.test.ts", "docs/slices/VS-107.md", "docs/plans/VS-107-implementation.md", "delivery/**"],
+  "allowedPaths": ["apps/web/app/page.tsx", "apps/web/app/layout.tsx", "apps/web/app/theme-toggle.tsx", "apps/web/app/home-format-picker.tsx", "apps/web/app/home-vs85.module.css", "apps/web/app/opportunity-list.tsx", "apps/web/app/brands/[brandId]/opportunities/[opportunityId]/page.tsx", "apps/web/app/brands/[brandId]/content/**", "apps/web/app/brands/[brandId]/campaigns/**", "apps/web/app/discovery.css", "apps/web/app/studio.css", "apps/web/app/flow-pages.module.css", "apps/web/app/kairo-icons.tsx", "apps/web/app/kairo-product-shell.tsx", "apps/web/src/lib/home-intelligence.ts", "apps/web/src/lib/home-intelligence.test.ts", "apps/web/src/lib/product-navigation.ts", "apps/web/src/lib/product-navigation.test.ts", "docs/slices/VS-107.md", "docs/plans/VS-107-implementation.md", "delivery/**"],
   "protectedPaths": [
     ".github/workflows/release.yml"
   ],
