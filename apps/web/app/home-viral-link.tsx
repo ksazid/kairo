@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { KairoIcon } from "./kairo-icons";
 import { homeFormatLabel, type HomeFormatRecommendation } from "../src/lib/home-creation-format";
-import styles from "./home-vs85.module.css";
+import styles from "./home-approved.module.css";
 
 export function HomeViralLink({ brandId }: { brandId: string }) {
   const [url, setUrl] = useState("");

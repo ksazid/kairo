@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { homeFormatLabel, type HomeCreationFormat, type HomeFormatRecommendation } from "../src/lib/home-creation-format";
 import { KairoIcon } from "./kairo-icons";
-import styles from "./home-vs85.module.css";
+import styles from "./home-approved.module.css";
 import mediaStyles from "./home-media.module.css";
 
 type EligiblePresenter={id:string;displayName:string;mode:string};

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { KairoIcon } from "./kairo-icons";
 import { saveOpportunityAction } from "./opportunity-actions";
-import styles from "./home-vs85.module.css";
+import styles from "./home-approved.module.css";
 
 export function ForYouBookmarkAction({ brandId, opportunityId, saved }: { brandId: string; opportunityId: string; saved: boolean }) {
   const [isSaved, setIsSaved] = useState(saved);

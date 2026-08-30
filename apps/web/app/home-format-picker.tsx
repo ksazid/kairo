@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { KairoIcon } from "./kairo-icons";
 import type { HomeCreationFormat } from "../src/lib/home-creation-format";
-import styles from "./home-vs85.module.css";
+import styles from "./home-approved.module.css";
 
 const options: Array<[HomeCreationFormat | "campaign", string, "image" | "video"]> = [
   ["image", "Post", "image"],
