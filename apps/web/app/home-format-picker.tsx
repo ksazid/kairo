@@ -5,14 +5,14 @@ import { KairoIcon } from "./kairo-icons";
 import type { HomeCreationFormat } from "../src/lib/home-creation-format";
 import styles from "./home-vs85.module.css";
 
-const options: Array<[HomeCreationFormat, string, "image" | "video"]> = [
+const options: Array<[HomeCreationFormat | "campaign", string, "image" | "video"]> = [
   ["image", "Post", "image"],
   ["reel", "Reel", "video"],
   ["carousel", "Carousel", "image"],
-  ["video", "Campaign", "video"],
+  ["campaign", "Campaign", "video"],
 ];
 
-export function HomeFormatPicker({ selected }: { selected?: HomeCreationFormat }) {
+export function HomeFormatPicker({ selected }: { selected?: HomeCreationFormat | "campaign" }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();

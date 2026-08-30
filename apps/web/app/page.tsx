@@ -32,7 +32,7 @@ import {
 } from "../src/lib/home-intelligence";
 import styles from "./home-vs85.module.css";
 
-type SearchParams = Promise<{ workspace?: string; brand?: string; notice?: string; error?: string; idea?: string; format?: HomeCreationFormat }>;
+type SearchParams = Promise<{ workspace?: string; brand?: string; notice?: string; error?: string; idea?: string; format?: HomeCreationFormat | "campaign" }>;
 type RecommendationScores = { overall: number; audienceFit: number; status: string };
 type HomeMetric = { label: "Reach" | "Saves" | "Shares" | "Engagement rate"; value?: number };
 type EligiblePresenter = { id: string; displayName: string; mode: string };
@@ -43,7 +43,8 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   if (session.workspaces.length === 0) redirect("/onboarding");
 
   const params = await searchParams;
-  const selectedFormat = ["image", "reel", "carousel", "video"].includes(params.format ?? "") ? params.format : undefined;
+  const selectedFormat = ["image", "reel", "carousel", "video", "campaign"].includes(params.format ?? "") ? params.format : undefined;
+  const selectedCreationFormat = selectedFormat === "campaign" ? undefined : selectedFormat;
   const workspace = session.workspaces.find((item) => item.id === params.workspace) ?? session.workspaces[0];
   if (!workspace) redirect("/onboarding");
 
@@ -78,7 +79,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const hasConnectedChannel = channelResult.available ? channelResult.items.some((channel) => channel.status === "connected") : true;
   const attention = buildAttentionItems({ brandId: brand.id, notifications: notificationResult.items, hasConnectedChannel })[0];
   const forYou = buildForYou(opportunities).slice(0, 6);
-  const featured = (selectedFormat ? forYou.filter((item) => recommendationFormat(item) === selectedFormat) : forYou)[0] ?? forYou[0];
+  const featured = (selectedCreationFormat ? forYou.filter((item) => recommendationFormat(item) === selectedCreationFormat) : forYou)[0] ?? forYou[0];
   const continueItems = buildContinue(brand.id, campaigns, ideas);
   const scores = new Map<string, RecommendationScores>(opportunities.map((item) => [item.id, { overall: item.scores.overall, audienceFit: item.scores.audienceFit, status: item.status }]));
   const metrics = buildHomeMetrics(performance);
@@ -115,7 +116,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
 
         {featured ? <section className={styles.featuredSection} aria-labelledby="home-featured-title">
           <div className={styles.featuredHeading}><div><p className={styles.eyebrow}>Kairo recommends</p><h2 id="home-featured-title">{selectedFormat ? `A strong ${selectedFormat === "image" ? "post" : selectedFormat} opportunity for your Brand` : "A promising opportunity for your Brand"}</h2></div><span className={styles.trendingBadge}>Trending</span><span className={styles.fitBadge}>Great fit</span></div>
-          <div className={styles.featuredCard}><div className={styles.featuredVisual}><KairoIcon name={recommendationFormat(featured) === "reel" || recommendationFormat(featured) === "video" ? "video" : "image"} /><span>{homeFormatLabel(recommendationFormat(featured))}</span></div><div className={styles.featuredCopy}><h3>{featured.title}</h3><p>{featured.reason}</p><div className={styles.featuredWhy}><strong>Why this fits your Brand</strong><span>{featured.direction}</span></div><div className={styles.featuredActions}><ForYouCreateAction brandId={brand.id} opportunityId={featured.id} title={featured.title} direction={featured.direction} initialFormat={recommendationFormat(featured)} eligiblePresenter={eligiblePresenter} /><Link className={styles.secondaryAction} href={`/brands/${encodeURIComponent(brand.id)}/opportunities/${encodeURIComponent(featured.id)}`}>View details</Link></div></div></div>
+          <div className={styles.featuredCard}><Link className={styles.featuredVisual} href={`/brands/${encodeURIComponent(brand.id)}/opportunities/${encodeURIComponent(featured.id)}`} aria-label={`View ${featured.title}`}><KairoIcon name={recommendationFormat(featured) === "reel" || recommendationFormat(featured) === "video" ? "video" : "image"} /><span>{selectedFormat === "campaign" ? "Campaign" : homeFormatLabel(recommendationFormat(featured))}</span></Link><div className={styles.featuredCopy}><Link href={`/brands/${encodeURIComponent(brand.id)}/opportunities/${encodeURIComponent(featured.id)}`}><h3>{selectedFormat === "campaign" ? "Turn this opportunity into a campaign" : featured.title}</h3></Link><p>{selectedFormat === "campaign" ? "Plan a coordinated set of posts, reels and carousels around one clear goal." : featured.reason}</p><div className={styles.featuredWhy}><strong>{selectedFormat === "campaign" ? "Why campaigns help" : "Why this fits your Brand"}</strong><span>{selectedFormat === "campaign" ? "Kairo keeps the message, formats and schedule connected." : featured.direction}</span></div><div className={styles.featuredActions}>{selectedFormat === "campaign" ? <Link className={styles.primaryAction} href={`/brands/${encodeURIComponent(brand.id)}/campaigns?from=home`}>Open Campaign workspace</Link> : <ForYouCreateAction brandId={brand.id} opportunityId={featured.id} title={featured.title} direction={featured.direction} initialFormat={recommendationFormat(featured)} eligiblePresenter={eligiblePresenter} />}<Link className={styles.secondaryAction} href={`/brands/${encodeURIComponent(brand.id)}/opportunities/${encodeURIComponent(featured.id)}`}>View details</Link></div></div></div>
         </section> : null}
 
         <section id="my-idea" className={styles.ideaSection} aria-labelledby="home-my-idea-title">

@@ -28,6 +28,7 @@ type ProductShellProps = {
 const destinationIcons: Record<string, KairoIconName> = {
   Home: "home",
   Content: "library",
+  Discover: "search",
   Calendar: "calendar",
   Results: "results",
   Brand: "brand",
