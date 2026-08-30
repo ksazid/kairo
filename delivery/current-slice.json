@@ -83,8 +83,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 95,
-    "testing": 80,
+    "implementation": 100,
+    "testing": 100,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -110,8 +110,8 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": null,
-    "evidence": []
+    "implementationPr": "https://github.com/ksazid/kairo/pull/253",
+    "evidence": ["apps/kairo-ui-v2/design-qa.md", "Vercel deployment dpl_5BhrbsmDcwM4q9b18xHFceWewhBd"]
   },
   "maxAttempts": 3
 }

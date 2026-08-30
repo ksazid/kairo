@@ -16,17 +16,24 @@ Reference: approved Kairo Home mockup supplied by the Product Owner.
 | Continue Working panel | Passed |
 | What Kairo Learned panel | Passed |
 | Discover More image rail | Passed |
-| Desktop/tablet/mobile responsive rules | Passed by code inspection |
+| Desktop responsive render | Passed on Vercel Preview |
+| Mobile responsive render and bottom navigation | Passed on Vercel Preview |
 
 ## Automated checks
 
 - TypeScript: passed
 - Next.js production build: passed
 - Local server: passed
-- Cloud capture: blocked because the cloud browser could not connect to the local preview host
+- Vercel Preview build: passed
+- Desktop visual capture: passed
+- Mobile visual capture: passed
+- Format selection interaction: passed
+- Viral-link Analyse handoff: passed
 
-## Remaining visual verification
+## Evidence
 
-Capture the deployed Vercel URL at desktop and mobile widths and compare spacing, cropping, and typography against the approved mockup.
+- Deployment: `dpl_5BhrbsmDcwM4q9b18xHFceWewhBd`
+- Preview: `https://kairo-ui-v2-gfcwwtmi2-sazid62-gmailcoms-projects.vercel.app`
+- Verified sections: shell, four format choices, viral link, Kairo recommendation, Continue Working, What Kairo Learned and Discover More.
 
-final result: blocked
+final result: passed
