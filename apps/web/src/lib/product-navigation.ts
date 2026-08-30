@@ -1,6 +1,7 @@
 export const DESKTOP_PRODUCT_DESTINATIONS = [
   "Home",
   "Content",
+  "Campaigns",
   "Discover",
   "Calendar",
   "Results",
@@ -9,6 +10,7 @@ export const DESKTOP_PRODUCT_DESTINATIONS = [
 export const MOBILE_PRODUCT_DESTINATIONS = [
   "Home",
   "Content",
+  "Campaigns",
   "Discover",
   "Calendar",
   "Results",
@@ -39,7 +41,7 @@ export type MobileProductDestination =
   | "More";
 export type ProductNavigationItem = {
   label: SimpleProductDestination;
-  displayLabel: "Home" | "Content" | "Discover" | "Calendar" | "Insights" | "Brand";
+  displayLabel: "Home" | "Content" | "Campaigns" | "Discover" | "Calendar" | "Insights" | "Brand";
   href: string | null;
 };
 export function buildProductNavigation({
@@ -55,6 +57,7 @@ export function buildProductNavigation({
   const items: ProductNavigationItem[] = [
     { label: "Home", displayLabel: "Home", href: today },
     { label: "Content", displayLabel: "Content", href: base ? `${base}/content` : null },
+    { label: "Campaigns", displayLabel: "Campaigns", href: base ? `${base}/campaigns` : null },
     { label: "Discover", displayLabel: "Discover", href: base ? `${base}/discover` : null },
     { label: "Calendar", displayLabel: "Calendar", href: base ? `${base}/calendar` : null },
     { label: "Results", displayLabel: "Insights", href: base ? `${base}/performance` : null },
