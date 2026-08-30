@@ -89,8 +89,8 @@ export default async function ContentPage({
     <KairoProductShell brandId={brand.id} workspaceId={brand.workspaceId} active="Content" pageLabel="Content" variant="content-reference">
       <main id="kairo-main-content" tabIndex={-1} className={`${styles.main} ${shellStyles.shellBoundary}`}>
         <header className={styles.pageHeader}>
-          <h1>Content</h1>
-          <p>All your content in one place. Track, review and publish.</p>
+          <div><h1>Content</h1><p>All your content in one place. Track, review and publish.</p></div>
+          <Link className="primary-button" href={`${base}/create`}>Create content</Link>
         </header>
 
         <div className={styles.toolbar}>
@@ -182,6 +182,7 @@ export default async function ContentPage({
                     <time dateTime={item.updatedAt}>{relativeTime(item.updatedAt)}</time>
                     <span>by {item.updatedBy}</span>
                   </div>
+                  <Link className="secondary-button" href={href}><KairoIcon name="eye" />Open preview</Link>
 
                 </article>
               );

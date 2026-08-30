@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "sliceId": "VS-106",
-  "title": "VS-106 — Brand DNA Readiness-Gated Onboarding",
+  "sliceId": "VS-107",
+  "title": "VS-107 — Focused Home Creation Flow",
   "status": "active",
   "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
-  "requirements": ["FR-02", "FR-03", "FR-04", "FR-06"],
+  "requirements": ["FR-02", "FR-03", "FR-04"],
   "owners": {
     "product": "Product Owner",
     "engineering": "Engineering Owner",
@@ -15,41 +15,41 @@
   },
   "dependencies": [],
   "blockers": [],
-  "allowedPaths": ["packages/contracts/**", "packages/domain/src/brand-dna-readiness.ts", "packages/domain/src/brand-dna-readiness.test.ts", "packages/domain/src/index.ts", "packages/domain/package.json", "apps/api/src/brand-dna-readiness-routes.ts", "apps/api/src/brand-dna-readiness-routes.test.ts", "apps/api/src/server.ts", "apps/web/app/brands/[brandId]/onboarding/**", "apps/web/app/onboarding/onboarding.module.css", "apps/web/src/lib/kairo-api.ts", "docs/slices/VS-106.md", "docs/plans/VS-106-implementation.md", "delivery/**"],
+  "allowedPaths": ["apps/web/app/page.tsx", "apps/web/app/home-format-picker.tsx", "apps/web/app/home-vs85.module.css", "apps/web/app/opportunity-list.tsx", "apps/web/app/brands/[brandId]/opportunities/[opportunityId]/page.tsx", "apps/web/app/discovery.css", "apps/web/app/kairo-product-shell.tsx", "apps/web/src/lib/home-intelligence.ts", "apps/web/src/lib/product-navigation.ts", "apps/web/src/lib/product-navigation.test.ts", "docs/slices/VS-107.md", "docs/plans/VS-107-implementation.md", "delivery/**"],
   "protectedPaths": [
     ".github/workflows/release.yml"
   ],
   "impact": {
-    "areas": ["architecture", "api", "frontend", "customer-flow"],
-    "notes": ["Adds a deterministic Brand DNA readiness checkpoint between Brand Brain confirmation and Hunter activation.", "Preserves multi-source onboarding and existing Brand-scoped provenance.", "Does not add OAuth scopes, providers, publishing authority or autonomous scheduling."]
+    "areas": ["frontend", "customer-flow"],
+    "notes": ["Reframes Home around one next creation action.", "Preserves existing Brand-scoped recommendations and creation contracts.", "Does not change Hunter, OAuth, providers, publishing authority or autonomous scheduling."]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-106@1.0",
+      "version": "VS-107@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-29T19:39:00Z",
-      "rationale": "Product Owner approved the Brand DNA readiness rule and instructed implementation with completion percentage reporting."
+      "rationale": "Product Owner instructed implementation of the approved focused Home mockup and flow."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-106@1.0",
+      "version": "VS-107@1.0",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Reuses existing Brand isolation, source provenance, human confirmation and Hunter safeguards; no new provider or publishing authority is introduced."
+      "rationale": "Frontend-only change; no new provider, data authority or publishing capability is introduced."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-106@1.0",
+      "version": "VS-107@1.0",
       "commitSha": null,
       "by": "Sazid Khan",
       "at": "2026-08-29T19:39:00Z",
-      "rationale": "Product Owner confirmed continuation and approved implementation."
+      "rationale": "Product Owner said Go and approved implementation."
     },
     {
       "type": "certification",
@@ -83,8 +83,8 @@
   "progress": {
     "discovery": 100,
     "decisions": 100,
-    "implementation": 85,
-    "testing": 85,
+    "implementation": 100,
+    "testing": 65,
     "certification": 0,
     "release": 0,
     "validation": 0
@@ -109,7 +109,7 @@
     "metrics": []
   },
   "links": {
-    "specification": "docs/slices/VS-106.md",
+    "specification": "docs/slices/VS-107.md",
     "implementationPr": null,
     "evidence": []
   },

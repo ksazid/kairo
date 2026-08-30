@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getBrand, getCampaigns, getIdeas } from "../../../../src/lib/kairo-api";
+import { getBrand, getCampaignDetail, getCampaigns, getIdeas } from "../../../../src/lib/kairo-api";
 import { KairoProductShell, KairoScopePicker } from "../../../kairo-product-shell";
+import { KairoIcon } from "../../../kairo-icons";
 import { createCampaignAction } from "./actions";
 
 type Params = Promise<{ brandId: string }>;
@@ -20,6 +21,7 @@ export default async function CampaignsPage({ params, searchParams }: { params: 
   }
 
   const eligibleIdeas = ideas.filter((idea) => idea.status === "angles-ready");
+  const details = await Promise.all(campaigns.map((campaign) => getCampaignDetail(brand.id, campaign.id).catch(() => null)));
   const create = createCampaignAction.bind(null, brand.id);
   const base = `/brands/${encodeURIComponent(brand.id)}`;
 
@@ -72,20 +74,30 @@ export default async function CampaignsPage({ params, searchParams }: { params: 
             </details>
           </div>
 
-          {campaigns.length ? campaigns.map((campaign) => (
+          {campaigns.length ? campaigns.map((campaign, index) => {
+            const detail = details[index];
+            const assets = detail?.assets ?? [];
+            const ready = assets.filter(({ asset }) => asset.status !== "draft").length;
+            const formats = [...new Set(assets.map(({ asset }) => asset.format.toLowerCase()))];
+            return (
             <Link
               className="campaign-row"
               href={`${base}/campaigns/${encodeURIComponent(campaign.id)}`}
               key={campaign.id}
             >
-              <div>
+              <div className="campaign-row-main">
                 <span className="idea-source">Campaign</span>
                 <h3>{campaign.name}</h3>
                 <p>{campaign.objective}</p>
+                <div className="campaign-format-list" aria-label="Campaign formats">
+                  {formats.map((format) => <span key={format}><KairoIcon name={format.includes("video") || format.includes("reel") ? "video" : format.includes("carousel") ? "grid" : "image"} />{formatLabel(format)}</span>)}
+                </div>
               </div>
+              <div className="campaign-progress"><strong>{ready} / {assets.length || 0}</strong><span>assets ready</span></div>
               <span className="campaign-date">{new Date(campaign.createdAt).toLocaleDateString()}</span>
+              <span className="secondary-button campaign-open"><KairoIcon name="eye" />Open campaign</span>
             </Link>
-          )) : (
+          );}) : (
             <div className="ideas-empty">
               <h3>Turn a selected Angle into the first Campaign.</h3>
               <p>Kairo keeps the content lineage intact from Idea and Research through Campaign and channel execution.</p>
@@ -95,4 +107,11 @@ export default async function CampaignsPage({ params, searchParams }: { params: 
       </main>
     </KairoProductShell>
   );
+}
+
+function formatLabel(format: string) {
+  if (format.includes("carousel")) return "Carousel";
+  if (format.includes("reel")) return "Reel";
+  if (format.includes("video")) return "Video";
+  return "Post";
 }

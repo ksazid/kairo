@@ -1,6 +1,8 @@
 export const DESKTOP_PRODUCT_DESTINATIONS = [
   "Home",
   "Content",
+  "Campaigns",
+  "Discover",
   "Calendar",
   "Results",
   "Brand",
@@ -8,6 +10,8 @@ export const DESKTOP_PRODUCT_DESTINATIONS = [
 export const MOBILE_PRODUCT_DESTINATIONS = [
   "Home",
   "Content",
+  "Campaigns",
+  "Discover",
   "Calendar",
   "Results",
   "Brand",
@@ -37,7 +41,7 @@ export type MobileProductDestination =
   | "More";
 export type ProductNavigationItem = {
   label: SimpleProductDestination;
-  displayLabel: "Home" | "Content" | "Calendar" | "Insights" | "Brand";
+  displayLabel: "Home" | "Content" | "Campaigns" | "Discover" | "Calendar" | "Insights" | "Brand";
   href: string | null;
 };
 export function buildProductNavigation({
@@ -53,6 +57,8 @@ export function buildProductNavigation({
   const items: ProductNavigationItem[] = [
     { label: "Home", displayLabel: "Home", href: today },
     { label: "Content", displayLabel: "Content", href: base ? `${base}/content` : null },
+    { label: "Campaigns", displayLabel: "Campaigns", href: base ? `${base}/campaigns` : null },
+    { label: "Discover", displayLabel: "Discover", href: base ? `${base}/discover` : null },
     { label: "Calendar", displayLabel: "Calendar", href: base ? `${base}/calendar` : null },
     { label: "Results", displayLabel: "Insights", href: base ? `${base}/performance` : null },
     { label: "Brand", displayLabel: "Brand", href: base ? `${base}/brain` : null },
@@ -62,7 +68,7 @@ export function buildProductNavigation({
 export function simpleDestinationFor(
   active: DesktopProductDestination | MobileProductDestination,
 ): SimpleProductDestination {
-  if (active === "Today" || active === "Discover" || active === "Create" || active === "Ideas" || active === "Formats") return "Home";
+  if (active === "Today" || active === "Create" || active === "Ideas" || active === "Formats") return "Home";
   if (active === "Library" || active === "Campaigns" || active === "Content Studio") return "Content";
   if (active === "Performance") return "Results";
   if (active === "Brand Brain" || active === "More" || active === "Operations") return "Brand";

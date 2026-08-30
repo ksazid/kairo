@@ -8,13 +8,13 @@ import {
 
 describe("approved product navigation", () => {
   it("keeps stable internal destination keys on desktop and mobile", () => {
-    expect(DESKTOP_PRODUCT_DESTINATIONS).toEqual(["Home","Content","Calendar","Results","Brand"]);
+    expect(DESKTOP_PRODUCT_DESTINATIONS).toEqual(["Home","Content","Campaigns","Discover","Calendar","Results","Brand"]);
     expect(MOBILE_PRODUCT_DESTINATIONS).toEqual(DESKTOP_PRODUCT_DESTINATIONS);
   });
 
   it("renders Results as the approved user-facing Insights label", () => {
     const navigation = buildProductNavigation({ brandId: "brand-a" });
-    expect(navigation.desktop.map((item) => item.displayLabel)).toEqual(["Home","Content","Calendar","Insights","Brand"]);
+    expect(navigation.desktop.map((item) => item.displayLabel)).toEqual(["Home","Content","Campaigns","Discover","Calendar","Insights","Brand"]);
     expect(displayDestination("Results")).toBe("Insights");
   });
 
@@ -31,7 +31,7 @@ describe("approved product navigation", () => {
     const navigation = buildProductNavigation({ brandId: "brand-a" });
     expect(navigation.desktop.find((item) => item.label === "Content")?.href).toBe("/brands/brand-a/content");
     expect(navigation.desktop.find((item) => item.label === "Results")?.href).toBe("/brands/brand-a/performance");
-    expect(navigation.mobile).toHaveLength(5);
+    expect(navigation.mobile).toHaveLength(7);
   });
 
   it("fails closed for Brand-specific destinations when no Brand is selected", () => {

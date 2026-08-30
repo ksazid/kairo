@@ -2,6 +2,8 @@ import type { BrandOpportunityDto } from "@kairo/contracts";
 import { opportunityAction } from "./opportunity-actions";
 import { RecommendationSeen } from "./recommendation-seen";
 import styles from "./flow-pages.module.css";
+import Link from "next/link";
+import { KairoIcon } from "./kairo-icons";
 
 export function OpportunityList({
   brandId,
@@ -39,13 +41,14 @@ function OpportunityCard({ brandId, item, returnTo }: { brandId: string; item: B
         <span className={`${styles.chip} ${styles.chipNeutral}`}>{freshness}</span>
         {item.status !== "new" ? <span className={`${styles.chip} ${styles.chipNeutral}`}>{statusLabel(item.status)}</span> : null}
       </div>
-      <h3 id={titleId}>{item.title}</h3>
+      <h3 id={titleId}><Link href={`/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(item.id)}`}>{item.title}</Link></h3>
       <p className={styles.rationale}>{item.rationale}</p>
       <div className={styles.whyNow}><span>Why now</span><p>{item.whyNow}</p></div>
       <div className={styles.actions}>
+        {!terminal ? <Link className={styles.secondary} href={`/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(item.id)}`}><KairoIcon name="eye" />Preview</Link> : null}
         {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "develop", returnTo)}><button className={styles.primary} type="submit">Develop</button></form> : null}
-        {item.status === "new" ? <form action={opportunityAction.bind(null, brandId, item.id, "save", returnTo)}><button className={styles.secondary} type="submit">Save</button></form> : null}
-        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "ignore", returnTo)}><button className={styles.text} type="submit">Ignore</button></form> : null}
+        {item.status === "new" ? <form action={opportunityAction.bind(null, brandId, item.id, "save", returnTo)}><button className={styles.iconButton} aria-label={`Save ${item.title}`} title="Save idea" type="submit"><KairoIcon name="bookmark" /></button></form> : null}
+        {!terminal ? <form action={opportunityAction.bind(null, brandId, item.id, "ignore", returnTo)}><button className={styles.iconButton} aria-label={`Ignore ${item.title}`} title="Ignore idea" type="submit"><KairoIcon name="close" /></button></form> : null}
         {item.status === "developing" ? <p className={styles.actionNote}>Ready for deeper Research and Angle development.</p> : null}
       </div>
     </article>
