@@ -14,3 +14,5 @@
 12. Expand Discover with the approved detailed Table default plus a persistent Grid alternate using shared records, filters and actions.
 13. Build the approved v2 Content List with the same persistent Table/Grid standard, realistic imagery, filters and preview routing.
 14. Build v2 Content Preview with format-aware media, platform context, content details and the existing lifecycle destination.
+15. Build the approved v2 Campaign List with persistent Table/Grid views, search, lifecycle filters, coordinated format/channel metadata and campaign routing.
+16. Build the approved v2 Campaign Preview with overview, quality, content-set, channel timeline, Content Preview links and review/schedule/publish interaction states.

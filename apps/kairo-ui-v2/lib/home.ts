@@ -78,7 +78,7 @@ export function buildContinueItems(brandId: string, campaigns: CampaignSummary[]
       kind: "campaign",
       title: campaign.name,
       context: "Draft content in progress",
-      href: `${base}/campaigns/${encodeURIComponent(campaign.id)}`,
+      href: `/campaigns/${encodeURIComponent(campaign.id)}?brand=${encodeURIComponent(brandId)}`,
       occurredAt: campaign.createdAt,
     })),
     ...ideas.filter((idea) => !campaignIdeaIds.has(idea.id)).map((idea): ContinueItem => ({
@@ -98,11 +98,11 @@ export function creationDestination(
   creation: { campaignId?: string; assetId?: string },
 ): string | null {
   if (!creation.campaignId) return null;
-  const base = legacyBaseUrl.replace(/\/$/, "");
+  void legacyBaseUrl;
   const brand = encodeURIComponent(brandId);
   const campaign = encodeURIComponent(creation.campaignId);
   if (creation.assetId) return `/content/${campaign}/${encodeURIComponent(creation.assetId)}?brand=${brand}`;
-  return `${base}/brands/${brand}/campaigns/${campaign}`;
+  return `/campaigns/${campaign}?brand=${brand}`;
 }
 
 function publicHttpUrl(value: string): URL {

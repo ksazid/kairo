@@ -125,4 +125,92 @@ Implementation: `/content/malta-summer/content-one` in Vercel preview deployment
 2. The same generated asset was converted to an optimized 332 KB WebP without changing its crop or visual role.
 3. Final comparison confirmed the approved hierarchy, healthy images, aligned actions and no remaining P0/P1/P2 visual issue.
 
+## Campaign List
+
+Reference: `/workspace/scratch/9b13db4cc8b7/upload/4F1108A2-D536-4B69-B508-6EB84281F826(1).jpeg` (1536 × 1024).
+
+Implementation: `/campaigns`, captured in the cloud browser at 1365 × 917 in Table state.
+
+### Visual comparison
+
+The approved reference and the browser-rendered implementation were opened together and compared at the same desktop state. The implementation preserves the approved dark shell, Campaigns hierarchy, image-led rows, objective, circular progress, date range, status, aligned Open Campaign action, and pagination. The separately approved Campaigns shell link and Table/Grid selector are additive.
+
+| Surface | Result |
+| --- | --- |
+| Kairo shell, navigation and active Campaigns state | Passed |
+| Campaigns heading, Create Campaign action and filter hierarchy | Passed |
+| Detailed Table columns, row density and image crops | Passed |
+| Format, channel, progress, date and lifecycle metadata | Passed |
+| Open Campaign action alignment | Passed |
+| Alternate visual Grid using the same records and actions | Passed |
+| Table/Grid selection persistence | Passed |
+| Responsive wrapping and safe table width | Passed |
+
+### Interaction verification
+
+- Table/Grid parity: 3 campaigns in both views.
+- View persistence: Grid persisted across reload; Table restored on selection.
+- Search: `engagement` returned the single matching campaign.
+- Draft filter: returned the single draft campaign; All restored all 3 campaigns.
+- Open Campaign: routed to the matching `/campaigns/[campaignId]` preview.
+- Layout: all 3 Open Campaign actions remained visible at 1365 px with no horizontal page overflow.
+- Media: all browser-rendered images completed with a non-zero natural width.
+- Console: no application-origin warnings or errors. Cloud-browser extension metadata errors were excluded as external tooling noise.
+
+### Iteration history
+
+1. Initial comparison found the Actions column clipped at the 1365 px QA viewport (P1).
+2. Campaign columns and gaps were rebalanced while preserving the 1536 px reference proportions.
+3. Final comparison confirmed all Actions visible and no remaining P0/P1/P2 visual issue.
+
+### Accepted responsive differences
+
+- Preview mode identifies fixture data in the top bar; authenticated mode projects existing Brand-scoped records.
+- The Malta imagery follows the approved subject, palette and crop direction but is not the exact reference photograph; this is accepted P3 polish pending the planned per-section image agent.
+
+## Campaign Preview
+
+Reference: `/workspace/scratch/9b13db4cc8b7/upload/5E5819BA-6F5C-49B2-B908-18494710679D(1).jpeg` (1536 × 1024).
+
+Implementation: `/campaigns/malta-summer`, captured in the cloud browser at 1365 × 917 in Draft state.
+
+### Visual comparison
+
+The approved reference and the browser-rendered implementation were opened together and compared at the same desktop state. The implementation preserves the approved campaign identity, objective and readiness summary, two-column Overview/Content Set composition, quality score, channel timeline, and three-part publishing action row.
+
+| Surface | Result |
+| --- | --- |
+| Back link, lifecycle badge, campaign identity and readiness | Passed |
+| Continue Campaign and Save actions | Passed |
+| Campaign overview terms and campaign-quality score | Passed |
+| Three-item coordinated Content Set and asset actions | Passed |
+| Instagram and LinkedIn channel schedule | Passed |
+| Review, Schedule and Publish action row | Passed |
+| Responsive stacking and safe page width | Passed |
+
+### Interaction verification
+
+- Save changed visibly to Saved.
+- View Recommendations exposed campaign guidance.
+- LinkedIn selected its channel timeline state.
+- View Full Schedule exposed a schedule notice.
+- Review All exposed a review-ready notice.
+- Schedule Campaign changed the campaign to scheduled state.
+- Publish Campaign changed the campaign to published state.
+- Every Content Set Open action routed to the matching v2 Content Preview.
+- Back to Campaigns returned to the shared Campaign List.
+- Media: all browser-rendered images completed with a non-zero natural width.
+- Console: no application-origin warnings or errors. Cloud-browser extension metadata errors were excluded as external tooling noise.
+
+### Iteration history
+
+1. Initial comparison found preview objective/date copy and asset titles did not fully match the approved reference (P2).
+2. Copy, dates, content titles and top workspace spacing were corrected.
+3. Final comparison confirmed the complete approved section hierarchy and no remaining P0/P1/P2 visual issue.
+
+### Accepted responsive differences
+
+- At the 1365 × 917 QA viewport the publishing row starts below the first viewport and remains directly beneath the schedule; the 1536 × 1024 reference shows it in-frame.
+- Malta images use the same approved visual direction rather than the exact source photographs; this is accepted P3 polish pending the planned per-section image agent.
+
 final result: passed

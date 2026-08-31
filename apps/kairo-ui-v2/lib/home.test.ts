@@ -31,12 +31,12 @@ describe("Kairo UI v2 Home behavior", () => {
     }
   });
 
-  it("routes generated assets to v2 Content Preview and campaigns to their current canonical view", () => {
+  it("routes generated assets and campaigns into their v2 previews", () => {
     const base = "https://kairo.example";
     expect(creationDestination(base, "brand 1", { campaignId: "campaign 1", assetId: "asset 1" }))
       .toBe("/content/campaign%201/asset%201?brand=brand%201");
     expect(creationDestination(base, "brand 1", { campaignId: "campaign 1" }))
-      .toBe("https://kairo.example/brands/brand%201/campaigns/campaign%201");
+      .toBe("/campaigns/campaign%201?brand=brand%201");
   });
 
   it("orders real unfinished campaigns and ideas and avoids duplicate lineage", () => {

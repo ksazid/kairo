@@ -38,7 +38,7 @@ export type CampaignView = {
   ideaId: string;
   name: string;
   objective: string;
-  status: "draft";
+  status: "draft" | "in-progress" | "scheduled" | "published";
   createdAt: string;
 };
 

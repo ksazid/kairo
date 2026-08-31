@@ -45,7 +45,7 @@ export function KairoShell({
     { label: "Home" as const, Icon: HomeIcon, href: brandId ? `/?brand=${encodeURIComponent(brandId)}` : "/" },
     { label: "Discover" as const, Icon: Compass, href: `/discover${discoverQuery}` },
     { label: "Content" as const, Icon: FileText, href: brandId ? `/content?brand=${encodeURIComponent(brandId)}` : "/content" },
-    { label: "Campaigns" as const, Icon: Megaphone, href: brandId ? `${brandBase}/campaigns` : webUrl },
+    { label: "Campaigns" as const, Icon: Megaphone, href: brandId ? `/campaigns?brand=${encodeURIComponent(brandId)}` : "/campaigns" },
     { label: "Calendar" as const, Icon: CalendarDays, href: brandId ? `${brandBase}/calendar` : webUrl },
     { label: "Insights" as const, Icon: BarChart3, href: brandId ? `${brandBase}/performance` : webUrl },
     { label: "Brand" as const, Icon: Settings2, href: brandId ? `${brandBase}/brain` : webUrl },
