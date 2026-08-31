@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Complete Kairo V2 Product Flow",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "release-authorized",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -110,21 +110,21 @@
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-107@1.6",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Release requires a newly certified exact SHA and explicit merge approval."
+      "commitSha": "ef55be253c18f929b56e4cd94bcf93005ac75cca",
+      "by": "Sazid Khan",
+      "at": "2026-08-31T20:08:32Z",
+      "rationale": "Product Owner explicitly authorized release and merge of PR #256 after certification and all governance-head gates passed."
     },
     {
       "type": "production-enable",
-      "status": "pending",
-      "version": null,
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": null
+      "status": "approved",
+      "version": "VS-107@1.6",
+      "commitSha": "ef55be253c18f929b56e4cd94bcf93005ac75cca",
+      "by": "Sazid Khan",
+      "at": "2026-08-31T20:08:32Z",
+      "rationale": "Product Owner explicitly authorized promoting the complete Kairo v2 deployment to production after merge and smoke verification."
     }
   ],
   "decisionIds": [],
@@ -153,7 +153,7 @@
     ]
   },
   "release": {
-    "status": "pending",
+    "status": "authorized",
     "releaseId": null
   },
   "rollback": {
