@@ -6,6 +6,11 @@ import type {
   KnowledgeSourceDto,
 } from "@kairo/contracts";
 import { DomainValidationError, type KairoRepository } from "./index";
+import {
+  deduplicateEvidenceProposals,
+  sanitizeEvidenceReference,
+  validateEvidenceProposal,
+} from "./evidence-sanitization-gate";
 
 export interface PublicBrandReference {
   url: string;
@@ -157,12 +162,12 @@ export class BrandBrainBootstrapService {
     const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
       || fallbackHost === "on.substack.com" || fallbackHost.endsWith(".substack.com");
     if (!successfulReferences.length && fallbackUrl) {
-      const fallbackReference = {
+      const fallbackReference = sanitizeEvidenceReference({
         url: fallbackUrl,
         title: brand.name,
         excerpt: `Public reference for ${brand.name}. Detailed source evidence is unavailable until the source is connected or refreshed.`,
         retrievedAt: new Date().toISOString(),
-      };
+      });
       // Keep conservative fallback proposals source-backed so PostgreSQL can
       // persist them and the Brand Brain UI can render them as suggestions.
       const source = await this.ensureSource(accountId, brandId, fallbackReference, await this.repository.listKnowledgeSources(accountId, brandId));
@@ -170,7 +175,7 @@ export class BrandBrainBootstrapService {
       syntheticFallback = true;
     }
 
-    if (!this.generator) {
+    if (!this.generator || syntheticFallback) {
       const fallback = fallbackProposals(successfulReferences);
       const brain = await this.persistFallback(accountId, brandId, fallback);
       return {
@@ -178,7 +183,7 @@ export class BrandBrainBootstrapService {
         generatorStatus: fallback.length ? "generated" : "unavailable",
         proposedCount: fallback.length,
         skippedConfirmedCount: 0,
-        sourceIds: successfulReferences.map((item) => item.sourceId).filter(Boolean),
+        sourceIds: syntheticFallback ? [] : successfulReferences.map((item) => item.sourceId).filter(Boolean),
       };
     }
 
@@ -220,22 +225,21 @@ export class BrandBrainBootstrapService {
     const liveFields = new Map((await this.repository.listBrandBrainFields(accountId, brandId)).map((field) => [field.fieldKey, field]));
     const inspectedSourceIds = successfulReferences.map((item) => item.sourceId);
     const inspectedSources = new Set(inspectedSourceIds);
+    const gatedProposals = deduplicateEvidenceProposals(proposals.map((proposal) => {
+      const section = PROPOSAL_FIELDS.get(proposal.fieldKey);
+      if (!section || proposal.section !== section) throw new DomainValidationError("Brand Brain proposal is outside the guided allow-list");
+      const valueLimit = SOURCE_REQUIRED_PROPOSAL_FIELDS.has(proposal.fieldKey) ? VISUAL_DIRECTION_VALUE_LIMIT : 10_000;
+      return validateEvidenceProposal(proposal, {
+        inspectedSourceIds: inspectedSources,
+        maxValueLength: valueLimit,
+        requireSource: true,
+      });
+    }));
     let proposedCount = 0;
     let skippedConfirmedCount = 0;
 
-    for (const proposal of proposals) {
-      const section = PROPOSAL_FIELDS.get(proposal.fieldKey);
-      if (!section || proposal.section !== section) throw new DomainValidationError("Brand Brain proposal is outside the guided allow-list");
-      const value = proposal.value.trim();
-      const valueLimit = SOURCE_REQUIRED_PROPOSAL_FIELDS.has(proposal.fieldKey) ? VISUAL_DIRECTION_VALUE_LIMIT : 10_000;
-      if (!value || value.length > valueLimit) throw new DomainValidationError("Brand Brain proposal value is invalid");
-      const proposalSourceIds = [...new Set(proposal.sourceIds.map((sourceId) => sourceId.trim()).filter(Boolean))];
-      if (SOURCE_REQUIRED_PROPOSAL_FIELDS.has(proposal.fieldKey) && proposalSourceIds.length === 0) {
-        throw new DomainValidationError("Source-backed Brand Brain proposals require active source provenance");
-      }
-      if (proposalSourceIds.some((sourceId) => !inspectedSources.has(sourceId))) {
-        throw new DomainValidationError("Brand Brain proposal provenance is invalid");
-      }
+    for (const proposal of gatedProposals) {
+      const section = PROPOSAL_FIELDS.get(proposal.fieldKey)!;
       const existing = liveFields.get(proposal.fieldKey);
       if (existing?.state === "confirmed") {
         skippedConfirmedCount += 1;
@@ -244,8 +248,8 @@ export class BrandBrainBootstrapService {
       const written = await this.repository.recordInferredBrandBrainField(accountId, brandId, {
         section,
         fieldKey: proposal.fieldKey,
-        value,
-        sourceIds: proposalSourceIds,
+        value: proposal.value,
+        sourceIds: proposal.sourceIds,
         ...(existing ? { expectedVersion: existing.version } : {}),
       });
       liveFields.set(proposal.fieldKey, written);
@@ -257,12 +261,22 @@ export class BrandBrainBootstrapService {
       generatorStatus: "generated",
       proposedCount,
       skippedConfirmedCount,
-      sourceIds: syntheticFallback ? [] : inspectedSourceIds.filter(Boolean),
+      sourceIds: inspectedSourceIds.filter(Boolean),
     };
   }
 
   private async persistFallback(accountId: string, brandId: string, proposals: BrandBrainProposal[]) {
-    for (const proposal of proposals) {
+    const inspectedSources = new Set(proposals.flatMap((proposal) => proposal.sourceIds));
+    const gatedProposals = deduplicateEvidenceProposals(proposals.map((proposal) => {
+      const valueLimit = SOURCE_REQUIRED_PROPOSAL_FIELDS.has(proposal.fieldKey) ? VISUAL_DIRECTION_VALUE_LIMIT : 10_000;
+      return validateEvidenceProposal(proposal, {
+        inspectedSourceIds: inspectedSources,
+        maxValueLength: valueLimit,
+        requireSource: true,
+      });
+    }));
+
+    for (const proposal of gatedProposals) {
       const existing = (await this.repository.listBrandBrainFields(accountId, brandId)).find((field) => field.fieldKey === proposal.fieldKey);
       if (existing?.state === "confirmed") continue;
       await this.repository.recordInferredBrandBrainField(accountId, brandId, {
@@ -283,14 +297,20 @@ export class BrandBrainBootstrapService {
     return extracts
       .filter((item) => !excludedSourceIds.has(item.sourceId) && item.excerpt.trim())
       .slice(0, 5)
-      .map((item) => ({
-        sourceId: item.sourceId,
-        url: item.sourceUrl ?? `kairo-knowledge://${encodeURIComponent(item.sourceId)}`,
-        ...(item.title ? { title: item.title } : {}),
-        excerpt: item.excerpt.slice(0, 20_000),
-        retrievedAt: item.updatedAt,
-        ...(item.contentType ? { contentType: item.contentType } : {}),
-      }));
+      .flatMap((item) => {
+        try {
+          return [sanitizeEvidenceReference({
+            sourceId: item.sourceId,
+            url: item.sourceUrl ?? `kairo-knowledge://${encodeURIComponent(item.sourceId)}`,
+            ...(item.title ? { title: item.title } : {}),
+            excerpt: item.excerpt,
+            retrievedAt: item.updatedAt,
+            ...(item.contentType ? { contentType: item.contentType } : {}),
+          }, { allowInternalUrl: true })];
+        } catch {
+          return [];
+        }
+      });
   }
 
   private async readReferences(
@@ -304,11 +324,11 @@ export class BrandBrainBootstrapService {
 
     for (const candidate of unique.slice(0, 3)) {
       try {
-        const reference = await this.referenceReader.read(candidate);
+        const reference = sanitizeEvidenceReference(await this.referenceReader.read(candidate));
         const source = await this.ensureSource(accountId, brandId, reference, existingSources);
         result.push({ ...reference, sourceId: source.id });
       } catch {
-        // Public-reference failure is isolated. Existing Brand context can still remain available.
+        // Public-reference failure or unsafe evidence is isolated. Existing Brand context can still remain available.
       }
     }
     return result;
