@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Complete Kairo V2 Product Flow",
   "status": "active",
-  "lifecycle": "release-authorized",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -153,7 +153,7 @@
     ]
   },
   "release": {
-    "status": "authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
