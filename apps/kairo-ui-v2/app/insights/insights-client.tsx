@@ -59,10 +59,9 @@ export function InsightsClient({ items, brandId, authenticated }: { items: Conte
         <button type="button" aria-pressed={channel === "LinkedIn"} onClick={() => setChannel("LinkedIn")} title="LinkedIn"><Linkedin aria-hidden="true"/></button>
         <button type="button" aria-pressed={channel === "Facebook"} onClick={() => setChannel("Facebook")} title="Facebook"><Facebook aria-hidden="true"/></button>
       </div>
+      <nav className="insights-tabs" aria-label="Insight sections">{tabs.map((item) => <button key={item.value} type="button" aria-current={tab === item.value ? "page" : undefined} onClick={() => setTab(item.value)}>{item.label}</button>)}</nav>
       <span className="insights-evidence"><i/>{authenticated ? "Live Brand data" : "Preview data"}</span>
     </section>
-
-    <nav className="insights-tabs" aria-label="Insight sections">{tabs.map((item) => <button key={item.value} type="button" aria-current={tab === item.value ? "page" : undefined} onClick={() => setTab(item.value)}>{item.label}</button>)}</nav>
 
     <section className="insights-metrics" aria-label="Performance summary">{metrics.map((metric) => {
       const Icon = metricIcons[metric.id];
@@ -84,7 +83,7 @@ function Overview({ items, points, compare, brandId }: { items: ContentItem[]; p
       </article>
       <article className="insights-learned">
         <header><h2><Sparkles aria-hidden="true"/>Kairo learned</h2><span>High confidence</span></header>
-        <div className="insights-learned-image"><img src="/malta-drive.webp" alt="Maltese coastal road"/><span>PROVEN PATTERN</span></div>
+        <div className="insights-learned-image"><img src="/malta-harbour.webp" alt="Maltese coast and harbour"/><span>PROVEN PATTERN</span></div>
         <section><h3>Practical Malta guides earn more saves and site visits.</h3><p>Your audience responds when local advice solves a specific travel problem. Short lists with a clear visual hook outperform general destination inspiration.</p><div><span><strong>+42%</strong><small>Saves</small></span><span><strong>+31%</strong><small>Site visits</small></span></div></section>
         <Link href={createFromInsightHref(brandId, "A practical Malta guide travellers will save")}><WandSparkles aria-hidden="true"/>Create similar content</Link>
       </article>

@@ -30,7 +30,7 @@ export function InsightsChart({ points, compare }: { points: InsightPoint[]; com
       context.textBaseline = "middle";
       for (let step = 0; step <= 4; step += 1) {
         const y = top + (height * step / 4);
-        context.strokeStyle = "#263342";
+        context.strokeStyle = "#344354";
         context.lineWidth = 1;
         context.beginPath();
         context.moveTo(left, y);
@@ -59,8 +59,8 @@ export function InsightsChart({ points, compare }: { points: InsightPoint[]; com
         context.lineCap = "round";
         context.stroke();
       };
-      if (compare) draw("previous", "#687384", 1.5);
-      draw("current", "#9b75ff", 2.5);
+      if (compare) draw("previous", "#c7ed3e", 2.5);
+      draw("current", "#a77cff", 3.5);
       points.forEach((point, index) => {
         const x = left + (width * index / Math.max(1, points.length - 1));
         const y = top + height - ((point.current / max) * height);

@@ -24,6 +24,8 @@ export function calendarFallback(): CalendarItem[] {
     { ...source[1]!, id: "content-five", title: "Three Scenic Stops Worth Saving", channel: "LinkedIn" as const, image: "/malta-drive.webp" },
     { ...source[2]!, id: "content-six", title: "Weekend Car Hire Offer", channel: "Facebook" as const, image: "/malta-car.webp" },
     { ...source[0]!, id: "content-seven", title: "Malta Road Trip Checklist", channel: "Instagram" as const, image: "/car-keys.webp" },
+    { ...source[3]!, id: "content-eight", title: "Valletta Travel Tips", channel: "LinkedIn" as const, image: "/malta-harbour.webp" },
+    { ...source[1]!, id: "content-nine", title: "Hidden Gems of Gozo", channel: "Facebook" as const, image: "/malta-drive.webp" },
   ];
   return expanded.map((item, index) => ({ ...item, media: [...item.media], scheduledAt: index < 6 ? fixtureDates[index]! : null }));
 }
