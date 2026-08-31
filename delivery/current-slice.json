@@ -161,7 +161,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": null,
+    "implementationPr": "https://github.com/ksazid/kairo/pull/255",
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
       "VS-107@1.5 Campaign List and Campaign Preview visual comparison and browser interaction QA passed"
