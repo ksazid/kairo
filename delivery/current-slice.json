@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "sliceId": "VS-107",
-  "title": "VS-107 — Focused Home, Discover and Content V2 Integration",
+  "title": "VS-107 — Focused Home, Discover, Content and Campaign V2 Integration",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -65,6 +65,7 @@
       "Reuses the approved provider-neutral OIDC flow on the v2 hostname without changing identity-provider policy.",
       "Adds the approved v2 Discover collection and Discover Preview using existing Brand-scoped Opportunity contracts.",
       "Adds the approved v2 Content List and Content Preview using existing Brand-scoped Campaign, Content Asset, review and calendar contracts.",
+      "Adds the approved v2 Campaign List and Campaign Preview using the same Brand-scoped Campaign, Content Asset, review and calendar contracts.",
       "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling."
     ]
   },
@@ -72,16 +73,16 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-107@1.4",
+      "version": "VS-107@1.5",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-30T13:00:00Z",
-      "rationale": "Product Owner approved Home, Discover, the dual Grid/Table listing standard, and the Content List plus Content Preview expansion in the isolated v2 app."
+      "at": "2026-08-31T10:00:00Z",
+      "rationale": "Product Owner approved Home, Discover, the dual Grid/Table listing standard, Content List and Preview, and Campaign List and Preview in the isolated v2 app."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-107@1.4",
+      "version": "VS-107@1.5",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -90,25 +91,25 @@
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-107@1.4",
+      "version": "VS-107@1.5",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-30T13:00:00Z",
-      "rationale": "Product Owner explicitly approved implementing the detailed Table and visual Grid standard plus Content List and Content Preview in v2."
+      "at": "2026-08-31T10:00:00Z",
+      "rationale": "Product Owner explicitly approved implementing the shared detailed Table and visual Grid standard, Content List and Preview, and Campaign List and Preview in v2."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-107@1.4",
-      "commitSha": "f23eab0b6c4861da7553ce66c310aef81d199329",
-      "by": "Sazid Khan",
-      "at": "2026-08-30T21:16:26Z",
-      "rationale": "Product Owner approved certification of the exact VS-107@1.4 candidate after Content List and Content Preview visual QA and all exact-SHA repository gates passed."
+      "status": "pending",
+      "version": "VS-107@1.5",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Certification requires Product Owner approval bound to the new exact candidate SHA after all repository gates pass."
     },
     {
       "type": "release",
       "status": "pending",
-      "version": "VS-107@1.4",
+      "version": "VS-107@1.5",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -130,19 +131,18 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 100,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "f23eab0b6c4861da7553ce66c310aef81d199329",
+    "status": "running",
+    "commitSha": null,
     "evidence": [
-      "GitHub Actions Product Intake run 33335643938",
-      "GitHub Actions Security baseline run 33335643927",
-      "GitHub Actions CI run 33335643934",
-      "Vercel Preview deployment dpl_9kdo3ioa8jBCVijZQLeEmsTaB5te READY",
-      "Cloud-browser Content List and Content Preview visual and interaction QA passed"
+      "Local preflight and governance validation passed",
+      "Security classification passed with no sensitive paths",
+      "Full monorepo runtime verification passed",
+      "Campaign List and Campaign Preview cloud-browser visual and interaction QA passed"
     ]
   },
   "release": {
@@ -161,11 +161,10 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/254",
+    "implementationPr": null,
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
-      "Vercel deployment dpl_9kdo3ioa8jBCVijZQLeEmsTaB5te",
-      "VS-107@1.4 Content List and Content Preview browser evidence"
+      "VS-107@1.5 Campaign List and Campaign Preview visual comparison and browser interaction QA passed"
     ]
   },
   "maxAttempts": 3
