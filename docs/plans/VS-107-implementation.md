@@ -1,7 +1,16 @@
 # VS-107 Implementation Plan
 
-1. Confirm approved Home information architecture and preserve existing creation contracts.
-2. Implement focused Home hero and format-aware recommendation selection.
-3. Run deterministic build, typecheck, tests, governance and preflight checks.
-4. Run browser visual and interaction QA for default Home and Post-selected Home.
-5. Capture exact-SHA evidence and prepare the certification gate.
+1. Preserve the certified visual Home and isolate functional work inside `apps/kairo-ui-v2`.
+2. Add tested format, URL, continuation and canonical-destination helpers.
+3. Connect Home to real Brand opportunities, accepted learning, Campaigns and Ideas.
+4. Add inline viral-link concept analysis and Brand-scoped generation/polling for Post, Reel, Carousel and Campaign.
+5. Route completed work to canonical Content Preview or Campaign Preview and real unfinished work to its current state.
+6. Reuse the approved OIDC implementation on the v2 hostname and add explicit legacy ↔ v2 links.
+7. Run React quality review, typecheck, tests, builds, governance, preflight and security checks.
+8. Run authenticated and fallback browser QA on desktop/mobile, then capture exact-SHA evidence for certification.
+9. Add the approved v2 Discover collection with consistent filters, imagery, badges and action rows.
+10. Add v2 Discover Preview, connect Save/Dismiss to existing Opportunity actions, and connect Create with Kairo to the existing creation route.
+11. Route Home Discover entry points into v2 and repeat responsive browser QA.
+12. Expand Discover with the approved detailed Table default plus a persistent Grid alternate using shared records, filters and actions.
+13. Build the approved v2 Content List with the same persistent Table/Grid standard, realistic imagery, filters and preview routing.
+14. Build v2 Content Preview with format-aware media, platform context, content details and the existing lifecycle destination.

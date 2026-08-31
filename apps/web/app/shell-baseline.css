@@ -81,12 +81,33 @@
 }
 
 .k-shell-sidebar-footer {
-  margin-top: auto;
+  margin-top: 0;
   display: grid;
   grid-template-columns: 44px 76px 44px;
   align-items: center;
   gap: 8px;
 }
+
+.k-shell-v2-link {
+  min-height: 42px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, var(--k-primary) 28%, var(--k-neutral-200));
+  border-radius: var(--k-radius-sm);
+  background: color-mix(in srgb, var(--k-primary) 5%, var(--k-surface));
+  color: var(--k-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.k-shell-v2-link span { flex: 1; }
+.k-shell-v2-link svg { width: 17px; height: 17px; }
+.k-shell-v2-link svg:last-child { width: 14px; height: 14px; }
+.k-shell-v2-mobile-link { display: none; }
 
 .k-shell-sidebar-footer > div > button,
 .profile-menu > summary {
@@ -364,7 +385,8 @@
   }
 
   .k-shell-mobile-actions > div > button,
-  .k-shell-mobile-actions .profile-menu > summary {
+  .k-shell-mobile-actions .profile-menu > summary,
+  .k-shell-v2-mobile-link {
     width: 40px;
     height: 40px;
     display: grid;
@@ -375,6 +397,9 @@
     background: var(--k-surface);
     color: var(--k-neutral-700);
   }
+
+  .k-shell-v2-mobile-link { display: grid; text-decoration: none; }
+  .k-shell-v2-mobile-link svg { width: 18px; height: 18px; }
 
   .k-shell-mobile-actions > div > button > svg,
   .k-shell-mobile-actions .profile-menu > summary > svg {
