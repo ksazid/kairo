@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Focused Home, Discover, Content and Campaign V2 Integration",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -99,21 +99,21 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-107@1.5",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Certification requires Product Owner approval bound to the new exact candidate SHA after all repository gates pass."
+      "commitSha": "029d5b688c62410573b54d7608fc36ca3dbb9c54",
+      "by": "Sazid Khan",
+      "at": "2026-08-31T10:19:25Z",
+      "rationale": "Product Owner approved certification of the exact VS-107@1.5 candidate after Product Intake, CI, Security, full runtime verification and cloud-browser design QA passed."
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-107@1.5",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Release requires a newly certified exact SHA and explicit merge approval."
+      "commitSha": "029d5b688c62410573b54d7608fc36ca3dbb9c54",
+      "by": "Sazid Khan",
+      "at": "2026-08-31T10:19:25Z",
+      "rationale": "Product Owner explicitly authorized merging PR #255 after all required gates passed; production deployment remains manual."
     },
     {
       "type": "production-enable",
@@ -131,22 +131,25 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "running",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "029d5b688c62410573b54d7608fc36ca3dbb9c54",
     "evidence": [
       "Local preflight and governance validation passed",
       "Security classification passed with no sensitive paths",
       "Full monorepo runtime verification passed",
-      "Campaign List and Campaign Preview cloud-browser visual and interaction QA passed"
+      "Campaign List and Campaign Preview cloud-browser visual and interaction QA passed",
+      "GitHub Actions Product Intake run 33378333622 passed",
+      "GitHub Actions CI run 33378333723 passed",
+      "GitHub Actions Security baseline run 33378333641 passed"
     ]
   },
   "release": {
-    "status": "not-authorized",
+    "status": "pending",
     "releaseId": null
   },
   "rollback": {
