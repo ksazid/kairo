@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "sliceId": "VS-107",
-  "title": "VS-107 — Focused Home, Discover, Content and Campaign V2 Integration",
+  "title": "VS-107 — Complete Kairo V2 Product Flow",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "implementing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -66,6 +66,8 @@
       "Adds the approved v2 Discover collection and Discover Preview using existing Brand-scoped Opportunity contracts.",
       "Adds the approved v2 Content List and Content Preview using existing Brand-scoped Campaign, Content Asset, review and calendar contracts.",
       "Adds the approved v2 Campaign List and Campaign Preview using the same Brand-scoped Campaign, Content Asset, review and calendar contracts.",
+      "Adds the approved v2 Calendar with Month, Week and List views plus contextual scheduling interactions.",
+      "Adds the approved v2 Insights overview with evidence-aware performance summaries and Content Preview routing.",
       "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling."
     ]
   },
@@ -73,16 +75,16 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-107@1.5",
+      "version": "VS-107@1.6",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-31T10:00:00Z",
-      "rationale": "Product Owner approved Home, Discover, the dual Grid/Table listing standard, Content List and Preview, and Campaign List and Preview in the isolated v2 app."
+      "at": "2026-08-31T13:19:19Z",
+      "rationale": "Product Owner approved the separate Calendar and Insights mockups, all Calendar view modes, and their implementation in the isolated v2 app."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-107@1.5",
+      "version": "VS-107@1.6",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -91,29 +93,29 @@
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-107@1.5",
+      "version": "VS-107@1.6",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-31T10:00:00Z",
-      "rationale": "Product Owner explicitly approved implementing the shared detailed Table and visual Grid standard, Content List and Preview, and Campaign List and Preview in v2."
+      "at": "2026-08-31T13:19:19Z",
+      "rationale": "Product Owner explicitly approved implementing the Calendar and Insights mockups, Month/Week/List navigation, Today behavior, content quick preview, scheduling and Insights actions."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-107@1.5",
-      "commitSha": "029d5b688c62410573b54d7608fc36ca3dbb9c54",
-      "by": "Sazid Khan",
-      "at": "2026-08-31T10:19:25Z",
-      "rationale": "Product Owner approved certification of the exact VS-107@1.5 candidate after Product Intake, CI, Security, full runtime verification and cloud-browser design QA passed."
+      "status": "pending",
+      "version": "VS-107@1.6",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Certification requires Product Owner approval bound to the new exact candidate SHA after all repository gates pass."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-107@1.5",
-      "commitSha": "029d5b688c62410573b54d7608fc36ca3dbb9c54",
-      "by": "Sazid Khan",
-      "at": "2026-08-31T10:19:25Z",
-      "rationale": "Product Owner explicitly authorized merging PR #255 after all required gates passed; production deployment remains manual."
+      "status": "pending",
+      "version": "VS-107@1.6",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Release requires a newly certified exact SHA and explicit merge approval."
     },
     {
       "type": "production-enable",
@@ -130,26 +132,18 @@
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
-    "testing": 100,
-    "certification": 100,
+    "testing": 70,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "029d5b688c62410573b54d7608fc36ca3dbb9c54",
-    "evidence": [
-      "Local preflight and governance validation passed",
-      "Security classification passed with no sensitive paths",
-      "Full monorepo runtime verification passed",
-      "Campaign List and Campaign Preview cloud-browser visual and interaction QA passed",
-      "GitHub Actions Product Intake run 33378333622 passed",
-      "GitHub Actions CI run 33378333723 passed",
-      "GitHub Actions Security baseline run 33378333641 passed"
-    ]
+    "status": "not-started",
+    "commitSha": null,
+    "evidence": []
   },
   "release": {
-    "status": "pending",
+    "status": "not-authorized",
     "releaseId": null
   },
   "rollback": {
@@ -164,10 +158,10 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/255",
+    "implementationPr": null,
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
-      "VS-107@1.5 Campaign List and Campaign Preview visual comparison and browser interaction QA passed"
+      "VS-107@1.6 approved Calendar and Insights source mockups"
     ]
   },
   "maxAttempts": 3

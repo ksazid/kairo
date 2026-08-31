@@ -16,3 +16,5 @@
 14. Build v2 Content Preview with format-aware media, platform context, content details and the existing lifecycle destination.
 15. Build the approved v2 Campaign List with persistent Table/Grid views, search, lifecycle filters, coordinated format/channel metadata and campaign routing.
 16. Build the approved v2 Campaign Preview with overview, quality, content-set, channel timeline, Content Preview links and review/schedule/publish interaction states.
+17. Build the approved v2 Calendar with Month, Week and List views, Today navigation, filters, drag rescheduling, empty-slot scheduling and a contextual content drawer.
+18. Build the approved v2 Insights overview with evidence-aware summaries, performance trend, Kairo learning, Top Content, channel contribution and creation/preview routing.
