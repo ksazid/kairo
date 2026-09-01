@@ -108,7 +108,7 @@ export function BrandBrainClient({ brandId, activation }: { brandId?: string; ac
       applyRuntime(body);
       setEditingField(null);
       setFieldDraft("");
-      setNotice(`${field.label} confirmed. Brand Intelligence and the initial Discovery Plan were recalculated.`);
+      setNotice(`${field.label} confirmed. Brand Intelligence and the Discovery Plan were recalculated.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Kairo could not save this field.");
     } finally {
@@ -133,9 +133,41 @@ export function BrandBrainClient({ brandId, activation }: { brandId?: string; ac
       const body = await response.json() as BrandBrainRuntimeData & { error?: string };
       if (!response.ok) throw new Error(body.error ?? "Kairo could not add this source.");
       applyRuntime(body);
-      setNotice("Source added. Brand DNA, readiness, evidence coverage and the initial Discovery Plan were recalculated.");
+      setNotice("Source added. Brand DNA, readiness, evidence coverage and the Discovery Plan were recalculated.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Kairo could not add this source.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function editTopic(topic: DiscoveryTopic) {
+    if (!brandId || !runtime?.discoveryPlan) {
+      setNotice(!brandId ? "Choose a Brand before editing Discovery Intelligence." : "Discovery Plan is not available yet.");
+      return;
+    }
+    const name = window.prompt("Discovery topic", topic.name)?.trim();
+    if (!name) return;
+    const audience = window.prompt("Target audience", topic.audience)?.trim();
+    if (!audience) return;
+    const entitiesText = window.prompt("Search entities — separate with commas", topic.entities.join(", "))?.trim();
+    if (!entitiesText) return;
+    const entities = [...new Set(entitiesText.split(/[,\n;]+/).map((value) => value.trim()).filter(Boolean))].slice(0, 12);
+    if (!entities.length) return;
+
+    setSaving(true);
+    try {
+      const response = await fetch("/api/brain", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "edit-topic", brandId, topicId: topic.id, expectedRevision: runtime.discoveryPlan.revision, name, audience, entities }),
+      });
+      const body = await response.json() as BrandBrainRuntimeData & { error?: string };
+      if (!response.ok) throw new Error(body.error ?? "Kairo could not save this Discovery topic.");
+      applyRuntime(body);
+      setNotice(`Discovery topic saved in Plan revision ${body.discoveryPlan?.revision ?? runtime.discoveryPlan.revision + 1}.`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Kairo could not save this Discovery topic.");
     } finally {
       setSaving(false);
     }
@@ -182,7 +214,7 @@ export function BrandBrainClient({ brandId, activation }: { brandId?: string; ac
 
     {activeTab === "overview" ? <OverviewPanel runtime={runtime} fields={fields} editingField={editingField} fieldDraft={fieldDraft} setFieldDraft={setFieldDraft} startFieldEdit={startFieldEdit} saveField={saveField} cancelEdit={() => setEditingField(null)} reviewSuggestions={reviewSuggestions} brandId={brandId} saving={saving}/> : null}
     {activeTab === "dna" ? <DnaPanel fields={fields} editingField={editingField} fieldDraft={fieldDraft} setFieldDraft={setFieldDraft} startFieldEdit={startFieldEdit} saveField={saveField} cancelEdit={() => setEditingField(null)} saving={saving}/> : null}
-    {activeTab === "discovery" ? <DiscoveryPanel runtime={runtime} topics={topics} brandId={brandId}/> : null}
+    {activeTab === "discovery" ? <DiscoveryPanel runtime={runtime} topics={topics} brandId={brandId} onEditTopic={editTopic} saving={saving}/> : null}
     {activeTab === "sources" ? <SourcesPanel runtime={runtime} sources={sources} onAddSource={addSource} saving={saving}/> : null}
     {activeTab === "learning" ? <LearningPanel learnings={learnings} brandId={brandId}/> : null}
   </section>;
@@ -243,17 +275,17 @@ function DnaPanel({ fields, editingField, fieldDraft, setFieldDraft, startFieldE
   </div>;
 }
 
-function DiscoveryPanel({ runtime, topics, brandId }: { runtime?: BrandBrainRuntimeData; topics: DiscoveryTopic[]; brandId?: string }) {
+function DiscoveryPanel({ runtime, topics, brandId, onEditTopic, saving }: { runtime?: BrandBrainRuntimeData; topics: DiscoveryTopic[]; brandId?: string; onEditTopic: (topic: DiscoveryTopic) => void; saving: boolean }) {
   const excluded = runtime?.discoveryPlan?.excludedTopics ?? [];
   return <div id="brand-panel-discovery" role="tabpanel" aria-labelledby="brand-tab-discovery" className="brand-discovery-panel">
     <section className="brand-search-plan">
-      <header><div><span><SearchCheck aria-hidden="true"/>{runtime?.discoveryRun ? "Current discovery plan" : "Initial discovery plan"}</span><h2>{runtime?.discoveryRun ? "What Kairo is searching" : "What Kairo will search when Discovery starts"}</h2><p>The initial plan is derived from confirmed and source-backed Brand intelligence. Hunter run history is added only after Hunter actually runs.</p></div><div><span><CalendarClock aria-hidden="true"/><small>Next daily run</small><strong>{runtime?.schedule ? formatTimestamp(runtime.schedule.nextRunAt) : "Not scheduled"}</strong></span></div></header>
-      <div className="brand-topic-list">{topics.length ? topics.map((topic, index) => <TopicRow key={topic.id} topic={topic} index={index + 1}/>) : <div className="brand-review-complete"><CircleAlert aria-hidden="true"/><span><strong>No discovery topics yet.</strong><small>Confirm Content focus or add another source to improve the initial plan.</small></span></div>}</div>
+      <header><div><span><SearchCheck aria-hidden="true"/>{runtime?.discoveryRun ? "Current discovery plan" : runtime?.discoveryPlan?.state === "customized" ? "Customized discovery plan" : "Initial discovery plan"}</span><h2>{runtime?.discoveryRun ? "What Kairo is searching" : "What Kairo will search when Discovery starts"}</h2><p>The plan is versioned against Brand Intelligence. User-customized topics stay authoritative until you edit them again.</p></div><div><span><CalendarClock aria-hidden="true"/><small>Plan revision</small><strong>{runtime?.discoveryPlan ? `v${runtime.discoveryPlan.revision}` : "Not created"}</strong></span></div></header>
+      <div className="brand-topic-list">{topics.length ? topics.map((topic, index) => <TopicRow key={topic.id} topic={topic} index={index + 1} onEdit={() => onEditTopic(topic)} saving={saving}/>) : <div className="brand-review-complete"><CircleAlert aria-hidden="true"/><span><strong>No discovery topics yet.</strong><small>Confirm Content focus or add another source to improve the initial plan.</small></span></div>}</div>
       <footer><ShieldCheck aria-hidden="true"/><span><strong>Excluded topics</strong><small>{excluded.length ? excluded.join(", ") : "No explicit exclusions discovered yet."}</small></span></footer>
     </section>
     <aside className="brand-discovery-rail">
       <section><span><Brain aria-hidden="true"/>Brand Intelligence</span><ScoreBar label="Overall intelligence" value={runtime?.readiness.brandIntelligenceScore ?? 0}/><ScoreBar label="Evidence coverage" value={runtime?.readiness.evidenceCoverage ?? 0}/><ScoreBar label="Confirmed" value={confirmationScore(runtime)}/></section>
-      <section className="brand-discovery-status"><span><SearchCheck aria-hidden="true"/>Discovery status</span><strong>{runtime?.hunterReady ? "Ready" : "Not ready"}</strong><p>{runtime?.hunterReady ? "The initial plan has enough Brand context for the first Hunter run." : "Confirm or enrich the required Brand context before Hunter relies on this plan."}</p></section>
+      <section className="brand-discovery-status"><span><SearchCheck aria-hidden="true"/>Discovery status</span><strong>{runtime?.hunterReady ? "Ready" : "Not ready"}</strong><p>{runtime?.hunterReady ? "The persisted plan has enough Brand context for the first Hunter run." : "Confirm or enrich the required Brand context before Hunter relies on this plan."}</p></section>
       <section><span><TrendingUp aria-hidden="true"/>Previous run</span>{runtime?.discoveryRun ? <dl><div><dt>Valuable discoveries</dt><dd>{runtime.discoveryRun.valuableDiscoveries}</dd></div><div><dt>Weak signals filtered</dt><dd>{runtime.discoveryRun.weakSignalsFiltered}</dd></div></dl> : <p>No Hunter run has been recorded yet.</p>}<Link href={`/discover${brandId ? `?brand=${encodeURIComponent(brandId)}` : ""}`}>View Discover <ArrowRight aria-hidden="true"/></Link></section>
     </aside>
   </div>;
@@ -277,15 +309,15 @@ function LearningPanel({ learnings, brandId }: { learnings: BrandLearningUi[]; b
 }
 
 function FieldReviewRow({ field, expanded, draft, setDraft, onEdit, onSave, onCancel, saving }: { field: BrandBrainField; expanded: boolean; draft: string; setDraft: (value: string) => void; onEdit: () => void; onSave: () => void; onCancel: () => void; saving: boolean }) {
-  return <section className={`brand-review-row ${expanded ? "is-expanded" : ""}`}><header><span><UserRound aria-hidden="true"/><span><strong>{field.label}</strong><small>{field.description}</small></span></span><StateLabel state={field.state}/>{expanded ? <ChevronDown aria-hidden="true"/> : <button type="button" onClick={onEdit} aria-label={`Edit ${field.label}`}><ChevronRight aria-hidden="true"/></button>}</header>{expanded ? <div className="brand-inline-editor"><label htmlFor={`overview-${field.key}`}>{field.description}</label><textarea id={`overview-${field.key}`} value={draft} onChange={(event) => setDraft(event.target.value)} rows={3}/><div className="brand-evidence"><small>Evidence</small><span>{field.evidence.map((item) => <i key={item}>{item}</i>)}</span><p>{field.origin ? `${originLabel(field.origin)} · ${confidenceLabel(field.confidence)}` : "Evidence unavailable"}</p></div><div className="brand-editor-actions"><button type="button" onClick={onSave} disabled={saving}>{saving ? "Saving…" : "Save & confirm"}</button><button type="button" onClick={onCancel} disabled={saving}>Cancel</button></div></div> : <p>{field.value}</p>}</section>;
+  return <section className={`brand-review-row ${expanded ? "is-expanded" : ""}`}><header><span><UserRound aria-hidden="true"/><span><strong>{field.label}</strong><small>{field.description}</small></span></span><StateLabel state={field.state}/>{expanded ? <ChevronDown aria-hidden="true"/> : <button type="button" onClick={onEdit} aria-label={`Edit ${field.label}`}><ChevronRight aria-hidden="true"/></button>}</header>{expanded ? <div className="brand-inline-editor"><label htmlFor={`overview-${field.key}`}>{field.description}</label><textarea id={`overview-${field.key}`} value={draft} onChange={(event) => setFieldDraftOrNoop(setDraft, event.target.value)} rows={3}/><div className="brand-evidence"><small>Evidence</small><span>{field.evidence.map((item) => <i key={item}>{item}</i>)}</span><p>{field.origin ? `${originLabel(field.origin)} · ${confidenceLabel(field.confidence)}` : "Evidence unavailable"}</p></div><div className="brand-editor-actions"><button type="button" onClick={onSave} disabled={saving}>{saving ? "Saving…" : "Save & confirm"}</button><button type="button" onClick={onCancel} disabled={saving}>Cancel</button></div></div> : <p>{field.value}</p>}</section>;
 }
 
 function BrandFieldRow({ field, editing, draft, setDraft, onEdit, onSave, onCancel, saving }: { field: BrandBrainField; editing: boolean; draft: string; setDraft: (value: string) => void; onEdit: () => void; onSave: () => void; onCancel: () => void; saving: boolean }) {
   return <div className={`brand-field-row ${editing ? "is-editing" : ""}`} role="listitem"><div className="brand-field-value"><span><strong>{field.label}</strong><small>{field.description}</small></span>{editing ? <textarea aria-label={`Edit ${field.label}`} value={draft} onChange={(event) => setDraft(event.target.value)} rows={2}/> : <p>{field.value}</p>}</div><div className="brand-field-evidence">{field.evidence.map((item) => <span key={item}>{item}</span>)}</div><StateLabel state={field.state}/><div className="brand-field-actions">{editing ? <><button className="save" type="button" onClick={onSave} disabled={saving}><Check aria-hidden="true"/>{saving ? "Saving…" : "Save"}</button><button type="button" onClick={onCancel} disabled={saving}><X aria-hidden="true"/>Cancel</button></> : <button type="button" onClick={onEdit} aria-label={`Edit ${field.label}`}><Pencil aria-hidden="true"/></button>}</div></div>;
 }
 
-function TopicRow({ topic, index }: { topic: DiscoveryTopic; index: number }) {
-  return <article><span className="brand-topic-number">{index}</span><div className="brand-topic-main"><small>Topic</small><strong>{topic.name}</strong></div><div><small>Priority</small><strong className={`brand-priority ${topic.priority.toLowerCase()}`}><i/>{topic.priority}</strong></div><div><small>Target audience</small><strong>{topic.audience}</strong></div><button className="brand-topic-edit" type="button" disabled title="Topic editing becomes persistent with the Discovery Plan store" aria-label={`Edit ${topic.name}`}><Pencil aria-hidden="true"/></button><div className="brand-topic-details"><small>Key search entities</small><span>{topic.entities.map((entity) => <i key={entity}>{entity}</i>)}</span><small>Likely sources</small><span>{topic.sources.map((source) => <i key={source}>{source}</i>)}</span></div></article>;
+function TopicRow({ topic, index, onEdit, saving }: { topic: DiscoveryTopic; index: number; onEdit: () => void; saving: boolean }) {
+  return <article><span className="brand-topic-number">{index}</span><div className="brand-topic-main"><small>Topic</small><strong>{topic.name}</strong></div><div><small>Priority</small><strong className={`brand-priority ${topic.priority.toLowerCase()}`}><i/>{topic.priority}</strong></div><div><small>Target audience</small><strong>{topic.audience}</strong></div><button className="brand-topic-edit" type="button" onClick={onEdit} disabled={saving} title="Edit persisted Discovery Plan topic" aria-label={`Edit ${topic.name}`}><Pencil aria-hidden="true"/></button><div className="brand-topic-details"><small>Key search entities</small><span>{topic.entities.map((entity) => <i key={entity}>{entity}</i>)}</span><small>Likely sources</small><span>{topic.sources.map((source) => <i key={source}>{source}</i>)}</span></div></article>;
 }
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
@@ -319,6 +351,10 @@ function originLabel(origin: BrandBrainField["origin"]): string {
 
 function confidenceLabel(confidence: BrandBrainField["confidence"]): string {
   return confidence === "high" ? "High confidence" : confidence === "medium" ? "Medium confidence" : confidence === "low" ? "Low confidence" : "Confidence not established";
+}
+
+function setFieldDraftOrNoop(setDraft: (value: string) => void, value: string): void {
+  setDraft(value);
 }
 
 function formatTimestamp(value: string): string {
