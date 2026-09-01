@@ -34,7 +34,7 @@ function evidence(id: string, title: string, summary: string, platform = "rss"):
     retrievedAt: referenceTime,
     provider: platform,
     providerVersion: "v1",
-    contentHash: "sha256:" + id.padEnd(64, "a").slice(0, 64),
+    contentHash: "sha256:" + "a".repeat(64),
   };
 }
 
@@ -90,7 +90,7 @@ describe("Hunter deterministic candidate quality", () => {
     const weakerEvidence = evidence("weaker", "AI agents move into production", "AI agents are increasingly used by technical founders.", "web");
     const strongerEvidence = evidence("stronger", "AI agent runtime architecture benchmark", "A benchmark compares durable AI agent runtime architectures for production systems.", "rss");
     const weaker = candidate(weakerEvidence, "AI agents are moving into production", "Summarize what teams should watch", {
-      scores: { relevance: 0.74, evidence: 0.62, novelty: 0.62, timeliness: 0.7, brandAuthority: 0.58, audienceFit: 0.72 },
+      scores: { relevance: 0.8, evidence: 0.72, novelty: 0.7, timeliness: 0.75, brandAuthority: 0.65, audienceFit: 0.8 },
     });
     const stronger = candidate(strongerEvidence, "New AI agent benchmark changes runtime architecture choices", "Compare the benchmark and explain the architecture tradeoffs");
 
@@ -154,7 +154,18 @@ describe("Hunter deterministic candidate quality", () => {
   });
 
   it("caps unsupported timeliness when evidence has no publication timestamp", () => {
-    const undated = { ...evidence("undated", "AI agent architecture guide", "A production guide for AI agent architecture."), publishedAt: undefined };
+    const dated = evidence("undated", "AI agent architecture guide", "A production guide for AI agent architecture.");
+    const undated: DiscoveryEvidence = {
+      title: dated.title,
+      summary: dated.summary,
+      sourceUrl: dated.sourceUrl,
+      platform: dated.platform,
+      publisher: dated.publisher,
+      retrievedAt: dated.retrievedAt,
+      provider: dated.provider,
+      providerVersion: dated.providerVersion,
+      contentHash: dated.contentHash,
+    };
     const item = candidate(undated, "AI agent architecture guide exposes a deployment tradeoff", "Explain the deployment architecture tradeoff", {
       scores: { ...strongScores, timeliness: 1 },
     });
