@@ -10,6 +10,7 @@
     "./brand-brain-evidence-sanitizer": "./src/brand-brain-evidence-sanitizer.ts",
     "./brand-brain-sanitizing-reader": "./src/brand-brain-sanitizing-reader.ts",
     "./brand-dna-readiness": "./src/brand-dna-readiness.ts",
+    "./brand-discovery-plan": "./src/brand-discovery-plan.ts",
     "./brand-intelligence": "./src/brand-intelligence.ts",
     "./brand-intelligence-snapshot": "./src/brand-intelligence-snapshot.ts",
     "./discovery": "./src/discovery.ts",
