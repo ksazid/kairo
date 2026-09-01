@@ -59,6 +59,7 @@ const cases: PocCase[] = [
       topics: ["AI agents", "software architecture"],
       excludedTopics: ["celebrity gossip"],
       goals: ["build technical authority"],
+      sourceClasses: ["Official sources", "Industry news", "GitHub", "Hacker News", "YouTube"],
     },
     expectedSources: ["agent-reach", "bluesky", "github", "hacker-news", "rss", "youtube"],
   },
@@ -73,6 +74,7 @@ const cases: PocCase[] = [
       topics: ["Umrah visa", "pilgrimage guidance"],
       excludedTopics: ["party politics"],
       goals: ["guide pilgrims"],
+      sourceClasses: ["Official sources", "Industry news", "YouTube"],
     },
     expectedSources: ["agent-reach", "bluesky", "rss", "youtube"],
   },
@@ -87,8 +89,9 @@ const cases: PocCase[] = [
       topics: ["EV motorcycles", "motorcycle safety"],
       excludedTopics: ["car reviews"],
       goals: ["educate riders"],
+      sourceClasses: ["Official sources", "Industry news", "Community discussions", "YouTube"],
     },
-    expectedSources: ["agent-reach", "bluesky", "hacker-news", "rss", "youtube"],
+    expectedSources: ["agent-reach", "bluesky", "rss", "youtube"],
   },
   {
     name: "UPSC education brand",
@@ -101,11 +104,12 @@ const cases: PocCase[] = [
       topics: ["UPSC current affairs", "public policy"],
       excludedTopics: ["celebrity gossip"],
       goals: ["help exam preparation"],
+      sourceClasses: ["Official sources", "Industry news", "YouTube"],
     },
-    expectedSources: ["agent-reach", "bluesky", "hacker-news", "rss", "youtube"],
+    expectedSources: ["agent-reach", "bluesky", "rss", "youtube"],
   },
   {
-    name: "generic restaurant brand",
+    name: "restaurant / hospitality brand",
     brand: { ...brandBase, brandId: "brand-restaurant", brandName: "Harbour Kitchen" },
     profile: {
       sector: "Restaurant",
@@ -115,15 +119,13 @@ const cases: PocCase[] = [
       topics: ["seasonal menus", "restaurant experiences"],
       excludedTopics: ["crypto trading"],
       goals: ["increase local discovery"],
+      sourceClasses: ["Official sources", "Local news", "Instagram", "YouTube"],
     },
-    // This intentionally records current generic-pack behavior. If these sources are later
-    // narrowed by a hospitality pack or Discovery Plan source-class policy, this expectation
-    // should change with that product decision rather than silently changing Hunter behavior.
-    expectedSources: ["agent-reach", "bluesky", "github", "hacker-news", "rss", "youtube"],
+    expectedSources: ["agent-reach", "bluesky", "rss", "youtube"],
   },
 ];
 
-describe("Hunter Chunk 1-2 multi-brand POC", () => {
+describe("Hunter Chunk 2.1 multi-brand POC", () => {
   for (const testCase of cases) {
     it(`${testCase.name}: creates a bounded sector-aware search plan and stays truthful on zero evidence`, async () => {
       const tools = new SearchCaptureTools();
@@ -155,7 +157,7 @@ describe("Hunter Chunk 1-2 multi-brand POC", () => {
     });
   }
 
-  it("keeps materially different Brand sectors isolated from each other's source policy", async () => {
+  it("keeps materially different Brand sectors isolated and blocks irrelevant tech defaults", async () => {
     const sourceSets = new Map<string, string>();
 
     for (const testCase of cases) {
@@ -174,7 +176,9 @@ describe("Hunter Chunk 1-2 multi-brand POC", () => {
     }
 
     expect(sourceSets.get("brand-kairo")).not.toBe(sourceSets.get("brand-noorpath"));
-    expect(sourceSets.get("brand-noorpath")).not.toContain("github");
-    expect(sourceSets.get("brand-noorpath")).not.toContain("hacker-news");
+    for (const brandId of ["brand-noorpath", "brand-moto", "brand-upsc", "brand-restaurant"]) {
+      expect(sourceSets.get(brandId)).not.toContain("github");
+      expect(sourceSets.get(brandId)).not.toContain("hacker-news");
+    }
   });
 });
