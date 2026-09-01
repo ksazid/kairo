@@ -175,7 +175,7 @@ export class BrandBrainBootstrapService {
       syntheticFallback = true;
     }
 
-    if (!this.generator || syntheticFallback) {
+    if (!this.generator) {
       const fallback = fallbackProposals(successfulReferences);
       const brain = await this.persistFallback(accountId, brandId, fallback);
       return {
@@ -207,7 +207,7 @@ export class BrandBrainBootstrapService {
         generatorStatus: fallback.length ? "generated" : "unavailable",
         proposedCount: fallback.length,
         skippedConfirmedCount: 0,
-        sourceIds: successfulReferences.map((item) => item.sourceId).filter(Boolean),
+        sourceIds: syntheticFallback ? [] : successfulReferences.map((item) => item.sourceId).filter(Boolean),
       };
     }
     if (!proposals.length) {
@@ -218,7 +218,7 @@ export class BrandBrainBootstrapService {
         generatorStatus: fallback.length ? "generated" : "unavailable",
         proposedCount: fallback.length,
         skippedConfirmedCount: 0,
-        sourceIds: successfulReferences.map((item) => item.sourceId).filter(Boolean),
+        sourceIds: syntheticFallback ? [] : successfulReferences.map((item) => item.sourceId).filter(Boolean),
       };
     }
 
@@ -232,7 +232,7 @@ export class BrandBrainBootstrapService {
       return validateEvidenceProposal(proposal, {
         inspectedSourceIds: inspectedSources,
         maxValueLength: valueLimit,
-        requireSource: true,
+        requireSource: !syntheticFallback,
       });
     }));
     let proposedCount = 0;
@@ -261,7 +261,7 @@ export class BrandBrainBootstrapService {
       generatorStatus: "generated",
       proposedCount,
       skippedConfirmedCount,
-      sourceIds: inspectedSourceIds.filter(Boolean),
+      sourceIds: syntheticFallback ? [] : inspectedSourceIds.filter(Boolean),
     };
   }
 
