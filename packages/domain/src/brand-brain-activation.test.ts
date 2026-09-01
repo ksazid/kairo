@@ -54,7 +54,7 @@ describe("Brand Brain activation", () => {
     ]));
   });
 
-  it("requires review for unsupported AI-only critical inference even when all groups are filled", () => {
+  it("requires review when the only evidence for a required group is AI-only", () => {
     const fields = complete();
     fields[2] = field("audience.primary", "Likely travellers", "inferred", []);
     const result = createBrandBrainActivationSnapshot(fields);
@@ -62,5 +62,14 @@ describe("Brand Brain activation", () => {
     expect(result).toMatchObject({ status: "needs-review", hunterReady: false });
     expect(result.weakFields).toContain("audience.primary");
     expect(result.recommendedSources).toEqual(expect.arrayContaining([expect.objectContaining({ type: "confirm-field", fieldKey: "audience.primary" })]));
+  });
+
+  it("does not block Hunter for an extra weak alias when the same context group is already strong", () => {
+    const fields = complete();
+    fields.push(field("positioning.differentiation", "Likely premium", "inferred", []));
+    fields.push(field("content.related-topics", "Likely beaches", "inferred", []));
+    const result = createBrandBrainActivationSnapshot(fields);
+    expect(result).toMatchObject({ status: "ready-for-hunter", hunterReady: true });
+    expect(result.recommendedSources).toEqual([]);
   });
 });
