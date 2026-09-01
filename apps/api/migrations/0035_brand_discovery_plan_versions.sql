@@ -1,7 +1,7 @@
 create table brand_discovery_plan_versions (
-  id uuid primary key,
-  workspace_id uuid not null references workspaces(id) on delete cascade,
-  brand_id uuid not null references brands(id) on delete cascade,
+  id text primary key,
+  workspace_id text not null references workspaces(id) on delete cascade,
+  brand_id text not null references brands(id) on delete cascade,
   revision integer not null check (revision > 0),
   schema_version text not null,
   plan_version text not null,
