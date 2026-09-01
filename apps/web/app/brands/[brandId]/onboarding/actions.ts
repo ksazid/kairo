@@ -2,10 +2,8 @@
 
 import { redirect } from "next/navigation";
 import type { BrandBrainSection } from "@kairo/contracts";
-import { getBrand, getBrandDnaReadiness } from "../../../../src/lib/kairo-api";
-import { requestRecommendations } from "../../../../src/lib/closed-loop-api";
+import { getBrand, getBrandDnaReadiness, putBrandBrainField } from "../../../../src/lib/kairo-api";
 import { buildBrandBrain } from "../../../../src/lib/guided-brand-brain-api";
-import { putBrandBrainField } from "../../../../src/lib/kairo-api";
 
 export async function confirmOnboardingBrandAction(brandId: string): Promise<void> {
   const brand = await getBrand(brandId);
@@ -16,14 +14,10 @@ export async function confirmOnboardingBrandAction(brandId: string): Promise<voi
     redirect(`/brands/${encodeURIComponent(brand.id)}/onboarding/confirm?notice=${encodeURIComponent("Brand DNA needs one more detail before discovery can start")}`);
   }
 
-  let notice = "Brand ready";
-  try {
-    const run = await requestRecommendations(brand.id);
-    notice = run.opportunityCount > 0 ? "Brand ready. For you is ready." : "Brand ready. Hunter completed its first run.";
-  } catch {
-    notice = "Brand ready. Hunter will retry when recommendations refresh.";
-  }
-
+  // Flow 1B stops at the explicit Ready-for-Hunter handoff. The first Hunter run
+  // is a separate lifecycle step so onboarding never fabricates run history or
+  // activates discovery before its runtime/scheduler gate is approved.
+  const notice = "Brand ready for Discovery";
   redirect(`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}&notice=${encodeURIComponent(notice)}`);
 }
 
