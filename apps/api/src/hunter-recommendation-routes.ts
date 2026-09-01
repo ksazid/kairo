@@ -164,11 +164,13 @@ function discoveryPlanStoreFromEnv(): BrandDiscoveryPlanRepository | undefined {
 function applyDiscoveryPlan(profile: BrandIntelligenceProfile, plan: BrandDiscoveryPlan): BrandIntelligenceProfile {
   const topicNames = unique(plan.topics.map((topic) => topic.name));
   const topicAudiences = unique(plan.topics.map((topic) => topic.audience));
+  const sourceClasses = unique(plan.topics.flatMap((topic) => topic.sourceClasses));
   return {
     ...profile,
     topics: topicNames.length ? topicNames : profile.topics,
     audiences: unique([...topicAudiences, ...profile.audiences]),
     excludedTopics: unique([...plan.excludedTopics, ...profile.excludedTopics]),
+    ...(sourceClasses.length ? { sourceClasses } : profile.sourceClasses?.length ? { sourceClasses: profile.sourceClasses } : {}),
   };
 }
 
