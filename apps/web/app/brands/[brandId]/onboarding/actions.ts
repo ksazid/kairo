@@ -10,6 +10,8 @@ export async function confirmOnboardingBrandAction(brandId: string): Promise<voi
   const brand = await getBrand(brandId);
   if (!brand) redirect("/");
 
+  // The activation read also ensures the versioned Discovery Plan exists for
+  // this exact Brand Intelligence snapshot before onboarding can complete.
   const activation = await getBrandBrainActivation(brandId).catch(() => undefined);
   if (!activation?.hunterReady) {
     const notice = activation?.status === "needs-review"
@@ -18,11 +20,10 @@ export async function confirmOnboardingBrandAction(brandId: string): Promise<voi
     redirect(`/brands/${encodeURIComponent(brand.id)}/onboarding/confirm?notice=${encodeURIComponent(notice)}`);
   }
 
-  // Flow 1B stops at the explicit Ready-for-Hunter handoff. The first Hunter run
-  // is a separate lifecycle step so onboarding never fabricates run history or
-  // activates discovery before its runtime/scheduler gate is approved.
-  const notice = "Brand ready for Discovery";
-  redirect(`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}&notice=${encodeURIComponent(notice)}`);
+  // Flow 1B stops at Ready for Hunter. Handoff enters the approved Kairo v2
+  // surface through its own OIDC login so host-scoped auth cookies are not
+  // assumed to transfer between separate Vercel applications.
+  redirect(kairoV2Handoff(brand.id));
 }
 
 export async function enrichOnboardingBrandAction(brandId: string, formData: FormData): Promise<void> {
@@ -48,6 +49,16 @@ export async function enrichOnboardingBrandAction(brandId: string, formData: For
     redirect(`/brands/${encodeURIComponent(brandId)}/onboarding/confirm?error=${encodeURIComponent(message.slice(0, 180))}`);
   }
   redirect(`/brands/${encodeURIComponent(brandId)}/onboarding/confirm?notice=${encodeURIComponent("Brand DNA updated. Review it once more before discovery.")}`);
+}
+
+function kairoV2Handoff(brandId: string): string {
+  const configured = process.env.KAIRO_UI_V2_URL?.trim() || "https://kairo-ui-v2.vercel.app";
+  const base = new URL(configured);
+  if (base.protocol !== "https:" && base.protocol !== "http:") throw new Error("KAIRO_UI_V2_URL must be HTTP(S)");
+  const returnTo = `/brand?brand=${encodeURIComponent(brandId)}&onboarding=complete`;
+  const login = new URL("/auth/login", base);
+  login.searchParams.set("returnTo", returnTo);
+  return login.toString();
 }
 
 function sectionFor(fieldKey: string): BrandBrainSection | undefined {
