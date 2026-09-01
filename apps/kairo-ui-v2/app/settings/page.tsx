@@ -10,7 +10,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
   const data = await getSettingsData(params.brand);
 
   return <KairoShell
-    active="Brand"
+    active="Settings"
     authenticated={data.authenticated}
     brandId={data.brand?.id}
     brandName={data.brand?.name ?? data.account.displayName}
