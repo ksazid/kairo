@@ -6,7 +6,7 @@ import type {
   KnowledgeSourceDto,
 } from "@kairo/contracts";
 import { DomainValidationError, type KairoRepository } from "./index";
-import { sanitizeBrandEvidenceReference } from "./brand-brain-evidence-sanitizer";
+import { sanitizeBrandEvidenceAtBoundary } from "./brand-brain-evidence-boundary";
 import { validateAndDeduplicateBrandBrainProposals } from "./brand-brain-write-gate";
 
 export interface PublicBrandReference {
@@ -159,7 +159,7 @@ export class BrandBrainBootstrapService {
     const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
       || fallbackHost === "on.substack.com" || fallbackHost.endsWith(".substack.com");
     if (!successfulReferences.length && fallbackUrl) {
-      const fallbackReference = sanitizeBrandEvidenceReference({
+      const fallbackReference = sanitizeBrandEvidenceAtBoundary({
         url: fallbackUrl,
         title: brand.name,
         excerpt: `Public reference for ${brand.name}. Detailed source evidence is unavailable until the source is connected or refreshed.`,
@@ -301,7 +301,7 @@ export class BrandBrainBootstrapService {
       .flatMap((item) => {
         try {
           const internalUrl = `kairo-knowledge://${encodeURIComponent(item.sourceId)}`;
-          const sanitized = sanitizeBrandEvidenceReference({
+          const sanitized = sanitizeBrandEvidenceAtBoundary({
             url: item.sourceUrl ?? `https://kairo.invalid/knowledge/${encodeURIComponent(item.sourceId)}`,
             ...(item.title ? { title: item.title } : {}),
             excerpt: item.excerpt,
@@ -331,7 +331,7 @@ export class BrandBrainBootstrapService {
 
     for (const candidate of unique.slice(0, 3)) {
       try {
-        const reference = sanitizeBrandEvidenceReference(await this.referenceReader.read(candidate));
+        const reference = sanitizeBrandEvidenceAtBoundary(await this.referenceReader.read(candidate));
         const source = await this.ensureSource(accountId, brandId, reference, existingSources);
         result.push({ ...reference, sourceId: source.id });
       } catch {
