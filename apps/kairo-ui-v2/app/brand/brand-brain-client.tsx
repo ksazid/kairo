@@ -284,6 +284,12 @@ function DiscoveryPanel({ runtime, topics, brandId, onEditTopic, saving }: { run
       <footer><ShieldCheck aria-hidden="true"/><span><strong>Excluded topics</strong><small>{excluded.length ? excluded.join(", ") : "No explicit exclusions discovered yet."}</small></span></footer>
     </section>
     <aside className="brand-discovery-rail">
+      <section className="brand-hunter-schedule">
+        <header><span><CalendarClock aria-hidden="true"/>Hunter schedule</span><button type="button" disabled title="Automatic Hunter scheduling is reserved for the production scheduling slice."><Pencil aria-hidden="true"/>Unavailable</button></header>
+        <dl><div><dt>Frequency</dt><dd>Not scheduled</dd></div><div><dt>Run time</dt><dd>—</dd></div><div><dt>Timezone</dt><dd>—</dd></div><div><dt>Depth</dt><dd>Per manual run</dd></div></dl>
+        <p>Automatic background scheduling is not enabled in this release.</p>
+        <button className="brand-schedule-toggle" type="button" disabled>Scheduling unavailable</button>
+      </section>
       <section><span><Brain aria-hidden="true"/>Brand Intelligence</span><ScoreBar label="Overall intelligence" value={runtime?.readiness.brandIntelligenceScore ?? 0}/><ScoreBar label="Evidence coverage" value={runtime?.readiness.evidenceCoverage ?? 0}/><ScoreBar label="Confirmed" value={confirmationScore(runtime)}/></section>
       <section className="brand-discovery-status"><span><SearchCheck aria-hidden="true"/>Discovery status</span><strong>{runtime?.hunterReady ? "Ready" : "Not ready"}</strong><p>{runtime?.hunterReady ? "The persisted plan has enough Brand context for the first Hunter run." : "Confirm or enrich the required Brand context before Hunter relies on this plan."}</p></section>
       <section><span><TrendingUp aria-hidden="true"/>Previous run</span>{runtime?.discoveryRun ? <dl><div><dt>Valuable discoveries</dt><dd>{runtime.discoveryRun.valuableDiscoveries}</dd></div><div><dt>Weak signals filtered</dt><dd>{runtime.discoveryRun.weakSignalsFiltered}</dd></div></dl> : <p>No Hunter run has been recorded yet.</p>}<Link href={`/discover${brandId ? `?brand=${encodeURIComponent(brandId)}` : ""}`}>View Discover <ArrowRight aria-hidden="true"/></Link></section>
