@@ -1,7 +1,11 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { BuildBrandBrainRequest } from "@kairo/contracts";
 import { KairoService, type KairoRepository } from "@kairo/domain";
-import { BrandBrainBootstrapService, type BrandBrainProposalGenerator } from "@kairo/domain/brand-brain-bootstrap";
+import {
+  BrandBrainBootstrapService,
+  type BrandBrainProposalGenerator,
+  type PublicBrandReferenceReader,
+} from "@kairo/domain/brand-brain-bootstrap";
 import { SanitizingPublicBrandReferenceReader } from "@kairo/domain/brand-brain-sanitizing-reader";
 import type { IdentityVerifier } from "./auth";
 import { SourceIntelligenceBrandReferenceReader } from "./source-intelligence";
@@ -10,12 +14,13 @@ export function registerGuidedBrandBrainRoutes(app: FastifyInstance, options: {
   store: KairoRepository;
   identityVerifier: IdentityVerifier;
   generator?: BrandBrainProposalGenerator;
+  referenceReader?: PublicBrandReferenceReader;
 }) {
   const core = new KairoService(options.store);
   const service = new BrandBrainBootstrapService(
     options.store,
     options.generator,
-    new SanitizingPublicBrandReferenceReader(new SourceIntelligenceBrandReferenceReader()),
+    new SanitizingPublicBrandReferenceReader(options.referenceReader ?? new SourceIntelligenceBrandReferenceReader()),
   );
 
   app.post<{ Params: { brandId: string }; Body: BuildBrandBrainRequest }>(
