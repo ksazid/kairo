@@ -1,3 +1,4 @@
+import { Pool } from "pg";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { evaluateBrandDnaReadiness, KairoService, type KairoRepository } from "@kairo/domain";
 import { createBrandBrainActivationSnapshot } from "@kairo/domain/brand-brain-activation";
@@ -9,6 +10,9 @@ import {
 } from "@kairo/domain/brand-discovery-plan";
 import { projectBrandIntelligenceSnapshot } from "@kairo/domain/brand-intelligence-snapshot";
 import type { IdentityVerifier } from "./auth";
+import { PgBrandDiscoveryPlanRepository } from "./brand-discovery-plan-postgres";
+
+let runtimePlanPool: Pool | undefined;
 
 export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
   store: KairoRepository;
@@ -16,7 +20,8 @@ export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
   discoveryPlanStore?: BrandDiscoveryPlanRepository;
 }): void {
   const core = new KairoService(options.store);
-  const plans = options.discoveryPlanStore ? new BrandDiscoveryPlanService(options.discoveryPlanStore) : undefined;
+  const planStore = options.discoveryPlanStore ?? discoveryPlanStoreFromEnv();
+  const plans = planStore ? new BrandDiscoveryPlanService(planStore) : undefined;
 
   app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/brain/readiness", async (request, reply) => {
     const account = await authenticate(request, reply, core, options.identityVerifier);
@@ -58,11 +63,17 @@ export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
       async (request, reply) => {
         const account = await authenticate(request, reply, core, options.identityVerifier);
         if (!account) return;
-        const input = request.body ?? ({} as UpdateBrandDiscoveryTopicInput);
-        return plans.updateTopic(account.id, request.params.brandId, request.params.topicId, input);
+        return plans.updateTopic(account.id, request.params.brandId, request.params.topicId, request.body ?? ({} as UpdateBrandDiscoveryTopicInput));
       },
     );
   }
+}
+
+function discoveryPlanStoreFromEnv(): BrandDiscoveryPlanRepository | undefined {
+  const connectionString = process.env.DATABASE_URL?.trim();
+  if (!connectionString) return undefined;
+  runtimePlanPool ??= new Pool({ connectionString });
+  return new PgBrandDiscoveryPlanRepository(runtimePlanPool);
 }
 
 async function activationContext(core: KairoService, accountId: string, brandId: string) {
