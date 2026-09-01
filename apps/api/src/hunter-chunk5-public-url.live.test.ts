@@ -9,7 +9,7 @@ import type {
   ToolRequest,
 } from "@kairo/agent-contracts";
 import type { ExternalIdentity } from "@kairo/contracts";
-import type { OpportunityCandidateInput } from "@kairo/domain/discovery-service";
+import { DiscoveryService } from "@kairo/domain/discovery-service";
 import { SanitizingPublicBrandReferenceReader } from "@kairo/domain/brand-brain-sanitizing-reader";
 import type { PublicBrandReference } from "@kairo/domain/brand-brain-bootstrap";
 import type {
@@ -27,6 +27,7 @@ import { registerGuidedBrandBrainRoutes } from "./guided-brand-brain-routes";
 import { registerHunterRecommendationRoutes } from "./hunter-recommendation-routes";
 import { PublicBrandReferenceHttpReader } from "./public-brand-reference";
 import { createSourceIntelligenceRouter, SourceIntelligenceBrandReferenceReader } from "./source-intelligence";
+import { MemoryDiscoveryRepository } from "./discovery-store";
 import { MemoryKairoRepository } from "./store";
 
 const CERTIFICATION = process.env.KAIRO_CHUNK5_LIVE_CERTIFICATION === "1";
@@ -217,20 +218,17 @@ describe.skipIf(!CERTIFICATION)("Hunter Chunk 5 captured public-URL certificatio
       publicSourceUrl: PUBLIC_URL,
     });
 
-    const opportunities: OpportunityCandidateInput[] = [];
-    const orchestrator = new HunterOrchestrator(toolsFor(reference), deterministicRuntime(), {
-      async recordCandidate(_accountId, _brandId, input) {
-        opportunities.push(input);
-        return { signal: {} as never, opportunity: { id: `chunk5-opportunity-${opportunities.length}` } as never };
-      },
-    });
+    const discoveryStore = new MemoryDiscoveryRepository(store);
+    const discovery = new DiscoveryService(discoveryStore);
+    const orchestrator = new HunterOrchestrator(toolsFor(reference), deterministicRuntime(), discovery);
     const capturedInputs: HunterRunInput[] = [];
     const runs = new MemoryHunterRunStore();
-    const app = buildApp({ store, identityVerifier: verifier });
+    const app = buildApp({ store, identityVerifier: verifier, discoveryStore });
     registerGuidedBrandBrainRoutes(app, { store, identityVerifier: verifier, referenceReader });
     registerHunterRecommendationRoutes(app, {
       store,
       identityVerifier: verifier,
+      discovery,
       hunterRunStore: runs,
       runner: { async runForAuthorizedBrand(input) { capturedInputs.push(input); return orchestrator.runForAuthorizedBrand(input); } },
     });
@@ -245,12 +243,23 @@ describe.skipIf(!CERTIFICATION)("Hunter Chunk 5 captured public-URL certificatio
     expect(beforeRun.json()).toMatchObject({ hunterReady: true, schedule: null, discoveryRun: null });
 
     const manualRun = await app.inject({ method: "POST", url: `/api/v1/brands/${created.brand.id}/recommendations`, headers: AUTH });
-    expect(manualRun.statusCode).toBe(200);
+    expect(manualRun.statusCode, manualRun.body).toBe(200);
     expect(manualRun.json()).toMatchObject({ evidenceCount: 1, candidateCount: 1, opportunityCount: 1 });
     expect(runs.records).toHaveLength(1);
     expect(runs.records[0]).toMatchObject({ trigger: "manual", status: "succeeded", opportunityCount: 1 });
     expect(runs.records.some((run) => run.trigger === "scheduled")).toBe(false);
     expect(capturedInputs[0]?.brand.contextVersion).toBe(`${runs.records[0]?.snapshotVersion}|${runs.records[0]?.planVersion}`);
+
+    const listedOpportunities = await app.inject({ method: "GET", url: `/api/v1/brands/${created.brand.id}/opportunities`, headers: AUTH });
+    expect(listedOpportunities.statusCode).toBe(200);
+    expect(listedOpportunities.json()).toEqual([
+      expect.objectContaining({
+        brandId: created.brand.id,
+        status: "new",
+        title: "What the Brand offers: a useful angle from Smart Mobility Malta",
+        details: expect.objectContaining({ recommendedFormat: "carousel", recommendedChannel: "instagram", confidence: 0.92 }),
+      }),
+    ]);
 
     const afterRun = await app.inject({ method: "GET", url: `/api/v1/brands/${created.brand.id}/brain/activation`, headers: AUTH });
     expect(afterRun.statusCode).toBe(200);
@@ -284,7 +293,7 @@ describe.skipIf(!CERTIFICATION)("Hunter Chunk 5 captured public-URL certificatio
         cronActivated: false,
         run: activation.discoveryRun,
         extraction: manualRun.json(),
-        opportunities,
+        opportunities: listedOpportunities.json(),
       },
     };
     console.log(`KAIRO_CHUNK5_PUBLIC_URL_RESULT=${JSON.stringify(result)}`);

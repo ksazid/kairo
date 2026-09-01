@@ -25,10 +25,11 @@ class FakeTools implements ToolGatewayPort {
   constructor(
     private readonly output: DiscoveryEvidence[] = evidence,
     private readonly handler?: (request: ToolRequest) => DiscoveryEvidence[] | Promise<DiscoveryEvidence[]>,
+    private readonly documentBody: string = evidence[0]!.summary!,
   ) {}
   async invoke<TOutput>(request: ToolRequest): Promise<ToolResult<TOutput>> {
     this.requests.push(request);
-    if (request.capability === "public-content-fetch") return { output: { document: { canonicalUrl: String(request.input.url), platform: "web", sourceType: "article", title: evidence[0]!.title, body: evidence[0]!.summary, retrievedAt: evidence[0]!.retrievedAt, contentHash: "sha256:" + "a".repeat(64), provider: "website", providerVersion: "v1", parserVersion: "v1", provenance: [{ provider: "website", sourceUrl: String(request.input.url), retrievedAt: evidence[0]!.retrievedAt }], confidence: 1, extractionWarnings: [], trust: "untrusted-evidence" } } as TOutput, provenance: [] };
+    if (request.capability === "public-content-fetch") return { output: { document: { canonicalUrl: String(request.input.url), platform: "web", sourceType: "article", title: evidence[0]!.title, body: this.documentBody, retrievedAt: evidence[0]!.retrievedAt, contentHash: "sha256:" + "a".repeat(64), provider: "website", providerVersion: "v1", parserVersion: "v1", provenance: [{ provider: "website", sourceUrl: String(request.input.url), retrievedAt: evidence[0]!.retrievedAt }], confidence: 1, extractionWarnings: [], trust: "untrusted-evidence" } } as TOutput, provenance: [] };
     const output = this.handler ? await this.handler(request) : this.output;
     return { output: output as TOutput, provenance: [] };
   }
@@ -107,6 +108,24 @@ describe("Hunter orchestration", () => {
     expect(sink.records[0]).toMatchObject({ details: { topic: "Persistent agents change SaaS architecture", proposedAngle: "Explain multi-tenant architecture tradeoffs", intelligenceVersion: 4 } });
     expect(runtime.lastRequest?.scope).toEqual({ visibility: "brand-private", workspaceId: "workspace-1", brandId: "brand-1" });
     expect(runtime.lastRequest?.budget.maxToolCalls).toBe(0);
+  });
+
+  it("bounds enriched evidence summaries before persistence", async () => {
+    const runtime = new FakeRuntime({ candidates: [{
+      sourceUrl: evidence[0]!.sourceUrl,
+      title: "Persistent agents change SaaS architecture",
+      rationale: "High audience fit",
+      whyNow: "Runtime behavior is changing now",
+      developmentDirection: "Explain multi-tenant architecture tradeoffs",
+      scores,
+    }] });
+    const sink = new FakeSink();
+    const hunter = new HunterOrchestrator(new FakeTools(evidence, undefined, "x".repeat(3_000)), runtime, sink as never);
+
+    await hunter.runForAuthorizedBrand({ accountId: "account-1", brand, query: "AI agents" });
+
+    const record = sink.records[0] as { signal: { summary: string } };
+    expect(record.signal.summary).toHaveLength(2_000);
   });
 
   it("executes materially different multi-source plans for AI and Umrah through the same Hunter", async () => {

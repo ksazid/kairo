@@ -30,5 +30,6 @@ When production scheduling is separately approved:
 - The Hunter Run Record is terminal and has `trigger = manual`.
 - Activation continues to expose `schedule: null`.
 - A captured public-page certification result is emitted by `hunter-chunk5-public-url.live.test.ts`, allowing the real public content to be replayed deterministically when CI cannot resolve external DNS.
+- Discover's `Refresh discovery` action invokes the manual Hunter endpoint, reloads persisted opportunities and renders the returned opportunity in the approved table/grid UI.
 
 Production cron implementation, certification, release and enablement require a new explicit approval and exact-SHA gate.

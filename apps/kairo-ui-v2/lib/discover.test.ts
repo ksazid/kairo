@@ -10,6 +10,30 @@ describe("Discover presentation", () => {
     expect(cards.every((card) => Boolean(card.image) && Boolean(card.opportunity))).toBe(true);
   });
 
+  it("projects a persisted Hunter API opportunity into the Discover UI", () => {
+    const cards = toDiscoverCards([{
+      id: "hunter-opportunity-1",
+      title: "What the Brand offers: a useful angle from Smart Mobility Malta",
+      rationale: "The public evidence supports this topic for rental customers.",
+      whyNow: "The Brand has completed onboarding.",
+      developmentDirection: "Explain the rental offer clearly.",
+      status: "new",
+      scores: { relevance: .83, audienceFit: .95, overall: .87 },
+      details: { recommendedFormat: "carousel", recommendedChannel: "instagram", targetAudience: "Vehicle rental customers", confidence: .92 },
+    }]);
+
+    expect(cards).toEqual([
+      expect.objectContaining({
+        id: "hunter-opportunity-1",
+        title: "What the Brand offers: a useful angle from Smart Mobility Malta",
+        format: "carousel",
+        formatLabel: "Carousel",
+        channel: "Instagram",
+        confidence: 87,
+      }),
+    ]);
+  });
+
   it("filters by search, state, format and channel", () => {
     const cards = toDiscoverCards(discoverFallback);
     expect(filterDiscoverCards(cards, { query: "airport", filter: "all", format: "all", channel: "all" }).map((card) => card.id)).toEqual(["six"]);

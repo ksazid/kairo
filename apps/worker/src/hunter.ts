@@ -206,7 +206,7 @@ export class HunterOrchestrator {
       const record: OpportunityCandidateInput = {
         signal: {
           title: source.title,
-          ...(source.summary ? { summary: source.summary } : {}),
+          ...(source.summary ? { summary: source.summary.slice(0, 2_000) } : {}),
           sourceUrl: source.sourceUrl,
           platform: source.platform,
           ...(source.publisher ? { publisher: source.publisher } : {}),
