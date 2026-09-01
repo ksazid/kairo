@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import {
   BarChart3,
   Bell,
+  BrainCircuit,
   CalendarDays,
   ChevronDown,
   Compass,
@@ -11,11 +12,10 @@ import {
   FileText,
   Home as HomeIcon,
   Megaphone,
-  Settings2,
   Sparkles,
 } from "lucide-react";
 
-type ActiveDestination = "Home" | "Discover" | "Content" | "Campaigns" | "Calendar" | "Insights" | "Brand";
+type ActiveDestination = "Home" | "Discover" | "Content" | "Campaigns" | "Calendar" | "Insights" | "Brain";
 
 export function KairoShell({
   active,
@@ -50,7 +50,7 @@ export function KairoShell({
     { label: "Campaigns" as const, Icon: Megaphone, href: brandId ? `/campaigns?brand=${encodeURIComponent(brandId)}` : "/campaigns" },
     { label: "Calendar" as const, Icon: CalendarDays, href: brandId ? `/calendar?brand=${encodeURIComponent(brandId)}` : "/calendar" },
     { label: "Insights" as const, Icon: BarChart3, href: brandId ? `/insights?brand=${encodeURIComponent(brandId)}` : "/insights" },
-    { label: "Brand" as const, Icon: Settings2, href: brandId ? `/brand?brand=${encodeURIComponent(brandId)}` : "/brand" },
+    { label: "Brain" as const, Icon: BrainCircuit, href: brandId ? `/brand?brand=${encodeURIComponent(brandId)}` : "/brand" },
   ];
 
   return <div className="app-shell">
