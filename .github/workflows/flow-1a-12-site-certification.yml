@@ -8,6 +8,7 @@ on:
     paths:
       - "apps/api/src/flow-1a-12-site-certification.live.test.ts"
       - "apps/api/src/public-brand-reference.ts"
+      - "apps/api/src/public-brand-reference.test.ts"
       - "apps/api/src/source-intelligence.ts"
       - "apps/api/src/source-adapters.ts"
       - "apps/api/src/social-source-adapters.ts"
@@ -22,8 +23,8 @@ env:
   FLOW_1A_LIVE_CERTIFICATION: "1"
   BRAND_ONBOARDING_MAX_RECENT_ITEMS: "1"
   BRAND_ONBOARDING_MAX_DEEP_ITEMS: "1"
-  # Match the bounded production reader default; the previous 30 KB override
-  # rejected valid text-heavy homepages before sanitization could run.
+  # Match the bounded production reader default. Oversized textual responses
+  # are now safely capped by the reader instead of discarding all evidence.
   BRAND_ONBOARDING_MAX_BYTES: "2000000"
 
 jobs:
