@@ -3,9 +3,12 @@ import type { BrandBrainField, DiscoveryTopic } from "./brand-brain";
 
 export interface BrandDiscoveryPlanData {
   schemaVersion: "1";
+  workspaceId: string;
+  brandId: string;
+  revision: number;
   planVersion: string;
   snapshotVersion: string;
-  state: "initial";
+  state: "initial" | "customized";
   topics: Array<{ id: string; name: string; priority: "High" | "Medium"; audience: string; entities: string[]; sourceClasses: string[] }>;
   excludedTopics: string[];
   updatedAt: string | null;
@@ -25,6 +28,7 @@ export interface BrandBrainRuntimeData extends BrandBrainActivationInput {
     performanceMemory: Array<{ learningId: string; statement: string; interpretation: string; confidence: number; decidedAt: string }>;
   };
   discoveryPlan?: BrandDiscoveryPlanData;
+  discoveryPlanCurrent?: boolean;
   discoveryRun?: BrandDiscoveryRunData | null;
   schedule?: { nextRunAt: string } | null;
 }
