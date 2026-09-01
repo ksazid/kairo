@@ -1,5 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build --workspace @kairo/ui-v2",
+  "outputDirectory": "apps/kairo-ui-v2/.next",
   "git": {
     "deploymentEnabled": true
   }
