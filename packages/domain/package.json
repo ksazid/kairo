@@ -11,6 +11,7 @@
     "./brand-brain-sanitizing-reader": "./src/brand-brain-sanitizing-reader.ts",
     "./brand-dna-readiness": "./src/brand-dna-readiness.ts",
     "./brand-intelligence": "./src/brand-intelligence.ts",
+    "./brand-intelligence-snapshot": "./src/brand-intelligence-snapshot.ts",
     "./discovery": "./src/discovery.ts",
     "./discovery-service": "./src/discovery-service.ts",
     "./source-policy": "./src/source-policy.ts",
