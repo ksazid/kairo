@@ -37,6 +37,7 @@ export interface UpdateBrandDiscoveryTopicInput {
   name?: string;
   audience?: string;
   entities?: string[];
+  sourceClasses?: string[];
 }
 
 export class BrandDiscoveryPlanService {
@@ -67,6 +68,7 @@ export class BrandDiscoveryPlanService {
       ...(input.name !== undefined ? { name: requiredText(input.name, "topic name", 180) } : {}),
       ...(input.audience !== undefined ? { audience: requiredText(input.audience, "target audience", 240) } : {}),
       ...(input.entities !== undefined ? { entities: normalizeEntities(input.entities) } : {}),
+      ...(input.sourceClasses !== undefined ? { sourceClasses: normalizeSourceClasses(input.sourceClasses) } : {}),
     };
     const topics = current.topics.map((item, itemIndex) => itemIndex === index ? next : item);
     const revision = current.revision + 1;
@@ -151,6 +153,11 @@ function normalizeEntities(values: unknown): string[] {
   const normalized = unique(values.map((value) => requiredText(value, "entity", 180))).slice(0, 12);
   if (!normalized.length) throw new DomainValidationError("at least one search entity is required");
   return normalized;
+}
+
+function normalizeSourceClasses(values: unknown): string[] {
+  if (!Array.isArray(values)) throw new DomainValidationError("sourceClasses must be a list");
+  return unique(values.map((value) => requiredText(value, "source class", 120))).slice(0, 20);
 }
 
 function sourceClasses(channels: string[]): string[] {
