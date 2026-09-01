@@ -63,10 +63,10 @@
 .actionCard header svg { width: 18px; color: var(--violet-2); }
 .actionCard h2, .evidenceCard h2 { margin: 0; font-size: 14px; }
 .recommendations { display: grid; gap: 7px; margin-bottom: 14px; }
-.recommendations button { text-align: left; border: 1px solid #2d3949; border-radius: 9px; background: #0b121b; padding: 10px; color: var(--text); display: grid; gap: 2px; }
-.recommendations button:not(:disabled) { cursor: pointer; }
-.recommendations button:not(:disabled):hover { border-color: #5c4b91; }
-.recommendations button:disabled { cursor: default; opacity: .9; }
+.recommendations button, .recommendationNote { text-align: left; border: 1px solid #2d3949; border-radius: 9px; background: #0b121b; padding: 10px; color: var(--text); display: grid; gap: 2px; }
+.recommendations button { cursor: pointer; }
+.recommendations button:hover { border-color: #5c4b91; }
+.recommendationNote { border-style: dashed; }
 .recommendations strong { font-size: 11px; }
 .recommendations small { color: var(--muted); font-size: 10px; line-height: 1.35; }
 .clearState { margin: 0 0 13px; color: var(--lime); display: flex; align-items: center; gap: 7px; font-size: 11px; }
