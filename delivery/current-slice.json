@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Complete Kairo V2 Product Flow",
   "status": "active",
-  "lifecycle": "certification",
+  "lifecycle": "certified",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -104,21 +104,21 @@
     },
     {
       "type": "certification",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-107@1.7",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Awaiting an exact Brand Brain v2 implementation candidate and verification evidence."
+      "commitSha": "f0f87f9415d28eceaeb13961bcf7560fd31978f0",
+      "by": "Sazid Khan",
+      "at": "2026-09-01T04:08:33Z",
+      "rationale": "Product Owner approved certification of the exact VS-107@1.7 Brand Brain candidate after CI, Security, Product Intake, runtime verification, UI tests and deployed preview browser QA passed."
     },
     {
       "type": "release",
-      "status": "pending",
+      "status": "approved",
       "version": "VS-107@1.7",
-      "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "Awaiting exact-SHA certification and separate release approval."
+      "commitSha": "f0f87f9415d28eceaeb13961bcf7560fd31978f0",
+      "by": "Sazid Khan",
+      "at": "2026-09-01T04:08:33Z",
+      "rationale": "Product Owner explicitly instructed merging PR #261 after exact-SHA certification; production deployment remains manual."
     },
     {
       "type": "production-enable",
@@ -136,18 +136,22 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 0,
+    "certification": 100,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "stale",
-    "commitSha": null,
+    "status": "passed",
+    "commitSha": "f0f87f9415d28eceaeb13961bcf7560fd31978f0",
     "evidence": [
       "VS-107@1.6 remains certified and released through PR #256; that evidence does not certify the new VS-107@1.7 Brand Brain changes.",
       "VS-107@1.7 rebased candidate: 9 Kairo UI v2 test files / 37 tests passed, TypeScript passed, Next.js production build passed and repository preflight passed.",
       "Browser QA passed all five tabs, Brand DNA and Discovery Intelligence Save/Cancel flows, Refresh Discovery, responsive no-overflow checks and application-console checks.",
-      "Post-fix mockup comparison passed for Overview, Brand DNA and Discovery Intelligence on Vercel preview dpl_DZ9Z9uLpdiV8bkJib5Apjr9uwdtR."
+      "Post-fix mockup comparison passed for Overview, Brand DNA and Discovery Intelligence on Vercel preview dpl_DZ9Z9uLpdiV8bkJib5Apjr9uwdtR.",
+      "GitHub Actions CI run 33460565978 passed.",
+      "GitHub Actions Security baseline run 33460566141 passed.",
+      "GitHub Actions Product Intake run 33460565976 passed.",
+      "Product Owner approved exact candidate f0f87f9415d28eceaeb13961bcf7560fd31978f0 and instructed merge on 2026-09-01."
     ]
   },
   "release": {
