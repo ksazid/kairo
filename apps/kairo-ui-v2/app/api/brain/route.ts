@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { addBrandBrainSource, saveBrandBrainField } from "../../../lib/brand-brain-api";
+import { addBrandBrainSource, saveBrandBrainField, saveBrandDiscoveryTopic } from "../../../lib/brand-brain-api";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
@@ -25,6 +25,19 @@ export async function POST(request: Request) {
       return NextResponse.json(activation);
     }
 
+    if (action === "edit-topic") {
+      const topicId = text(body?.topicId, 100);
+      const name = text(body?.name, 180);
+      const audience = text(body?.audience, 240);
+      const expectedRevision = positiveInteger(body?.expectedRevision);
+      const entities = stringList(body?.entities, 12, 180);
+      if (!topicId || !name || !audience || !expectedRevision || !entities.length) {
+        return NextResponse.json({ error: "Topic, audience, search entities and current plan revision are required." }, { status: 400 });
+      }
+      const activation = await saveBrandDiscoveryTopic({ brandId, topicId, expectedRevision, name, audience, entities });
+      return NextResponse.json(activation);
+    }
+
     return NextResponse.json({ error: "Unsupported Brand Brain action." }, { status: 400 });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Kairo could not update Brand Brain." }, { status: 400 });
@@ -37,6 +50,21 @@ function text(value: unknown, max: number): string {
 
 function positiveInteger(value: unknown): number | undefined {
   return Number.isInteger(value) && (value as number) > 0 ? value as number : undefined;
+}
+
+function stringList(value: unknown, maxItems: number, maxLength: number): string[] {
+  if (!Array.isArray(value)) return [];
+  const output: string[] = [];
+  const seen = new Set<string>();
+  for (const item of value) {
+    const normalized = text(item, maxLength);
+    const key = normalized.toLowerCase();
+    if (!normalized || seen.has(key)) continue;
+    seen.add(key);
+    output.push(normalized);
+    if (output.length >= maxItems) break;
+  }
+  return output;
 }
 
 function publicHttpUrl(value: unknown): string | undefined {
