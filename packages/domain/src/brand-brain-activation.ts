@@ -49,6 +49,13 @@ const GROUP_KEYS: Record<BrandDnaReadinessGap, readonly string[]> = {
   geography: ["identity.geography"],
 };
 
+const CANONICAL_CONFIRM_FIELD: Partial<Record<BrandDnaReadinessGap, string>> = {
+  audience: "audience.primary",
+  positioning: "positioning.value-proposition",
+  topics: "content.pillars",
+  boundaries: "boundaries.excluded-topics",
+};
+
 const CRITICAL_KEYS = new Set(Object.values(GROUP_KEYS).flat());
 
 export function createBrandBrainActivationSnapshot(
@@ -132,7 +139,7 @@ function recommendations(
     } else if (gap === "geography") {
       output.push({ gap, type: "public-link", label: "Add location source", reason: "A public profile or website can verify the Brand's service geography." });
     } else {
-      const fieldKey = GROUP_KEYS[gap][0];
+      const fieldKey = CANONICAL_CONFIRM_FIELD[gap] ?? GROUP_KEYS[gap][0];
       output.push({ gap, type: "confirm-field", ...(fieldKey ? { fieldKey } : {}), label: `Confirm ${gap}`, reason: `Owner confirmation can resolve the missing ${gap} context.` });
     }
   }
