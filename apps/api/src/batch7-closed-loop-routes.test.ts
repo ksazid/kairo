@@ -47,6 +47,12 @@ async function setup() {
   const verifier = new Verifier();
   const account = await store.resolveAccount({ provider: "test", subject: "alice" });
   const created = await store.createWorkspaceWithBrand(account.id, { workspaceName: "Studio", brandName: "Kairo" });
+  await store.putConfirmedBrandBrainField(account.id, created.brand.id, "identity.description", { section: "identity", value: "AI-assisted content intelligence for modern brands" });
+  await store.putConfirmedBrandBrainField(account.id, created.brand.id, "identity.products-services", { section: "identity", value: "Brand intelligence and content discovery" });
+  await store.putConfirmedBrandBrainField(account.id, created.brand.id, "audience.primary", { section: "audience", value: "Technical founders and marketing teams" });
+  await store.putConfirmedBrandBrainField(account.id, created.brand.id, "positioning.value-proposition", { section: "positioning", value: "Turn trusted Brand context into relevant content opportunities" });
+  await store.putConfirmedBrandBrainField(account.id, created.brand.id, "content.pillars", { section: "content-strategy", value: "AI agents, software architecture, content intelligence" });
+  await store.putConfirmedBrandBrainField(account.id, created.brand.id, "boundaries.excluded-topics", { section: "boundaries", value: "Unverified claims" });
   await store.putConfirmedBrandBrainField(account.id, created.brand.id, "goal", { section: "goals", value: "Build authority" });
   const captured: HunterRunInput[] = [];
   const runner: HunterRecommendationRunner = {
