@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { evaluateBrandDnaReadiness, KairoService, type KairoRepository } from "@kairo/domain";
 import { createBrandBrainActivationSnapshot } from "@kairo/domain/brand-brain-activation";
+import { projectBrandIntelligenceSnapshot } from "@kairo/domain/brand-intelligence-snapshot";
 import type { IdentityVerifier } from "./auth";
 
 export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: { store: KairoRepository; identityVerifier: IdentityVerifier }): void {
@@ -16,14 +17,18 @@ export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
   app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/brain/activation", async (request, reply) => {
     const account = await authenticate(request, reply, core, options.identityVerifier);
     if (!account) return;
-    const [brain, sources] = await Promise.all([
+    const [brand, brain, sources] = await Promise.all([
+      core.getBrand(account.id, request.params.brandId),
       core.listBrandBrain(account.id, request.params.brandId),
       core.listKnowledgeSources(account.id, request.params.brandId),
     ]);
+    const activation = createBrandBrainActivationSnapshot(brain, sources);
+    const intelligenceSnapshot = projectBrandIntelligenceSnapshot({ brand, fields: brain, sources, activation });
     return {
       brain,
       sources,
-      ...createBrandBrainActivationSnapshot(brain, sources),
+      ...activation,
+      intelligenceSnapshot,
     };
   });
 }
