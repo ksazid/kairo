@@ -131,7 +131,7 @@ export function buildBrandBrainPageViewModel(input: BrandBrainActivationInput): 
           originLabel: originLabel(origin),
           confidence,
           confidenceLabel: confidenceLabel(confidence),
-          needsReview: activation?.weak ?? confidence !== "high",
+          needsReview: activation?.weak ?? (confidence !== "high"),
         };
       }),
   }));
@@ -172,7 +172,7 @@ function enrichField(
     originLabel: origin === "unknown" ? "Unknown" : originLabel(origin),
     confidence,
     confidenceLabel: confidence === "unknown" ? "Unknown" : confidenceLabel(confidence),
-    needsReview: activation?.weak ?? field.state === "unknown" || confidence !== "high",
+    needsReview: activation?.weak ?? (field.state === "unknown" || confidence !== "high"),
   };
 }
 
