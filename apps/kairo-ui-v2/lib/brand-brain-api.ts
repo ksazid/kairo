@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { getHomeData } from "./api";
-import type { BrandBrainActivationInput } from "./brand-brain-view-model";
+import type { BrandBrainRuntimeData } from "./brand-brain-runtime";
 
 const apiBase = () => (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
 
@@ -8,7 +8,7 @@ export interface BrandBrainPageData {
   authenticated: boolean;
   brandId?: string;
   brandName: string;
-  activation?: BrandBrainActivationInput;
+  activation?: BrandBrainRuntimeData;
 }
 
 async function accessToken() {
@@ -37,7 +37,7 @@ export async function getBrandBrainData(requestedBrandId?: string): Promise<Bran
   if (!token) return { authenticated: false, brandName: identity.brandName };
   const response = await api(token, `/api/v1/brands/${encodeURIComponent(identity.brandId)}/brain/activation`);
   if (!response.ok) return { authenticated: true, brandId: identity.brandId, brandName: identity.brandName };
-  const activation = await response.json() as BrandBrainActivationInput;
+  const activation = await response.json() as BrandBrainRuntimeData;
   return { authenticated: true, brandId: identity.brandId, brandName: identity.brandName, activation };
 }
 
@@ -47,7 +47,7 @@ export async function saveBrandBrainField(input: {
   section: string;
   value: string;
   expectedVersion?: number;
-}): Promise<BrandBrainActivationInput> {
+}): Promise<BrandBrainRuntimeData> {
   const token = await accessToken();
   if (!token) throw new Error("Sign in to edit Brand Brain.");
   const brand = encodeURIComponent(input.brandId);
@@ -56,10 +56,10 @@ export async function saveBrandBrainField(input: {
     method: "PUT",
     body: JSON.stringify({ section: input.section, value: input.value, ...(input.expectedVersion ? { expectedVersion: input.expectedVersion } : {}) }),
   }), "Kairo could not save this Brand Brain field.");
-  return bodyOrError<BrandBrainActivationInput>(await api(token, `/api/v1/brands/${brand}/brain/activation`), "Kairo could not refresh Brand Brain.");
+  return bodyOrError<BrandBrainRuntimeData>(await api(token, `/api/v1/brands/${brand}/brain/activation`), "Kairo could not refresh Brand Brain.");
 }
 
-export async function addBrandBrainSource(input: { brandId: string; url: string }): Promise<BrandBrainActivationInput> {
+export async function addBrandBrainSource(input: { brandId: string; url: string }): Promise<BrandBrainRuntimeData> {
   const token = await accessToken();
   if (!token) throw new Error("Sign in to add a Brand source.");
   const brand = encodeURIComponent(input.brandId);
@@ -71,5 +71,5 @@ export async function addBrandBrainSource(input: { brandId: string; url: string 
     method: "POST",
     body: JSON.stringify({ publicReferenceUrl: input.url }),
   }), "The source was saved, but Kairo could not recalculate Brand Brain from it.");
-  return bodyOrError<BrandBrainActivationInput>(await api(token, `/api/v1/brands/${brand}/brain/activation`), "Kairo could not refresh Brand Brain.");
+  return bodyOrError<BrandBrainRuntimeData>(await api(token, `/api/v1/brands/${brand}/brain/activation`), "Kairo could not refresh Brand Brain.");
 }
