@@ -213,4 +213,47 @@ The approved reference and the browser-rendered implementation were opened toget
 - At the 1365 × 917 QA viewport the publishing row starts below the first viewport and remains directly beneath the schedule; the 1536 × 1024 reference shows it in-frame.
 - Malta images use the same approved visual direction rather than the exact source photographs; this is accepted P3 polish pending the planned per-section image agent.
 
+Prior surfaces final result: passed
+
+## Brand Brain
+
+Source visual truth:
+
+- Overview: `/workspace/scratch/b3d529b18d8b/generated_images/exec-1ea7d8a5-3b6a-4cc2-bc45-4c20411a6e6c.png` (1488 × 1024)
+- Brand DNA: `/workspace/scratch/b3d529b18d8b/generated_images/exec-46ab6e2e-c550-40a2-9631-d90a6934f642.png` (1488 × 1024)
+- Discovery Intelligence: `/workspace/scratch/b3d529b18d8b/generated_images/exec-8ecedc57-61a9-46e1-a81e-182a8117c021.png` (1488 × 1024)
+
+Implementation screenshot: browser-rendered inline capture from `https://kairo-ui-v2-brand-brain-6tvmqpga4-sazid62-gmailcoms-projects.vercel.app/brand` at 1363 × 936 CSS px, DPR 1. The page measured 1363 × 1011 px with no horizontal overflow.
+
+State: Overview with two review suggestions and Primary audience expanded; Brand DNA with Primary audience editing; Discovery Intelligence with the first topic editor open.
+
+### Evidence and findings
+
+- Fonts and typography: hierarchy, weights, and wrapping follow the approved Kairo shell. Dense table metadata remains intentionally compact; no unreadable or clipped text remains.
+- Spacing and layout rhythm: the desktop shell, two-column Overview, Brand DNA table, Discovery plan and right rail match the approved composition. The corrected Discovery Save/Cancel actions now remain inline.
+- Colors and tokens: the dark navy surfaces, violet action/selection color, lime readiness states, amber review states, borders, and progress tracks matched the approved direction.
+- Image quality and asset fidelity: these screens do not rely on photographic or illustrative assets. Interface icons use the existing Lucide icon family consistently.
+- Copy and content: all creator-facing copy uses `Discovery Intelligence`; no creator-facing `Hunter` label remains.
+- Responsive behavior: a 500 × 848, DPR 1 mobile capture showed safe single-column stacking and no horizontal page overflow. Tab navigation remains horizontally scrollable and the persistent bottom navigation remains available.
+- Accessibility and behavior: semantic tabs, labeled edit controls, focus indicators, live status messages, and progress labels were present. All five tabs opened; Brand DNA and Discovery Intelligence Save/Cancel flows worked; Refresh Discovery completed; no application-origin console errors were observed. Cloud-browser extension metadata errors were excluded as external tooling noise.
+
+Full-view comparisons placed each approved mockup and its post-fix browser render in the same comparison input. Focused comparison was required for the readiness score, Brand DNA editor row, and Discovery editor actions. The readiness score now uses the approved circular 84% treatment. Discovery Save measured 48.5 px wide inside a flex action row rather than stretching across the card.
+
+### Comparison history
+
+1. Initial browser comparison found the Discovery editor actions stretching into two full-width bars (P2) and the Overview score missing the approved circular treatment (P2).
+2. CSS was corrected in `app/ui.css`: the readiness score now uses the approved circular progress treatment, and `.brand-topic-actions` now overrides the row's grid rule with an inline flex action row.
+3. TypeScript, 34 Vitest checks, the production build, and repository preflight all passed after the corrections.
+4. A protected Vercel preview was deployed after local-preview access was denied. Post-fix Overview, Brand DNA, and Discovery Intelligence renders were opened with their source mockups in the same comparison inputs.
+5. Final comparison confirmed the corrected readiness ring and inline Discovery actions, no horizontal overflow, and no remaining actionable P0/P1/P2 visual issue.
+
+### Implementation checklist
+
+- [x] Build all five Brand Brain tabs.
+- [x] Verify tab navigation and inline Save/Cancel flows.
+- [x] Remove creator-facing Hunter terminology.
+- [x] Correct the readiness ring and Discovery editor action layout.
+- [x] Pass typecheck, tests, production build, and preflight.
+- [x] Capture and compare the post-fix browser render against all three approved visual sources.
+
 final result: passed

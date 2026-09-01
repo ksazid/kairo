@@ -27,6 +27,7 @@ export function KairoShell({
   proTip = "Connect more channels to get smarter recommendations.",
   proTipAction = "Connect channels",
   proTipHref,
+  statusLabel,
 }: {
   active: ActiveDestination;
   authenticated: boolean;
@@ -37,6 +38,7 @@ export function KairoShell({
   proTip?: string;
   proTipAction?: string;
   proTipHref?: string;
+  statusLabel?: string;
 }) {
   const webUrl = (process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app").replace(/\/$/, "");
   const brandBase = brandId ? `${webUrl}/brands/${encodeURIComponent(brandId)}` : webUrl;
@@ -48,7 +50,7 @@ export function KairoShell({
     { label: "Campaigns" as const, Icon: Megaphone, href: brandId ? `/campaigns?brand=${encodeURIComponent(brandId)}` : "/campaigns" },
     { label: "Calendar" as const, Icon: CalendarDays, href: brandId ? `/calendar?brand=${encodeURIComponent(brandId)}` : "/calendar" },
     { label: "Insights" as const, Icon: BarChart3, href: brandId ? `/insights?brand=${encodeURIComponent(brandId)}` : "/insights" },
-    { label: "Brand" as const, Icon: Settings2, href: brandId ? `${brandBase}/brain` : webUrl },
+    { label: "Brand" as const, Icon: Settings2, href: brandId ? `/brand?brand=${encodeURIComponent(brandId)}` : "/brand" },
   ];
 
   return <div className="app-shell">
@@ -61,7 +63,7 @@ export function KairoShell({
     <main>
       <header className="topbar">
         <button className="brand-select" type="button"><span className="brand-avatar">{brandName.slice(0, 1).toUpperCase()}</span><strong>{brandName}</strong><ChevronDown aria-hidden="true"/></button>
-        <span className="ready-dot"><i/>{authenticated ? "Brand ready" : "Preview mode"}</span>
+        <span className="ready-dot"><i/>{statusLabel ?? (authenticated ? "Brand ready" : "Preview mode")}</span>
         <div className="top-spacer"/>
         <a className="mobile-classic" href={webUrl} aria-label="Back to Classic Kairo"><ExternalLink aria-hidden="true"/></a>
         <button className="bell" type="button" aria-label="Notifications"><Bell aria-hidden="true"/><b>3</b></button>
