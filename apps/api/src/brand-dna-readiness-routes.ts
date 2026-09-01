@@ -9,19 +9,24 @@ import {
   type UpdateBrandDiscoveryTopicInput,
 } from "@kairo/domain/brand-discovery-plan";
 import { projectBrandIntelligenceSnapshot } from "@kairo/domain/brand-intelligence-snapshot";
+import type { HunterRunRepository } from "@kairo/domain/hunter-run-record";
 import type { IdentityVerifier } from "./auth";
 import { PgBrandDiscoveryPlanRepository } from "./brand-discovery-plan-postgres";
+import { PgHunterRunRepository } from "./hunter-run-postgres";
 
 let runtimePlanPool: Pool | undefined;
+let runtimeRunPool: Pool | undefined;
 
 export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
   store: KairoRepository;
   identityVerifier: IdentityVerifier;
   discoveryPlanStore?: BrandDiscoveryPlanRepository;
+  hunterRunStore?: HunterRunRepository;
 }): void {
   const core = new KairoService(options.store);
   const planStore = options.discoveryPlanStore ?? discoveryPlanStoreFromEnv();
   const plans = planStore ? new BrandDiscoveryPlanService(planStore) : undefined;
+  const runStore = options.hunterRunStore ?? hunterRunStoreFromEnv();
 
   app.get<{ Params: { brandId: string } }>("/api/v1/brands/:brandId/brain/readiness", async (request, reply) => {
     const account = await authenticate(request, reply, core, options.identityVerifier);
@@ -37,6 +42,7 @@ export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
     const discoveryPlan = plans
       ? await plans.ensure(account.id, context.intelligenceSnapshot)
       : projectInitialBrandDiscoveryPlan(context.intelligenceSnapshot);
+    const discoveryRun = runStore ? await runStore.getLatest(account.id, request.params.brandId) : undefined;
     return {
       brain: context.brain,
       sources: context.sources,
@@ -44,7 +50,7 @@ export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
       intelligenceSnapshot: context.intelligenceSnapshot,
       discoveryPlan,
       discoveryPlanCurrent: discoveryPlan.snapshotVersion === context.intelligenceSnapshot.snapshotVersion,
-      discoveryRun: null,
+      discoveryRun: discoveryRun ?? null,
       schedule: null,
     };
   });
@@ -74,6 +80,13 @@ function discoveryPlanStoreFromEnv(): BrandDiscoveryPlanRepository | undefined {
   if (!connectionString) return undefined;
   runtimePlanPool ??= new Pool({ connectionString });
   return new PgBrandDiscoveryPlanRepository(runtimePlanPool);
+}
+
+function hunterRunStoreFromEnv(): HunterRunRepository | undefined {
+  const connectionString = process.env.DATABASE_URL?.trim();
+  if (!connectionString) return undefined;
+  runtimeRunPool ??= new Pool({ connectionString });
+  return new PgHunterRunRepository(runtimeRunPool);
 }
 
 async function activationContext(core: KairoService, accountId: string, brandId: string) {
