@@ -21,20 +21,24 @@ const activation: BrandBrainRuntimeData = {
   updatedAt: "2026-09-01T10:00:00.000Z",
   discoveryPlan: {
     schemaVersion: "1",
-    planVersion: "brand-1@v1:discovery-initial",
+    workspaceId: "workspace-1",
+    brandId: "brand-1",
+    revision: 1,
+    planVersion: "brand-1@v1:discovery:1",
     snapshotVersion: "brand-1@v1",
     state: "initial",
     topics: [{ id: "ai-automation", name: "AI automation", priority: "High", audience: "Malta founders", entities: ["AI automation", "AI automation Malta"], sourceClasses: ["Official sources", "Industry news"] }],
     excludedTopics: [],
     updatedAt: "2026-09-01T10:00:00.000Z",
   },
+  discoveryPlanCurrent: true,
   discoveryRun: null,
   schedule: null,
   intelligenceSnapshot: { snapshotVersion: "brand-1@v1", performanceMemory: [] },
 };
 
 describe("Brand Brain runtime projection", () => {
-  it("binds onboarding facts, sources and initial Discovery Plan without fabricating learning", () => {
+  it("binds onboarding facts, sources and persisted initial Discovery Plan without fabricating learning", () => {
     const fields = projectRuntimeFields(activation);
     expect(fields.find((field) => field.key === "audience")).toMatchObject({ value: "Malta founders", state: "confirmed", fieldKey: "audience.primary", version: 2 });
     expect(fields.find((field) => field.key === "content")).toMatchObject({ value: "AI automation", state: "suggested", evidence: ["Kairo"] });
