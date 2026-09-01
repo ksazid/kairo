@@ -1,3 +1,4 @@
+import { ConcurrencyConflictError, DomainValidationError, ResourceNotFoundError } from "./index";
 import type { BrandIntelligenceSnapshot } from "./brand-intelligence-snapshot";
 
 export const BRAND_DISCOVERY_PLAN_SCHEMA_VERSION = "1" as const;
@@ -11,22 +12,81 @@ export interface BrandDiscoveryTopic {
   sourceClasses: string[];
 }
 
+export type BrandDiscoveryPlanState = "initial" | "customized";
+
 export interface BrandDiscoveryPlan {
   schemaVersion: typeof BRAND_DISCOVERY_PLAN_SCHEMA_VERSION;
+  workspaceId: string;
+  brandId: string;
+  revision: number;
   planVersion: string;
   snapshotVersion: string;
-  state: "initial";
+  state: BrandDiscoveryPlanState;
   topics: BrandDiscoveryTopic[];
   excludedTopics: string[];
   updatedAt: string | null;
 }
 
+export interface BrandDiscoveryPlanRepository {
+  getLatest(accountId: string, brandId: string): Promise<BrandDiscoveryPlan | undefined>;
+  append(accountId: string, plan: BrandDiscoveryPlan): Promise<BrandDiscoveryPlan>;
+}
+
+export interface UpdateBrandDiscoveryTopicInput {
+  expectedRevision: number;
+  name?: string;
+  audience?: string;
+  entities?: string[];
+}
+
+export class BrandDiscoveryPlanService {
+  constructor(private readonly repository: BrandDiscoveryPlanRepository) {}
+
+  async ensure(accountId: string, snapshot: BrandIntelligenceSnapshot): Promise<BrandDiscoveryPlan> {
+    const current = await this.repository.getLatest(accountId, snapshot.brandId);
+    if (!current) return this.repository.append(accountId, projectInitialBrandDiscoveryPlan(snapshot, 1));
+    if (current.snapshotVersion === snapshot.snapshotVersion || current.state === "customized") return current;
+    return this.repository.append(accountId, projectInitialBrandDiscoveryPlan(snapshot, current.revision + 1));
+  }
+
+  async get(accountId: string, brandId: string): Promise<BrandDiscoveryPlan | undefined> {
+    return this.repository.getLatest(accountId, brandId);
+  }
+
+  async updateTopic(accountId: string, brandId: string, topicId: string, input: UpdateBrandDiscoveryTopicInput): Promise<BrandDiscoveryPlan> {
+    const current = await this.repository.getLatest(accountId, brandId);
+    if (!current) throw new ResourceNotFoundError("Discovery Plan not found");
+    const expectedRevision = positiveRevision(input.expectedRevision);
+    if (current.revision !== expectedRevision) throw new ConcurrencyConflictError("Discovery Plan changed; refresh before editing this topic");
+    const index = current.topics.findIndex((topic) => topic.id === topicId);
+    if (index < 0) throw new ResourceNotFoundError("Discovery topic not found");
+
+    const topic = current.topics[index]!;
+    const next: BrandDiscoveryTopic = {
+      ...topic,
+      ...(input.name !== undefined ? { name: requiredText(input.name, "topic name", 180) } : {}),
+      ...(input.audience !== undefined ? { audience: requiredText(input.audience, "target audience", 240) } : {}),
+      ...(input.entities !== undefined ? { entities: normalizeEntities(input.entities) } : {}),
+    };
+    const topics = current.topics.map((item, itemIndex) => itemIndex === index ? next : item);
+    const revision = current.revision + 1;
+    return this.repository.append(accountId, {
+      ...current,
+      revision,
+      planVersion: planVersion(current.snapshotVersion, revision),
+      state: "customized",
+      topics,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+}
+
 /**
  * Creates the first persistent-shape Discovery Plan from canonical Brand intelligence.
- * Hunter can later persist/refine a newer plan version, but onboarding never needs to
- * invent run results to make Discovery Intelligence useful.
+ * Hunter later consumes the exact planVersion + snapshotVersion pair. Onboarding never
+ * invents run results to make Discovery Intelligence useful.
  */
-export function projectInitialBrandDiscoveryPlan(snapshot: BrandIntelligenceSnapshot): BrandDiscoveryPlan {
+export function projectInitialBrandDiscoveryPlan(snapshot: BrandIntelligenceSnapshot, revision = 1): BrandDiscoveryPlan {
   const field = (key: string) => snapshot.fields.find((item) => item.fieldKey === key && item.state !== "stale")?.value.trim() ?? "";
   const audience = field("audience.primary") || "Brand audience";
   const geography = field("identity.geography");
@@ -45,7 +105,10 @@ export function projectInitialBrandDiscoveryPlan(snapshot: BrandIntelligenceSnap
 
   return {
     schemaVersion: BRAND_DISCOVERY_PLAN_SCHEMA_VERSION,
-    planVersion: `${snapshot.snapshotVersion}:discovery-initial`,
+    workspaceId: snapshot.workspaceId,
+    brandId: snapshot.brandId,
+    revision: positiveRevision(revision),
+    planVersion: planVersion(snapshot.snapshotVersion, revision),
     snapshotVersion: snapshot.snapshotVersion,
     state: "initial",
     topics: chosen.map((name, index) => ({
@@ -64,6 +127,30 @@ export function projectInitialBrandDiscoveryPlan(snapshot: BrandIntelligenceSnap
     ]).slice(0, 20),
     updatedAt: snapshot.updatedAt,
   };
+}
+
+function planVersion(snapshotVersion: string, revision: number): string {
+  return `${snapshotVersion}:discovery:${positiveRevision(revision)}`;
+}
+
+function positiveRevision(value: unknown): number {
+  if (!Number.isInteger(value) || (value as number) < 1) throw new DomainValidationError("revision must be a positive integer");
+  return value as number;
+}
+
+function requiredText(value: unknown, field: string, max: number): string {
+  if (typeof value !== "string") throw new DomainValidationError(`${field} is required`);
+  const normalized = value.trim();
+  if (!normalized) throw new DomainValidationError(`${field} is required`);
+  if (normalized.length > max) throw new DomainValidationError(`${field} is too long`);
+  return normalized;
+}
+
+function normalizeEntities(values: unknown): string[] {
+  if (!Array.isArray(values)) throw new DomainValidationError("entities must be a list");
+  const normalized = unique(values.map((value) => requiredText(value, "entity", 180))).slice(0, 12);
+  if (!normalized.length) throw new DomainValidationError("at least one search entity is required");
+  return normalized;
 }
 
 function sourceClasses(channels: string[]): string[] {
