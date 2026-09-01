@@ -2,8 +2,8 @@ import type { BrandIntelligenceProfile, SectorIntelligencePack } from "./source-
 
 export const SECTOR_INTELLIGENCE_PACKS = {
   generic: {
-    id: "generic", version: "1", sector: "General", subsectors: [], topics: ["industry developments", "audience needs"],
-    sourceWeights: { "agent-reach": 0.7, rss: 0.7, youtube: 0.4, "hacker-news": 0.3, bluesky: 0.5, github: 0.25, openalex: 0.1, crossref: 0.1 },
+    id: "generic", version: "2", sector: "General", subsectors: [], topics: ["industry developments", "audience needs"],
+    sourceWeights: { "agent-reach": 0.7, rss: 0.8, youtube: 0.55, "hacker-news": 0, bluesky: 0.55, github: 0, openalex: 0.1, crossref: 0.1 },
     queryTemplates: ["latest {topic}", "{topic} {geography}", "{topic} {audience}"],
   },
   "ai-technology": {
@@ -51,16 +51,16 @@ export const SECTOR_INTELLIGENCE_PACKS = {
   },
   motorcycles: {
     id: "motorcycles",
-    version: "1",
+    version: "2",
     sector: "Motorcycles / Bikes",
     subsectors: ["Motorcycles", "Bikes", "Electric Motorcycles"],
     topics: ["motorcycle launches", "EV motorcycles", "motorcycle safety", "transport regulation"],
     sourceWeights: {
-      "agent-reach": 0.6,
+      "agent-reach": 0.65,
       rss: 0.95,
       youtube: 0.95,
-      "hacker-news": 0.2,
-      bluesky: 0.45,
+      "hacker-news": 0,
+      bluesky: 0.5,
       openalex: 0.1,
       crossref: 0.1,
     },
@@ -72,16 +72,16 @@ export const SECTOR_INTELLIGENCE_PACKS = {
   },
   "ias-upsc-education": {
     id: "ias-upsc-education",
-    version: "1",
+    version: "2",
     sector: "IAS / UPSC Education",
     subsectors: ["UPSC", "IAS", "Civil Services Education"],
     topics: ["UPSC current affairs", "public policy", "Indian government", "civil services preparation"],
     sourceWeights: {
-      "agent-reach": 0.55,
+      "agent-reach": 0.6,
       rss: 1,
-      youtube: 0.8,
-      "hacker-news": 0.05,
-      bluesky: 0.2,
+      youtube: 0.85,
+      "hacker-news": 0,
+      bluesky: 0.25,
       openalex: 0.2,
       crossref: 0.2,
     },
@@ -89,6 +89,28 @@ export const SECTOR_INTELLIGENCE_PACKS = {
       "official India {topic}",
       "UPSC IAS {topic}",
       "government {topic} {geography}",
+    ],
+  },
+  hospitality: {
+    id: "hospitality",
+    version: "1",
+    sector: "Restaurants / Hospitality",
+    subsectors: ["Restaurant", "Restaurants", "Hospitality", "Cafe", "Café", "Dining", "Food Service"],
+    topics: ["local dining trends", "seasonal menus", "restaurant experiences", "hospitality trends"],
+    sourceWeights: {
+      "agent-reach": 0.9,
+      rss: 0.95,
+      youtube: 0.85,
+      "hacker-news": 0,
+      bluesky: 0.7,
+      github: 0,
+      openalex: 0.05,
+      crossref: 0.05,
+    },
+    queryTemplates: [
+      "local {topic} {geography}",
+      "restaurant {topic} {geography}",
+      "hospitality {topic} {audience}",
     ],
   },
 } as const satisfies Record<string, SectorIntelligencePack>;
