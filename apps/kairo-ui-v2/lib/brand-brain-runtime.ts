@@ -28,6 +28,7 @@ export interface BrandBrainRuntimeData extends BrandBrainActivationInput {
     performanceMemory: Array<{ learningId: string; statement: string; interpretation: string; confidence: number; decidedAt: string }>;
   };
   discoveryPlan?: BrandDiscoveryPlanData;
+  /** False only when a user-customized plan intentionally remains pinned to its earlier Brand Intelligence snapshot. */
   discoveryPlanCurrent?: boolean;
   discoveryRun?: BrandDiscoveryRunData | null;
   schedule?: { nextRunAt: string } | null;
