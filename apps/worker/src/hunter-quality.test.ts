@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { DiscoveryEvidence, NormalizedSourceDocument } from "@kairo/agent-contracts";
+import type { DiscoveryEvidence, NormalizedSourceDocument, SourcePlatform } from "@kairo/agent-contracts";
 import type { BrandIntelligenceProfile } from "@kairo/domain/source-policy";
 import { HUNTER_QUALITY_VERSION, rankAndFilterHunterCandidates, type HunterQualityCandidate } from "./hunter-quality";
 
@@ -23,7 +23,7 @@ const strongScores = {
   audienceFit: 0.9,
 };
 
-function evidence(id: string, title: string, summary: string, platform = "rss"): DiscoveryEvidence {
+function evidence(id: string, title: string, summary: string, platform: SourcePlatform = "rss"): DiscoveryEvidence {
   return {
     title,
     summary,
@@ -41,7 +41,7 @@ function evidence(id: string, title: string, summary: string, platform = "rss"):
 function documentFor(item: DiscoveryEvidence): NormalizedSourceDocument {
   return {
     canonicalUrl: item.sourceUrl,
-    platform: item.platform,
+    platform: item.platform as SourcePlatform,
     sourceType: "article",
     title: item.title,
     body: `${item.summary ?? ""} Production evidence and implementation detail for technical founders.`.repeat(3),
