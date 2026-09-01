@@ -13,6 +13,7 @@
     "./brand-discovery-plan": "./src/brand-discovery-plan.ts",
     "./brand-intelligence": "./src/brand-intelligence.ts",
     "./brand-intelligence-snapshot": "./src/brand-intelligence-snapshot.ts",
+    "./hunter-run-record": "./src/hunter-run-record.ts",
     "./discovery": "./src/discovery.ts",
     "./discovery-service": "./src/discovery-service.ts",
     "./source-policy": "./src/source-policy.ts",
