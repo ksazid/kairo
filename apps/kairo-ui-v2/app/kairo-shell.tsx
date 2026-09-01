@@ -48,7 +48,7 @@ export function KairoShell({
     { label: "Campaigns" as const, Icon: Megaphone, href: brandId ? `/campaigns?brand=${encodeURIComponent(brandId)}` : "/campaigns" },
     { label: "Calendar" as const, Icon: CalendarDays, href: brandId ? `/calendar?brand=${encodeURIComponent(brandId)}` : "/calendar" },
     { label: "Insights" as const, Icon: BarChart3, href: brandId ? `/insights?brand=${encodeURIComponent(brandId)}` : "/insights" },
-    { label: "Brand" as const, Icon: Settings2, href: brandId ? `${brandBase}/brain` : webUrl },
+    { label: "Brand" as const, Icon: Settings2, href: brandId ? `/brain?brand=${encodeURIComponent(brandId)}` : "/brain" },
   ];
 
   return <div className="app-shell">
