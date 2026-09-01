@@ -65,7 +65,7 @@ export async function addBrandBrainSource(input: { brandId: string; url: string 
   const brand = encodeURIComponent(input.brandId);
   await bodyOrError(await api(token, `/api/v1/brands/${brand}/sources`, {
     method: "POST",
-    body: JSON.stringify({ type: "website", url: input.url }),
+    body: JSON.stringify({ type: "url", url: input.url }),
   }), "Kairo could not add this source.");
   await bodyOrError(await api(token, `/api/v1/brands/${brand}/brain/bootstrap`, {
     method: "POST",
