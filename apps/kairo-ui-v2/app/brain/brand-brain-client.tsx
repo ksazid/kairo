@@ -106,16 +106,16 @@ export function BrandBrainClient({ model, brandId }: { model: BrandBrainPageView
         <section className={styles.actionCard}>
           <header><Database aria-hidden="true"/><h2>Improve Brand Brain</h2></header>
           {model.activation.recommendedSources.length ? <div className={styles.recommendations}>
-            {model.activation.recommendedSources.slice(0, 4).map((item) => <button key={`${item.type}-${item.fieldKey ?? item.gap}`} type="button" onClick={() => {
-              if (item.type === "confirm-field" && item.fieldKey) {
-                const field = findField(model, item.fieldKey);
-                if (field) setEditing({ fieldKey: field.fieldKey, label: field.label, value: field.value ?? "", section: field.section, version: field.version });
-              }
-            }} disabled={item.type !== "confirm-field" || !item.fieldKey}>
-              <strong>{item.label}</strong><small>{item.reason}</small>
-            </button>)}
+            {model.activation.recommendedSources.slice(0, 4).map((item) => {
+              const target = item.type === "confirm-field" && item.fieldKey ? findEditTarget(model, item.fieldKey) : undefined;
+              return target ? <button key={`${item.type}-${item.fieldKey ?? item.gap}`} type="button" onClick={() => setEditing(target)}>
+                <strong>{item.label}</strong><small>{item.reason}</small>
+              </button> : <div className={styles.recommendationNote} key={`${item.type}-${item.fieldKey ?? item.gap}`}>
+                <strong>{item.label}</strong><small>{item.reason}</small>
+              </div>;
+            })}
           </div> : <p className={styles.clearState}><Check aria-hidden="true"/>No blocking Brand Brain gaps.</p>}
-          <label className={styles.sourceInput}><span>Add another source</span><input value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} placeholder="https://yourbrand.com" inputMode="url" disabled={!brandId || busy}/></label>
+          <label className={styles.sourceInput}><span>Add another source</span><input value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} placeholder="Website, Instagram, LinkedIn or other public URL" inputMode="url" disabled={!brandId || busy}/></label>
           <button className={styles.addSource} type="button" onClick={addSource} disabled={!brandId || !sourceUrl.trim() || busy}><Plus aria-hidden="true"/>{busy ? "Updating…" : "Add source & recalculate"}</button>
         </section>
 
@@ -154,8 +154,14 @@ function BrainField({ field, onEdit }: { field: EditableBrainField; onEdit: () =
   </div>;
 }
 
-function findField(model: BrandBrainPageViewModel, fieldKey: string): EditableBrainField | undefined {
-  return model.sections.flatMap((section) => section.fields).find((field) => field.fieldKey === fieldKey);
+function findEditTarget(model: BrandBrainPageViewModel, fieldKey: string): EditTarget | undefined {
+  for (const section of model.sections) {
+    const field = section.fields.find((candidate) => candidate.fieldKey === fieldKey);
+    if (field) return { fieldKey: field.fieldKey, label: field.label, value: field.value ?? "", section: field.section, version: field.version };
+    const chip = section.chipEditors.find((candidate) => candidate.fieldKey === fieldKey);
+    if (chip) return { fieldKey: chip.fieldKey, label: chip.label, value: chip.value, section: chip.section, version: chip.version };
+  }
+  return undefined;
 }
 
 async function mutate(body: Record<string, unknown>) {
