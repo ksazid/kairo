@@ -6,7 +6,7 @@ import {
 } from "./brand-brain-evidence-sanitizer";
 
 const HTML_BLOCKS = /<\s*(script|style|iframe|object|embed|template|svg|noscript)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
-const HTML_TAGS = /<[^>]{1,1_024}>/g;
+const HTML_TAGS = /<[^>]{1,1024}>/g;
 
 /**
  * Final evidence-entry boundary. Upstream extractors should already emit clean
