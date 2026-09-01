@@ -16,7 +16,7 @@ export default async function BrandBrainPage({ searchParams }: { searchParams: S
         : data.authenticated ? "Brand setup" : "Preview mode";
 
   return <KairoShell
-    active="Brand"
+    active="Brain"
     authenticated={data.authenticated}
     brandId={data.brandId}
     brandName={data.brandName}
