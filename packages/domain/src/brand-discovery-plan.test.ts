@@ -13,14 +13,14 @@ describe("projectInitialBrandDiscoveryPlan", () => {
       status: "ready-for-hunter",
       hunterReady: true,
       completeness: { score: 92, knownGroups: 6, totalGroups: 6 },
-      readiness: { status: "ready", score: 92, brandIntelligenceScore: 90, evidenceCoverage: 84, confidence: 88, gaps: [] },
+      readiness: { status: "ready", score: 92, brandIntelligenceScore: 90, evidenceCoverage: 84, confidence: 88, gaps: [], evaluatedAt: "2026-09-01T10:00:00.000Z" },
       context: { brandName: "Kairo" },
       fields: [
         { fieldKey: "audience.primary", section: "audience", value: "Malta founders", state: "confirmed", origin: "user-confirmed", confidence: { score: 1, level: "high" }, sourceIds: [], version: 1, updatedAt: "2026-09-01T10:00:00.000Z" },
         { fieldKey: "identity.geography", section: "identity", value: "Malta", state: "inferred", origin: "source-backed", confidence: { score: .85, level: "high" }, sourceIds: ["source-1"], version: 1, updatedAt: "2026-09-01T10:00:00.000Z" },
         { fieldKey: "content.preferred-topics", section: "content-strategy", value: "AI automation, software architecture", state: "inferred", origin: "source-backed", confidence: { score: .85, level: "high" }, sourceIds: ["source-1"], version: 1, updatedAt: "2026-09-01T10:00:00.000Z" },
         { fieldKey: "content.channels", section: "content-strategy", value: "LinkedIn, YouTube", state: "inferred", origin: "source-backed", confidence: { score: .85, level: "high" }, sourceIds: ["source-1"], version: 1, updatedAt: "2026-09-01T10:00:00.000Z" },
-        { fieldKey: "boundaries.excluded-topics", section: "boundaries", value: "Political persuasion; unsupported financial claims", state: "confirmed", origin: "user-confirmed", confidence: { score: 1, level: "high" }, sourceIds: [], version: 1, updatedAt: "2026-09-01T10:00:00.000Z" },
+        { fieldKey: "boundaries.excluded-topics", section: "boundaries", value: "Restricted topics; unsupported claims", state: "confirmed", origin: "user-confirmed", confidence: { score: 1, level: "high" }, sourceIds: [], version: 1, updatedAt: "2026-09-01T10:00:00.000Z" },
       ],
       weakFields: [], readinessGaps: [], evidenceSourceIds: ["source-1"], activeSourceIds: ["source-1"], performanceMemory: [], updatedAt: "2026-09-01T10:00:00.000Z",
     } satisfies BrandIntelligenceSnapshot;
@@ -33,6 +33,6 @@ describe("projectInitialBrandDiscoveryPlan", () => {
     expect(plan.topics[0]?.audience).toBe("Malta founders");
     expect(plan.topics[0]?.entities).toContain("AI automation Malta");
     expect(plan.topics[0]?.sourceClasses).toEqual(expect.arrayContaining(["Official sources", "Industry news", "LinkedIn", "YouTube"]));
-    expect(plan.excludedTopics).toEqual(["Political persuasion", "unsupported financial claims"]);
+    expect(plan.excludedTopics).toEqual(["Restricted topics", "unsupported claims"]);
   });
 });
