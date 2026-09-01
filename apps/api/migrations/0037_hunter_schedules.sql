@@ -29,4 +29,8 @@ create index if not exists ix_hunter_schedules_due
   on hunter_schedules (next_run_at, brand_id)
   where enabled = true;
 
+create unique index if not exists uq_hunter_run_records_brand_running
+  on hunter_run_records (brand_id)
+  where status = 'running';
+
 commit;
