@@ -13,6 +13,8 @@ export interface BrandIntelligenceProfile {
   topics: string[];
   excludedTopics: string[];
   goals: string[];
+  /** Persisted Discovery Plan source classes/preferences. Sector packs remain the safe default. */
+  sourceClasses?: string[];
 }
 
 export interface DiscoverySourceDefinition {
@@ -60,6 +62,38 @@ const GEOGRAPHY_KEYS = /(geograph|location|market|region|countr)/i;
 const LANGUAGE_KEYS = /language/i;
 const TOPIC_KEYS = /(topic|pillar)/i;
 const EXCLUDED_TOPIC_KEYS = /(excluded|prohibited|avoid|sensitive).*(topic|subject)|(topic|subject).*(excluded|prohibited|avoid|sensitive)/i;
+
+const SOURCE_ALIASES: Readonly<Record<string, DiscoverySourceKey>> = {
+  "agent reach": "agent-reach",
+  "agent-reach": "agent-reach",
+  bluesky: "bluesky",
+  "blue sky": "bluesky",
+  github: "github",
+  "git hub": "github",
+  "hacker news": "hacker-news",
+  "hacker-news": "hacker-news",
+  hn: "hacker-news",
+  rss: "rss",
+  "rss feed": "rss",
+  "rss feeds": "rss",
+  youtube: "youtube",
+  "you tube": "youtube",
+};
+
+const SOURCE_CLASS_PREFERENCES: Readonly<Record<string, readonly DiscoverySourceKey[]>> = {
+  "official sources": ["agent-reach", "rss"],
+  "industry news": ["agent-reach", "rss"],
+  "local news": ["agent-reach", "rss"],
+  news: ["agent-reach", "rss"],
+  "general web": ["agent-reach", "rss"],
+  web: ["agent-reach", "rss"],
+  "community discussions": ["agent-reach", "bluesky"],
+  community: ["agent-reach", "bluesky"],
+  social: ["agent-reach", "bluesky"],
+  instagram: ["agent-reach", "bluesky"],
+  linkedin: ["agent-reach", "bluesky"],
+  video: ["youtube"],
+};
 
 export function projectBrandIntelligenceProfile(fields: readonly BrandBrainFieldDto[]): BrandIntelligenceProfile {
   const active = fields.filter((field) => field.state !== "stale");
@@ -122,21 +156,39 @@ export function resolveBrandSourcePolicy(
   for (const source of Object.keys(pack.sourceWeights)) {
     if (!registryKeys.has(source)) throw new DomainValidationError(`Sector pack references unknown source ${source}`);
   }
+  const directives = sourceDirectives(profile.sourceClasses ?? [], registryKeys);
 
   const entries = registry.map((source): BrandSourcePolicyEntry => {
-    const configuredWeight = pack.sourceWeights[source.key] ?? 0;
-    const enabled = source.enabled && configuredWeight > 0;
-    const weight = enabled ? configuredWeight : 0;
+    const baseWeight = pack.sourceWeights[source.key] ?? 0;
+    const explicitlyEnabled = directives.explicit.has(source.key);
+    const preferred = directives.preferred.has(source.key);
+    const denied = directives.denied.has(source.key);
+    const configuredWeight = explicitlyEnabled && baseWeight <= 0 ? 0.65 : baseWeight;
+    const adjustedWeight = preferred && configuredWeight > 0 ? Math.min(1, configuredWeight + 0.12) : configuredWeight;
+    const enabled = source.enabled && !denied && adjustedWeight > 0;
+    const weight = enabled ? adjustedWeight : 0;
+
+    let rationale: string;
+    if (!source.enabled) {
+      rationale = `Source registry disables ${source.key} regardless of sector or Discovery Plan preferences.`;
+    } else if (denied) {
+      rationale = `Discovery Plan explicitly excludes ${source.key}.`;
+    } else if (enabled && explicitlyEnabled && baseWeight <= 0) {
+      rationale = `Discovery Plan explicitly enables ${source.key} at weight ${weight.toFixed(2)} over ${pack.id}@${pack.version} default.`;
+    } else if (enabled && preferred) {
+      rationale = `Discovery Plan prioritizes ${source.key}; ${pack.id}@${pack.version} weight becomes ${weight.toFixed(2)} within registry budget ${source.maxQueriesPerRun}.`;
+    } else if (enabled) {
+      rationale = `${pack.id}@${pack.version} assigns ${source.key} weight ${weight.toFixed(2)} within registry budget ${source.maxQueriesPerRun}.`;
+    } else {
+      rationale = `${pack.id}@${pack.version} disables ${source.key} with zero source weight.`;
+    }
+
     return {
       source: source.key,
       enabled,
       weight,
       maxQueries: source.maxQueriesPerRun,
-      rationale: enabled
-        ? `${pack.id}@${pack.version} assigns ${source.key} weight ${weight.toFixed(2)} within registry budget ${source.maxQueriesPerRun}.`
-        : source.enabled
-          ? `${pack.id}@${pack.version} disables ${source.key} with zero source weight.`
-          : `Source registry disables ${source.key} regardless of sector weight.`,
+      rationale,
     };
   });
 
@@ -194,6 +246,40 @@ export function planSourceQueries(
   return result;
 }
 
+function sourceDirectives(sourceClasses: readonly string[], registryKeys: ReadonlySet<string>) {
+  const preferred = new Set<DiscoverySourceKey>();
+  const explicit = new Set<DiscoverySourceKey>();
+  const denied = new Set<DiscoverySourceKey>();
+
+  for (const value of sourceClasses) {
+    const normalized = normalizeSourceLabel(value);
+    if (!normalized) continue;
+    const negative = /^(?:no|exclude|without)\s+/.test(normalized) || normalized.startsWith("-") || normalized.startsWith("!");
+    const label = negative
+      ? normalized.replace(/^(?:no|exclude|without)\s+/, "").replace(/^[-!]+/, "").trim()
+      : normalized;
+    const provider = SOURCE_ALIASES[label];
+    if (provider && registryKeys.has(provider)) {
+      if (negative) denied.add(provider);
+      else {
+        explicit.add(provider);
+        preferred.add(provider);
+      }
+      continue;
+    }
+    if (negative) continue;
+    for (const source of SOURCE_CLASS_PREFERENCES[label] ?? []) {
+      if (registryKeys.has(source)) preferred.add(source);
+    }
+  }
+
+  for (const source of denied) {
+    explicit.delete(source);
+    preferred.delete(source);
+  }
+  return { preferred, explicit, denied };
+}
+
 function renderQuery(
   template: string,
   profile: BrandIntelligenceProfile,
@@ -232,6 +318,11 @@ function validateProfile(profile: BrandIntelligenceProfile): void {
     goals: profile.goals,
   })) {
     if (!Array.isArray(values)) throw new DomainValidationError(`Brand Intelligence Profile ${name} must be an array`);
+  }
+  if (profile.sourceClasses !== undefined) {
+    if (!Array.isArray(profile.sourceClasses) || profile.sourceClasses.some((value) => typeof value !== "string" || !value.trim())) {
+      throw new DomainValidationError("Brand Intelligence Profile sourceClasses must be a list of non-empty strings");
+    }
   }
 }
 
@@ -285,6 +376,10 @@ function uniqueText(values: readonly string[]): string[] {
 
 function normalizeComparable(value: string): string {
   return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function normalizeSourceLabel(value: string): string {
+  return value.toLowerCase().replace(/[_/]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function requireText(value: unknown, label: string): string {

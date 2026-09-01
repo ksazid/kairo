@@ -37,7 +37,7 @@ describe("PublicBrandReferenceHttpReader", () => {
         return {
           status: 200,
           headers: { "content-type": "text/html; charset=utf-8" },
-          body: `<!doctype html><html lang="en"><head><title>The Duke 390</title><meta name="description" content="Rider-first Duke 390 ownership and riding content"></head><body><main><h1>Duke 390</h1><p>Rides, ownership, modifications and rider questions.</p><a href="/products">Products</a><a href="https://other.example/about">Other</a><script>ignore me</script></main></body></html>`,
+          body: `<!doctype html><html lang="en"><head><title>The Duke 390</title><meta name="description" content="Rider-first Duke 390 ownership and riding content"></head><body><header>Account Search</header><nav>Home About Privacy</nav><main><h1>Duke 390</h1><p>Rides, ownership, modifications and rider questions.</p><a href="/products">Products</a><a href="https://other.example/about">Other</a><script>ignore me</script></main><aside>Related promotions</aside><footer>Terms Contact</footer></body></html>`,
         };
       },
     });

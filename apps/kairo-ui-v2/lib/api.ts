@@ -100,6 +100,13 @@ export type SimpleCreation = {
   failureReason?: string;
 };
 
+export type ManualHunterRun = {
+  evidenceCount: number;
+  candidateCount: number;
+  opportunityCount: number;
+  degradedSources?: string[];
+};
+
 const apiBase = () => (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
 
 async function accessToken() {
@@ -279,5 +286,23 @@ export async function actOnHomeOpportunity(brandId: string, opportunityId: strin
   return bodyOrError<HomeOpportunity>(
     await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(opportunityId)}/${action}`, { method: "POST" }),
     action === "save" ? "Kairo could not save this opportunity." : "Kairo could not dismiss this opportunity.",
+  );
+}
+
+export async function runManualHunter(brandId: string): Promise<ManualHunterRun> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to refresh discovery.");
+  return bodyOrError<ManualHunterRun>(
+    await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/recommendations`, { method: "POST" }),
+    "Kairo could not refresh discovery.",
+  );
+}
+
+export async function getHomeOpportunities(brandId: string): Promise<HomeOpportunity[]> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to load discovery.");
+  return bodyOrError<HomeOpportunity[]>(
+    await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/opportunities`),
+    "Kairo could not load discovery.",
   );
 }

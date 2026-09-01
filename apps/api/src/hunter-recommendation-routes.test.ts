@@ -32,15 +32,24 @@ async function setupBrand(store: MemoryKairoRepository, subject = "alice") {
   return { account, ...created };
 }
 
-async function addSector(store: MemoryKairoRepository, accountId: string, brandId: string) {
-  await store.putConfirmedBrandBrainField(accountId, brandId, "category", {
-    section: "identity",
-    value: "AI",
-  });
-  await store.putConfirmedBrandBrainField(accountId, brandId, "primary-audience", {
-    section: "audience",
-    value: "Software teams",
-  });
+async function addReadyBrain(
+  store: MemoryKairoRepository,
+  accountId: string,
+  brandId: string,
+  input: { category?: string; topics?: string } = {},
+) {
+  const fields = [
+    ["identity.description", "identity", "AI-powered content intelligence for brands"],
+    ["identity.products-services", "identity", "Content discovery and creation"],
+    ["identity.category", "identity", input.category ?? "AI"],
+    ["audience.primary", "audience", "Software teams"],
+    ["positioning.value-proposition", "positioning", "Turn Brand intelligence into useful content decisions"],
+    ["content.pillars", "content-strategy", input.topics ?? "AI agents, software architecture"],
+    ["boundaries.excluded-topics", "boundaries", "Unsupported claims"],
+  ] as const;
+  for (const [fieldKey, section, value] of fields) {
+    await store.putConfirmedBrandBrainField(accountId, brandId, fieldKey, { section, value });
+  }
 }
 
 describe("VS-97 Hunter recommendations API", () => {
@@ -56,11 +65,43 @@ describe("VS-97 Hunter recommendations API", () => {
     await app.close();
   });
 
-  it("projects Brand Brain context and returns truthful zero-result Hunter runs", async () => {
+  it("refuses to run Hunter until canonical Brand Brain activation is ready", async () => {
     const store = new MemoryKairoRepository();
     const verifier = new Verifier();
     const { account, brand } = await setupBrand(store);
-    await addSector(store, account.id, brand.id);
+    await store.putConfirmedBrandBrainField(account.id, brand.id, "identity.description", {
+      section: "identity",
+      value: "Partial Brand context",
+    });
+    let runs = 0;
+    const app = buildApp({ store, identityVerifier: verifier });
+    registerHunterRecommendationRoutes(app, {
+      store,
+      identityVerifier: verifier,
+      runner: { async runForAuthorizedBrand() { runs += 1; return emptyResult; } },
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: `/api/v1/brands/${brand.id}/recommendations`,
+      headers: { authorization: "Bearer test:alice" },
+    });
+
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toMatchObject({
+      code: "hunter_not_ready",
+      readiness: "needs-enrichment",
+    });
+    expect(response.json().gaps).toEqual(expect.arrayContaining(["offerings", "audience", "positioning", "topics", "boundaries"]));
+    expect(runs).toBe(0);
+    await app.close();
+  });
+
+  it("uses canonical Snapshot + Discovery Plan lineage and returns truthful zero-result Hunter runs", async () => {
+    const store = new MemoryKairoRepository();
+    const verifier = new Verifier();
+    const { account, brand } = await setupBrand(store);
+    await addReadyBrain(store, account.id, brand.id);
     let captured: HunterRunInput | undefined;
     const runner: HunterRecommendationRunner = {
       async runForAuthorizedBrand(input) {
@@ -86,13 +127,16 @@ describe("VS-97 Hunter recommendations API", () => {
         workspaceId: brand.workspaceId,
         brandId: brand.id,
         brandName: brand.name,
-        audience: "Software teams",
       },
       intelligenceProfile: {
         sector: "AI",
-        audiences: ["Software teams"],
+        audiences: expect.arrayContaining(["Software teams"]),
+        topics: ["AI agents", "software architecture"],
+        excludedTopics: expect.arrayContaining(["Unsupported claims"]),
       },
     });
+    expect(captured?.brand.contextVersion).toContain(`${brand.id}@`);
+    expect(captured?.brand.contextVersion).toContain(":discovery:1");
     expect(captured?.query).toBeUndefined();
     await app.close();
   });
@@ -101,14 +145,7 @@ describe("VS-97 Hunter recommendations API", () => {
     const store = new MemoryKairoRepository();
     const verifier = new Verifier();
     const { account, brand } = await setupBrand(store);
-    await store.putConfirmedBrandBrainField(account.id, brand.id, "category", {
-      section: "identity",
-      value: "Restaurant",
-    });
-    await store.putConfirmedBrandBrainField(account.id, brand.id, "content-pillars", {
-      section: "content-strategy",
-      value: "seasonal menus",
-    });
+    await addReadyBrain(store, account.id, brand.id, { category: "Restaurant", topics: "seasonal menus" });
     let captured: HunterRunInput | undefined;
     const app = buildApp({ store, identityVerifier: verifier });
     registerHunterRecommendationRoutes(app, {
@@ -138,7 +175,7 @@ describe("VS-97 Hunter recommendations API", () => {
     const store = new MemoryKairoRepository();
     const verifier = new Verifier();
     const { account, brand } = await setupBrand(store);
-    await addSector(store, account.id, brand.id);
+    await addReadyBrain(store, account.id, brand.id);
     const app = buildApp({ store, identityVerifier: verifier });
     registerHunterRecommendationRoutes(app, { store, identityVerifier: verifier });
 
@@ -157,7 +194,7 @@ describe("VS-97 Hunter recommendations API", () => {
     const store = new MemoryKairoRepository();
     const verifier = new Verifier();
     const { account, brand } = await setupBrand(store, "alice");
-    await addSector(store, account.id, brand.id);
+    await addReadyBrain(store, account.id, brand.id);
     await setupBrand(store, "bob");
     let runs = 0;
     const app = buildApp({ store, identityVerifier: verifier });
@@ -182,7 +219,7 @@ describe("VS-97 Hunter recommendations API", () => {
     const store = new MemoryKairoRepository();
     const verifier = new Verifier();
     const { account, brand } = await setupBrand(store);
-    await addSector(store, account.id, brand.id);
+    await addReadyBrain(store, account.id, brand.id);
     let runs = 0;
     let release!: (result: HunterRunResult) => void;
     const pending = new Promise<HunterRunResult>((resolve) => { release = resolve; });

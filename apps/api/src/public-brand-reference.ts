@@ -293,7 +293,12 @@ function extractHtmlContext(html: string, pageUrl: URL): { title?: string; summa
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, " ")
     .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, " ")
-    .replace(/<(?:script|style|noscript|svg)\b[^>]*>[\s\S]*$/gi, " ");
+    .replace(/<template\b[^>]*>[\s\S]*?<\/template>/gi, " ")
+    .replace(/<nav\b[^>]*>[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<header\b[^>]*>[\s\S]*?<\/header>/gi, " ")
+    .replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<aside\b[^>]*>[\s\S]*?<\/aside>/gi, " ")
+    .replace(/<(?:script|style|noscript|svg|template|nav|header|footer|aside)\b[^>]*>[\s\S]*$/gi, " ");
   const body = firstMatch(withoutNoise, /<body\b[^>]*>([\s\S]*?)<\/body>/i) || withoutNoise;
   const visible = normalizeWhitespace(decodeEntities(body.replace(/<[^>]+>/g, " ")));
   const excerpt = joinUnique([title, summary, structured, visible]).slice(0, MAX_EXCERPT);

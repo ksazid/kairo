@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { normalizeEntities, reviewCount, updateBrandField, updateDiscoveryTopic, type BrandBrainField, type DiscoveryTopic } from "./brand-brain";
 
 const fields: BrandBrainField[] = [
-  { key: "audience", label: "Audience", description: "Who you serve", value: "Founders", state: "suggested", evidence: ["Website"] },
-  { key: "voice", label: "Voice", description: "How you sound", value: "Direct", state: "confirmed", evidence: ["Instagram"] },
+  { key: "audience", fieldKey: "audience.primary", section: "audience", label: "Audience", description: "Who you serve", value: "Founders", state: "suggested", evidence: ["Website"] },
+  { key: "voice", fieldKey: "voice.tone", section: "voice", label: "Voice", description: "How you sound", value: "Direct", state: "confirmed", evidence: ["Instagram"] },
 ];
 
 const topics: DiscoveryTopic[] = [

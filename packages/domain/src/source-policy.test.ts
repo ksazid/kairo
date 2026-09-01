@@ -67,11 +67,12 @@ describe("VS-12A sector-aware source policy", () => {
     });
   });
 
-  it("selects proof-sector packs from metadata instead of sector-specific resolver branches", () => {
+  it("selects proof-sector packs and hospitality from metadata instead of resolver branches", () => {
     expect(selectSectorIntelligencePack(profile({ sector: "Developer Technology" }))?.id).toBe("ai-technology");
     expect(selectSectorIntelligencePack(profile({ sector: "Religious Travel" }))?.id).toBe("umrah-religious-travel");
     expect(selectSectorIntelligencePack(profile({ sector: "Motorcycles" }))?.id).toBe("motorcycles");
     expect(selectSectorIntelligencePack(profile({ sector: "IAS" }))?.id).toBe("ias-upsc-education");
+    expect(selectSectorIntelligencePack(profile({ sector: "Restaurant" }))?.id).toBe("hospitality");
     expect(selectSectorIntelligencePack(profile({ sector: undefined, subsector: undefined })).id).toBe("generic");
   });
 
@@ -96,7 +97,7 @@ describe("VS-12A sector-aware source policy", () => {
     expect(policyEntry(policy, "youtube").weight).toBeGreaterThanOrEqual(0.85);
   });
 
-  it("keeps motorcycle and IAS policies materially different without sector branching in the resolver", () => {
+  it("keeps Hacker News off by default for motorcycles and UPSC", () => {
     const motorcycle = resolveBrandSourcePolicy(
       profile({ sector: "Motorcycles", topics: ["EV motorcycles", "new launches"] }),
       pack("motorcycles"),
@@ -110,24 +111,47 @@ describe("VS-12A sector-aware source policy", () => {
 
     expect(policyEntry(motorcycle, "rss").weight).toBeGreaterThanOrEqual(0.9);
     expect(policyEntry(motorcycle, "youtube").weight).toBeGreaterThanOrEqual(0.9);
-    expect(policyEntry(motorcycle, "hacker-news").weight).toBeGreaterThan(0);
-    expect(policyEntry(motorcycle, "hacker-news").weight).toBeLessThan(0.5);
+    expect(policyEntry(motorcycle, "hacker-news")).toMatchObject({ enabled: false, weight: 0 });
 
     expect(policyEntry(ias, "rss").weight).toBe(1);
-    expect(policyEntry(ias, "youtube").weight).toBeGreaterThanOrEqual(0.75);
-    expect(policyEntry(ias, "hacker-news").weight).toBeLessThanOrEqual(0.05);
+    expect(policyEntry(ias, "youtube").weight).toBeGreaterThanOrEqual(0.8);
+    expect(policyEntry(ias, "hacker-news")).toMatchObject({ enabled: false, weight: 0 });
   });
 
-  it("lets the registry fail closed even when a sector pack assigns a source weight", () => {
+  it("keeps generic and hospitality defaults free of GitHub and Hacker News", () => {
+    for (const sectorPack of [pack("generic"), pack("hospitality")]) {
+      const policy = resolveBrandSourcePolicy(profile({ sector: "Restaurant" }), sectorPack, DEFAULT_SOURCE_REGISTRY);
+      expect(policyEntry(policy, "github")).toMatchObject({ enabled: false, weight: 0 });
+      expect(policyEntry(policy, "hacker-news")).toMatchObject({ enabled: false, weight: 0 });
+    }
+  });
+
+  it("lets Discovery Plan source classes prioritize defaults, explicitly opt providers in, and deny providers", () => {
+    const restaurant = profile({
+      sector: "Restaurant",
+      topics: ["seasonal menus"],
+      sourceClasses: ["Industry news", "GitHub", "No YouTube"],
+    });
+    const policy = resolveBrandSourcePolicy(restaurant, pack("hospitality"), DEFAULT_SOURCE_REGISTRY);
+
+    expect(policyEntry(policy, "rss")).toMatchObject({ enabled: true, weight: 1 });
+    expect(policyEntry(policy, "agent-reach")).toMatchObject({ enabled: true, weight: 1 });
+    expect(policyEntry(policy, "github")).toMatchObject({ enabled: true, weight: 0.77 });
+    expect(policyEntry(policy, "youtube")).toMatchObject({ enabled: false, weight: 0 });
+    expect(policyEntry(policy, "hacker-news")).toMatchObject({ enabled: false, weight: 0 });
+  });
+
+  it("lets the registry fail closed even when a sector pack or Discovery Plan enables a source", () => {
     const registry = DEFAULT_SOURCE_REGISTRY.map((source) => source.key === "youtube" ? { ...source, enabled: false } : source);
-    const policy = resolveBrandSourcePolicy(profile(), pack("ai-technology"), registry);
+    const policy = resolveBrandSourcePolicy(profile({ sourceClasses: ["YouTube"] }), pack("ai-technology"), registry);
 
     expect(policyEntry(policy, "youtube")).toMatchObject({ enabled: false, weight: 0 });
   });
 
-  it("fails deterministic validation for invalid sector weights", () => {
+  it("fails deterministic validation for invalid sector weights and malformed source classes", () => {
     const invalid = { ...pack("ai-technology"), sourceWeights: { ...pack("ai-technology").sourceWeights, rss: 1.1 } };
     expect(() => validateSectorIntelligencePack(invalid)).toThrow(DomainValidationError);
+    expect(() => resolveBrandSourcePolicy({ ...profile(), sourceClasses: [""] }, pack("generic"), DEFAULT_SOURCE_REGISTRY)).toThrow(DomainValidationError);
   });
 
   it("bounds query plans per source, removes research-only sources and deduplicates equivalent intents", () => {

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -25,10 +26,12 @@ import {
 import {
   discoverPreviewHref,
   filterDiscoverCards,
+  toDiscoverCards,
   type DiscoverCard,
   type DiscoverFilter,
 } from "../../lib/discover";
 import { DEFAULT_LISTING_VIEW, normalizeListingView, type ListingView } from "../../lib/listing-view";
+import type { HomeOpportunity } from "../../lib/api";
 import { ListingViewToggle } from "../listing-view-toggle";
 
 const filters: Array<{ value: DiscoverFilter; label: string }> = [
@@ -41,6 +44,7 @@ const filters: Array<{ value: DiscoverFilter; label: string }> = [
 const listingPreferenceKey = "kairo:list-view";
 
 export function DiscoverClient({ initialCards, brandId }: { initialCards: DiscoverCard[]; brandId?: string }) {
+  const router = useRouter();
   const [cards, setCards] = useState(initialCards);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<DiscoverFilter>("all");
@@ -72,6 +76,35 @@ export function DiscoverClient({ initialCards, brandId }: { initialCards: Discov
     setError("");
   }
 
+  async function refreshDiscovery() {
+    if (!brandId || pending) {
+      resetDiscovery();
+      return;
+    }
+    setPending("refresh");
+    setError("");
+    try {
+      const response = await fetch("/api/discover/refresh", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ brandId }),
+      });
+      const body = await response.json().catch(() => ({})) as { opportunities?: HomeOpportunity[]; error?: string };
+      if (!response.ok || !body.opportunities) throw new Error(body.error ?? "Kairo could not refresh discovery.");
+      setCards(toDiscoverCards(body.opportunities));
+      setQuery("");
+      setFilter("all");
+      setFormat("all");
+      setChannel("all");
+      setSource("all");
+      router.refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Kairo could not refresh discovery.");
+    } finally {
+      setPending("");
+    }
+  }
+
   async function act(card: DiscoverCard, action: "save" | "ignore") {
     const key = `${card.id}:${action}`;
     if (pending) return;
@@ -98,7 +131,7 @@ export function DiscoverClient({ initialCards, brandId }: { initialCards: Discov
   return <>
     <header className="discover-page-header">
       <div><h1>Discover</h1><p>Find the next opportunity for your Brand.</p></div>
-      <div className="discover-header-actions"><ListingViewToggle value={view} onChange={chooseView}/><button type="button" onClick={resetDiscovery}><RefreshCw aria-hidden="true"/>Refresh discovery</button></div>
+      <div className="discover-header-actions"><ListingViewToggle value={view} onChange={chooseView}/><button type="button" onClick={() => void refreshDiscovery()} disabled={pending === "refresh"}><RefreshCw aria-hidden="true"/>{pending === "refresh" ? "Refreshing…" : "Refresh discovery"}</button></div>
     </header>
 
     <section className="discover-toolbar" aria-label="Discover filters">

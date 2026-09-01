@@ -15,6 +15,7 @@ import {
 import { SECTOR_INTELLIGENCE_PACKS, selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import { DEFAULT_SOURCE_REGISTRY } from "@kairo/domain/source-registry";
 import type { BrandIntelligenceTopicGraph } from "@kairo/domain/brand-intelligence";
+import { rankAndFilterHunterCandidates } from "./hunter-quality";
 
 export interface BrandContextProjection {
   workspaceId: string;
@@ -190,17 +191,22 @@ export class HunterOrchestrator {
     }
 
     const byUrl = new Map(evidence.map((item) => [item.sourceUrl, item]));
+    const qualified = rankAndFilterHunterCandidates(judgment.output.candidates, {
+      evidenceByUrl: byUrl,
+      documentsByUrl: enrichedDocuments,
+      ...(input.intelligenceProfile ? { intelligenceProfile: input.intelligenceProfile } : {}),
+      ...(input.intelligenceGraph ? { intelligenceGraph: input.intelligenceGraph } : {}),
+      ...(input.existingOpportunityTitles?.length ? { existingOpportunityTitles: input.existingOpportunityTitles } : {}),
+      ...(input.refreshSeed ? { referenceTime: input.refreshSeed } : {}),
+      maxCandidates: 12,
+    });
+
     let opportunityCount = 0;
-    for (const candidate of judgment.output.candidates.slice(0, 12)) {
-      const source = byUrl.get(candidate.sourceUrl);
-      if (!source) continue; // No evidence lineage → cannot create an Opportunity.
-      if (isPreviouslySurfaced(candidate.title, input.existingOpportunityTitles)) continue;
-      if (!passesBrandDnaGate(candidate, source, input)) continue;
-      const adjustedScores = evidenceAdjustedScores(candidate.scores, source, enrichedDocuments.get(source.sourceUrl), input.intelligenceGraph);
+    for (const { candidate, source, scores: adjustedScores } of qualified) {
       const record: OpportunityCandidateInput = {
         signal: {
           title: source.title,
-          ...(source.summary ? { summary: source.summary } : {}),
+          ...(source.summary ? { summary: source.summary.slice(0, 2_000) } : {}),
           sourceUrl: source.sourceUrl,
           platform: source.platform,
           ...(source.publisher ? { publisher: source.publisher } : {}),
@@ -350,34 +356,6 @@ function refreshRotationOffset(seed: string | undefined): number {
   if (!seed) return 0;
   return [...seed].reduce((total, character) => total + character.charCodeAt(0), 0) % QUERY_INTENTS.length;
 }
-function passesBrandDnaGate(candidate: HunterJudgmentCandidate, source: DiscoveryEvidence, input: HunterRunInput): boolean {
-  const scores = candidate.scores;
-  if (scores.relevance < 0.65 || scores.evidence < 0.55 || scores.audienceFit < 0.60 || scores.novelty < 0.45) return false;
-  if (!input.intelligenceProfile) return true;
-  const dna = [
-    ...input.intelligenceProfile.topics,
-    ...input.intelligenceProfile.audiences,
-    ...input.intelligenceProfile.goals,
-    input.intelligenceProfile.sector,
-    input.intelligenceProfile.subsector,
-  ].filter((value): value is string => Boolean(value));
-  const text = `${candidate.title} ${candidate.rationale} ${candidate.developmentDirection} ${candidate.topic ?? ""} ${candidate.proposedAngle ?? ""} ${source.title} ${source.summary ?? ""}`.toLowerCase();
-  const matches = dna.filter((term) => meaningfulTokens(term).some((token) => text.includes(token))).length;
-  return matches > 0 && scores.brandAuthority >= 0.55;
-}
-function isPreviouslySurfaced(title: string, previous: readonly string[] | undefined): boolean {
-  if (!previous?.length) return false;
-  const candidate = new Set(meaningfulTokens(title));
-  if (candidate.size < 3) return previous.some((item) => item.trim().toLowerCase() === title.trim().toLowerCase());
-  return previous.some((item) => {
-    const prior = new Set(meaningfulTokens(item));
-    const overlap = [...candidate].filter((token) => prior.has(token)).length;
-    return overlap / Math.min(candidate.size, prior.size || 1) >= 0.7;
-  });
-}
-function meaningfulTokens(value: string): string[] {
-  return value.toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length >= 4 && !["about", "with", "from", "that", "this", "your", "into", "using"].includes(token));
-}
 function compactTopicGraph(graph: BrandIntelligenceTopicGraph) { return { schemaVersion: graph.schemaVersion, sectorPack: graph.sectorPack, fingerprint: graph.fingerprint, nodes: graph.nodes.slice(0, 30).map((node) => ({ topic: node.topic, aliases: node.aliases, ...(node.parent ? { parent: node.parent } : {}), priority: node.priority, ...(node.confidence !== undefined ? { confidence: node.confidence } : {}), sourceIds: node.sourceIds, freshness: node.freshness, preferred: node.preferred, excluded: node.excluded, authority: node.authority, origin: node.origin })) }; }
 function enrichDiscoveryEvidence(item: DiscoveryEvidence, document: NormalizedSourceDocument): DiscoveryEvidence {
   const summary = document.transcript ?? document.body ?? document.description ?? item.summary;
@@ -392,12 +370,6 @@ function rankDiscoveryEvidence(items: DiscoveryEvidence[], input: HunterRunInput
   return result;
 }
 function discoveryScore(item: DiscoveryEvidence, topics: readonly string[]) { const text = `${item.title} ${item.summary ?? ""}`.toLowerCase(); const fit = topics.reduce((score, topic) => score + (text.includes(topic.toLowerCase()) ? 1 : 0), 0); const freshness = item.publishedAt ? Math.max(0, 1 - ((Date.now() - Date.parse(item.publishedAt)) / 86_400_000) / 180) : 0; return fit * 2 + freshness + sourceAuthority(item.platform); }
-function evidenceAdjustedScores(scores: HunterJudgmentCandidate["scores"], source: DiscoveryEvidence, document: NormalizedSourceDocument | undefined, graph: BrandIntelligenceTopicGraph | undefined) {
-  const text = `${source.title} ${source.summary ?? ""} ${document?.body ?? ""}`.toLowerCase();
-  const graphFit = graph?.nodes.filter((node) => !node.excluded && text.includes(node.topic.toLowerCase())).reduce((best, node) => Math.max(best, node.priority), 0) ?? 0;
-  const fresh = source.publishedAt ? Math.max(0, 1 - ((Date.now() - Date.parse(source.publishedAt)) / 86_400_000) / 180) : scores.timeliness;
-  return { ...scores, relevance: clamp01(scores.relevance * 0.75 + graphFit * 0.25), evidence: clamp01(scores.evidence + (document?.body || document?.transcript ? 0.15 : 0)), timeliness: clamp01(scores.timeliness * 0.6 + fresh * 0.4), brandAuthority: clamp01(scores.brandAuthority * 0.8 + sourceAuthority(source.platform) * 0.2) };
-}
 function opportunityDetails(candidate: HunterJudgmentCandidate, source: DiscoveryEvidence, input: HunterRunInput): NonNullable<OpportunityCandidateInput["details"]> {
   const confidence = clamp01(candidate.confidence ?? Object.values(candidate.scores).reduce((sum, score) => sum + score, 0) / 6);
   const freshnessDays = Math.max(1, Math.min(365, Math.round(candidate.freshnessDays ?? 30)));

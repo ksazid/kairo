@@ -2,29 +2,28 @@
 
 import { redirect } from "next/navigation";
 import type { BrandBrainSection } from "@kairo/contracts";
-import { getBrand, getBrandDnaReadiness } from "../../../../src/lib/kairo-api";
-import { requestRecommendations } from "../../../../src/lib/closed-loop-api";
+import { getBrand, putBrandBrainField } from "../../../../src/lib/kairo-api";
+import { getBrandBrainActivation } from "../../../../src/lib/brand-brain-activation-api";
 import { buildBrandBrain } from "../../../../src/lib/guided-brand-brain-api";
-import { putBrandBrainField } from "../../../../src/lib/kairo-api";
 
 export async function confirmOnboardingBrandAction(brandId: string): Promise<void> {
   const brand = await getBrand(brandId);
   if (!brand) redirect("/");
 
-  const readiness = await getBrandDnaReadiness(brandId).catch(() => undefined);
-  if (readiness?.status !== "ready") {
-    redirect(`/brands/${encodeURIComponent(brand.id)}/onboarding/confirm?notice=${encodeURIComponent("Brand DNA needs one more detail before discovery can start")}`);
+  // The activation read also ensures the versioned Discovery Plan exists for
+  // this exact Brand Intelligence snapshot before onboarding can complete.
+  const activation = await getBrandBrainActivation(brandId).catch(() => undefined);
+  if (!activation?.hunterReady) {
+    const notice = activation?.status === "needs-review"
+      ? "Brand DNA needs confirmation before discovery can start"
+      : "Brand DNA needs one more useful signal before discovery can start";
+    redirect(`/brands/${encodeURIComponent(brand.id)}/onboarding/confirm?notice=${encodeURIComponent(notice)}`);
   }
 
-  let notice = "Brand ready";
-  try {
-    const run = await requestRecommendations(brand.id);
-    notice = run.opportunityCount > 0 ? "Brand ready. For you is ready." : "Brand ready. Hunter completed its first run.";
-  } catch {
-    notice = "Brand ready. Hunter will retry when recommendations refresh.";
-  }
-
-  redirect(`/?workspace=${encodeURIComponent(brand.workspaceId)}&brand=${encodeURIComponent(brand.id)}&notice=${encodeURIComponent(notice)}`);
+  // Flow 1B stops at Ready for Hunter. Handoff enters the approved Kairo v2
+  // surface through its own OIDC login so host-scoped auth cookies are not
+  // assumed to transfer between separate Vercel applications.
+  redirect(kairoV2Handoff(brand.id));
 }
 
 export async function enrichOnboardingBrandAction(brandId: string, formData: FormData): Promise<void> {
@@ -50,6 +49,16 @@ export async function enrichOnboardingBrandAction(brandId: string, formData: For
     redirect(`/brands/${encodeURIComponent(brandId)}/onboarding/confirm?error=${encodeURIComponent(message.slice(0, 180))}`);
   }
   redirect(`/brands/${encodeURIComponent(brandId)}/onboarding/confirm?notice=${encodeURIComponent("Brand DNA updated. Review it once more before discovery.")}`);
+}
+
+function kairoV2Handoff(brandId: string): string {
+  const configured = process.env.KAIRO_UI_V2_URL?.trim() || "https://kairo-ui-v2.vercel.app";
+  const base = new URL(configured);
+  if (base.protocol !== "https:" && base.protocol !== "http:") throw new Error("KAIRO_UI_V2_URL must be HTTP(S)");
+  const returnTo = `/brand?brand=${encodeURIComponent(brandId)}&onboarding=complete`;
+  const login = new URL("/auth/login", base);
+  login.searchParams.set("returnTo", returnTo);
+  return login.toString();
 }
 
 function sectionFor(fieldKey: string): BrandBrainSection | undefined {

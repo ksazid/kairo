@@ -2,11 +2,16 @@ export type BrandBrainState = "confirmed" | "suggested" | "review";
 
 export type BrandBrainField = {
   key: string;
+  fieldKey: string;
+  section: string;
+  version?: number;
   label: string;
   description: string;
   value: string;
   state: BrandBrainState;
   evidence: string[];
+  origin?: "user-confirmed" | "source-backed" | "ai-inferred" | "unknown";
+  confidence?: "high" | "medium" | "low" | "unknown";
 };
 
 export type DiscoveryTopic = {
@@ -25,7 +30,7 @@ export function updateBrandField(
 ): BrandBrainField[] {
   const normalized = value.trim();
   if (!normalized) return [...fields];
-  return fields.map((field) => field.key === key ? { ...field, value: normalized, state: "confirmed" } : field);
+  return fields.map((field) => field.key === key ? { ...field, value: normalized, state: "confirmed", origin: "user-confirmed", confidence: "high" } : field);
 }
 
 export function updateDiscoveryTopic(
