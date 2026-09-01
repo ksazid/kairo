@@ -65,7 +65,7 @@ describe("Brand Discovery Plan", () => {
     expect(repository.versions).toHaveLength(2);
   });
 
-  it("appends a customized topic revision and never silently overwrites it after a later Brain snapshot", async () => {
+  it("appends customized topic and source-policy revisions and never silently overwrites them after a later Brain snapshot", async () => {
     const repository = new MemoryPlanRepository();
     const service = new BrandDiscoveryPlanService(repository);
     const first = await service.ensure("account-1", snapshot);
@@ -74,10 +74,16 @@ describe("Brand Discovery Plan", () => {
       name: "Applied agent systems",
       audience: "Software teams",
       entities: ["agent architecture", "production agents"],
+      sourceClasses: ["Official sources", "GitHub", "No Hacker News"],
     });
     expect(edited.revision).toBe(2);
     expect(edited.state).toBe("customized");
-    expect(edited.topics[0]).toMatchObject({ name: "Applied agent systems", audience: "Software teams", entities: ["agent architecture", "production agents"] });
+    expect(edited.topics[0]).toMatchObject({
+      name: "Applied agent systems",
+      audience: "Software teams",
+      entities: ["agent architecture", "production agents"],
+      sourceClasses: ["Official sources", "GitHub", "No Hacker News"],
+    });
 
     const newer = { ...snapshot, snapshotVersion: "brand-1@2026-09-01T12:00:00.000Z", updatedAt: "2026-09-01T12:00:00.000Z" };
     const preserved = await service.ensure("account-1", newer);
