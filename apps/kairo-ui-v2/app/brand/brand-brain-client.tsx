@@ -175,7 +175,7 @@ export function BrandBrainClient({ brandId }: { brandId?: string }) {
 
     {activeTab === "overview" ? <OverviewPanel fields={fields} editingField={editingField} fieldDraft={fieldDraft} setFieldDraft={setFieldDraft} startFieldEdit={startFieldEdit} saveField={saveField} cancelEdit={() => setEditingField(null)} reviewSuggestions={reviewSuggestions} brandId={brandId}/> : null}
     {activeTab === "dna" ? <DnaPanel fields={fields} editingField={editingField} fieldDraft={fieldDraft} setFieldDraft={setFieldDraft} startFieldEdit={startFieldEdit} saveField={saveField} cancelEdit={() => setEditingField(null)}/> : null}
-    {activeTab === "discovery" ? <DiscoveryPanel topics={topics} editingTopic={editingTopic} topicDraft={topicDraft} setTopicDraft={setTopicDraft} startTopicEdit={startTopicEdit} saveTopic={saveTopic} cancelEdit={() => setEditingTopic(null)} brandId={brandId}/> : null}
+    {activeTab === "discovery" ? <DiscoveryPanel topics={topics} editingTopic={editingTopic} topicDraft={topicDraft} setTopicDraft={setTopicDraft} startTopicEdit={startTopicEdit} saveTopic={saveTopic} cancelEdit={() => setEditingTopic(null)} onNotice={setNotice} brandId={brandId}/> : null}
     {activeTab === "sources" ? <SourcesPanel/> : null}
     {activeTab === "learning" ? <LearningPanel brandId={brandId}/> : null}
   </section>;
@@ -256,7 +256,7 @@ function DnaPanel({ fields, editingField, fieldDraft, setFieldDraft, startFieldE
   </div>;
 }
 
-function DiscoveryPanel({ topics, editingTopic, topicDraft, setTopicDraft, startTopicEdit, saveTopic, cancelEdit, brandId }: {
+function DiscoveryPanel({ topics, editingTopic, topicDraft, setTopicDraft, startTopicEdit, saveTopic, cancelEdit, onNotice, brandId }: {
   topics: DiscoveryTopic[];
   editingTopic: string | null;
   topicDraft: { name: string; entities: string };
@@ -264,17 +264,24 @@ function DiscoveryPanel({ topics, editingTopic, topicDraft, setTopicDraft, start
   startTopicEdit: (topic: DiscoveryTopic) => void;
   saveTopic: (topic: DiscoveryTopic) => void;
   cancelEdit: () => void;
+  onNotice: (message: string) => void;
   brandId?: string;
 }) {
   return <div id="brand-panel-discovery" role="tabpanel" aria-labelledby="brand-tab-discovery" className="brand-discovery-panel">
     <section className="brand-search-plan">
-      <header><div><span><SearchCheck aria-hidden="true"/>Daily discovery plan</span><h2>What Kairo will search tomorrow</h2><p>Review the topics, audiences, entities, and sources used by the background discovery engine.</p></div><div><span><CalendarClock aria-hidden="true"/><small>Next daily run</small><strong>Sep 1, 2026 · 8:00 AM</strong></span></div></header>
+      <header><div><span><SearchCheck aria-hidden="true"/>Discovery plan</span><h2>What Kairo will search on the next run</h2><p>Review the topics, audiences, entities, and sources used by the discovery engine.</p></div><div><span><CalendarClock aria-hidden="true"/><small>Automatic schedule</small><strong>Not enabled</strong></span></div></header>
       <div className="brand-topic-list">
         {topics.map((topic, index) => <TopicRow key={topic.id} topic={topic} index={index + 1} editing={editingTopic === topic.id} draft={topicDraft} setDraft={setTopicDraft} onEdit={() => startTopicEdit(topic)} onSave={() => saveTopic(topic)} onCancel={cancelEdit}/>)}
       </div>
       <footer><ShieldCheck aria-hidden="true"/><span><strong>Excluded topics</strong><small>Cryptocurrency speculation, political persuasion, adult content, and unsupported financial claims.</small></span></footer>
     </section>
     <aside className="brand-discovery-rail">
+      <section className="brand-hunter-schedule">
+        <header><span><CalendarClock aria-hidden="true"/>Hunter schedule</span><button type="button" disabled title="Automatic Hunter scheduling does not have an approved runtime contract."><Pencil aria-hidden="true"/>Unavailable</button></header>
+        <dl><div><dt>Frequency</dt><dd>Not scheduled</dd></div><div><dt>Run time</dt><dd>—</dd></div><div><dt>Timezone</dt><dd>—</dd></div><div><dt>Depth</dt><dd>Per manual run</dd></div></dl>
+        <p>Automatic background scheduling is not enabled in this release.</p>
+        <button className="brand-schedule-toggle" type="button" disabled onClick={() => onNotice("Automatic Hunter scheduling is not enabled.")}>Scheduling unavailable</button>
+      </section>
       <section><span><Brain aria-hidden="true"/>Brand Intelligence</span><ScoreBar label="Overall intelligence" value={84}/><ScoreBar label="Evidence coverage" value={78}/><ScoreBar label="Confirmed" value={86}/></section>
       <section className="brand-discovery-status"><span><SearchCheck aria-hidden="true"/>Discovery status</span><strong>Ready</strong><p>Your search plan has enough confirmed Brand context.</p></section>
       <section><span><TrendingUp aria-hidden="true"/>Previous run</span><dl><div><dt>Valuable discoveries</dt><dd>12</dd></div><div><dt>Weak signals filtered</dt><dd>38</dd></div></dl><Link href={`/discover${brandId ? `?brand=${encodeURIComponent(brandId)}` : ""}`}>View today&apos;s discoveries <ArrowRight aria-hidden="true"/></Link></section>

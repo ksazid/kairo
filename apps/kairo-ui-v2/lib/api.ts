@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { buildContinueItems, type CampaignSummary, type ContinueItem, type CreationFormat, type IdeaSummary } from "./home";
+import { settingsFallback, type PresenterResponse, type SettingsChannel, type SettingsData } from "./settings-data";
 
 export type HomeOpportunity = {
   id: string;
@@ -152,6 +153,63 @@ export async function getHomeData(requestedBrandId?: string): Promise<HomeData> 
     continueItems: buildContinueItems(brand.id, campaigns, ideas),
     ...(learning ? { learning: { statement: learning.statement, ...(learning.interpretation ? { interpretation: learning.interpretation } : {}) } } : {}),
   };
+}
+
+export async function getSettingsData(requestedBrandId?: string): Promise<SettingsData> {
+  const token = await accessToken();
+  if (!token) return settingsFallback();
+  const sessionResponse = await api(token, "/api/v1/session");
+  if (!sessionResponse.ok) return settingsFallback();
+  const session = await sessionResponse.json() as {
+    account: { id: string; email?: string; displayName?: string };
+    workspaces?: Array<{ id: string; name: string; role: "owner" | "member" }>;
+  };
+  const workspace = session.workspaces?.[0] ?? null;
+  if (!workspace) {
+    return {
+      authenticated: true,
+      account: { id: session.account.id, displayName: session.account.displayName ?? session.account.email ?? "Kairo member", ...(session.account.email ? { email: session.account.email } : {}) },
+      workspace: null,
+      brand: null,
+      channels: [],
+      presenter: null,
+    };
+  }
+  const brandsResponse = await api(token, `/api/v1/workspaces/${encodeURIComponent(workspace.id)}/brands`);
+  const brands = brandsResponse.ok ? await brandsResponse.json() as Array<{ id: string; workspaceId: string; name: string }> : [];
+  const brand = brands.find((candidate) => candidate.id === requestedBrandId) ?? brands[0] ?? null;
+  if (!brand) {
+    return {
+      authenticated: true,
+      account: { id: session.account.id, displayName: session.account.displayName ?? session.account.email ?? "Kairo member", ...(session.account.email ? { email: session.account.email } : {}) },
+      workspace,
+      brand: null,
+      channels: [],
+      presenter: null,
+    };
+  }
+  const base = `/api/v1/brands/${encodeURIComponent(brand.id)}`;
+  const [channelsResponse, presenterResponse] = await Promise.all([
+    api(token, `${base}/channel-accounts`),
+    api(token, `${base}/presenter`),
+  ]);
+  return {
+    authenticated: true,
+    account: { id: session.account.id, displayName: session.account.displayName ?? session.account.email ?? "Kairo member", ...(session.account.email ? { email: session.account.email } : {}) },
+    workspace,
+    brand,
+    channels: channelsResponse.ok ? await channelsResponse.json() as SettingsChannel[] : [],
+    presenter: presenterResponse.ok ? await presenterResponse.json() as PresenterResponse : null,
+  };
+}
+
+export async function saveSettingsPresenter(brandId: string, body: Record<string, unknown>): Promise<PresenterResponse> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to save this presenter.");
+  return bodyOrError<PresenterResponse>(
+    await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/presenter`, { method: "PUT", body: JSON.stringify(body) }),
+    "Kairo could not save this presenter.",
+  );
 }
 
 export async function getContentData(requestedBrandId?: string): Promise<ContentData> {

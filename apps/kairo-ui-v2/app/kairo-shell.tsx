@@ -67,7 +67,7 @@ export function KairoShell({
         <div className="top-spacer"/>
         <a className="mobile-classic" href={webUrl} aria-label="Back to Classic Kairo"><ExternalLink aria-hidden="true"/></a>
         <button className="bell" type="button" aria-label="Notifications"><Bell aria-hidden="true"/><b>3</b></button>
-        {authenticated ? <a className="profile" href="/auth/logout"><span>SK</span><strong>Sazzad</strong><ChevronDown aria-hidden="true"/></a> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
+        {authenticated ? <a className="profile" href="/settings"><span>SK</span><strong>Sazzad</strong><ChevronDown aria-hidden="true"/></a> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
       </header>
       <div className={`workspace ${workspaceClassName}`.trim()}>{children}</div>
     </main>
