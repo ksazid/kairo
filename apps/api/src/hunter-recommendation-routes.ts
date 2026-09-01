@@ -1,18 +1,29 @@
-import type { BrandBrainFieldDto } from "@kairo/contracts";
+import { Pool } from "pg";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { KairoService, type KairoRepository } from "@kairo/domain";
 import { DiscoveryService } from "@kairo/domain/discovery-service";
-import { projectBrandIntelligenceProfile } from "@kairo/domain/source-policy";
+import { createBrandBrainActivationSnapshot } from "@kairo/domain/brand-brain-activation";
+import {
+  BrandDiscoveryPlanService,
+  projectInitialBrandDiscoveryPlan,
+  type BrandDiscoveryPlan,
+  type BrandDiscoveryPlanRepository,
+} from "@kairo/domain/brand-discovery-plan";
+import { projectBrandIntelligenceSnapshot, type BrandIntelligenceSnapshot } from "@kairo/domain/brand-intelligence-snapshot";
+import { projectBrandIntelligenceProfile, type BrandIntelligenceProfile } from "@kairo/domain/source-policy";
 import { selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import type { HunterRunInput, HunterRunResult } from "@kairo/worker/hunter";
 import type { IdentityVerifier } from "./auth";
 import type { BrandIntelligenceGraphStore } from "./brand-intelligence-graph-store";
 import type { SectorPackId } from "@kairo/domain/brand-intelligence";
+import { PgBrandDiscoveryPlanRepository } from "./brand-discovery-plan-postgres";
 import {
   hunterClosedLoopStoreFromEnvironment,
   type HunterClosedLoopStore,
   type RecommendationFeedbackAction,
 } from "./batch7-closed-loop-store";
+
+let runtimePlanPool: Pool | undefined;
 
 export interface HunterRecommendationRunner {
   runForAuthorizedBrand(input: HunterRunInput): Promise<HunterRunResult>;
@@ -25,10 +36,13 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   graphStore?: BrandIntelligenceGraphStore;
   closedLoopStore?: HunterClosedLoopStore;
   discovery?: DiscoveryService;
+  discoveryPlanStore?: BrandDiscoveryPlanRepository;
 }) {
   const core = new KairoService(options.store);
   const inFlight = new Map<string, Promise<HunterRunResult>>();
   const closedLoop = options.closedLoopStore ?? hunterClosedLoopStoreFromEnvironment();
+  const planStore = options.discoveryPlanStore ?? discoveryPlanStoreFromEnv();
+  const plans = planStore ? new BrandDiscoveryPlanService(planStore) : undefined;
 
   app.post<{ Params: { brandId: string } }>(
     "/api/v1/brands/:brandId/recommendations",
@@ -48,14 +62,38 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
         });
       }
 
-      const brain = await core.listBrandBrain(account.id, brand.id);
-      const intelligenceProfile = projectBrandIntelligenceProfile(brain);
+      const [brain, sources] = await Promise.all([
+        core.listBrandBrain(account.id, brand.id),
+        core.listKnowledgeSources(account.id, brand.id),
+      ]);
+      const activation = createBrandBrainActivationSnapshot(brain, sources);
+      const snapshot = projectBrandIntelligenceSnapshot({ brand, fields: brain, sources, activation });
+      if (!snapshot.hunterReady) {
+        return reply.status(409).send({
+          type: "about:blank",
+          title: "Brand Brain is not ready for Hunter",
+          status: 409,
+          detail: "Complete or confirm the required Brand Brain context before running discovery.",
+          code: "hunter_not_ready",
+          correlationId: request.id,
+          readiness: snapshot.status,
+          gaps: snapshot.readinessGaps,
+          weakFields: snapshot.weakFields,
+          snapshotVersion: snapshot.snapshotVersion,
+        });
+      }
+
+      const discoveryPlan = plans
+        ? await plans.ensure(account.id, snapshot)
+        : projectInitialBrandDiscoveryPlan(snapshot);
+      const baseProfile = projectBrandIntelligenceProfile(brain);
+      const intelligenceProfile = applyDiscoveryPlan(baseProfile, discoveryPlan);
       const pack = selectSectorIntelligencePack(intelligenceProfile);
       const graphRecord = options.graphStore
         ? await options.graphStore.ensureCurrent(account.id, brand.workspaceId, brand.id, brain, topicGraphPack(pack.id))
         : undefined;
       const existingOpportunities = options.discovery ? await options.discovery.list(account.id, brand.id) : [];
-      const projectedBrand = projectBrandContext(brand, brain);
+      const projectedBrand = projectBrandContext(snapshot, discoveryPlan);
       const learnedContext = closedLoop ? await closedLoop.learningContext(account.id, brand.id) : undefined;
       const input: HunterRunInput = {
         accountId: account.id,
@@ -71,13 +109,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       const key = `${account.id}:${brand.id}`;
       let run = inFlight.get(key);
       if (!run) {
-        run = options.runner.runForAuthorizedBrand(input).then(async (result) => {
-          if (result.opportunityCount === 0) {
-            const starterCount = options.discovery ? await createProfileStarters(options.discovery, options.store, account.id, brand, input, brain) : 0;
-            if (starterCount) return { ...result, candidateCount: result.candidateCount + starterCount, opportunityCount: starterCount };
-          }
-          return result;
-        }).finally(() => inFlight.delete(key));
+        run = options.runner.runForAuthorizedBrand(input).finally(() => inFlight.delete(key));
         inFlight.set(key, run);
       }
       return run;
@@ -122,35 +154,50 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   );
 }
 
-async function createProfileStarters(service: DiscoveryService, repository: KairoRepository, accountId: string, brand: { id: string; publicSourceUrl?: string; publicProfileUrl?: string }, input: HunterRunInput, brain: readonly BrandBrainFieldDto[]) {
-  const source = (await repository.listKnowledgeSources(accountId, brand.id)).find((item) => item.status === "active" && item.sourceUrl);
-  const sourceUrl = source?.sourceUrl ?? brand.publicProfileUrl ?? brand.publicSourceUrl;
-  if (!sourceUrl) return 0;
-  const topics = brain.find((field) => field.fieldKey === "content.preferred-topics")?.value?.trim() || "the Brand's core topics";
-  const audience = brain.find((field) => field.fieldKey === "audience.primary")?.value?.trim() || "the Brand audience";
-  const ideas: Array<[string, string, string, string]> = [
-    [`${input.brand.brandName}: a practical guide for ${topics}`, `Starter opportunity grounded in the Brand's learned topics and public source.`, `The onboarding source is available now, so this is ready to develop.`, `Create an educational carousel for ${audience}.`],
-    [`What ${audience} should know about ${topics}`, `Starter opportunity based on the Brand's audience and learned content direction.`, `A clear audience question is available immediately after onboarding.`, `Create a concise Instagram post with one useful takeaway.`],
-    [`Behind the Brand: ${topics}`, `Starter opportunity using the Brand's own public context as the evidence boundary.`, `The Brand can begin with an owned-context story while broader sources refresh.`, `Create a visual story or Reel draft without making unsupported claims.`],
-    [`The ${topics} checklist for ${audience}`, `A practical checklist grounded in the Brand's learned topic and audience context.`, `Checklist structure gives the audience an immediate action to take.`, `Create a saveable carousel with a short checklist.`],
-    [`Common ${topics} mistakes to avoid`, `An educational mistake-prevention angle using the Brand's known authority area.`, `Mistake-led education creates a clear, useful audience entry point.`, `Create a concise post with evidence-backed corrections.`],
-    [`${topics}: myth versus fact`, `A myth-versus-fact angle bounded by the Brand's public source and approved context.`, `The format creates a distinct angle without broad unsupported claims.`, `Create a myth-versus-fact carousel for ${audience}.`],
-    [`How to choose the right ${topics} approach`, `A decision-guide opportunity built from the Brand's topic and audience needs.`, `A decision guide helps the audience move from interest to action.`, `Create a practical decision-guide post.`],
-    [`A behind-the-scenes look at ${topics}`, `An owned-context story that shows how the Brand approaches its subject.`, `Behind-the-scenes content adds personality while staying inside Brand boundaries.`, `Create a short Reel or visual story without unsupported claims.`],
-  ];
-  let created = 0;
-  const existing = new Set((input.existingOpportunityTitles ?? []).map((title) => title.trim().toLowerCase()));
-  for (const [title, rationale, whyNow, direction] of ideas) {
-    if (existing.has(title.toLowerCase())) continue;
-    const result = await service.recordCandidate(accountId, brand.id, { signal: { title, summary: rationale, sourceUrl, platform: sourceUrl.includes("instagram") ? "instagram" : "web", retrievedAt: new Date().toISOString(), provider: "brand-profile-fallback", providerVersion: "v1" }, title, rationale, whyNow, developmentDirection: direction, brandContextVersion: input.brand.contextVersion, scores: { relevance: .78, evidence: .55, novelty: .68, timeliness: .62, brandAuthority: .72, audienceFit: .78 }, details: { topic: topics, proposedAngle: direction, hook: title, targetAudience: audience, objective: "Grow audience", confidence: .62, estimatedEffort: "low", recommendedFormat: "carousel", recommendedChannel: "instagram" } });
-    if (result.opportunity) {
-      existing.add(title.toLowerCase());
-      created++;
-    }
-  }
-  return created;
+function discoveryPlanStoreFromEnv(): BrandDiscoveryPlanRepository | undefined {
+  const connectionString = process.env.DATABASE_URL?.trim();
+  if (!connectionString) return undefined;
+  runtimePlanPool ??= new Pool({ connectionString });
+  return new PgBrandDiscoveryPlanRepository(runtimePlanPool);
 }
 
+function applyDiscoveryPlan(profile: BrandIntelligenceProfile, plan: BrandDiscoveryPlan): BrandIntelligenceProfile {
+  const topicNames = unique(plan.topics.map((topic) => topic.name));
+  const topicAudiences = unique(plan.topics.map((topic) => topic.audience));
+  return {
+    ...profile,
+    topics: topicNames.length ? topicNames : profile.topics,
+    audiences: unique([...topicAudiences, ...profile.audiences]),
+    excludedTopics: unique([...plan.excludedTopics, ...profile.excludedTopics]),
+  };
+}
+
+function projectBrandContext(snapshot: BrandIntelligenceSnapshot, plan: BrandDiscoveryPlan): HunterRunInput["brand"] {
+  const context = snapshot.context;
+  return {
+    workspaceId: snapshot.workspaceId,
+    brandId: snapshot.brandId,
+    contextVersion: `${snapshot.snapshotVersion}|${plan.planVersion}`,
+    brandName: snapshot.brandName,
+    ...(context.positioning ? { positioning: context.positioning } : {}),
+    ...(context.audience ? { audience: context.audience } : {}),
+    ...(context.voice ? { voice: context.voice } : {}),
+    ...(context.goals ? { goals: context.goals } : {}),
+    ...(context.boundaries ? { boundaries: context.boundaries } : {}),
+  };
+}
+
+function unique(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values.map((item) => item.trim()).filter(Boolean)) {
+    const key = value.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(value);
+  }
+  return result;
+}
 
 function isFeedbackAction(value: string): value is RecommendationFeedbackAction {
   return value === "seen" || value === "dismissed";
@@ -178,39 +225,6 @@ function topicGraphPack(packId: string): SectorPackId {
   if (packId === "ias-upsc-education") return "ias-upsc";
   if (packId === "motorcycles") return "motorcycles";
   return "generic";
-}
-
-function projectBrandContext(
-  brand: { id: string; workspaceId: string; name: string },
-  brain: readonly BrandBrainFieldDto[],
-): HunterRunInput["brand"] {
-  const active = brain.filter((field) => field.state !== "stale");
-  const latest = [...active].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
-  return {
-    workspaceId: brand.workspaceId,
-    brandId: brand.id,
-    contextVersion: `${brand.id}@${latest?.updatedAt ?? "brain-empty"}`,
-    brandName: brand.name,
-    ...sectionContext(active, "positioning", "positioning"),
-    ...sectionContext(active, "audience", "audience"),
-    ...sectionContext(active, "voice", "voice"),
-    ...sectionContext(active, "goals", "goals"),
-    ...sectionContext(active, "boundaries", "boundaries"),
-  };
-}
-
-function sectionContext(
-  fields: readonly BrandBrainFieldDto[],
-  section: BrandBrainFieldDto["section"],
-  key: "positioning" | "audience" | "voice" | "goals" | "boundaries",
-) {
-  const value = fields
-    .filter((field) => field.section === section)
-    .map((field) => field.value.trim())
-    .filter(Boolean)
-    .join(" · ")
-    .slice(0, 4_000);
-  return value ? { [key]: value } : {};
 }
 
 async function authenticate(
