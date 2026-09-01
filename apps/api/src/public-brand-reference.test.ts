@@ -85,6 +85,38 @@ describe("PublicBrandReferenceHttpReader", () => {
     });
   });
 
+  it("safely truncates oversized textual pages instead of discarding usable evidence", async () => {
+    const reader = new PublicBrandReferenceHttpReader({
+      maxBytes: 8_000,
+      resolveHost: publicHost,
+      transport: async () => ({
+        status: 200,
+        headers: { "content-type": "text/html; charset=utf-8" },
+        body: `<html><head><title>Wolt Malta</title><meta name="description" content="Food, groceries and local delivery in Malta"></head><body><main>Order food and groceries from local restaurants and stores in Malta.</main><script>${"x".repeat(9_000)}`,
+      }),
+    });
+
+    await expect(reader.read("https://example.com/malta")).resolves.toMatchObject({
+      title: "Wolt Malta",
+      summary: "Food, groceries and local delivery in Malta",
+      excerpt: expect.stringContaining("Order food and groceries from local restaurants and stores in Malta."),
+    });
+  });
+
+  it("does not truncate oversized or partially downloaded PDF content as text", async () => {
+    const reader = new PublicBrandReferenceHttpReader({
+      resolveHost: publicHost,
+      transport: async () => ({
+        status: 200,
+        headers: { "content-type": "text/html" },
+        body: Buffer.from("%PDF-1.4\nBT (partial document) Tj ET", "latin1"),
+        truncated: true,
+      }),
+    });
+
+    await expect(reader.read("https://example.com/document")).rejects.toMatchObject({ kind: "too-large" });
+  });
+
   it("extracts text from a bounded text-based PDF URL and reports document metadata", async () => {
     const pdf = Buffer.from("%PDF-1.4\n1 0 obj<< /Title (Duke Brand Guide) >>endobj\n2 0 obj<< /Length 90 >>stream\nBT /F1 12 Tf 72 720 Td (Duke 390 rider-first ownership and modification guidance.) Tj ET\nendstream\nendobj\n%%EOF", "latin1");
     const reader = new PublicBrandReferenceHttpReader({
