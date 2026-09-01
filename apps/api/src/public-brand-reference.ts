@@ -33,6 +33,7 @@ export interface PublicBrandReferenceTransportResponse {
   status: number;
   headers: Record<string, string | undefined>;
   body: Buffer | string;
+  truncated?: boolean;
 }
 
 type ResolveHost = (hostname: string) => Promise<ResolvedAddress[]>;
@@ -98,11 +99,16 @@ export class PublicBrandReferenceHttpReader implements PublicBrandReferenceReade
       throw new PublicBrandReferenceError("unavailable", `Public Brand reference returned ${response.status}`);
     }
 
-    const body = asBuffer(response.body);
-    if (body.length > this.maxBytes) throw new PublicBrandReferenceError("too-large", "Public Brand reference exceeded the response limit");
-
+    const rawBody = asBuffer(response.body);
     const contentType = mediaType(response.headers["content-type"]);
-    const pdf = contentType === "application/pdf" || looksLikePdf(body);
+    const pdf = contentType === "application/pdf" || looksLikePdf(rawBody);
+    const oversized = rawBody.length > this.maxBytes;
+    const mayTruncate = isTruncatableTextContentType(contentType) && !pdf;
+    if ((oversized || response.truncated) && !mayTruncate) {
+      throw new PublicBrandReferenceError("too-large", "Public Brand reference exceeded the response limit");
+    }
+    const body = oversized ? rawBody.subarray(0, this.maxBytes) : rawBody;
+
     if (pdf) {
       if (!looksLikePdf(body)) throw new PublicBrandReferenceError("invalid-response", "Public Brand PDF response did not contain a PDF document");
       const context = extractPdfContext(body);
@@ -189,21 +195,42 @@ function nodeTransport(request: PublicBrandReferenceTransportRequest): Promise<P
     const outgoing = client.request(options, (incoming) => {
       const chunks: Buffer[] = [];
       let size = 0;
+      let settled = false;
+      const responseHeaders = Object.fromEntries(Object.entries(incoming.headers).map(([key, value]) => [key.toLowerCase(), Array.isArray(value) ? value[0] : value]));
+      const truncatableText = isTruncatableTextContentType(mediaType(responseHeaders["content-type"]));
+      const resolveResponse = (truncated = false) => {
+        if (settled) return;
+        settled = true;
+        resolve({
+          status: incoming.statusCode ?? 0,
+          headers: responseHeaders,
+          body: Buffer.concat(chunks),
+          ...(truncated ? { truncated: true } : {}),
+        });
+      };
       incoming.on("data", (chunk: Buffer | string) => {
+        if (settled) return;
         const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-        size += buffer.length;
-        if (size > request.maxBytes) {
-          incoming.destroy(new PublicBrandReferenceError("too-large", "Public Brand reference exceeded the response limit"));
+        const remaining = request.maxBytes - size;
+        if (buffer.length > remaining) {
+          if (!truncatableText) {
+            settled = true;
+            const error = new PublicBrandReferenceError("too-large", "Public Brand reference exceeded the response limit");
+            incoming.destroy(error);
+            reject(error);
+            return;
+          }
+          if (remaining > 0) chunks.push(buffer.subarray(0, remaining));
+          size = request.maxBytes;
+          resolveResponse(true);
+          incoming.destroy();
           return;
         }
+        size += buffer.length;
         chunks.push(buffer);
       });
-      incoming.on("end", () => resolve({
-        status: incoming.statusCode ?? 0,
-        headers: Object.fromEntries(Object.entries(incoming.headers).map(([key, value]) => [key.toLowerCase(), Array.isArray(value) ? value[0] : value])),
-        body: Buffer.concat(chunks),
-      }));
-      incoming.on("error", reject);
+      incoming.on("end", () => resolveResponse(false));
+      incoming.on("error", (error) => { if (!settled) reject(error); });
     });
     outgoing.setTimeout(request.timeoutMs, () => outgoing.destroy(new PublicBrandReferenceError("timeout", "Public Brand reference timed out")));
     outgoing.on("error", reject);
@@ -265,7 +292,8 @@ function extractHtmlContext(html: string, pageUrl: URL): { title?: string; summa
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, " ")
-    .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, " ");
+    .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<(?:script|style|noscript|svg)\b[^>]*>[\s\S]*$/gi, " ");
   const body = firstMatch(withoutNoise, /<body\b[^>]*>([\s\S]*?)<\/body>/i) || withoutNoise;
   const visible = normalizeWhitespace(decodeEntities(body.replace(/<[^>]+>/g, " ")));
   const excerpt = joinUnique([title, summary, structured, visible]).slice(0, MAX_EXCERPT);
@@ -282,7 +310,7 @@ function extractSameDomainLinks(html: string, pageUrl: URL): string[] {
     try {
       const candidate = new URL(href, pageUrl);
       candidate.hash = "";
-      if (!['http:', 'https:'].includes(candidate.protocol) || candidate.hostname.toLowerCase() !== pageUrl.hostname.toLowerCase()) continue;
+      if (!["http:", "https:"].includes(candidate.protocol) || candidate.hostname.toLowerCase() !== pageUrl.hostname.toLowerCase()) continue;
       if (candidate.username || candidate.password || /\.(?:zip|exe|dmg|jpg|jpeg|png|gif|webp|mp4|mp3)$/i.test(candidate.pathname)) continue;
       const normalized = candidate.toString();
       if (!seen.has(normalized) && normalized !== pageUrl.toString()) { seen.add(normalized); result.push(normalized); }
@@ -501,6 +529,10 @@ function looksLikePdf(body: Buffer): boolean {
 
 function mediaType(value: string | undefined): string {
   return (value ?? "").split(";", 1)[0]!.trim().toLowerCase();
+}
+
+function isTruncatableTextContentType(contentType: string): boolean {
+  return contentType === "text/html" || contentType === "application/xhtml+xml" || contentType.startsWith("text/");
 }
 
 function asBuffer(value: Buffer | string): Buffer { return Buffer.isBuffer(value) ? value : Buffer.from(value, "utf8"); }
