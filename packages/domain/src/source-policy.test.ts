@@ -136,7 +136,7 @@ describe("VS-12A sector-aware source policy", () => {
 
     expect(policyEntry(policy, "rss")).toMatchObject({ enabled: true, weight: 1 });
     expect(policyEntry(policy, "agent-reach")).toMatchObject({ enabled: true, weight: 1 });
-    expect(policyEntry(policy, "github")).toMatchObject({ enabled: true, weight: 0.65 });
+    expect(policyEntry(policy, "github")).toMatchObject({ enabled: true, weight: 0.77 });
     expect(policyEntry(policy, "youtube")).toMatchObject({ enabled: false, weight: 0 });
     expect(policyEntry(policy, "hacker-news")).toMatchObject({ enabled: false, weight: 0 });
   });
