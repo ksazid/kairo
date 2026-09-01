@@ -12,10 +12,11 @@ import {
   FileText,
   Home as HomeIcon,
   Megaphone,
+  Settings2,
   Sparkles,
 } from "lucide-react";
 
-type ActiveDestination = "Home" | "Discover" | "Content" | "Campaigns" | "Calendar" | "Insights" | "Brain";
+type ActiveDestination = "Home" | "Discover" | "Content" | "Campaigns" | "Calendar" | "Insights" | "Brain" | "Settings";
 
 export function KairoShell({
   active,
@@ -51,6 +52,7 @@ export function KairoShell({
     { label: "Calendar" as const, Icon: CalendarDays, href: brandId ? `/calendar?brand=${encodeURIComponent(brandId)}` : "/calendar" },
     { label: "Insights" as const, Icon: BarChart3, href: brandId ? `/insights?brand=${encodeURIComponent(brandId)}` : "/insights" },
     { label: "Brain" as const, Icon: BrainCircuit, href: brandId ? `/brand?brand=${encodeURIComponent(brandId)}` : "/brand" },
+    { label: "Settings" as const, Icon: Settings2, href: brandId ? `/settings?brand=${encodeURIComponent(brandId)}` : "/settings" },
   ];
 
   return <div className="app-shell">
