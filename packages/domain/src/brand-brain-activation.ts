@@ -50,10 +50,13 @@ const GROUP_KEYS: Record<BrandDnaReadinessGap, readonly string[]> = {
 };
 
 const CANONICAL_CONFIRM_FIELD: Partial<Record<BrandDnaReadinessGap, string>> = {
+  business: "identity.description",
+  offerings: "identity.products-services",
   audience: "audience.primary",
   positioning: "positioning.value-proposition",
   topics: "content.pillars",
   boundaries: "boundaries.excluded-topics",
+  geography: "identity.geography",
 };
 
 const CRITICAL_KEYS = new Set(Object.values(GROUP_KEYS).flat());
@@ -65,8 +68,13 @@ export function createBrandBrainActivationSnapshot(
 ): BrandBrainActivationSnapshot {
   const readiness = evaluateBrandDnaReadiness(fields, options);
   const fieldActivation = newestByField(fields).map(activateField);
-  const reviewFields = fieldActivation.filter((field) => field.critical && field.weak && !readiness.gaps.some((gap) => GROUP_KEYS[gap].includes(field.fieldKey)));
-  const hunterReady = readiness.status === "ready" && reviewFields.length === 0;
+  const requiredGroups = (Object.keys(GROUP_KEYS) as BrandDnaReadinessGap[]).filter((gap) => gap !== "geography" || options.geographyRequired);
+  const reviewGroups = requiredGroups.filter((gap) => {
+    if (readiness.gaps.includes(gap)) return false;
+    const members = fieldActivation.filter((field) => GROUP_KEYS[gap].includes(field.fieldKey));
+    return members.length > 0 && !members.some((field) => !field.weak);
+  });
+  const hunterReady = readiness.status === "ready" && reviewGroups.length === 0;
   const status: BrandBrainActivationStatus = readiness.gaps.length
     ? "needs-enrichment"
     : hunterReady
@@ -75,10 +83,10 @@ export function createBrandBrainActivationSnapshot(
   const totalGroups = options.geographyRequired ? 7 : 6;
   const knownGroups = Math.max(0, totalGroups - readiness.gaps.length);
   const weakFields = [...new Set([
-    ...readiness.gaps.flatMap((gap) => GROUP_KEYS[gap]),
-    ...reviewFields.map((field) => field.fieldKey),
+    ...readiness.gaps.map((gap) => CANONICAL_CONFIRM_FIELD[gap] ?? GROUP_KEYS[gap][0]).filter((value): value is string => Boolean(value)),
+    ...reviewGroups.map((gap) => CANONICAL_CONFIRM_FIELD[gap] ?? GROUP_KEYS[gap][0]).filter((value): value is string => Boolean(value)),
   ])];
-  const recommendedSources = recommendations(readiness.gaps, reviewFields);
+  const recommendedSources = recommendations(readiness.gaps, reviewGroups);
   const evidenceSourceCount = new Set([
     ...sources.filter((source) => source.status === "active").map((source) => source.id),
     ...fields.flatMap((field) => field.sourceIds),
@@ -130,7 +138,7 @@ function activateField(field: BrandBrainFieldDto): BrandBrainFieldActivation {
 
 function recommendations(
   gaps: readonly BrandDnaReadinessGap[],
-  reviewFields: readonly BrandBrainFieldActivation[],
+  reviewGroups: readonly BrandDnaReadinessGap[],
 ): BrandBrainSourceRecommendation[] {
   const output: BrandBrainSourceRecommendation[] = [];
   for (const gap of gaps) {
@@ -143,8 +151,9 @@ function recommendations(
       output.push({ gap, type: "confirm-field", ...(fieldKey ? { fieldKey } : {}), label: `Confirm ${gap}`, reason: `Owner confirmation can resolve the missing ${gap} context.` });
     }
   }
-  for (const field of reviewFields) {
-    output.push({ gap: "review", type: "confirm-field", fieldKey: field.fieldKey, label: "Review AI inference", reason: "Confirm this field before Hunter relies on it." });
+  for (const gap of reviewGroups) {
+    const fieldKey = CANONICAL_CONFIRM_FIELD[gap] ?? GROUP_KEYS[gap][0];
+    output.push({ gap: "review", type: "confirm-field", ...(fieldKey ? { fieldKey } : {}), label: `Review ${gap}`, reason: `Confirm the ${gap} context before Hunter relies on it.` });
   }
   const seen = new Set<string>();
   return output.filter((item) => {
