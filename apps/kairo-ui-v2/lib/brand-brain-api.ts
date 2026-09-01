@@ -73,3 +73,22 @@ export async function addBrandBrainSource(input: { brandId: string; url: string 
   }), "The source was saved, but Kairo could not recalculate Brand Brain from it.");
   return bodyOrError<BrandBrainRuntimeData>(await api(token, `/api/v1/brands/${brand}/brain/activation`), "Kairo could not refresh Brand Brain.");
 }
+
+export async function saveBrandDiscoveryTopic(input: {
+  brandId: string;
+  topicId: string;
+  expectedRevision: number;
+  name: string;
+  audience: string;
+  entities: string[];
+}): Promise<BrandBrainRuntimeData> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to edit Discovery Intelligence.");
+  const brand = encodeURIComponent(input.brandId);
+  const topic = encodeURIComponent(input.topicId);
+  await bodyOrError(await api(token, `/api/v1/brands/${brand}/discovery-plan/topics/${topic}`, {
+    method: "PATCH",
+    body: JSON.stringify({ expectedRevision: input.expectedRevision, name: input.name, audience: input.audience, entities: input.entities }),
+  }), "Kairo could not save this Discovery topic.");
+  return bodyOrError<BrandBrainRuntimeData>(await api(token, `/api/v1/brands/${brand}/brain/activation`), "Kairo could not refresh Discovery Intelligence.");
+}
