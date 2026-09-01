@@ -1,0 +1,38 @@
+name: Flow 1A 12-site certification
+
+on:
+  push:
+    branches:
+      - feat/flow-1a-evidence-sanitization-ui-format
+    paths:
+      - "apps/api/src/flow-1a-12-site-certification.live.test.ts"
+      - "apps/api/src/public-brand-reference.ts"
+      - "apps/api/src/source-intelligence.ts"
+      - "apps/api/src/source-adapters.ts"
+      - "apps/api/src/social-source-adapters.ts"
+      - "packages/domain/src/brand-brain-*.ts"
+      - ".github/workflows/flow-1a-12-site-certification.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FLOW_1A_LIVE_CERTIFICATION: "1"
+  BRAND_ONBOARDING_MAX_RECENT_ITEMS: "1"
+  BRAND_ONBOARDING_MAX_DEEP_ITEMS: "1"
+  BRAND_ONBOARDING_MAX_BYTES: "30000"
+
+jobs:
+  certify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --no-audit --no-fund
+      - name: Run Flow 1A 12-site matrix
+        working-directory: apps/api
+        run: npx vitest run src/flow-1a-12-site-certification.live.test.ts --no-file-parallelism --reporter=verbose
