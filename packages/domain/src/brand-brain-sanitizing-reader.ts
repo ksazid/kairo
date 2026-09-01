@@ -1,9 +1,6 @@
 import type { PublicBrandReference, PublicBrandReferenceReader } from "./brand-brain-bootstrap";
-import {
-  assertSanitizedBrandEvidenceReference,
-  sanitizeBrandEvidenceReference,
-  type EvidenceTrustLevel,
-} from "./brand-brain-evidence-sanitizer";
+import { assertSanitizedBrandEvidenceReference, type EvidenceTrustLevel } from "./brand-brain-evidence-sanitizer";
+import { sanitizeBrandEvidenceAtBoundary } from "./brand-brain-evidence-boundary";
 
 /**
  * Security boundary between acquisition/DOM cleanup and Brand-DNA mapping.
@@ -18,7 +15,7 @@ export class SanitizingPublicBrandReferenceReader implements PublicBrandReferenc
 
   async read(url: string): Promise<PublicBrandReference> {
     const raw = await this.delegate.read(url);
-    const sanitized = sanitizeBrandEvidenceReference(raw, this.trustLevel);
+    const sanitized = sanitizeBrandEvidenceAtBoundary(raw, this.trustLevel);
     assertSanitizedBrandEvidenceReference(sanitized);
     return sanitized;
   }
