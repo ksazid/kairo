@@ -64,7 +64,7 @@ export function sanitizeEvidenceReference<T extends EvidenceReferenceInput>(
     excerpt,
     retrievedAt: retrievedAt.toISOString(),
     ...(links ? { links } : {}),
-  };
+  } as T;
 }
 
 export function validateEvidenceProposal<T extends EvidenceProposalInput>(
@@ -84,7 +84,7 @@ export function validateEvidenceProposal<T extends EvidenceProposalInput>(
     throw new DomainValidationError("Brand Brain proposal provenance is invalid");
   }
 
-  return { ...proposal, fieldKey, value, sourceIds };
+  return { ...proposal, fieldKey, value, sourceIds } as T;
 }
 
 export function deduplicateEvidenceProposals<T extends EvidenceProposalInput>(proposals: T[]): T[] {
