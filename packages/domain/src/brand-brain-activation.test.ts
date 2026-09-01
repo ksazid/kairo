@@ -40,12 +40,18 @@ describe("Brand Brain activation", () => {
     expect(result.fields.find((item) => item.fieldKey === "audience.primary")).toMatchObject({ origin: "user-confirmed", confidence: { score: 1, level: "high" } });
   });
 
-  it("blocks Hunter when critical context is missing and recommends enrichment", () => {
+  it("blocks Hunter when critical context is missing and recommends canonical v2 enrichment targets", () => {
     const result = createBrandBrainActivationSnapshot([field("identity.description", "A travel Brand")]);
     expect(result.hunterReady).toBe(false);
     expect(result.status).toBe("needs-enrichment");
     expect(result.readiness.gaps).toEqual(expect.arrayContaining(["offerings", "audience", "positioning", "topics", "boundaries"]));
-    expect(result.recommendedSources).toEqual(expect.arrayContaining([expect.objectContaining({ type: "website" })]));
+    expect(result.recommendedSources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: "website" }),
+      expect.objectContaining({ type: "confirm-field", fieldKey: "audience.primary" }),
+      expect.objectContaining({ type: "confirm-field", fieldKey: "positioning.value-proposition" }),
+      expect.objectContaining({ type: "confirm-field", fieldKey: "content.pillars" }),
+      expect.objectContaining({ type: "confirm-field", fieldKey: "boundaries.excluded-topics" }),
+    ]));
   });
 
   it("requires review for unsupported AI-only critical inference even when all groups are filled", () => {
