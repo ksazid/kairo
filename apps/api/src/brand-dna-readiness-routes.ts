@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { evaluateBrandDnaReadiness, KairoService, type KairoRepository } from "@kairo/domain";
 import { createBrandBrainActivationSnapshot } from "@kairo/domain/brand-brain-activation";
+import { projectInitialBrandDiscoveryPlan } from "@kairo/domain/brand-discovery-plan";
 import { projectBrandIntelligenceSnapshot } from "@kairo/domain/brand-intelligence-snapshot";
 import type { IdentityVerifier } from "./auth";
 
@@ -24,11 +25,15 @@ export function registerBrandDnaReadinessRoutes(app: FastifyInstance, options: {
     ]);
     const activation = createBrandBrainActivationSnapshot(brain, sources);
     const intelligenceSnapshot = projectBrandIntelligenceSnapshot({ brand, fields: brain, sources, activation });
+    const discoveryPlan = projectInitialBrandDiscoveryPlan(intelligenceSnapshot);
     return {
       brain,
       sources,
       ...activation,
       intelligenceSnapshot,
+      discoveryPlan,
+      discoveryRun: null,
+      schedule: null,
     };
   });
 }
