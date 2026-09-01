@@ -2,16 +2,20 @@
 
 import { redirect } from "next/navigation";
 import type { BrandBrainSection } from "@kairo/contracts";
-import { getBrand, getBrandDnaReadiness, putBrandBrainField } from "../../../../src/lib/kairo-api";
+import { getBrand, putBrandBrainField } from "../../../../src/lib/kairo-api";
+import { getBrandBrainActivation } from "../../../../src/lib/brand-brain-activation-api";
 import { buildBrandBrain } from "../../../../src/lib/guided-brand-brain-api";
 
 export async function confirmOnboardingBrandAction(brandId: string): Promise<void> {
   const brand = await getBrand(brandId);
   if (!brand) redirect("/");
 
-  const readiness = await getBrandDnaReadiness(brandId).catch(() => undefined);
-  if (readiness?.status !== "ready") {
-    redirect(`/brands/${encodeURIComponent(brand.id)}/onboarding/confirm?notice=${encodeURIComponent("Brand DNA needs one more detail before discovery can start")}`);
+  const activation = await getBrandBrainActivation(brandId).catch(() => undefined);
+  if (!activation?.hunterReady) {
+    const notice = activation?.status === "needs-review"
+      ? "Brand DNA needs confirmation before discovery can start"
+      : "Brand DNA needs one more useful signal before discovery can start";
+    redirect(`/brands/${encodeURIComponent(brand.id)}/onboarding/confirm?notice=${encodeURIComponent(notice)}`);
   }
 
   // Flow 1B stops at the explicit Ready-for-Hunter handoff. The first Hunter run
