@@ -3,11 +3,11 @@ import type {
   AgentInvocationRequest,
   AgentRuntimePort,
   AgentRuntimeResult,
-  DiscoveryEvidence,
   ToolGatewayPort,
   ToolRequest,
   ToolResult,
 } from "@kairo/agent-contracts";
+import type { BrandIntelligenceProfile } from "@kairo/domain/source-policy";
 import { HunterOrchestrator } from "./hunter";
 
 class SearchCaptureTools implements ToolGatewayPort {
@@ -39,7 +39,15 @@ const brandBase = {
   contextVersion: "snapshot-v1|plan-v1",
 };
 
-const cases = [
+type PocBrand = typeof brandBase & { brandId: string; brandName: string };
+interface PocCase {
+  name: string;
+  brand: PocBrand;
+  profile: BrandIntelligenceProfile;
+  expectedSources: string[];
+}
+
+const cases: PocCase[] = [
   {
     name: "Kairo AI / developer technology",
     brand: { ...brandBase, brandId: "brand-kairo", brandName: "Kairo" },
@@ -113,7 +121,7 @@ const cases = [
     // should change with that product decision rather than silently changing Hunter behavior.
     expectedSources: ["agent-reach", "bluesky", "github", "hacker-news", "rss", "youtube"],
   },
-] as const;
+];
 
 describe("Hunter Chunk 1-2 multi-brand POC", () => {
   for (const testCase of cases) {
@@ -139,9 +147,9 @@ describe("Hunter Chunk 1-2 multi-brand POC", () => {
       expect(searches.length).toBeGreaterThan(0);
       expect(searches.length).toBeLessThanOrEqual(16);
       expect(searches.every((request) => String(request.input.query).length <= 600)).toBe(true);
-      expect(searches.every((request) => String(request.input.query).includes(testCase.profile.geographies[0]))).toBe(true);
+      expect(searches.every((request) => String(request.input.query).includes(testCase.profile.geographies[0]!))).toBe(true);
 
-      const excluded = testCase.profile.excludedTopics[0];
+      const excluded = testCase.profile.excludedTopics[0]!;
       const negativeToken = excluded.includes(" ") ? `-\"${excluded}\"` : `-${excluded}`;
       expect(searches.every((request) => String(request.input.query).includes(negativeToken))).toBe(true);
     });
