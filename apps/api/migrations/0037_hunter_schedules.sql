@@ -3,6 +3,7 @@ begin;
 create table if not exists hunter_schedules (
   workspace_id text not null references workspaces(id) on delete cascade,
   brand_id text primary key references brands(id) on delete cascade,
+  account_id text not null references accounts(id) on delete cascade,
   schema_version text not null default '1',
   enabled boolean not null default false,
   cadence text not null default 'daily' check (cadence in ('twice-daily','daily','weekly')),
