@@ -18,3 +18,8 @@
 16. Build the approved v2 Campaign Preview with overview, quality, content-set, channel timeline, Content Preview links and review/schedule/publish interaction states.
 17. Build the approved v2 Calendar with Month, Week and List views, Today navigation, filters, drag rescheduling, empty-slot scheduling and a contextual content drawer.
 18. Build the approved v2 Insights overview with evidence-aware summaries, performance trend, Kairo learning, Top Content, channel contribution and creation/preview routing.
+19. Build the approved Brand Brain v2 route with Overview, Brand DNA, Discovery Intelligence, Sources and Learning tabs.
+20. Reuse the v2 shell and tokens; route the Brand navigation to the new local surface.
+21. Implement local inline Edit, Save and Cancel for Brand DNA and Discovery Intelligence rows with accessible labels and focus states.
+22. Keep Discovery Intelligence user-facing while preserving Hunter only as internal terminology.
+23. Add deterministic interaction tests, responsive browser verification and mockup-to-implementation design QA before handoff.

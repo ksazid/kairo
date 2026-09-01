@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Complete Kairo V2 Product Flow",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "certification",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -68,6 +68,9 @@
       "Adds the approved v2 Campaign List and Campaign Preview using the same Brand-scoped Campaign, Content Asset, review and calendar contracts.",
       "Adds the approved v2 Calendar with Month, Week and List views plus contextual scheduling interactions.",
       "Adds the approved v2 Insights overview with evidence-aware performance summaries and Content Preview routing.",
+      "Adds the approved v2 Brand Brain experience with Overview, Brand DNA, Discovery Intelligence, Sources and Learning tabs.",
+      "Uses Discovery Intelligence in creator-facing language while keeping Hunter as the internal background engine.",
+      "Keeps Brand DNA review local through inline Edit, Save and Cancel interactions with visible evidence and confirmation state.",
       "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling."
     ]
   },
@@ -75,56 +78,56 @@
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-107@1.6",
+      "version": "VS-107@1.7",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-31T13:19:19Z",
-      "rationale": "Product Owner approved the separate Calendar and Insights mockups, all Calendar view modes, and their implementation in the isolated v2 app."
+      "at": "2026-08-31T21:21:29Z",
+      "rationale": "Product Owner approved the combined Brand Brain v2 direction: readiness-first Overview, inline-editable Brand DNA and a transparent Discovery Intelligence search plan, with Sources and Learning in the same design system."
     },
     {
       "type": "policy",
       "status": "not-required",
-      "version": "VS-107@1.6",
+      "version": "VS-107@1.7",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "The existing approved OIDC provider and API contracts are reused; no new provider, data authority or publishing capability is introduced."
+      "rationale": "The existing Brand Brain, Source, Learning and Discovery contracts remain authoritative; the change is frontend-only and introduces no new provider, data authority, credential, scheduling or publishing policy."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-107@1.6",
+      "version": "VS-107@1.7",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-31T13:19:19Z",
-      "rationale": "Product Owner explicitly approved implementing the Calendar and Insights mockups, Month/Week/List navigation, Today behavior, content quick preview, scheduling and Insights actions."
+      "at": "2026-08-31T21:21:29Z",
+      "rationale": "Product Owner explicitly instructed the approved Brand Brain mockup to proceed and approved the combined implementation direction with local inline editing."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-107@1.6",
-      "commitSha": "2fa2d08a8bd31d88450f5d9b08e1f8aeeea72396",
-      "by": "Sazid Khan",
-      "at": "2026-08-31T20:00:33Z",
-      "rationale": "Product Owner approved certification of the exact VS-107@1.6 Calendar and Insights implementation candidate after CI, Security, Product Intake, runtime verification, UI tests and deployed v2 preview verification passed."
+      "status": "pending",
+      "version": "VS-107@1.7",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Awaiting an exact Brand Brain v2 implementation candidate and verification evidence."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-107@1.6",
-      "commitSha": "ef55be253c18f929b56e4cd94bcf93005ac75cca",
-      "by": "Sazid Khan",
-      "at": "2026-08-31T20:08:32Z",
-      "rationale": "Product Owner explicitly authorized release and merge of PR #256 after certification and all governance-head gates passed."
+      "status": "pending",
+      "version": "VS-107@1.7",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Awaiting exact-SHA certification and separate release approval."
     },
     {
       "type": "production-enable",
-      "status": "approved",
-      "version": "VS-107@1.6",
-      "commitSha": "ef55be253c18f929b56e4cd94bcf93005ac75cca",
-      "by": "Sazid Khan",
-      "at": "2026-08-31T20:08:32Z",
-      "rationale": "Product Owner explicitly authorized promoting the complete Kairo v2 deployment to production after merge and smoke verification."
+      "status": "pending",
+      "version": "VS-107@1.7",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Awaiting certified release approval and a separate production-enable decision."
     }
   ],
   "decisionIds": [],
@@ -133,23 +136,18 @@
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 100,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "2fa2d08a8bd31d88450f5d9b08e1f8aeeea72396",
+    "status": "stale",
+    "commitSha": null,
     "evidence": [
-      "Local preflight and governance validation passed",
-      "Full monorepo runtime verification passed",
-      "Kairo UI v2 Calendar and Insights tests passed: 29 tests",
-      "Vercel v2 preview dpl_3VPP5YNN5GGVgW8HdTQ8NHWmdsbJ is READY and exposes Calendar and Insights",
-      "Vercel reported no runtime errors in the previous 24 hours",
-      "GitHub Actions CI run 33400575484 passed",
-      "GitHub Actions Security baseline run 33400575510 passed",
-      "GitHub Actions Product Intake run 33400575545 passed",
-      "Product Owner approved exact candidate 2fa2d08a8bd31d88450f5d9b08e1f8aeeea72396 on 2026-08-31"
+      "VS-107@1.6 remains certified and released through PR #256; that evidence does not certify the new VS-107@1.7 Brand Brain changes.",
+      "VS-107@1.7 rebased candidate: 9 Kairo UI v2 test files / 37 tests passed, TypeScript passed, Next.js production build passed and repository preflight passed.",
+      "Browser QA passed all five tabs, Brand DNA and Discovery Intelligence Save/Cancel flows, Refresh Discovery, responsive no-overflow checks and application-console checks.",
+      "Post-fix mockup comparison passed for Overview, Brand DNA and Discovery Intelligence on Vercel preview dpl_DZ9Z9uLpdiV8bkJib5Apjr9uwdtR."
     ]
   },
   "release": {
@@ -168,11 +166,12 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/256",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/261",
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
-      "VS-107@1.6 approved Calendar and Insights source mockups",
-      "Vercel v2 preview dpl_3VPP5YNN5GGVgW8HdTQ8NHWmdsbJ"
+      "VS-107@1.7 approved Brand Brain Overview, Brand DNA and Discovery Intelligence mockups",
+      "Vercel preview dpl_DZ9Z9uLpdiV8bkJib5Apjr9uwdtR",
+      "VS-107@1.6 certified Calendar and Insights candidate 2fa2d08a8bd31d88450f5d9b08e1f8aeeea72396"
     ]
   },
   "maxAttempts": 3
