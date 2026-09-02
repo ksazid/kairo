@@ -20,6 +20,10 @@
   transition: transform .16s ease;
 }
 
+.brand-mobile-select {
+  display: none;
+}
+
 .brand-menu {
   position: absolute;
   z-index: 80;
@@ -76,9 +80,29 @@
 
   .brand-switcher {
     flex: 1;
+    min-width: 0;
+  }
+
+  /* Mobile Safari/Android get the platform picker while the approved visual stays unchanged. */
+  .brand-mobile-select {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 44px;
+    border: 0;
+    opacity: 0;
+    font-size: 16px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .brand-switcher > .brand-select {
+    pointer-events: none;
   }
 
   .brand-menu {
-    width: min(310px, calc(100vw - 28px));
+    display: none;
   }
 }
