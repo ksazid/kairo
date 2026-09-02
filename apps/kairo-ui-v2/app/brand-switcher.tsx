@@ -45,7 +45,7 @@ export function BrandSwitcher({
 
   function chooseBrand(nextBrandId: string) {
     setOpen(false);
-    if (nextBrandId === brandId) return;
+    if (!nextBrandId || nextBrandId === brandId) return;
 
     const url = new URL(window.location.href);
     url.pathname = stableBrandPath(url.pathname);
@@ -67,6 +67,18 @@ export function BrandSwitcher({
       <strong>{brandName}</strong>
       {canOpen ? <ChevronDown aria-hidden="true" data-open={open}/> : null}
     </button>
+
+    <select
+      className="brand-mobile-select"
+      aria-label="Choose Brand"
+      value={brandId ?? ""}
+      disabled={!canOpen}
+      onFocus={() => setOpen(false)}
+      onChange={(event) => chooseBrand(event.currentTarget.value)}
+    >
+      {!brandId ? <option value="" disabled>Choose Brand</option> : null}
+      {brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}
+    </select>
 
     {open ? <div className="brand-menu" role="listbox" aria-label="Choose Brand">
       {brands.map((brand) => <button
