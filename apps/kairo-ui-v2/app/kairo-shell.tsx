@@ -6,7 +6,6 @@ import {
   Bell,
   BrainCircuit,
   CalendarDays,
-  ChevronDown,
   Compass,
   ExternalLink,
   FileText,
@@ -15,10 +14,12 @@ import {
   Settings2,
   Sparkles,
 } from "lucide-react";
+import { getShellBrandOptions } from "../lib/shell-data";
+import { BrandSwitcher } from "./brand-switcher";
 
 type ActiveDestination = "Home" | "Discover" | "Content" | "Campaigns" | "Calendar" | "Insights" | "Brain" | "Settings";
 
-export function KairoShell({
+export async function KairoShell({
   active,
   authenticated,
   brandId,
@@ -44,6 +45,7 @@ export function KairoShell({
   const webUrl = (process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app").replace(/\/$/, "");
   const brandBase = brandId ? `${webUrl}/brands/${encodeURIComponent(brandId)}` : webUrl;
   const discoverQuery = brandId ? `?brand=${encodeURIComponent(brandId)}` : "";
+  const brandOptions = authenticated ? await getShellBrandOptions() : [];
   const nav = [
     { label: "Home" as const, Icon: HomeIcon, href: brandId ? `/?brand=${encodeURIComponent(brandId)}` : "/" },
     { label: "Discover" as const, Icon: Compass, href: `/discover${discoverQuery}` },
@@ -64,12 +66,12 @@ export function KairoShell({
     </aside>
     <main>
       <header className="topbar">
-        <button className="brand-select" type="button"><span className="brand-avatar">{brandName.slice(0, 1).toUpperCase()}</span><strong>{brandName}</strong><ChevronDown aria-hidden="true"/></button>
+        <BrandSwitcher authenticated={authenticated} brandId={brandId} brandName={brandName} brands={brandOptions}/>
         <span className="ready-dot"><i/>{statusLabel ?? (authenticated ? "Brand ready" : "Preview mode")}</span>
         <div className="top-spacer"/>
         <a className="mobile-classic" href={webUrl} aria-label="Back to Classic Kairo"><ExternalLink aria-hidden="true"/></a>
         <button className="bell" type="button" aria-label="Notifications"><Bell aria-hidden="true"/><b>3</b></button>
-        {authenticated ? <a className="profile" href="/settings"><span>SK</span><strong>Sazzad</strong><ChevronDown aria-hidden="true"/></a> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
+        {authenticated ? <a className="profile" href="/settings"><span>SK</span><strong>Sazzad</strong></a> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
       </header>
       <div className={`workspace ${workspaceClassName}`.trim()}>{children}</div>
     </main>
