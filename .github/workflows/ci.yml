@@ -36,6 +36,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: npm ci --no-audit --no-fund
+      - name: Generate fast-uri lockfile refresh
+        run: npm update fast-uri --package-lock-only --ignore-scripts --no-audit --no-fund
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fast-uri-lockfile
+          path: package-lock.json
+          if-no-files-found: error
       - name: Verify Hermes runtime contracts without provider credentials
         run: |
           python -m pip install --disable-pip-version-check --no-input pytest==9.0.2
