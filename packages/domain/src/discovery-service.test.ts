@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import type { BrandOpportunityDto, OpportunityStatus, PublicSignalDto } from "@kairo/contracts";
+import type { OpportunityStatus, PublicSignalDto } from "@kairo/contracts";
+import type { BrandOpportunityWithConceptDto } from "@kairo/contracts/concept-mockup";
 import { ResourceNotFoundError } from "./index";
 import type { CreateBrandOpportunityInput, DiscoveryRepository } from "./discovery-service";
 import { DiscoveryService } from "./discovery-service";
@@ -8,7 +9,7 @@ import type { PreparedPublicSignal } from "./discovery";
 
 class FakeDiscoveryRepository implements DiscoveryRepository {
   signals: PublicSignalDto[] = [];
-  opportunities: BrandOpportunityDto[] = [];
+  opportunities: BrandOpportunityWithConceptDto[] = [];
 
   async upsertPublicSignal(input: PreparedPublicSignal): Promise<PublicSignalDto> {
     const existing = this.signals.find((signal) => signal.duplicateKey === input.duplicateKey || (input.contentHash && signal.contentHash === input.contentHash));
@@ -19,24 +20,24 @@ class FakeDiscoveryRepository implements DiscoveryRepository {
     return signal;
   }
 
-  async listBrandOpportunities(_accountId: string, brandId: string): Promise<BrandOpportunityDto[]> {
+  async listBrandOpportunities(_accountId: string, brandId: string): Promise<BrandOpportunityWithConceptDto[]> {
     return this.opportunities.filter((opportunity) => opportunity.brandId === brandId);
   }
 
-  async getBrandOpportunity(_accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityDto | null> {
+  async getBrandOpportunity(_accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityWithConceptDto | null> {
     return this.opportunities.find((opportunity) => opportunity.brandId === brandId && opportunity.id === opportunityId) ?? null;
   }
 
-  async createBrandOpportunity(_accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityDto> {
+  async createBrandOpportunity(_accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityWithConceptDto> {
     const now = new Date().toISOString();
-    const opportunity: BrandOpportunityDto = {
+    const opportunity: BrandOpportunityWithConceptDto = {
       id: randomUUID(), workspaceId: "workspace-1", brandId, status: "new", createdAt: now, updatedAt: now, ...input,
     };
     this.opportunities.push(opportunity);
     return opportunity;
   }
 
-  async setBrandOpportunityStatus(_accountId: string, brandId: string, opportunityId: string, status: OpportunityStatus): Promise<BrandOpportunityDto> {
+  async setBrandOpportunityStatus(_accountId: string, brandId: string, opportunityId: string, status: OpportunityStatus): Promise<BrandOpportunityWithConceptDto> {
     const opportunity = await this.getBrandOpportunity("", brandId, opportunityId);
     if (!opportunity) throw new ResourceNotFoundError("Opportunity not found");
     opportunity.status = status;
@@ -69,6 +70,37 @@ describe("VS-03 DiscoveryService", () => {
 
     expect(repository.signals).toHaveLength(1);
     expect(result.opportunity).toBeNull();
+  });
+
+  it("adds a best-effort concept mockup only after qualification without changing scores", async () => {
+    const repository = new FakeDiscoveryRepository();
+    const service = new DiscoveryService(repository);
+    const result = await service.recordCandidate("account-1", "brand-1", {
+      signal,
+      title: "Persistent AI agents",
+      rationale: "Technical founders need a concrete explanation.",
+      whyNow: "Persistent agent runtimes are becoming practical.",
+      developmentDirection: "Explain the architecture tradeoffs for multi-tenant SaaS.",
+      brandContextVersion: "brand-1@7",
+      scores: { relevance: 0.9, evidence: 0.8, novelty: 0.8, timeliness: 0.8, brandAuthority: 0.7, audienceFit: 0.9 },
+      details: {
+        topic: "Persistent AI agents",
+        proposedAngle: "Architecture tradeoffs",
+        hook: "Your AI agent now remembers yesterday",
+        targetAudience: "Technical founders",
+        objective: "Educate",
+        recommendedFormat: "carousel",
+        recommendedChannel: "linkedin",
+        confidence: 0.9,
+        estimatedEffort: "medium",
+      },
+    });
+
+    expect(result.opportunity?.conceptMockup?.format).toBe("carousel");
+    expect(result.opportunity?.conceptMockup?.carousel?.slides).toHaveLength(2);
+    expect(result.opportunity?.conceptMockupGeneratedAt).toBeTruthy();
+    expect(result.opportunity?.scores).toMatchObject({ relevance: 0.9, evidence: 0.8, audienceFit: 0.9 });
+    expect(result.opportunity?.scores.scoringVersion).toBe("vs03-deterministic-v1");
   });
 
   it("suppresses a materially duplicate Opportunity but allows a different direction", async () => {
