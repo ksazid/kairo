@@ -5,14 +5,14 @@
 - [x] Persistence migration
 - [x] Reusable UI renderer
 - [x] Base renderer styles
-- [ ] Export shared contract from existing package entry point
-- [ ] Confirm opportunity table/column names against current schema
-- [ ] Wire Hunter Opportunity write path
-- [ ] Wire Opportunity read DTO
-- [ ] Add best-effort concept generator
-- [ ] Add Home compact projection
-- [ ] Add Discover card projection
-- [ ] Add Discover full preview route/surface
-- [ ] Pass mockup into Create with Kairo brief
-- [ ] Run repository tests/build
-- [ ] Verify no scheduler/worker activation
+- [x] Export shared contract from existing package entry point
+- [x] Confirm opportunity table/column names against current schema
+- [x] Wire Hunter Opportunity write path
+- [x] Wire Opportunity read DTO
+- [x] Add best-effort concept generator
+- [x] Add Home compact projection
+- [x] Add Discover card projection
+- [x] Add Discover full preview route/surface
+- [x] Pass mockup into Create with Kairo brief
+- [x] Run repository tests/build
+- [x] Verify no scheduler/worker activation
