@@ -5,6 +5,7 @@ import type { Idea, ResearchDossier, Angle } from "@kairo/domain/research";
 import type { ResearchRepository } from "@kairo/domain/research-service";
 import type { ContentReview } from "@kairo/domain/review";
 import type { BrandPresenterDto } from "@kairo/contracts/presenter";
+import type { IdeaDevelopmentPort } from "./app";
 import {
   SimpleCreationService,
   type SimpleCreationRequest,
@@ -109,8 +110,8 @@ function createHarness(options: { critic: "passed" | "revision-required" | "runt
   const generator = new CapturingGenerator();
   const reviewer = new StubReviewer(options.critic);
   const developedIdeas: string[] = [];
-  const developer = {
-    develop: async (input: { accountId: string; workspaceId: string; brandId: string; idea: Idea }) => {
+  const developer: IdeaDevelopmentPort = {
+    develop: async (input) => {
       developedIdeas.push(input.idea.id);
       research.develop(input.accountId, input.idea.id);
     },
