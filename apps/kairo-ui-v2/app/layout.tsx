@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./ui.css";
 import "./shell-fixes.css";
+import "./concept-mockup.css";
 
 export const metadata: Metadata = {
   title: "Kairo — New UI",
