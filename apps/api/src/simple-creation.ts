@@ -3,6 +3,7 @@ import { DomainValidationError, ResourceNotFoundError } from "@kairo/domain";
 import type { ContentChannel, ContentLibraryAssetReference } from "@kairo/domain/campaign";
 import { ResearchService, type ResearchRepository } from "@kairo/domain/research-service";
 import { CampaignService, type CampaignRepository, type ContentGenerationPort } from "@kairo/domain/campaign-service";
+import type { ContentReview } from "@kairo/domain/review";
 import type { PutBrandPresenterRequest, SimpleCreationPresenterDto } from "@kairo/contracts/presenter";
 import type { IdeaDevelopmentPort } from "./app";
 import type { AvatarProvider } from "./avatar-provider";
@@ -18,6 +19,25 @@ export type SimpleCreationStatus =
   | "ready"
   | "needs-attention";
 export type ContentPreference = "auto" | "carousel" | "reel" | "image" | "video" | "campaign";
+export type SimpleCreationCriticStatus = "passed" | "revision-required" | "unavailable";
+
+export interface SimpleCreationCriticSummary {
+  status: SimpleCreationCriticStatus;
+  reviewId?: string;
+  versionId?: string;
+  score?: number;
+  findings?: Array<{ code: string; severity: "advisory" | "revision"; message: string }>;
+}
+
+export interface SimpleCreationReviewPort {
+  review(
+    accountId: string,
+    brandId: string,
+    campaignId: string,
+    assetId: string,
+    input: { expectedVersion: number; brandContextVersion: string; revisionCycle: number },
+  ): Promise<ContentReview>;
+}
 
 export interface SimpleCreationRequest {
   id: string;
@@ -74,7 +94,8 @@ export class SimpleCreationService {
     private now = () => new Date(),
     avatarProvider?: AvatarProvider,
     contentGenerator?: ContentGenerationPort,
-    brandBrain?: (accountId:string, brandId:string) => Promise<Array<{fieldKey:string;value:string;state:string}>>,
+    brandBrain?: (accountId: string, brandId: string) => Promise<Array<{ fieldKey: string; value: string; state: string }>>,
+    private reviewer?: SimpleCreationReviewPort,
   ) {
     this.research = new ResearchService(researchRepo, now);
     this.campaigns = new CampaignService(campaignRepo, researchRepo, contentGenerator, now, brandBrain);
@@ -157,6 +178,7 @@ export class SimpleCreationService {
       const campaignId = "campaign" in campaign ? campaign.campaign.id : campaign.id;
       const format = ["auto", "campaign"].includes(job.contentPreference) ? normalizedFormat(preferred.recommendedFormat) : job.contentPreference;
       let assetId = job.assetId;
+      let critic: SimpleCreationCriticSummary | undefined;
       if (job.contentPreference !== "campaign" && !assetId) {
         const media = job.mediaAssetIds?.length && this.store.homeMedia ? await this.store.homeMedia.requireAssets(job.accountId, job.brandId, job.mediaAssetIds) : [];
         const generated = await this.campaigns.createGeneratedAsset(job.accountId, job.brandId, campaignId, {
@@ -166,7 +188,7 @@ export class SimpleCreationService {
           topic: bundle.idea.title,
           hookType: preferred.hookDirection.slice(0, 120) || "opening",
           cta: "Learn more",
-          seedContent: creationSeed(job),
+          seedContent: creationSeed(bundle.idea.premise),
           brandContextVersion,
           libraryAssetRefs: media.map((item): ContentLibraryAssetReference => ({
             libraryId: item.libraryId,
@@ -181,17 +203,54 @@ export class SimpleCreationService {
           })),
         });
         assetId = generated.assetId;
+        const generatedAsset = generated.detail.assets.find((item) => item.asset.id === generated.assetId);
+        if (!generatedAsset) throw new Error("Generated Content Asset was not found");
+        critic = await this.evaluateCritic(
+          job.accountId,
+          job.brandId,
+          campaignId,
+          generated.assetId,
+          generatedAsset.asset.currentVersion,
+          brandContextVersion,
+        );
       }
       const recommendation = {
         title: preferred.title, framing: preferred.framing, format, channel: preferred.recommendedChannel,
         reason: preferred.expectedValue, supportingClaimIds: preferred.supportingClaimIds,
         alternatives: bundle.angles.filter((angle) => angle.id !== preferred.id).slice(0, 2).map((angle) => ({ id: angle.id, title: angle.title, framing: angle.framing, format: angle.recommendedFormat, channel: angle.recommendedChannel, reason: angle.expectedValue })),
+        ...(critic ? { critic } : {}),
       };
       await this.store.advance(job.id, workerId, "ready", { ideaId, recommendedAngleId: preferred.id, campaignId, ...(assetId ? { assetId } : {}), recommendation });
       return true;
     } catch (error) {
       await this.store.advance(job.id, workerId, "needs-attention", { failureReason: safeError(error) });
       return true;
+    }
+  }
+
+  private async evaluateCritic(
+    accountId: string,
+    brandId: string,
+    campaignId: string,
+    assetId: string,
+    expectedVersion: number,
+    brandContextVersion: string,
+  ): Promise<SimpleCreationCriticSummary> {
+    if (!this.reviewer) return { status: "unavailable" };
+    try {
+      const review = await this.reviewer.review(accountId, brandId, campaignId, assetId, {
+        expectedVersion,
+        brandContextVersion,
+        revisionCycle: 0,
+      });
+      return {
+        status: review.status === "passed" ? "passed" : "revision-required",
+        reviewId: review.id,
+        versionId: review.versionId,
+        ...(review.critic ? { score: review.critic.score, findings: review.critic.findings } : {}),
+      };
+    } catch {
+      return { status: "unavailable" };
     }
   }
 }
@@ -211,11 +270,11 @@ const messages: Record<SimpleCreationStatus, string> = {
   "choosing-angle": "Choosing the strongest direction", "building-campaign": "Generating your content", ready: "Your content is ready",
   "needs-attention": "We could not finish this creation yet",
 };
-function formatMatches(value:string, preference:ContentPreference){const normalized=normalizedFormat(value);return normalized===preference||(preference==="video"&&normalized==="reel")||(preference==="reel"&&normalized==="video")}
-function normalizedFormat(value:string):Exclude<ContentPreference,"auto"|"campaign">{const normalized=value.trim().toLowerCase();if(normalized.includes("carousel"))return"carousel";if(normalized.includes("reel")||normalized.includes("short"))return"reel";if(normalized.includes("video"))return"video";return"image"}
-function supportedChannel(value:string):ContentChannel{const normalized=value.trim().toLowerCase();if(normalized.includes("linkedin"))return"linkedin";if(normalized.includes("instagram"))return"instagram";if(normalized.includes("facebook"))return"facebook";return"manual"}
+function formatMatches(value: string, preference: ContentPreference) { const normalized = normalizedFormat(value); return normalized === preference || (preference === "video" && normalized === "reel") || (preference === "reel" && normalized === "video"); }
+function normalizedFormat(value: string): Exclude<ContentPreference, "auto" | "campaign"> { const normalized = value.trim().toLowerCase(); if (normalized.includes("carousel")) return "carousel"; if (normalized.includes("reel") || normalized.includes("short")) return "reel"; if (normalized.includes("video")) return "video"; return "image"; }
+function supportedChannel(value: string): ContentChannel { const normalized = value.trim().toLowerCase(); if (normalized.includes("linkedin")) return "linkedin"; if (normalized.includes("instagram")) return "instagram"; if (normalized.includes("facebook")) return "facebook"; return "manual"; }
 function creationTitle(job: Pick<SimpleCreationRequest, "goal" | "input">, max: number) { return (job.input?.trim() || job.goal).slice(0, max); }
-function creationSeed(job: Pick<SimpleCreationRequest, "goal" | "input" | "source">) { return [job.input?.trim() || job.goal, job.source ? `Source: ${job.source}` : ""].filter(Boolean).join("\n\n").slice(0, 50_000); }
+function creationSeed(premise: string) { return `Creative brief:\n${premise.trim()}`.slice(0, 50_000); }
 function text(value: unknown, name: string, max: number) { const normalized = typeof value === "string" ? value.trim() : ""; if (!normalized) throw new DomainValidationError(`${name} is required`); if (normalized.length > max) throw new DomainValidationError(`${name} is too long`); return normalized; }
 function optional(value: unknown, max: number) { if (value == null) return undefined; const normalized = typeof value === "string" ? value.trim() : ""; if (normalized.length > max) throw new DomainValidationError("Input is too long"); return normalized || undefined; }
 function safeError(error: unknown) { return error instanceof Error ? error.message.slice(0, 500) : "Creation failed"; }

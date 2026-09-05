@@ -45,6 +45,7 @@ import{SourceRoutingToolGateway}from"@kairo/worker/discovery-provider";
 import{CrossrefResearchEvidenceProvider,OpenAlexResearchEvidenceProvider}from"@kairo/worker/research-evidence-adapters";
 import{RetryingDiscoverySourceProvider}from"@kairo/worker/retrying-discovery-provider";
 import{DiscoveryService}from"@kairo/domain/discovery-service";
+import{ReviewService}from"@kairo/domain/review-service";
 import{validateCarouselPlan}from"@kairo/domain/creative-formats";
 import{PerformanceCollectionWorker}from"@kairo/worker/performance";
 import{InstagramMetricCollector}from"@kairo/worker/instagram-insights";
@@ -92,6 +93,7 @@ const discoveryService=new DiscoveryService(discoveryStore);
 const brandIntelligenceGraphStore=new PgBrandIntelligenceGraphStore(pool);
 const researchStore=new PgResearchRepository(pool);
 const campaignStore=new PgCampaignRepository(pool);
+const reviewStore=new PgReviewRepository(pool);
 const publishingStore=new PgPublishingRepository(pool);
 const analyticsStore=new PgAnalyticsRepository(pool);
 const groupStore=new PgChannelAccountGroupRepository(pool);
@@ -167,7 +169,7 @@ const app = buildApp({
   researchStore,
   ...(ideaDeveloper?{ideaDeveloper}:{}),
   campaignStore,
-  reviewStore:new PgReviewRepository(pool),
+  reviewStore,
   publishingStore,
   analyticsStore,
   learningStore:new PgLearningRepository(pool),
@@ -178,9 +180,10 @@ const app = buildApp({
 });
 const simpleCreationStore=new PgSimpleCreationStore(pool);
 const homeMediaService=homeMediaServiceFromEnv(simpleCreationStore.homeMedia);
+const simpleCreationReviewer=criticEvaluator?new ReviewService(campaignStore,researchStore,reviewStore,criticEvaluator):undefined;
 registerBrandPresenterRoutes(app,{coreStore,identityVerifier,service:new BrandPresenterService(simpleCreationStore)});
 let simpleCreationService:SimpleCreationService|undefined;let simpleCreationRunning=false;
-if(ideaDeveloper){simpleCreationService=new SimpleCreationService(simpleCreationStore,researchStore,campaignStore,ideaDeveloper,undefined,undefined,contentGenerator,(accountId,brandId)=>coreStore.listBrandBrainFields(accountId,brandId));registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,...(homeMediaService?{homeMedia:homeMediaService}:{}),trigger:()=>void collectSimpleCreationTick()});}
+if(ideaDeveloper){simpleCreationService=new SimpleCreationService(simpleCreationStore,researchStore,campaignStore,ideaDeveloper,undefined,undefined,contentGenerator,(accountId,brandId)=>coreStore.listBrandBrainFields(accountId,brandId),simpleCreationReviewer);registerSimpleCreationRoutes(app,{coreStore,identityVerifier,service:simpleCreationService,...(homeMediaService?{homeMedia:homeMediaService}:{}),trigger:()=>void collectSimpleCreationTick()});}
 registerBrandRoutes(app,{store:coreStore,creator:brandCreator,identityVerifier});
 registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommandSearchRepository(pool)});
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
