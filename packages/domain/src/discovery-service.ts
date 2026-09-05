@@ -1,5 +1,4 @@
 import type {
-  BrandOpportunityDto,
   OpportunityAction,
   OpportunityScoresDto,
   OpportunityStatus,
@@ -8,6 +7,7 @@ import type {
 } from "@kairo/contracts";
 import type { BrandOpportunityWithConceptDto, ConceptMockupDto } from "@kairo/contracts/concept-mockup";
 import { ResourceNotFoundError } from "./index";
+import { buildConceptMockup } from "./concept-mockup";
 import {
   evaluateOpportunity,
   materiallySimilarOpportunity,
@@ -88,6 +88,8 @@ export class DiscoveryService {
       overall: evaluation.overall,
       scoringVersion: evaluation.scoringVersion,
     };
+    const generatedMockup = input.conceptMockup ?? projectConceptMockup(input);
+    const generatedAt = input.conceptMockupGeneratedAt ?? (generatedMockup ? new Date().toISOString() : undefined);
 
     const opportunity = await this.repository.createBrandOpportunity(accountId, brandId, {
       title: input.title.trim(),
@@ -98,8 +100,8 @@ export class DiscoveryService {
       scores,
       brandContextVersion: input.brandContextVersion.trim(),
       ...(input.details ? { details: { ...input.details, supportingSourceIds: [signal.id] } } : {}),
-      ...(input.conceptMockup ? { conceptMockup: structuredClone(input.conceptMockup) } : {}),
-      ...(input.conceptMockupGeneratedAt ? { conceptMockupGeneratedAt: input.conceptMockupGeneratedAt } : {}),
+      ...(generatedMockup ? { conceptMockup: structuredClone(generatedMockup) } : {}),
+      ...(generatedAt ? { conceptMockupGeneratedAt: generatedAt } : {}),
     });
     return { signal, opportunity };
   }
@@ -118,4 +120,21 @@ export class DiscoveryService {
   }
 }
 
-export type { BrandOpportunityDto };
+function projectConceptMockup(input: OpportunityCandidateInput): ConceptMockupDto | undefined {
+  try {
+    return buildConceptMockup({
+      title: input.title,
+      rationale: input.rationale,
+      whyNow: input.whyNow,
+      developmentDirection: input.developmentDirection,
+      ...(input.details?.hook ? { hook: input.details.hook } : {}),
+      ...(input.details?.proposedAngle ? { proposedAngle: input.details.proposedAngle } : {}),
+      ...(input.details?.targetAudience ? { targetAudience: input.details.targetAudience } : {}),
+      ...(input.details?.objective ? { objective: input.details.objective } : {}),
+      ...(input.details?.recommendedFormat ? { recommendedFormat: input.details.recommendedFormat } : {}),
+    });
+  } catch {
+    // A rough presentation mockup is optional. It must never suppress a qualified Hunter opportunity.
+    return undefined;
+  }
+}
