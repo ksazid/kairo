@@ -194,7 +194,24 @@ class MemoryResearchRepository implements ResearchRepository {
     bundle.angles = bundle.angles.map((angle) => ({ ...angle, status: angle.id === angleId ? "selected" : "candidate" }));
     return bundle.angles;
   }
-  async editAngleFraming() { throw new Error("not used"); }
+  async editAngleFraming(
+    accountId: string,
+    brandId: string,
+    ideaId: string,
+    angleId: string,
+    framing: string,
+    expectedVersion: number,
+  ) {
+    const bundle = this.bundles.get(ideaId);
+    if (!bundle || bundle.accountId !== accountId || bundle.idea.brandId !== brandId) throw new Error("Idea not found");
+    const index = bundle.angles.findIndex((angle) => angle.id === angleId);
+    if (index < 0) throw new Error("Angle not found");
+    const current = bundle.angles[index]!;
+    if (current.version !== expectedVersion) throw new Error("stale");
+    const updated: Angle = { ...current, framing, version: current.version + 1 };
+    bundle.angles[index] = updated;
+    return updated;
+  }
 }
 
 class MemoryCampaignRepository implements CampaignRepository {
