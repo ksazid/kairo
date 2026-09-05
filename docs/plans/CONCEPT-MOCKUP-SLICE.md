@@ -1,6 +1,6 @@
 # Concept Mockup Slice
 
-Status: implementation in progress
+Status: implementation complete; certified for merge. Production migration/deployment remains separate.
 
 ## Goal
 
