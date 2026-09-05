@@ -1,0 +1,1 @@
+This slice must not enable production cron, Graphile Worker, or scheduled Hunter execution.
