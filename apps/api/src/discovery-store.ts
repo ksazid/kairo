@@ -1,12 +1,13 @@
 import { randomUUID } from "node:crypto";
-import type { BrandDto, BrandOpportunityDto, OpportunityStatus, PublicSignalDto } from "@kairo/contracts";
+import type { BrandDto, OpportunityStatus, PublicSignalDto } from "@kairo/contracts";
+import type { BrandOpportunityWithConceptDto } from "@kairo/contracts/concept-mockup";
 import { ResourceNotFoundError, type KairoRepository } from "@kairo/domain";
 import type { PreparedPublicSignal } from "@kairo/domain/discovery";
 import type { CreateBrandOpportunityInput, DiscoveryRepository } from "@kairo/domain/discovery-service";
 
 export class MemoryDiscoveryRepository implements DiscoveryRepository {
   private readonly signals = new Map<string, PublicSignalDto>();
-  private readonly opportunities = new Map<string, BrandOpportunityDto>();
+  private readonly opportunities = new Map<string, BrandOpportunityWithConceptDto>();
 
   constructor(private readonly brandAccess: Pick<KairoRepository, "getBrandForAccount">) {}
 
@@ -21,7 +22,7 @@ export class MemoryDiscoveryRepository implements DiscoveryRepository {
     return copySignal(signal);
   }
 
-  async listBrandOpportunities(accountId: string, brandId: string): Promise<BrandOpportunityDto[]> {
+  async listBrandOpportunities(accountId: string, brandId: string): Promise<BrandOpportunityWithConceptDto[]> {
     await this.requireBrand(accountId, brandId);
     return [...this.opportunities.values()]
       .filter((opportunity) => opportunity.brandId === brandId)
@@ -29,18 +30,18 @@ export class MemoryDiscoveryRepository implements DiscoveryRepository {
       .map(copyOpportunity);
   }
 
-  async getBrandOpportunity(accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityDto | null> {
+  async getBrandOpportunity(accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityWithConceptDto | null> {
     await this.requireBrand(accountId, brandId);
     const opportunity = this.opportunities.get(opportunityId);
     if (!opportunity || opportunity.brandId !== brandId) return null;
     return copyOpportunity(opportunity);
   }
 
-  async createBrandOpportunity(accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityDto> {
+  async createBrandOpportunity(accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityWithConceptDto> {
     const brand = await this.requireBrand(accountId, brandId);
     if (!input.signalIds.length || input.signalIds.some((signalId) => !this.signals.has(signalId))) throw new ResourceNotFoundError("Signal not found");
     const now = new Date().toISOString();
-    const opportunity: BrandOpportunityDto = {
+    const opportunity: BrandOpportunityWithConceptDto = {
       id: randomUUID(),
       workspaceId: brand.workspaceId,
       brandId,
@@ -53,6 +54,8 @@ export class MemoryDiscoveryRepository implements DiscoveryRepository {
       scores: { ...input.scores },
       brandContextVersion: input.brandContextVersion,
       ...(input.details ? { details: structuredClone(input.details) } : {}),
+      ...(input.conceptMockup ? { conceptMockup: structuredClone(input.conceptMockup) } : {}),
+      ...(input.conceptMockupGeneratedAt ? { conceptMockupGeneratedAt: input.conceptMockupGeneratedAt } : {}),
       createdAt: now,
       updatedAt: now,
     };
@@ -65,11 +68,11 @@ export class MemoryDiscoveryRepository implements DiscoveryRepository {
     brandId: string,
     opportunityId: string,
     status: OpportunityStatus,
-  ): Promise<BrandOpportunityDto> {
+  ): Promise<BrandOpportunityWithConceptDto> {
     await this.requireBrand(accountId, brandId);
     const opportunity = this.opportunities.get(opportunityId);
     if (!opportunity || opportunity.brandId !== brandId) throw new ResourceNotFoundError("Opportunity not found");
-    const updated: BrandOpportunityDto = { ...opportunity, status, updatedAt: new Date().toISOString() };
+    const updated: BrandOpportunityWithConceptDto = { ...opportunity, status, updatedAt: new Date().toISOString() };
     this.opportunities.set(opportunityId, updated);
     return copyOpportunity(updated);
   }
@@ -85,6 +88,12 @@ function copySignal(signal: PublicSignalDto): PublicSignalDto {
   return { ...signal };
 }
 
-function copyOpportunity(opportunity: BrandOpportunityDto): BrandOpportunityDto {
-  return { ...opportunity, signalIds: [...opportunity.signalIds], scores: { ...opportunity.scores }, ...(opportunity.details ? { details: structuredClone(opportunity.details) } : {}) };
+function copyOpportunity(opportunity: BrandOpportunityWithConceptDto): BrandOpportunityWithConceptDto {
+  return {
+    ...opportunity,
+    signalIds: [...opportunity.signalIds],
+    scores: { ...opportunity.scores },
+    ...(opportunity.details ? { details: structuredClone(opportunity.details) } : {}),
+    ...(opportunity.conceptMockup ? { conceptMockup: structuredClone(opportunity.conceptMockup) } : {}),
+  };
 }
