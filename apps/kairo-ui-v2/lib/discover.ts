@@ -38,7 +38,12 @@ export function toDiscoverCards(opportunities: HomeOpportunity[]): DiscoverCard[
   return opportunities.filter((item) => item.status !== "ignored").map((item, index) => {
     const opportunity = item as OpportunityWithConcept;
     const score = item.scores?.overall ?? item.scores?.audienceFit ?? item.scores?.relevance ?? .75;
-    const format = normalizeCreationFormat(item.details?.recommendedFormat);
+    // Kairo's current creation pipeline models a text-only social concept as a Post.
+    // This keeps Discover aligned with the persisted concept without expanding the
+    // downstream generation contract in this slice.
+    const format = opportunity.conceptMockup?.format === "text"
+      ? "image"
+      : normalizeCreationFormat(item.details?.recommendedFormat);
     return {
       ...item,
       ...(opportunity.conceptMockup ? { conceptMockup: opportunity.conceptMockup } : {}),
