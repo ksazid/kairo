@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
-import type { BrandOpportunityDto, OpportunityStatus, PublicSignalDto } from "@kairo/contracts";
+import type { OpportunityStatus, PublicSignalDto } from "@kairo/contracts";
+import type { BrandOpportunityWithConceptDto, ConceptMockupDto } from "@kairo/contracts/concept-mockup";
 import { ResourceNotFoundError } from "@kairo/domain";
 import type { PreparedPublicSignal } from "@kairo/domain/discovery";
 import type { CreateBrandOpportunityInput, DiscoveryRepository } from "@kairo/domain/discovery-service";
@@ -51,7 +52,7 @@ export class PgDiscoveryRepository implements DiscoveryRepository {
     }
   }
 
-  async listBrandOpportunities(accountId: string, brandId: string): Promise<BrandOpportunityDto[]> {
+  async listBrandOpportunities(accountId: string, brandId: string): Promise<BrandOpportunityWithConceptDto[]> {
     const brand = await this.pool.query<{ workspace_id: string }>(
       `select b.workspace_id from brands b join workspace_memberships m on m.workspace_id=b.workspace_id
         where m.account_id=$1 and m.active=true and b.id=$2`,
@@ -67,7 +68,7 @@ export class PgDiscoveryRepository implements DiscoveryRepository {
     return result.rows.map(toOpportunity);
   }
 
-  async getBrandOpportunity(accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityDto | null> {
+  async getBrandOpportunity(accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityWithConceptDto | null> {
     const result = await this.pool.query<OpportunityRow>(opportunitySelect(
       `join workspace_memberships m on m.workspace_id=o.workspace_id
        where m.account_id=$1 and m.active=true and o.brand_id=$2 and o.id=$3
@@ -76,7 +77,7 @@ export class PgDiscoveryRepository implements DiscoveryRepository {
     return result.rows[0] ? toOpportunity(result.rows[0]) : null;
   }
 
-  async createBrandOpportunity(accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityDto> {
+  async createBrandOpportunity(accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityWithConceptDto> {
     const client = await this.pool.connect();
     try {
       await client.query("begin");
@@ -88,14 +89,17 @@ export class PgDiscoveryRepository implements DiscoveryRepository {
       const id = randomUUID();
       await client.query(
         `insert into brand_opportunities
-          (id,workspace_id,brand_id,title,rationale,why_now,development_direction,status,relevance,evidence,novelty,timeliness,brand_authority,audience_fit,overall,scoring_version,brand_context_version,brand_intelligence_graph_version,opportunity_details)
-         values ($1,$2,$3,$4,$5,$6,$7,'new',$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb)`,
+          (id,workspace_id,brand_id,title,rationale,why_now,development_direction,status,relevance,evidence,novelty,timeliness,brand_authority,audience_fit,overall,scoring_version,brand_context_version,brand_intelligence_graph_version,opportunity_details,concept_mockup,concept_mockup_version,concept_mockup_generated_at)
+         values ($1,$2,$3,$4,$5,$6,$7,'new',$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19::jsonb,$20,$21)`,
         [
           id, workspaceId, brandId, input.title, input.rationale, input.whyNow, input.developmentDirection,
           input.scores.relevance, input.scores.evidence, input.scores.novelty, input.scores.timeliness,
           input.scores.brandAuthority, input.scores.audienceFit, input.scores.overall,
           input.scores.scoringVersion, input.brandContextVersion, input.details?.intelligenceVersion ?? null,
           input.details ? JSON.stringify(input.details) : null,
+          input.conceptMockup ? JSON.stringify(input.conceptMockup) : null,
+          input.conceptMockup?.version ?? null,
+          input.conceptMockupGeneratedAt ?? null,
         ],
       );
       await client.query(
@@ -121,7 +125,7 @@ export class PgDiscoveryRepository implements DiscoveryRepository {
     brandId: string,
     opportunityId: string,
     status: OpportunityStatus,
-  ): Promise<BrandOpportunityDto> {
+  ): Promise<BrandOpportunityWithConceptDto> {
     const client = await this.pool.connect();
     try {
       await client.query("begin");
@@ -160,12 +164,16 @@ type OpportunityRow = {
   timeliness: number; brand_authority: number; audience_fit: number; overall: number; scoring_version: string;
   brand_context_version: string; created_at: Date | string; updated_at: Date | string; signal_ids: string[];
   opportunity_details: import("@kairo/contracts").OpportunityDetailsDto | null;
+  concept_mockup: ConceptMockupDto | null;
+  concept_mockup_version: number | null;
+  concept_mockup_generated_at: Date | string | null;
 };
 
 function opportunitySelect(tail: string): string {
   return `select o.id,o.workspace_id,o.brand_id,o.title,o.rationale,o.why_now,o.development_direction,o.status,
                  o.relevance,o.evidence,o.novelty,o.timeliness,o.brand_authority,o.audience_fit,o.overall,
-                 o.scoring_version,o.brand_context_version,o.opportunity_details,o.created_at,o.updated_at,
+                 o.scoring_version,o.brand_context_version,o.opportunity_details,o.concept_mockup,o.concept_mockup_version,
+                 o.concept_mockup_generated_at,o.created_at,o.updated_at,
                  coalesce(array_agg(os.signal_id order by os.signal_id) filter (where os.signal_id is not null),'{}'::text[]) as signal_ids
             from brand_opportunities o
             left join brand_opportunity_signals os on os.opportunity_id=o.id and os.workspace_id=o.workspace_id and os.brand_id=o.brand_id
@@ -177,7 +185,7 @@ async function fetchOpportunity(
   accountId: string,
   brandId: string,
   opportunityId: string,
-): Promise<BrandOpportunityDto | null> {
+): Promise<BrandOpportunityWithConceptDto | null> {
   const result = await client.query<OpportunityRow>(opportunitySelect(
     `join workspace_memberships m on m.workspace_id=o.workspace_id
      where m.account_id=$1 and m.active=true and o.brand_id=$2 and o.id=$3
@@ -224,7 +232,7 @@ function toSignal(row: SignalRow): PublicSignalDto {
   };
 }
 
-function toOpportunity(row: OpportunityRow): BrandOpportunityDto {
+function toOpportunity(row: OpportunityRow): BrandOpportunityWithConceptDto {
   return {
     id: row.id,
     workspaceId: row.workspace_id,
@@ -241,6 +249,8 @@ function toOpportunity(row: OpportunityRow): BrandOpportunityDto {
     },
     brandContextVersion: row.brand_context_version,
     ...(row.opportunity_details ? { details: row.opportunity_details } : {}),
+    ...(row.concept_mockup ? { conceptMockup: row.concept_mockup } : {}),
+    ...(row.concept_mockup_generated_at ? { conceptMockupGeneratedAt: iso(row.concept_mockup_generated_at) } : {}),
     createdAt: iso(row.created_at),
     updatedAt: iso(row.updated_at),
   };
