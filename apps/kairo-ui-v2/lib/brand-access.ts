@@ -6,8 +6,8 @@ export type BrandAccessAccount = {
 
 export type BrandAccessWorkspace = {
   id: string;
-  name?: string;
-  role?: "owner" | "member";
+  name: string;
+  role: "owner" | "member";
 };
 
 export type AccessibleBrand = {
@@ -25,6 +25,12 @@ export type AccessibleBrandDirectory = {
 
 type FetchLike = typeof fetch;
 
+type SessionWorkspace = {
+  id?: string;
+  name?: string;
+  role?: "owner" | "member";
+};
+
 export async function loadAccessibleBrandDirectory(input: {
   token: string;
   apiBase: string;
@@ -38,16 +44,22 @@ export async function loadAccessibleBrandDirectory(input: {
 
   const session = await sessionResponse.json() as {
     account?: BrandAccessAccount;
-    workspaces?: BrandAccessWorkspace[];
+    workspaces?: SessionWorkspace[];
   };
-  const workspaces = (session.workspaces ?? []).filter((workspace) => typeof workspace.id === "string" && workspace.id.length > 0);
+  const workspaces = (session.workspaces ?? [])
+    .filter((workspace): workspace is SessionWorkspace & { id: string } => typeof workspace.id === "string" && workspace.id.length > 0)
+    .map((workspace): BrandAccessWorkspace => ({
+      id: workspace.id,
+      name: typeof workspace.name === "string" && workspace.name.trim() ? workspace.name : "Workspace",
+      role: workspace.role === "owner" ? "owner" : "member",
+    }));
 
   const brandsByWorkspace = await Promise.all(workspaces.map(async (workspace) => {
     const response = await fetcher(`${base}/api/v1/workspaces/${encodeURIComponent(workspace.id)}/brands`, { cache: "no-store", headers });
     if (!response.ok) return [] as AccessibleBrand[];
     const brands = await response.json() as Array<{ id?: string; name?: string }>;
     return brands
-      .filter((brand): brand is { id: string; name: string } => typeof brand.id === "string" && brand.id.length > 0 && typeof brand.name === "string" && brand.name.length > 0)
+      .filter((brand): brand is { id: string; name: string } => typeof brand.id === "string" && brand.id.length > 0 && typeof brand.name === "string" && brand.name.trim().length > 0)
       .map((brand) => ({ id: brand.id, workspaceId: workspace.id, name: brand.name }));
   }));
 
