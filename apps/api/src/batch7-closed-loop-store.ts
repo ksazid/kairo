@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Pool, type PoolClient } from "pg";
+import type { ConceptMockupDto } from "@kairo/contracts/concept-mockup";
 import { ResourceNotFoundError } from "@kairo/domain";
 
 export type RecommendationFeedbackAction = "seen" | "dismissed";
@@ -129,8 +130,14 @@ export class PgHunterClosedLoopStore implements HunterClosedLoopStore {
     try {
       await client.query("begin");
       const workspaceId = await requireBrandWorkspace(client, accountId, brandId);
-      const opportunity = await client.query<{ title: string; rationale: string; why_now: string; development_direction: string }>(
-        `select title,rationale,why_now,development_direction from brand_opportunities
+      const opportunity = await client.query<{
+        title: string;
+        rationale: string;
+        why_now: string;
+        development_direction: string;
+        concept_mockup: ConceptMockupDto | null;
+      }>(
+        `select title,rationale,why_now,development_direction,concept_mockup from brand_opportunities
           where workspace_id=$1 and brand_id=$2 and id=$3 for update`,
         [workspaceId, brandId, opportunityId],
       );
@@ -147,7 +154,9 @@ export class PgHunterClosedLoopStore implements HunterClosedLoopStore {
         return { ideaId: existingId, opportunityId, status: "developing", reused: true };
       }
       const ideaId = randomUUID();
-      const premise = `${source.development_direction}\n\nWhy now: ${source.why_now}\n\nContext: ${source.rationale}`.slice(0, 2_000);
+      const basePremise = `${source.development_direction}\n\nWhy now: ${source.why_now}\n\nContext: ${source.rationale}`;
+      const conceptBrief = conceptMockupBrief(source.concept_mockup);
+      const premise = [basePremise, conceptBrief ? `Concept brief:\n${conceptBrief}` : ""].filter(Boolean).join("\n\n").slice(0, 2_000);
       await client.query(
         `insert into ideas(id,workspace_id,brand_id,title,premise,source_type,opportunity_id,status,created_at)
          values($1,$2,$3,$4,$5,'opportunity',$6,'new',now())`,
@@ -164,6 +173,30 @@ export class PgHunterClosedLoopStore implements HunterClosedLoopStore {
       client.release();
     }
   }
+}
+
+function conceptMockupBrief(mockup: ConceptMockupDto | null | undefined): string | undefined {
+  if (!mockup) return undefined;
+  const lines = [
+    `Format: ${mockup.format}`,
+    `Hook: ${mockup.hook}`,
+    mockup.copyPreview ? `Copy direction: ${mockup.copyPreview}` : "",
+    mockup.visualDirection ? `Visual direction: ${mockup.visualDirection}` : "",
+    mockup.cta ? `CTA: ${mockup.cta}` : "",
+  ];
+  if (mockup.format === "text" && mockup.text) {
+    lines.push(...mockup.text.keyPoints.slice(0, 3).map((point) => `Key point: ${point}`));
+  } else if (mockup.format === "image" && mockup.image) {
+    lines.push(`Visual subject: ${mockup.image.visualSubject}`);
+    if (mockup.image.overlayText) lines.push(`Overlay: ${mockup.image.overlayText}`);
+  } else if (mockup.format === "carousel" && mockup.carousel) {
+    lines.push(`Cover: ${mockup.carousel.cover.headline}`);
+    lines.push(...mockup.carousel.slides.slice(0, 3).map((slide) => `Slide: ${slide.headline}${slide.body ? ` — ${slide.body}` : ""}`));
+  } else if (mockup.format === "reel" && mockup.reel) {
+    lines.push(`Opening frame: ${mockup.reel.openingFrame}`);
+    lines.push(...mockup.reel.scenes.slice(0, 4).map((scene) => `${scene.startSeconds}-${scene.endSeconds}s: ${scene.beat}${scene.onScreenText ? ` — ${scene.onScreenText}` : ""}`));
+  }
+  return lines.filter(Boolean).join("\n").slice(0, 900);
 }
 
 async function audit(client: PoolClient, workspaceId: string, accountId: string, eventType: string, subjectId: string): Promise<void> {
