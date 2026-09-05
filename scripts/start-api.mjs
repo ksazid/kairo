@@ -10,6 +10,7 @@ const approvedMigrations = new Set([
   "0032_hunter_opportunity_details.sql",
   "0033_opportunity_feedback_closed_loop.sql",
   "0034_brand_delete_cascade.sql",
+  "0037_opportunity_concept_mockups.sql",
 ]);
 const approvedRanges = new Set([
   "0023_meta_multichannel_connections.sql..0028_performance_pattern_memory.sql",
