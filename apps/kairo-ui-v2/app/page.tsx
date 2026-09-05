@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Compass, ExternalLink, FileImage, FileText, LayoutGrid, Lightbulb, Megaphone, MoreVertical, Play, PlaySquare, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
+import { ConceptMockupPreview } from "../components/concept-mockup";
 import { getHomeData } from "../lib/api";
+import type { ConceptMockupView } from "../lib/concept-mockup";
 import { creationFormatLabel, normalizeCreationFormat } from "../lib/home";
 import { CreateButton, HeroControls } from "./home-controls";
 import { KairoShell } from "./kairo-shell";
@@ -14,6 +16,7 @@ const fallback = [
 ];
 
 type SearchParams = Promise<{ brand?: string; format?: string; idea?: string; authError?: string }>;
+type OpportunityWithConcept = (typeof fallback)[number] & { conceptMockup?: ConceptMockupView };
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
@@ -22,6 +25,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
   const selectedFormat = normalizeCreationFormat(params.format);
   const featuredIndex = Math.max(0, opportunities.findIndex((item) => item.id === params.idea));
   const featured = opportunities[featuredIndex] ?? opportunities[0] ?? fallback[0]!;
+  const featuredMockup = (featured as OpportunityWithConcept).conceptMockup;
   const nextFeatured = opportunities[(featuredIndex + 1) % opportunities.length] ?? fallback[0]!;
   const webUrl = (process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app").replace(/\/$/, "");
   const brandBase = data.brandId ? `${webUrl}/brands/${encodeURIComponent(data.brandId)}` : webUrl;
@@ -41,7 +45,7 @@ export default async function Home({ searchParams }: { searchParams: SearchParam
         <section className="recommendation">
           <div className="recommend-head"><h2><Sparkles aria-hidden="true"/>Kairo recommends</h2><div><span><TrendingUp aria-hidden="true"/>Trending</span><span><ShieldCheck aria-hidden="true"/>Great fit</span></div></div>
           <div className="recommend-grid">
-            <div className="hero-image"><Image src="/malta-car.webp" alt="White rental car overlooking Valletta, Malta" fill priority sizes="(max-width: 900px) 100vw, 38vw"/><div className="image-shade"/><div className="image-copy"><strong>3 mistakes</strong><span>customers make<br/>when renting a<br/>car in <b>Malta</b></span></div><small><Play aria-hidden="true" fill="currentColor"/>0:32</small></div>
+            {featuredMockup ? <div className="hero-image concept-home-preview"><ConceptMockupPreview mockup={featuredMockup} mode="compact"/></div> : <div className="hero-image"><Image src="/malta-car.webp" alt="White rental car overlooking Valletta, Malta" fill priority sizes="(max-width: 900px) 100vw, 38vw"/><div className="image-shade"/><div className="image-copy"><strong>3 mistakes</strong><span>customers make<br/>when renting a<br/>car in <b>Malta</b></span></div><small><Play aria-hidden="true" fill="currentColor"/>0:32</small></div>}
             <div className="recommend-copy"><h3>{selectedFormat === "campaign" ? `Build a campaign around: ${featured.title}` : featured.title}</h3><h4><ShieldCheck aria-hidden="true"/>Why this fits your Brand</h4><p>{featured.rationale ?? "Your audience looks for trusted, practical guidance. This positions your Brand as the helpful expert."}</p><h4 className="trend-copy"><TrendingUp aria-hidden="true"/>Why it is trending</h4><p>{featured.whyNow ?? "This topic is gaining attention and gives your Brand a timely, useful angle."}</p><div className="actions"><CreateButton brandId={data.brandId} opportunityId={data.brandId ? featured.id : undefined} title={featured.title} direction={featured.developmentDirection ?? featured.rationale} format={selectedFormat}/><Link href={`/?${nextQuery.toString()}`}>See another</Link><a href={data.brandId ? `${brandBase}/opportunities/${encodeURIComponent(featured.id)}` : webUrl}>View source<ExternalLink aria-hidden="true"/></a></div></div>
             <aside className="recommend-meta"><small>Recommended format</small><strong><FormatIcon aria-hidden="true"/>{formatLabel}</strong><p>{formatDescription}</p><hr/><small>Source</small><a href={data.brandId ? `${brandBase}/opportunities/${encodeURIComponent(featured.id)}` : webUrl}>Trend &amp; public evidence <ExternalLink aria-hidden="true"/></a><p>Updated today</p></aside>
           </div>

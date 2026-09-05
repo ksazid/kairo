@@ -1,12 +1,13 @@
 import type {
-  BrandOpportunityDto,
   OpportunityAction,
   OpportunityScoresDto,
   OpportunityStatus,
   PublicSignalDto,
   OpportunityDetailsDto,
 } from "@kairo/contracts";
+import type { BrandOpportunityWithConceptDto, ConceptMockupDto } from "@kairo/contracts/concept-mockup";
 import { ResourceNotFoundError } from "./index";
+import { buildConceptMockup } from "./concept-mockup";
 import {
   evaluateOpportunity,
   materiallySimilarOpportunity,
@@ -26,6 +27,8 @@ export interface CreateBrandOpportunityInput {
   scores: OpportunityScoresDto;
   brandContextVersion: string;
   details?: OpportunityDetailsDto;
+  conceptMockup?: ConceptMockupDto;
+  conceptMockupGeneratedAt?: string;
 }
 
 export interface OpportunityCandidateInput {
@@ -37,25 +40,27 @@ export interface OpportunityCandidateInput {
   brandContextVersion: string;
   scores: OpportunityEvaluationInput;
   details?: Omit<OpportunityDetailsDto, "supportingSourceIds">;
+  conceptMockup?: ConceptMockupDto;
+  conceptMockupGeneratedAt?: string;
 }
 
 export interface DiscoveryRepository {
   upsertPublicSignal(input: PreparedPublicSignal): Promise<PublicSignalDto>;
-  listBrandOpportunities(accountId: string, brandId: string): Promise<BrandOpportunityDto[]>;
-  getBrandOpportunity(accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityDto | null>;
-  createBrandOpportunity(accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityDto>;
-  setBrandOpportunityStatus(accountId: string, brandId: string, opportunityId: string, status: OpportunityStatus): Promise<BrandOpportunityDto>;
+  listBrandOpportunities(accountId: string, brandId: string): Promise<BrandOpportunityWithConceptDto[]>;
+  getBrandOpportunity(accountId: string, brandId: string, opportunityId: string): Promise<BrandOpportunityWithConceptDto | null>;
+  createBrandOpportunity(accountId: string, brandId: string, input: CreateBrandOpportunityInput): Promise<BrandOpportunityWithConceptDto>;
+  setBrandOpportunityStatus(accountId: string, brandId: string, opportunityId: string, status: OpportunityStatus): Promise<BrandOpportunityWithConceptDto>;
 }
 
 export interface RecordCandidateResult {
   signal: PublicSignalDto;
-  opportunity: BrandOpportunityDto | null;
+  opportunity: BrandOpportunityWithConceptDto | null;
 }
 
 export class DiscoveryService {
   constructor(private readonly repository: DiscoveryRepository) {}
 
-  list(accountId: string, brandId: string): Promise<BrandOpportunityDto[]> {
+  list(accountId: string, brandId: string): Promise<BrandOpportunityWithConceptDto[]> {
     return this.repository.listBrandOpportunities(accountId, brandId);
   }
 
@@ -83,6 +88,8 @@ export class DiscoveryService {
       overall: evaluation.overall,
       scoringVersion: evaluation.scoringVersion,
     };
+    const generatedMockup = input.conceptMockup ?? projectConceptMockup(input);
+    const generatedAt = input.conceptMockupGeneratedAt ?? (generatedMockup ? new Date().toISOString() : undefined);
 
     const opportunity = await this.repository.createBrandOpportunity(accountId, brandId, {
       title: input.title.trim(),
@@ -93,6 +100,8 @@ export class DiscoveryService {
       scores,
       brandContextVersion: input.brandContextVersion.trim(),
       ...(input.details ? { details: { ...input.details, supportingSourceIds: [signal.id] } } : {}),
+      ...(generatedMockup ? { conceptMockup: structuredClone(generatedMockup) } : {}),
+      ...(generatedAt ? { conceptMockupGeneratedAt: generatedAt } : {}),
     });
     return { signal, opportunity };
   }
@@ -102,11 +111,30 @@ export class DiscoveryService {
     brandId: string,
     opportunityId: string,
     action: OpportunityAction,
-  ): Promise<BrandOpportunityDto> {
+  ): Promise<BrandOpportunityWithConceptDto> {
     const current = await this.repository.getBrandOpportunity(accountId, brandId, opportunityId);
     if (!current) throw new ResourceNotFoundError("Opportunity not found");
     const next = transitionOpportunityStatus(current.status, action);
     if (next === current.status) return current;
     return this.repository.setBrandOpportunityStatus(accountId, brandId, opportunityId, next);
+  }
+}
+
+function projectConceptMockup(input: OpportunityCandidateInput): ConceptMockupDto | undefined {
+  try {
+    return buildConceptMockup({
+      title: input.title,
+      rationale: input.rationale,
+      whyNow: input.whyNow,
+      developmentDirection: input.developmentDirection,
+      ...(input.details?.hook ? { hook: input.details.hook } : {}),
+      ...(input.details?.proposedAngle ? { proposedAngle: input.details.proposedAngle } : {}),
+      ...(input.details?.targetAudience ? { targetAudience: input.details.targetAudience } : {}),
+      ...(input.details?.objective ? { objective: input.details.objective } : {}),
+      ...(input.details?.recommendedFormat ? { recommendedFormat: input.details.recommendedFormat } : {}),
+    });
+  } catch {
+    // A rough presentation mockup is optional. It must never suppress a qualified Hunter opportunity.
+    return undefined;
   }
 }

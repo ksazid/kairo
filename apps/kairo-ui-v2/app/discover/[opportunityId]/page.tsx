@@ -15,6 +15,7 @@ import {
   TrendingUp,
   Youtube,
 } from "lucide-react";
+import { ConceptMockupPreview } from "../../../components/concept-mockup";
 import { getHomeData } from "../../../lib/api";
 import { discoverFallback, toDiscoverCards } from "../../../lib/discover";
 import { KairoShell } from "../../kairo-shell";
@@ -41,11 +42,8 @@ export default async function DiscoverPreviewPage({ params, searchParams }: { pa
       <p>Review the Brand fit, timing and recommended format before Kairo creates the final content.</p>
     </header>
     <section className="discover-preview-panel">
-      <div className="discover-preview-media">
-        <Image src={card.image} alt={card.title} fill priority sizes="(max-width: 900px) 100vw, 46vw"/>
-        <span className="discover-media-shade"/>
-        <div className="discover-badges"><i><TrendingUp aria-hidden="true"/>{card.trend}</i><i><ShieldCheck aria-hidden="true"/>{card.fit}</i></div>
-        <div className="discover-preview-image-copy"><strong>{card.title}</strong><small><ChannelIcon aria-hidden="true"/>{card.channel} · {card.formatLabel}</small></div>
+      <div className={`discover-preview-media${card.conceptMockup ? " discover-preview-concept" : ""}`}>
+        {card.conceptMockup ? <ConceptMockupPreview mockup={card.conceptMockup} mode="full"/> : <><Image src={card.image} alt={card.title} fill priority sizes="(max-width: 900px) 100vw, 46vw"/><span className="discover-media-shade"/><div className="discover-badges"><i><TrendingUp aria-hidden="true"/>{card.trend}</i><i><ShieldCheck aria-hidden="true"/>{card.fit}</i></div><div className="discover-preview-image-copy"><strong>{card.title}</strong><small><ChannelIcon aria-hidden="true"/>{card.channel} · {card.formatLabel}</small></div></>}
       </div>
       <div className="discover-preview-copy">
         <div className="discover-preview-label"><Sparkles aria-hidden="true"/>Kairo recommends</div>
