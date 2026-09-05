@@ -6,7 +6,7 @@ const configured = {
   OIDC_CLIENT_ID: "client-id",
   OIDC_CLIENT_SECRET: "client-secret",
   OIDC_AUDIENCE: "https://api.example",
-} as NodeJS.ProcessEnv;
+} as unknown as NodeJS.ProcessEnv;
 
 describe("Kairo UI v2 OIDC bootstrap diagnostics", () => {
   it("reports only missing configuration keys, never values", () => {
