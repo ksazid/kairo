@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { loadAccessibleBrandDirectory, resolveAccessibleBrand, workspaceForBrand } from "./brand-access";
 import { buildContinueItems, type CampaignSummary, type ContinueItem, type CreationFormat, type IdeaSummary } from "./home";
 import { settingsFallback, type PresenterResponse, type SettingsChannel, type SettingsData } from "./settings-data";
 
@@ -128,18 +129,25 @@ async function bodyOrError<T>(response: Response, fallback: string): Promise<T> 
   return await response.json() as T;
 }
 
+function emptyHomeData(authenticated: boolean, requestedBrandId?: string): HomeData {
+  return {
+    authenticated,
+    brandName: authenticated ? (requestedBrandId ? "Brand unavailable" : "Choose Brand") : "Preview Brand",
+    opportunities: [],
+    continueItems: [],
+  };
+}
+
 export async function getHomeData(requestedBrandId?: string): Promise<HomeData> {
   const token = await accessToken();
-  if (!token) return { authenticated: false, brandName: "Sazzid", opportunities: [], continueItems: [] };
-  const sessionResponse = await api(token, "/api/v1/session");
-  if (!sessionResponse.ok) return { authenticated: false, brandName: "Sazzid", opportunities: [], continueItems: [] };
-  const session = await sessionResponse.json() as { workspaces?: Array<{ id: string }> };
-  const workspaceId = session.workspaces?.[0]?.id;
-  if (!workspaceId) return { authenticated: true, brandName: "Sazzid", opportunities: [], continueItems: [] };
-  const brandsResponse = await api(token, `/api/v1/workspaces/${encodeURIComponent(workspaceId)}/brands`);
-  const brands = brandsResponse.ok ? await brandsResponse.json() as Array<{ id: string; name: string }> : [];
-  const brand = brands.find((candidate) => candidate.id === requestedBrandId) ?? brands[0];
-  if (!brand) return { authenticated: true, brandName: "Sazzid", opportunities: [], continueItems: [] };
+  if (!token) return emptyHomeData(false, requestedBrandId);
+
+  const directory = await loadAccessibleBrandDirectory({ token, apiBase: apiBase() });
+  if (!directory.authenticated) return emptyHomeData(false, requestedBrandId);
+
+  const brand = resolveAccessibleBrand(directory.brands, requestedBrandId);
+  if (!brand) return emptyHomeData(true, requestedBrandId);
+
   const base = `/api/v1/brands/${encodeURIComponent(brand.id)}`;
   const [opportunitiesResponse, campaignsResponse, ideasResponse, learningsResponse] = await Promise.all([
     api(token, `${base}/opportunities`),
@@ -165,36 +173,29 @@ export async function getHomeData(requestedBrandId?: string): Promise<HomeData> 
 export async function getSettingsData(requestedBrandId?: string): Promise<SettingsData> {
   const token = await accessToken();
   if (!token) return settingsFallback();
-  const sessionResponse = await api(token, "/api/v1/session");
-  if (!sessionResponse.ok) return settingsFallback();
-  const session = await sessionResponse.json() as {
-    account: { id: string; email?: string; displayName?: string };
-    workspaces?: Array<{ id: string; name: string; role: "owner" | "member" }>;
+
+  const directory = await loadAccessibleBrandDirectory({ token, apiBase: apiBase() });
+  if (!directory.authenticated) return settingsFallback();
+
+  const account = {
+    ...(directory.account?.id ? { id: directory.account.id } : {}),
+    displayName: directory.account?.displayName ?? directory.account?.email ?? "Kairo member",
+    ...(directory.account?.email ? { email: directory.account.email } : {}),
   };
-  const workspace = session.workspaces?.[0] ?? null;
-  if (!workspace) {
-    return {
-      authenticated: true,
-      account: { id: session.account.id, displayName: session.account.displayName ?? session.account.email ?? "Kairo member", ...(session.account.email ? { email: session.account.email } : {}) },
-      workspace: null,
-      brand: null,
-      channels: [],
-      presenter: null,
-    };
-  }
-  const brandsResponse = await api(token, `/api/v1/workspaces/${encodeURIComponent(workspace.id)}/brands`);
-  const brands = brandsResponse.ok ? await brandsResponse.json() as Array<{ id: string; workspaceId: string; name: string }> : [];
-  const brand = brands.find((candidate) => candidate.id === requestedBrandId) ?? brands[0] ?? null;
+  const brand = resolveAccessibleBrand(directory.brands, requestedBrandId);
+  const workspace = workspaceForBrand(directory.workspaces, brand) ?? (!requestedBrandId ? directory.workspaces[0] ?? null : null);
+
   if (!brand) {
     return {
       authenticated: true,
-      account: { id: session.account.id, displayName: session.account.displayName ?? session.account.email ?? "Kairo member", ...(session.account.email ? { email: session.account.email } : {}) },
+      account,
       workspace,
       brand: null,
       channels: [],
       presenter: null,
     };
   }
+
   const base = `/api/v1/brands/${encodeURIComponent(brand.id)}`;
   const [channelsResponse, presenterResponse] = await Promise.all([
     api(token, `${base}/channel-accounts`),
@@ -202,7 +203,7 @@ export async function getSettingsData(requestedBrandId?: string): Promise<Settin
   ]);
   return {
     authenticated: true,
-    account: { id: session.account.id, displayName: session.account.displayName ?? session.account.email ?? "Kairo member", ...(session.account.email ? { email: session.account.email } : {}) },
+    account,
     workspace,
     brand,
     channels: channelsResponse.ok ? await channelsResponse.json() as SettingsChannel[] : [],
