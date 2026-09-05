@@ -1,67 +1,22 @@
-export type ConceptMockupFormat = "text" | "image" | "carousel" | "reel";
+import type {
+  CarouselConceptMockupDto,
+  CarouselConceptSlideDto,
+  ConceptMockupDto,
+  ConceptMockupFormatDto,
+  ImageConceptMockupDto,
+  ReelConceptMockupDto,
+  ReelConceptSceneDto,
+  TextConceptMockupDto,
+} from "@kairo/contracts/concept-mockup";
 
-export type TextConceptMockup = {
-  hook: string;
-  opening?: string;
-  keyPoints: string[];
-  captionDirection?: string;
-  cta?: string;
-  tone?: string;
-};
-
-export type ImageConceptMockup = {
-  headline: string;
-  subheadline?: string;
-  visualSubject: string;
-  composition?: string;
-  overlayText?: string;
-  visualStyle?: string;
-  cta?: string;
-};
-
-export type CarouselConceptSlide = {
-  headline: string;
-  body?: string;
-  visualDirection?: string;
-};
-
-export type CarouselConceptMockup = {
-  cover: CarouselConceptSlide;
-  slides: CarouselConceptSlide[];
-  closingSlide?: CarouselConceptSlide;
-  cardCount: number;
-  visualStyle?: string;
-};
-
-export type ReelConceptScene = {
-  startSeconds: number;
-  endSeconds: number;
-  beat: string;
-  visualDirection?: string;
-  onScreenText?: string;
-};
-
-export type ReelConceptMockup = {
-  hook: string;
-  durationSeconds: number;
-  openingFrame: string;
-  scenes: ReelConceptScene[];
-  voiceoverDirection?: string;
-  endingCta?: string;
-};
-
-export type ConceptMockup = {
-  version: 1;
-  format: ConceptMockupFormat;
-  hook: string;
-  copyPreview?: string;
-  visualDirection?: string;
-  cta?: string;
-  text?: TextConceptMockup;
-  image?: ImageConceptMockup;
-  carousel?: CarouselConceptMockup;
-  reel?: ReelConceptMockup;
-};
+export type ConceptMockupFormat = ConceptMockupFormatDto;
+export type TextConceptMockup = TextConceptMockupDto;
+export type ImageConceptMockup = ImageConceptMockupDto;
+export type CarouselConceptSlide = CarouselConceptSlideDto;
+export type CarouselConceptMockup = CarouselConceptMockupDto;
+export type ReelConceptScene = ReelConceptSceneDto;
+export type ReelConceptMockup = ReelConceptMockupDto;
+export type ConceptMockup = ConceptMockupDto;
 
 export function isConceptMockup(value: unknown): value is ConceptMockup {
   if (!value || typeof value !== "object") return false;
