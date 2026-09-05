@@ -1,9 +1,12 @@
 import { normalizeCreationFormat, type CreationFormat } from "./home";
 import type { HomeOpportunity } from "./api";
+import type { ConceptMockupView } from "./concept-mockup";
 
 export type DiscoverFilter = "all" | "trending" | "great-fit" | "saved" | "developing";
 
 export type DiscoverCard = HomeOpportunity & {
+  conceptMockup?: ConceptMockupView;
+  conceptMockupGeneratedAt?: string;
   image: "/malta-car.webp" | "/malta-drive.webp" | "/car-keys.webp";
   format: CreationFormat;
   formatLabel: string;
@@ -13,6 +16,11 @@ export type DiscoverCard = HomeOpportunity & {
   opportunity: "High opportunity" | "Medium opportunity";
   source: "Google Trends" | "Semrush" | "BuzzSumo";
   confidence: number;
+};
+
+type OpportunityWithConcept = HomeOpportunity & {
+  conceptMockup?: ConceptMockupView;
+  conceptMockupGeneratedAt?: string;
 };
 
 const media = ["/malta-car.webp", "/malta-drive.webp", "/car-keys.webp"] as const;
@@ -28,10 +36,13 @@ export const discoverFallback: HomeOpportunity[] = [
 
 export function toDiscoverCards(opportunities: HomeOpportunity[]): DiscoverCard[] {
   return opportunities.filter((item) => item.status !== "ignored").map((item, index) => {
+    const opportunity = item as OpportunityWithConcept;
     const score = item.scores?.overall ?? item.scores?.audienceFit ?? item.scores?.relevance ?? .75;
     const format = normalizeCreationFormat(item.details?.recommendedFormat);
     return {
       ...item,
+      ...(opportunity.conceptMockup ? { conceptMockup: opportunity.conceptMockup } : {}),
+      ...(opportunity.conceptMockupGeneratedAt ? { conceptMockupGeneratedAt: opportunity.conceptMockupGeneratedAt } : {}),
       image: media[index % media.length]!,
       format,
       formatLabel: format === "image" ? "Post" : format === "carousel" ? "Carousel" : format === "campaign" ? "Campaign" : "Reel",
