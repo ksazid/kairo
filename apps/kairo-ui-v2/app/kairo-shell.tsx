@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { getShellBrandOptions } from "../lib/shell-data";
 import { BrandSwitcher } from "./brand-switcher";
+import { UserMenu } from "./user-menu";
 
 type ActiveDestination = "Home" | "Discover" | "Content" | "Campaigns" | "Calendar" | "Insights" | "Brain" | "Settings";
 
@@ -71,7 +72,7 @@ export async function KairoShell({
         <div className="top-spacer"/>
         <a className="mobile-classic" href={webUrl} aria-label="Back to Classic Kairo"><ExternalLink aria-hidden="true"/></a>
         <button className="bell" type="button" aria-label="Notifications"><Bell aria-hidden="true"/><b>3</b></button>
-        {authenticated ? <a className="profile" href="/settings"><span>SK</span><strong>Sazzad</strong></a> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
+        {authenticated ? <UserMenu brandId={brandId} addBrandHref={`${webUrl}/brands/new`}/> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
       </header>
       <div className={`workspace ${workspaceClassName}`.trim()}>{children}</div>
     </main>
