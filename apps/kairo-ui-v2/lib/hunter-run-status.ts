@@ -1,18 +1,5 @@
 import { cookies } from "next/headers";
-
-export type HunterRunStatus = {
-  runId: string;
-  trigger: "manual" | "scheduled";
-  status: "running" | "succeeded" | "failed";
-  startedAt: string;
-  completedAt?: string;
-  evidenceCount: number;
-  candidateCount: number;
-  opportunityCount: number;
-  degradedSources?: string[];
-  failureCode?: string;
-  failureMessage?: string;
-};
+import type { HunterRunStatus } from "./discovery-status";
 
 const apiBase = () => (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
 
