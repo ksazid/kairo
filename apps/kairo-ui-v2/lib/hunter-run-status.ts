@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import type { HunterRunStatus } from "./discovery-status";
+export type { HunterRunStatus } from "./discovery-status";
 
 const apiBase = () => (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
 
