@@ -60,12 +60,12 @@ export class PgHunterRunRepository implements HunterRunRepository {
       const failed = status === "failed" ? input as FailHunterRunInput : undefined;
       const succeeded = status === "succeeded" ? input as CompleteHunterRunInput : undefined;
       const result = await client.query<RunRow>(`update hunter_run_records set
-        status=$3, completed_at=$4, duration_ms=$5,
-        evidence_count=$6, candidate_count=$7, opportunity_count=$8,
-        sources_scanned=$9::jsonb, degraded_sources=$10::jsonb,
-        failure_code=$11, failure_message=$12, updated_at=now()
-        where run_id=$2 and status='running'
-        returning *`, [accountId, runId, status, input.completedAt, input.durationMs,
+        status=$2, completed_at=$3, duration_ms=$4,
+        evidence_count=$5, candidate_count=$6, opportunity_count=$7,
+        sources_scanned=$8::jsonb, degraded_sources=$9::jsonb,
+        failure_code=$10, failure_message=$11, updated_at=now()
+        where run_id=$1 and status='running'
+        returning *`, [runId, status, input.completedAt, input.durationMs,
         succeeded?.evidenceCount ?? 0, succeeded?.candidateCount ?? 0, succeeded?.opportunityCount ?? 0,
         JSON.stringify(input.sourcesScanned), JSON.stringify(input.degradedSources), failed?.failureCode ?? null, failed?.failureMessage ?? null]);
       if (!result.rows[0]) throw new Error("Hunter run is already terminal");
