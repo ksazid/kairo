@@ -1,5 +1,23 @@
-import type { ManualHunterRun } from "./api";
-import type { HunterRunStatus } from "./hunter-run-status";
+export type HunterRunStatus = {
+  runId: string;
+  trigger: "manual" | "scheduled";
+  status: "running" | "succeeded" | "failed";
+  startedAt: string;
+  completedAt?: string;
+  evidenceCount: number;
+  candidateCount: number;
+  opportunityCount: number;
+  degradedSources?: string[];
+  failureCode?: string;
+  failureMessage?: string;
+};
+
+export type HunterRefreshRun = {
+  evidenceCount: number;
+  candidateCount: number;
+  opportunityCount: number;
+  degradedSources?: string[];
+};
 
 export function discoveryEmptyState(input: {
   authenticated: boolean;
@@ -36,7 +54,7 @@ export function discoveryEmptyState(input: {
   };
 }
 
-export function discoveryRefreshMessage(run: ManualHunterRun) {
+export function discoveryRefreshMessage(run: HunterRefreshRun) {
   if (run.opportunityCount > 0) {
     return `Hunter found ${run.opportunityCount} new ${run.opportunityCount === 1 ? "opportunity" : "opportunities"}.`;
   }
