@@ -31,8 +31,10 @@ import {
   type DiscoverCard,
   type DiscoverFilter,
 } from "../../lib/discover";
+import { discoveryEmptyState, discoveryRefreshMessage } from "../../lib/discovery-status";
 import { DEFAULT_LISTING_VIEW, normalizeListingView, type ListingView } from "../../lib/listing-view";
-import type { HomeOpportunity } from "../../lib/api";
+import type { HomeOpportunity, ManualHunterRun } from "../../lib/api";
+import type { HunterRunStatus } from "../../lib/hunter-run-status";
 import { ListingViewToggle } from "../listing-view-toggle";
 
 const filters: Array<{ value: DiscoverFilter; label: string }> = [
@@ -44,7 +46,17 @@ const filters: Array<{ value: DiscoverFilter; label: string }> = [
 
 const listingPreferenceKey = "kairo:list-view";
 
-export function DiscoverClient({ initialCards, brandId }: { initialCards: DiscoverCard[]; brandId?: string }) {
+export function DiscoverClient({
+  initialCards,
+  brandId,
+  authenticated,
+  latestRun,
+}: {
+  initialCards: DiscoverCard[];
+  brandId?: string;
+  authenticated: boolean;
+  latestRun?: HunterRunStatus | null;
+}) {
   const router = useRouter();
   const [cards, setCards] = useState(initialCards);
   const [query, setQuery] = useState("");
@@ -55,10 +67,12 @@ export function DiscoverClient({ initialCards, brandId }: { initialCards: Discov
   const [view, setView] = useState<ListingView>(DEFAULT_LISTING_VIEW);
   const [pending, setPending] = useState("");
   const [error, setError] = useState("");
+  const [refreshMessage, setRefreshMessage] = useState("");
   const visible = useMemo(() => filterDiscoverCards(cards, { query, filter, format, channel, source }), [cards, channel, filter, format, query, source]);
   const savedCount = cards.filter((card) => card.status === "saved").length;
   const developingCount = cards.filter((card) => card.status === "developing").length;
   const sources = useMemo(() => [...new Set(cards.map((card) => card.source))], [cards]);
+  const emptyState = discoveryEmptyState({ authenticated, brandId, latestRun });
 
   useEffect(() => setView(normalizeListingView(window.localStorage.getItem(listingPreferenceKey))), []);
 
@@ -75,22 +89,21 @@ export function DiscoverClient({ initialCards, brandId }: { initialCards: Discov
     setChannel("all");
     setSource("all");
     setError("");
+    setRefreshMessage("");
   }
 
   async function refreshDiscovery() {
-    if (!brandId || pending) {
-      resetDiscovery();
-      return;
-    }
+    if (!brandId || pending) return;
     setPending("refresh");
     setError("");
+    setRefreshMessage("");
     try {
       const response = await fetch("/api/discover/refresh", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ brandId }),
       });
-      const body = await response.json().catch(() => ({})) as { opportunities?: HomeOpportunity[]; error?: string };
+      const body = await response.json().catch(() => ({})) as { run?: ManualHunterRun; opportunities?: HomeOpportunity[]; error?: string };
       if (!response.ok || !body.opportunities) throw new Error(body.error ?? "Kairo could not refresh discovery.");
       setCards(toDiscoverCards(body.opportunities));
       setQuery("");
@@ -98,6 +111,7 @@ export function DiscoverClient({ initialCards, brandId }: { initialCards: Discov
       setFormat("all");
       setChannel("all");
       setSource("all");
+      setRefreshMessage(body.run ? discoveryRefreshMessage(body.run) : "Discovery refreshed.");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Kairo could not refresh discovery.");
@@ -132,7 +146,7 @@ export function DiscoverClient({ initialCards, brandId }: { initialCards: Discov
   return <>
     <header className="discover-page-header">
       <div><h1>Discover</h1><p>Find the next opportunity for your Brand.</p></div>
-      <div className="discover-header-actions"><ListingViewToggle value={view} onChange={chooseView}/><button type="button" onClick={() => void refreshDiscovery()} disabled={pending === "refresh"}><RefreshCw aria-hidden="true"/>{pending === "refresh" ? "Refreshing…" : "Refresh discovery"}</button></div>
+      <div className="discover-header-actions"><ListingViewToggle value={view} onChange={chooseView}/><button type="button" onClick={() => void refreshDiscovery()} disabled={!brandId || pending === "refresh"}><RefreshCw aria-hidden="true"/>{pending === "refresh" ? "Refreshing…" : "Refresh discovery"}</button></div>
     </header>
 
     <section className="discover-toolbar" aria-label="Discover filters">
@@ -148,10 +162,11 @@ export function DiscoverClient({ initialCards, brandId }: { initialCards: Discov
       </div>
     </section>
 
-    <div className="discover-result-line"><p>Showing <strong>{visible.length}</strong> of {cards.length} opportunities</p><span>{view === "table" ? "Detailed view" : "Visual view"} · updated from public trends and your Brand fit</span></div>
+    <div className="discover-result-line"><p>Showing <strong>{visible.length}</strong> of {cards.length} opportunities</p><span>{view === "table" ? "Detailed view" : "Visual view"} · grounded in Hunter results and your Brand fit</span></div>
     {error ? <p className="discover-inline-error" role="alert">{error}</p> : null}
+    {refreshMessage ? <p className="discover-inline-status" role="status">{refreshMessage}</p> : null}
 
-    {visible.length ? view === "table" ? <DiscoverTable cards={visible} brandId={brandId} pending={pending} onAct={act}/> : <DiscoverGrid cards={visible} brandId={brandId} pending={pending} onAct={act}/> : <section className="discover-empty" aria-live="polite"><Search aria-hidden="true"/><h2>No ideas match these filters</h2><p>Clear a filter or try a broader search. Kairo will not fill Discover with weak matches.</p><button type="button" onClick={resetDiscovery}>Clear filters</button></section>}
+    {visible.length ? view === "table" ? <DiscoverTable cards={visible} brandId={brandId} pending={pending} onAct={act}/> : <DiscoverGrid cards={visible} brandId={brandId} pending={pending} onAct={act}/> : cards.length === 0 ? <section className="discover-empty" aria-live="polite"><RefreshCw aria-hidden="true"/><h2>{emptyState.title}</h2><p>{emptyState.message}</p>{brandId ? <button type="button" onClick={() => void refreshDiscovery()} disabled={pending === "refresh"}>{pending === "refresh" ? "Refreshing…" : "Refresh discovery"}</button> : null}</section> : <section className="discover-empty" aria-live="polite"><Search aria-hidden="true"/><h2>No ideas match these filters</h2><p>Clear a filter or try a broader search. Kairo will not fill Discover with weak matches.</p><button type="button" onClick={resetDiscovery}>Clear filters</button></section>}
   </>;
 }
 
