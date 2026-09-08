@@ -18,6 +18,19 @@ describe("Brand DNA readiness", () => {
     expect(result.nextAction?.type).toBe("add-source");
   });
 
+  it("does not treat generic website fallback prose as Brand intelligence", () => {
+    const result = evaluateBrandDnaReadiness([
+      field("identity.category", "Business or organization website"),
+      field("identity.products-services", "Stripe products or services described in the public reference"),
+      field("audience.primary", "Customers seeking stripe products or services"),
+      field("positioning.value-proposition", "Stripe provides the products or services described in its public reference."),
+      field("content.pillars", "Brand story, products or services, practical guidance and customer value"),
+      field("boundaries.excluded-topics", "No excluded topics identified in the public reference; confirm before Hunter activation"),
+    ]);
+    expect(result.status).toBe("needs-enrichment");
+    expect(result.gaps).toEqual(expect.arrayContaining(["business", "offerings", "audience", "positioning", "topics", "boundaries"]));
+  });
+
   it("accepts source-backed inferred context while keeping it non-authoritative", () => {
     const result = evaluateBrandDnaReadiness([
       field("identity.description", "A Malta grocery delivery service"),

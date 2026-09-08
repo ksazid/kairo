@@ -23,3 +23,8 @@
 21. Implement local inline Edit, Save and Cancel for Brand DNA and Discovery Intelligence rows with accessible labels and focus states.
 22. Keep Discovery Intelligence user-facing while preserving Hunter only as internal terminology.
 23. Add deterministic interaction tests, responsive browser verification and mockup-to-implementation design QA before handoff.
+24. Recover the clean-brand E2E path: remove authenticated demo fallbacks from Home and Opportunity Preview and render truthful empty states.
+25. Connect Brand Brain Refresh Discovery to the persisted manual Hunter route, then reload the activation projection after completion.
+26. Tighten website extraction and Brand DNA readiness so locale redirects and generic fallback prose cannot create false Hunter eligibility.
+27. Build the runtime Hunter source registry from configured capabilities and add bounded retry wrappers for transient public-provider failures.
+28. Rename simulated captured-page coverage so it cannot be mistaken for a live public/deployed certification, then run targeted and repository-wide verification.

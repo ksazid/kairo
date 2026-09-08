@@ -1,5 +1,4 @@
 import type { DiscoveryEvidence, DiscoveryRequest, DiscoverySourceProvider } from "@kairo/agent-contracts";
-import { ResearchEvidenceAdapterError } from "./research-evidence-adapters";
 
 type SleepLike = (ms: number) => Promise<void>;
 
@@ -37,7 +36,9 @@ export class RetryingDiscoverySourceProvider implements DiscoverySourceProvider 
 }
 
 function isRetryable(error: unknown): boolean {
-  return error instanceof ResearchEvidenceAdapterError && (error.kind === "rate-limited" || error.kind === "upstream");
+  if (!error || typeof error !== "object") return false;
+  const kind = (error as { kind?: unknown }).kind;
+  return kind === "rate-limited" || kind === "upstream";
 }
 
 function boundedInteger(value: unknown, field: string, min: number, max: number): number {

@@ -28,6 +28,7 @@ export interface PublicBrandReferenceTransportRequest {
   family: 4 | 6;
   timeoutMs: number;
   maxBytes: number;
+  headers?: Record<string, string>;
 }
 export interface PublicBrandReferenceTransportResponse {
   status: number;
@@ -82,6 +83,7 @@ export class PublicBrandReferenceHttpReader implements PublicBrandReferenceReade
         family: target.family,
         timeoutMs: this.timeoutMs,
         maxBytes: this.maxBytes,
+        headers: { "accept-language": "en-US,en;q=0.8" },
       });
     } catch (error) {
       if (error instanceof PublicBrandReferenceError) throw error;
@@ -181,6 +183,7 @@ function nodeTransport(request: PublicBrandReferenceTransportRequest): Promise<P
       accept: "text/html, application/xhtml+xml, application/pdf, application/json, text/plain;q=0.9, text/*;q=0.8",
       "user-agent": "KairoBrandReference/2.0",
       host: request.url.host,
+      ...request.headers,
     };
     const options: https.RequestOptions = {
       protocol: request.url.protocol,
@@ -299,7 +302,9 @@ function extractHtmlContext(html: string, pageUrl: URL): { title?: string; summa
     .replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, " ")
     .replace(/<aside\b[^>]*>[\s\S]*?<\/aside>/gi, " ")
     .replace(/<(?:script|style|noscript|svg|template|nav|header|footer|aside)\b[^>]*>[\s\S]*$/gi, " ");
-  const body = firstMatch(withoutNoise, /<body\b[^>]*>([\s\S]*?)<\/body>/i) || withoutNoise;
+  const body = firstMatch(withoutNoise, /<main\b[^>]*>([\s\S]*?)<\/main>/i)
+    || firstMatch(withoutNoise, /<body\b[^>]*>([\s\S]*?)<\/body>/i)
+    || withoutNoise;
   const visible = normalizeWhitespace(decodeEntities(body.replace(/<[^>]+>/g, " ")));
   const excerpt = joinUnique([title, summary, structured, visible]).slice(0, MAX_EXCERPT);
   const links = extractSameDomainLinks(html, pageUrl);

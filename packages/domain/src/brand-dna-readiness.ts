@@ -1,6 +1,6 @@
 import type { BrandBrainFieldDto, BrandDnaReadinessAction, BrandDnaReadinessGap, BrandDnaReadinessResponse } from "@kairo/contracts";
 
-const PLACEHOLDER = /to be confirmed|not yet confirmed|could not be identified|category not yet|connected or readable source evidence|brand's audience|people interested in this brand's products|what the brand offers|brand-relevant topics grounded/i;
+const PLACEHOLDER = /to be confirmed|not yet confirmed|could not be identified|category not yet|connected or readable source evidence|brand's audience|people interested in this brand's products|what the brand offers|brand-relevant topics grounded|business or organization website|products or services described in (?:the|its) public reference|customers seeking .+ products or services|brand story, products or services|no excluded topics identified in the public reference/i;
 
 const FIELD_KEYS = {
   business: ["identity.description", "identity.category", "identity.sector", "identity.subsector"],

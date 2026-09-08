@@ -11,6 +11,7 @@ import {
   planSourceQueries,
   resolveBrandSourcePolicy,
   type BrandIntelligenceProfile,
+  type DiscoverySourceDefinition,
 } from "@kairo/domain/source-policy";
 import { SECTOR_INTELLIGENCE_PACKS, selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import { DEFAULT_SOURCE_REGISTRY } from "@kairo/domain/source-registry";
@@ -92,11 +93,12 @@ export class HunterOrchestrator {
     private readonly tools: ToolGatewayPort,
     private readonly runtime: AgentRuntimePort,
     private readonly opportunities: Pick<DiscoveryService, "recordCandidate">,
+    private readonly sourceRegistry: readonly DiscoverySourceDefinition[] = DEFAULT_SOURCE_REGISTRY,
   ) {}
 
   async runForAuthorizedBrand(input: HunterRunInput): Promise<HunterRunResult> {
     const maxEvidence = normalizeMaxEvidence(input.maxEvidence);
-    const plans = executablePlans(input);
+    const plans = executablePlans(input, this.sourceRegistry);
     if (!plans.length) return { evidenceCount: 0, candidateCount: 0, opportunityCount: 0 };
 
     // Source Registry/query planning owns the provider request ceilings. maxEvidence bounds the
@@ -246,15 +248,15 @@ export function isHunterJudgmentOutput(value: unknown): value is HunterJudgmentO
   );
 }
 
-function executablePlans(input: HunterRunInput): ExecutableDiscoveryPlan[] {
+function executablePlans(input: HunterRunInput, sourceRegistry: readonly DiscoverySourceDefinition[] = DEFAULT_SOURCE_REGISTRY): ExecutableDiscoveryPlan[] {
   const explicit = input.query?.trim();
   if (explicit) return [{ source: "agent-reach", query: explicit, explicit: true }];
   if (input.query !== undefined && !explicit) throw new Error("Hunter query is required");
   if (!input.intelligenceProfile) throw new Error("Hunter requires an explicit query or Brand Intelligence Profile");
 
   const pack = selectSectorIntelligencePack(input.intelligenceProfile, Object.values(SECTOR_INTELLIGENCE_PACKS));
-  const policy = resolveBrandSourcePolicy(input.intelligenceProfile, pack, DEFAULT_SOURCE_REGISTRY);
-  const base = planSourceQueries(input.intelligenceProfile, pack, policy, DEFAULT_SOURCE_REGISTRY);
+  const policy = resolveBrandSourcePolicy(input.intelligenceProfile, pack, sourceRegistry);
+  const base = planSourceQueries(input.intelligenceProfile, pack, policy, sourceRegistry);
   return expandIntentPlans(base, input).slice(0, 16);
 }
 
