@@ -28,3 +28,4 @@
 26. Tighten website extraction and Brand DNA readiness so locale redirects and generic fallback prose cannot create false Hunter eligibility.
 27. Build the runtime Hunter source registry from configured capabilities and add bounded retry wrappers for transient public-provider failures.
 28. Rename simulated captured-page coverage so it cannot be mistaken for a live public/deployed certification, then run targeted and repository-wide verification.
+29. Clear the newly published dependency audit gate with patched Next.js, Fastify and Vitest releases, and add non-secret OIDC failure classification before repeating preview certification.

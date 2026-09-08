@@ -26,8 +26,11 @@
   "allowedPaths": [
     "apps/kairo-ui-v2/**",
     "apps/api/src/**",
+    "apps/api/package.json",
+    "apps/web/package.json",
     "apps/worker/**",
     "packages/domain/**",
+    "package.json",
     "docs/slices/VS-107.md",
     "docs/plans/VS-107-implementation.md",
     "docs/plans/HUNTER-CHUNK-5-FREEZE.md",
@@ -62,7 +65,8 @@
       "Uses Discovery Intelligence in creator-facing language while keeping Hunter as the internal background engine.",
       "Keeps Brand DNA review local through inline Edit, Save and Cancel interactions with visible evidence and confirmation state.",
       "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling.",
-      "VS-107@1.8 recovers the clean authenticated Brand E2E flow by removing demo fallbacks, executing manual Hunter from Brand Brain, tightening extraction/readiness quality, and aligning source planning with configured runtime capabilities."
+      "VS-107@1.8 recovers the clean authenticated Brand E2E flow by removing demo fallbacks, executing manual Hunter from Brand Brain, tightening extraction/readiness quality, and aligning source planning with configured runtime capabilities.",
+      "The approved repair pass upgrades audited runtime/test dependencies and emits non-secret OIDC failure categories so preview configuration failures are actionable without exposing credentials."
     ]
   },
   "approvals": [
@@ -136,8 +140,8 @@
     "commitSha": null,
     "evidence": [
       "VS-107@1.7 certification does not cover the @1.8 recovery changes.",
-      "VS-107@1.8 local candidate: 168 test files / 968 tests passed; 18 environment-dependent integration files remained skipped.",
-      "Repository-wide TypeScript, Kairo UI v2 production build, API production build, governance validation and preflight passed.",
+      "VS-107@1.8 repaired local candidate: 198 test files / 970 tests passed; 18 files / 40 environment-dependent integration tests remained skipped.",
+      "Production dependency audit reports zero vulnerabilities; repository-wide TypeScript, builds, governance validation and preflight passed.",
       "Deployed authenticated browser certification remains pending and must run against the exact immutable candidate after preview deployment."
     ]
   },
@@ -161,7 +165,7 @@
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/261",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/275",
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
       "VS-107@1.7 approved Brand Brain Overview, Brand DNA and Discovery Intelligence mockups",
