@@ -156,6 +156,19 @@
       "decidedBy": "Sazid Khan",
       "decidedAt": "2026-08-24T21:47:00+02:00",
       "blocks": []
+    },
+    {
+      "id": "DEC-013",
+      "sliceId": "VS-107",
+      "question": "May an exact candidate be temporarily deployed to the main hostname when preview authentication cannot faithfully support certification?",
+      "status": "approved",
+      "options": ["Controlled production certification with exact-SHA approval and rollback", "Require non-production certification only"],
+      "decision": "Allow a controlled production-certification lifecycle only when a deployment-bound integration cannot be faithfully tested outside the main hostname. Require separate exact-SHA human approval, owner-only access, disposable test data, a maximum four-hour window, running certification state and rollback readiness with an exact target and procedure. The deployment is not a release, grants no general production enablement, and must be rolled back immediately on failure or expiry.",
+      "ownerRole": "product-architecture-and-operations",
+      "rationale": "Preview OIDC configuration is unavailable for the current Kairo recovery candidate while the authenticated main hostname is operational. A narrow, machine-validated verification state permits truthful E2E testing without weakening normal release or production-enable controls.",
+      "decidedBy": "Sazid Khan",
+      "decidedAt": "2026-09-08T00:00:00Z",
+      "blocks": []
     }
   ]
 }

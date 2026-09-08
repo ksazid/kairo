@@ -48,6 +48,9 @@
     "apps/web/src/lib/product-navigation.test.ts",
     "docs/slices/VS-107.md",
     "docs/plans/VS-107-implementation.md",
+    "AGENTS.md",
+    "docs/governance/END-TO-END.md",
+    "scripts/governance-lib.mjs",
     "delivery/**"
   ],
   "protectedPaths": [
@@ -86,12 +89,12 @@
     },
     {
       "type": "policy",
-      "status": "not-required",
-      "version": "VS-107@1.7",
+      "status": "approved",
+      "version": "GOV-PCERT@1",
       "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "The existing Brand Brain, Source, Learning and Discovery contracts remain authoritative; the change is frontend-only and introduces no new provider, data authority, credential, scheduling or publishing policy."
+      "by": "Sazid Khan",
+      "at": "2026-09-08T00:00:00Z",
+      "rationale": "Product Owner approved a separate, controlled production-certification policy so deployment-bound authentication can be tested on the main hostname without treating an uncertified candidate as released."
     },
     {
       "type": "implementation",
@@ -130,7 +133,7 @@
       "rationale": "Awaiting certified release approval and a separate production-enable decision."
     }
   ],
-  "decisionIds": [],
+  "decisionIds": ["DEC-013"],
   "progress": {
     "discovery": 100,
     "decisions": 100,
