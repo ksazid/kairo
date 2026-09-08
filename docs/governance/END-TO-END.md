@@ -110,6 +110,21 @@ superseded
 rolled-back
 ```
 
+### Controlled production certification
+
+When a non-production environment cannot faithfully reproduce authentication or another deployment-bound integration, a candidate may move from `testing` to `production-certification` before normal certification. This narrowly permits verification on the main production hostname; it does not classify the candidate as released and does not grant general production enablement.
+
+The contract must include:
+
+- separate human `production-certification` approval bound to the exact candidate SHA;
+- owner-only access and disposable test data;
+- an expiry of no more than four hours;
+- rollback readiness, an exact rollback target SHA and an executable rollback procedure before deployment;
+- certification status `running` while the candidate is deployed;
+- immediate rollback on failure or expiry.
+
+A passing run records normal exact-SHA certification and moves to `certified`. A failed run returns to `testing` or records `rolled-back`. Release and production-enable approvals remain separate and mandatory.
+
 Allowed transitions are defined in `delivery/governance.json` and enforced by:
 
 ```bash
@@ -200,6 +215,7 @@ Validation fails for unsafe contradictions, including:
 - blocked decisions being bypassed;
 - certification approval not matching the certified SHA;
 - release before certification;
+- production certification without exact-SHA approval, owner-only access, disposable data, a bounded expiry or rollback readiness;
 - medium/high-risk release without rollback readiness;
 - released slices without an outcome review contract.
 
