@@ -31,6 +31,10 @@ export type ViralConcept = {
   reason: string;
 };
 
+export function selectHomeOpportunities<T>(authenticated: boolean, persisted: readonly T[], preview: readonly T[]): T[] {
+  return [...(authenticated ? persisted : persisted.length ? persisted : preview)];
+}
+
 export function normalizeCreationFormat(value: string | null | undefined): CreationFormat {
   const normalized = value?.trim().toLowerCase();
   if (normalized === "post" || normalized === "image") return "image";

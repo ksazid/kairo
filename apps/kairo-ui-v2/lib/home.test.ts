@@ -3,10 +3,18 @@ import {
   buildContinueItems,
   creationDestination,
   normalizeCreationFormat,
+  selectHomeOpportunities,
   viralConcept,
 } from "./home";
 
 describe("Kairo UI v2 Home behavior", () => {
+  it("never substitutes preview opportunities for an authenticated Brand", () => {
+    const preview = [{ id: "demo" }];
+    expect(selectHomeOpportunities(true, [], preview)).toEqual([]);
+    expect(selectHomeOpportunities(false, [], preview)).toEqual(preview);
+    expect(selectHomeOpportunities(true, [{ id: "persisted" }], preview)).toEqual([{ id: "persisted" }]);
+  });
+
   it("maps approved Home choices to creation formats", () => {
     expect(normalizeCreationFormat("Post")).toBe("image");
     expect(normalizeCreationFormat("Reel")).toBe("reel");

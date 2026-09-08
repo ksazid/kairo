@@ -27,7 +27,7 @@ type SearchParams = Promise<{ brand?: string }>;
 export default async function DiscoverPreviewPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ opportunityId }, query] = await Promise.all([params, searchParams]);
   const data = await getHomeData(query.brand);
-  const cards = toDiscoverCards(data.opportunities.length ? data.opportunities : discoverFallback);
+  const cards = toDiscoverCards(data.authenticated ? data.opportunities : discoverFallback);
   const card = cards.find((item) => item.id === opportunityId);
   if (!card) notFound();
   const FormatIcon = card.format === "image" ? FileImage : card.format === "carousel" ? LayoutGrid : PlaySquare;
