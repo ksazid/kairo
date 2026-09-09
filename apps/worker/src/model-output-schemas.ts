@@ -177,21 +177,26 @@ const CRITIC_REVIEW_SCHEMA = Object.freeze({
   additionalProperties: false,
 });
 
-const hunterScoreSchema = Object.freeze({ type: "number", minimum: 0, maximum: 1 });
+// Groq strict structured output supports a deliberately small JSON Schema subset. Keep the
+// provider-facing Hunter schema structural; Kairo's runtime validator owns the tighter string,
+// URL and 0..1 score bounds after generation.
+const hunterScoreSchema = Object.freeze({
+  type: "number",
+  description: "A decimal score from 0 through 1 inclusive.",
+});
 const HUNTER_OPPORTUNITIES_SCHEMA = Object.freeze({
   type: "object",
   properties: {
     candidates: {
       type: "array",
-      maxItems: 12,
       items: {
         type: "object",
         properties: {
-          sourceUrl: { type: "string", minLength: 8, maxLength: 2_000 },
-          title: { type: "string", minLength: 1, maxLength: 500 },
-          rationale: { type: "string", minLength: 1, maxLength: 2_000 },
-          whyNow: { type: "string", minLength: 1, maxLength: 2_000 },
-          developmentDirection: { type: "string", minLength: 1, maxLength: 2_000 },
+          sourceUrl: { type: "string", description: "An exact sourceUrl supplied in the evidence." },
+          title: { type: "string" },
+          rationale: { type: "string" },
+          whyNow: { type: "string" },
+          developmentDirection: { type: "string" },
           scores: {
             type: "object",
             properties: {
