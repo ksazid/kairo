@@ -60,6 +60,16 @@ describe("PublicBrandReferenceHttpReader", () => {
     expect(result.excerpt).not.toContain("office directory");
   });
 
+  it("decodes common typographic HTML entities in extracted website text", async () => {
+    const reader = new PublicBrandReferenceHttpReader({
+      resolveHost: publicHost,
+      transport: async () => ({ status: 200, headers: { "content-type": "text/html" }, body: "<main>Beginner&rsquo;s guide &mdash; clear steps&hellip;</main>" }),
+    });
+    await expect(reader.read("https://example.com/guide")).resolves.toMatchObject({
+      excerpt: "Beginner's guide — clear steps…",
+    });
+  });
+
   it("rejects local/private literal targets before network access", async () => {
     let resolved = false;
     const reader = new PublicBrandReferenceHttpReader({

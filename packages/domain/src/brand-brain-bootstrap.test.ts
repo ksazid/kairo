@@ -20,6 +20,7 @@ import {
   type BrandBrainProposalGenerator,
   type PublicBrandReferenceReader,
 } from "./brand-brain-bootstrap";
+import { evaluateBrandDnaReadiness } from "./brand-dna-readiness";
 
 const NOW = "2026-08-15T18:23:00.000Z";
 
@@ -150,6 +151,28 @@ describe("BrandBrainBootstrapService", () => {
     await service.build("account-1", "brand-1", {});
     expect(repository.fields.find((field) => field.fieldKey === "identity.description")?.value).toMatch(/^Public Brand website\./);
     expect(repository.fields.find((field) => field.fieldKey === "identity.description")?.value).not.toMatch(/GitHub repository/i);
+    expect(repository.fields.find((field) => field.fieldKey === "identity.products-services")?.value).toMatch(/programming language|developer tooling/i);
+    expect(repository.fields.find((field) => field.fieldKey === "audience.primary")?.value).toMatch(/software developers/i);
+    expect(repository.fields.find((field) => field.fieldKey === "content.pillars")?.value).toMatch(/programming tutorials|documentation/i);
+    expect(evaluateBrandDnaReadiness(repository.fields).gaps).toEqual(["boundaries"]);
+  });
+
+  it.each([
+    ["vehicle rental", "Malta Cars", "Car rental with online booking and a flexible vehicle fleet.", /vehicle rental/i, /rental booking/i],
+    ["automotive owner content", "The Duke 390", "Motorcycle rides, ownership notes and maintenance advice for riders.", /automotive|vehicle|mobility/i, /ownership guidance/i],
+    ["restaurant", "Harbour Kitchen", "A restaurant menu featuring local food and seasonal dining experiences.", /food, dining, menu/i, /menus, food, dining/i],
+  ])("derives useful, non-placeholder %s Brand DNA without cross-category claims", async (_kind, title, excerpt, offering, pillars) => {
+    const repository = new FakeRepository();
+    repository.brand = { id: "brand-1", workspaceId: "workspace-1", name: title, publicSourceUrl: "https://example.com/" };
+    const service = new BrandBrainBootstrapService(repository, undefined, { read: async (url) => ({ url, title, excerpt, retrievedAt: NOW }) });
+
+    await service.build("account-1", "brand-1", {});
+    expect(repository.fields.find((field) => field.fieldKey === "identity.products-services")?.value).toMatch(offering);
+    expect(repository.fields.find((field) => field.fieldKey === "content.pillars")?.value).toMatch(pillars);
+    expect(evaluateBrandDnaReadiness(repository.fields).gaps).toEqual(["boundaries"]);
+    if (_kind === "automotive owner content") {
+      expect(repository.fields.find((field) => field.fieldKey === "identity.products-services")?.value).not.toMatch(/rental|fleet booking/i);
+    }
   });
 
   it("fails closed when a persisted Brand URL is malformed", async () => {

@@ -428,7 +428,7 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     { section: "positioning", fieldKey: "positioning.value-proposition", value: deriveWebsitePositioning(title, excerpt), sourceIds },
     { section: "audience", fieldKey: "audience.primary", value: deriveWebsiteAudience(title, excerpt), sourceIds },
     { section: "voice", fieldKey: "voice.tone", value: "Clear, useful and audience-focused", sourceIds },
-    { section: "content-strategy", fieldKey: "content.pillars", value: "Brand story, products or services, practical guidance and customer value", sourceIds },
+    { section: "content-strategy", fieldKey: "content.pillars", value: deriveWebsitePillars(title, excerpt), sourceIds },
     { section: "content-strategy", fieldKey: "content.preferred-topics", value: "What the Brand offers, customer questions, useful advice and relevant updates", sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Website, email, social communities and relevant professional channels", sourceIds },
     { section: "boundaries", fieldKey: "boundaries.excluded-topics", value: "No excluded topics identified in the public reference; confirm before Hunter activation", sourceIds },
@@ -446,22 +446,56 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
 
 function deriveWebsiteOfferings(title: string, excerpt: string): string {
   const text = `${title} ${excerpt}`;
-  if (/\b(?:rental|rentals|fleet|fleets|vehicle|vehicles|car|cars|motorcycle|motorcycles)\b/i.test(text)) return "Vehicle rental and fleet booking services, including online reservations";
-  if (/\b(?:software|platform|platforms|api|apis|saas|app|apps|application|applications)\b/i.test(text)) return "Software products and online platform services described in the public reference";
-  if (/\b(?:restaurant|restaurants|menu|menus|food|cafe|cafes|dining)\b/i.test(text)) return "Food, dining and restaurant services described in the public reference";
+  if (isVehicleRentalText(text)) return "Vehicle rental and fleet booking services, including online reservations";
+  if (isAutomotiveText(text)) return "Automotive, vehicle or mobility products and related owner services";
+  if (isDeveloperSoftwareText(text)) return "Programming language, developer tooling, documentation and software ecosystem resources";
+  if (isFoodHospitalityText(text)) return "Food, dining, menu and restaurant services for customers and guests";
   return `${title} products or services described in the public reference: ${excerpt.slice(0, 300)}`;
 }
 
 function deriveWebsitePositioning(title: string, excerpt: string): string {
+  const text = `${title} ${excerpt}`;
+  if (isVehicleRentalText(text)) return `${title} provides vehicle rental, booking and mobility services for customers and fleets.`;
+  if (isAutomotiveText(text)) return `${title} provides vehicle, mobility or ownership value for drivers and riders.`;
+  if (isDeveloperSoftwareText(text)) return `${title} provides software capabilities, documentation and ecosystem resources for developers and technical teams.`;
+  if (isFoodHospitalityText(text)) return `${title} provides food, menu and dining experiences for customers and guests.`;
   const claim = excerpt.match(/[^.!?]*(?:lowest|best|trusted|quality|value|specialist|expert)[^.!?]*/i)?.[0]?.trim();
   return claim ? `${title}: ${claim}` : `${title} provides the products or services described in its public reference.`;
 }
 
 function deriveWebsiteAudience(title: string, excerpt: string): string {
   const text = `${title} ${excerpt}`;
-  if (/\b(?:rental|rentals|fleet|fleets|vehicle|vehicles|car|cars|motorcycle|motorcycles)\b/i.test(text)) return "People and businesses seeking vehicle rental, mobility or fleet services";
-  if (/\b(?:software|platform|platforms|api|apis|saas|app|apps|application|applications)\b/i.test(text)) return "Teams and practitioners seeking the software or platform capabilities described";
+  if (isVehicleRentalText(text)) return "People and businesses seeking vehicle rental, mobility or fleet services";
+  if (isAutomotiveText(text)) return "Drivers, riders, owners and people researching vehicles or mobility";
+  if (isDeveloperSoftwareText(text)) return "Software developers, learners and technical teams using the language, tools or platform";
+  if (isFoodHospitalityText(text)) return "Diners, guests and customers looking for food, menus or restaurant experiences";
   return `Customers seeking ${title.toLowerCase()} products or services`;
+}
+
+function deriveWebsitePillars(title: string, excerpt: string): string {
+  const text = `${title} ${excerpt}`;
+  if (isDeveloperSoftwareText(text)) return "Software development, programming tutorials, documentation, releases and community updates";
+  if (isVehicleRentalText(text)) return "Vehicle selection, rental booking guidance, mobility and fleet updates";
+  if (isAutomotiveText(text)) return "Vehicles, ownership guidance, driving or riding insights and mobility updates";
+  if (isFoodHospitalityText(text)) return "Menus, food, dining experiences, customer guidance and venue updates";
+  return "Brand story, products or services, practical guidance and customer value";
+}
+
+function isDeveloperSoftwareText(value: string): boolean {
+  return /\b(?:software|platform|platforms|api|apis|saas|app|apps|application|applications|programming|developer|developers|documentation|library|libraries|framework|frameworks|database|databases|open[ -]source)\b/i.test(value);
+}
+
+function isVehicleRentalText(value: string): boolean {
+  return /\b(?:rental|rentals|rent|hire|booking|fleet|fleets)\b/i.test(value)
+    && /\b(?:vehicle|vehicles|car|cars|motorcycle|motorcycles|bike|bikes|mobility)\b/i.test(value);
+}
+
+function isAutomotiveText(value: string): boolean {
+  return /\b(?:vehicle|vehicles|automotive|car|cars|motorcycle|motorcycles|bike|bikes|mobility|driver|drivers|rider|riders)\b/i.test(value);
+}
+
+function isFoodHospitalityText(value: string): boolean {
+  return /\b(?:restaurant|restaurants|menu|menus|food|cafe|cafes|dining|chef|chefs|cuisine)\b/i.test(value);
 }
 
 function publicHostname(value: string | undefined): string {
