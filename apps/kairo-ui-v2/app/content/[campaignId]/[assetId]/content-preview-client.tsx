@@ -21,7 +21,7 @@ import {
 import { useState } from "react";
 import type { ContentItem } from "../../../../lib/content";
 
-export function ContentPreviewClient({ item, authenticated, legacyHref }: { item: ContentItem; authenticated: boolean; legacyHref: string }) {
+export function ContentPreviewClient({ item, authenticated }: { item: ContentItem; authenticated: boolean }) {
   const [slide, setSlide] = useState(0);
   const [caption, setCaption] = useState(item.caption);
   const [notice, setNotice] = useState("");
@@ -35,12 +35,12 @@ export function ContentPreviewClient({ item, authenticated, legacyHref }: { item
     if (action === "shorten") setCaption(item.caption.split(/[.!?]/)[0]?.trim().concat(".") || item.caption);
     if (action === "improve") setCaption(`${item.caption} ${item.cta}`.trim());
     if (action === "tone") setCaption(`Local tip: ${item.caption.charAt(0).toLowerCase()}${item.caption.slice(1)}`);
-    setNotice(action === "ideas" ? "Three alternative directions are ready in the full editor." : "Preview copy updated. Open the full editor to save this version.");
+    setNotice(action === "ideas" ? "Three alternative directions are ready in this preview." : "Preview copy updated in Kairo v2.");
   }
 
   function approve() {
     if (authenticated) {
-      window.location.assign(`${legacyHref}#preview`);
+      setNotice("Approval stays in Kairo v2. Complete the required review changes before locking this version.");
       return;
     }
     setApproved(true);
@@ -50,7 +50,7 @@ export function ContentPreviewClient({ item, authenticated, legacyHref }: { item
   function schedule() {
     if (!approved) return;
     if (authenticated) {
-      window.location.assign(`${legacyHref}#preview`);
+      setNotice("Scheduling stays in Kairo v2 and becomes available after this version is approved.");
       return;
     }
     setScheduled(true);
