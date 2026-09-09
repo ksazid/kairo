@@ -466,6 +466,11 @@ main { min-width: 0; margin-left: 218px; }
 .social-caption strong { font-size: 10px; }
 .social-caption p { margin: 5px 0 0; color: #d1d6dd; font-size: 10px; line-height: 1.45; }
 .social-caption p b { color: #fff; }
+.social-caption label { margin-top: 5px; display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 5px; color: #d1d6dd; font-size: 10px; line-height: 1.45; }
+.social-caption label b { padding-top: 4px; color: #fff; }
+.social-caption textarea { width: 100%; min-height: 66px; resize: vertical; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #d1d6dd; padding: 3px 5px; font: inherit; line-height: 1.45; }
+.social-caption textarea:focus { outline: none; border-color: #6244d6; background: #101925; }
+.social-caption textarea:disabled { opacity: 1; }
 .social-dots { height: 26px; display: flex; align-items: center; justify-content: center; gap: 5px; }
 .social-dots button { width: 6px; height: 6px; border: 0; border-radius: 50%; background: #3b4655; padding: 0; cursor: pointer; }
 .social-dots button[aria-pressed="true"] { background: #8060ed; }
@@ -476,7 +481,9 @@ main { min-width: 0; margin-left: 218px; }
 .content-ai-assistance button { height: 34px; border: 1px solid #344153; border-radius: 7px; background: #101925; color: #c9d0d9; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; }
 .content-ai-assistance button:hover { border-color: #675199; color: #fff; }
 .content-ai-assistance button svg { width: 14px; color: #b799ff; }
+.content-ai-assistance button.save-content-version { border-color: #6244d6; background: #5f31e9; color: #fff; }
 .content-ai-assistance > p { grid-column: 2; margin: -4px 0 0; color: #a995e9; font-size: 10px; }
+.content-ai-assistance > p.content-action-error { color: #ff8e9a; }
 .content-preview-rail { display: grid; gap: 12px; }
 .content-preview-rail > section { padding: 15px; }
 .content-preview-rail h2 { margin: 0 0 13px; font-size: 14px; }
@@ -505,6 +512,8 @@ main { min-width: 0; margin-left: 218px; }
 .content-approval-bar button.approve { border-color: #6244d6; background: linear-gradient(110deg, #5f31e9, #7950f2); color: white; }
 .content-approval-bar button:disabled { opacity: .55; cursor: default; }
 .content-approval-bar button svg { width: 15px; }
+.content-approval-controls select,
+.content-approval-controls input { height: 40px; max-width: 190px; border: 1px solid #354153; border-radius: 8px; background: #111a25; color: #d3d8df; padding: 0 10px; font: inherit; font-size: 11px; color-scheme: dark; }
 
 /* Campaigns v2 — isolated from the legacy application stylesheet. */
 .campaigns-workspace, .campaign-preview-workspace { max-width: 1320px; }

@@ -74,8 +74,17 @@ export type CampaignDetailView = {
 };
 
 export type ContentReviewStatusView = {
-  review: { versionId: string; status: "review" | "revision-required" | "passed" | "archived" } | null;
-  approval: { versionId: string; approvedAt: string } | null;
+  review: { versionId: string; status: "review" | "revision-required" | "passed" | "archived"; critic?: { score: number; findings: Array<{ message: string }> } } | null;
+  approval: { versionId: string; approvedAt: string; destination?: { channel: "linkedin" | "instagram" | "facebook" | "manual"; accountRef: string } } | null;
+};
+
+export type ChannelAccountView = {
+  id: string;
+  channel: "linkedin" | "instagram" | "facebook" | "manual";
+  accountRef: string;
+  displayName: string;
+  capabilities: Array<"publish-text" | "publish-image" | "publish-video" | "publish-carousel" | "publish-reel">;
+  status: "connected" | "reconnect-required" | "disabled";
 };
 
 export type PublishCommandView = {
@@ -90,6 +99,7 @@ export type ContentData = HomeData & {
   details: CampaignDetailView[];
   reviews: Record<string, ContentReviewStatusView | null>;
   commands: PublishCommandView[];
+  channelAccounts: ChannelAccountView[];
 };
 
 export type SimpleCreation = {
@@ -222,16 +232,18 @@ export async function saveSettingsPresenter(brandId: string, body: Record<string
 
 export async function getContentData(requestedBrandId?: string): Promise<ContentData> {
   const identity = await getHomeData(requestedBrandId);
-  if (!identity.authenticated || !identity.brandId) return { ...identity, details: [], reviews: {}, commands: [] };
+  if (!identity.authenticated || !identity.brandId) return { ...identity, details: [], reviews: {}, commands: [], channelAccounts: [] };
   const token = await accessToken();
-  if (!token) return { ...identity, details: [], reviews: {}, commands: [] };
+  if (!token) return { ...identity, details: [], reviews: {}, commands: [], channelAccounts: [] };
   const brand = encodeURIComponent(identity.brandId);
-  const [campaignsResponse, commandsResponse] = await Promise.all([
+  const [campaignsResponse, commandsResponse, accountsResponse] = await Promise.all([
     api(token, `/api/v1/brands/${brand}/campaigns`),
     api(token, `/api/v1/brands/${brand}/calendar`),
+    api(token, `/api/v1/brands/${brand}/channel-accounts`),
   ]);
   const campaigns = campaignsResponse.ok ? await campaignsResponse.json() as CampaignView[] : [];
   const commands = commandsResponse.ok ? await commandsResponse.json() as PublishCommandView[] : [];
+  const channelAccounts = accountsResponse.ok ? await accountsResponse.json() as ChannelAccountView[] : [];
   const details = await Promise.all(campaigns.map(async (campaign) => {
     const response = await api(token, `/api/v1/brands/${brand}/campaigns/${encodeURIComponent(campaign.id)}`);
     return response.ok ? await response.json() as CampaignDetailView : { campaign, assets: [] };
@@ -241,7 +253,31 @@ export async function getContentData(requestedBrandId?: string): Promise<Content
     const response = await api(token, `/api/v1/brands/${brand}/assets/${encodeURIComponent(asset.id)}/review-status`);
     return [asset.id, response.ok ? await response.json() as ContentReviewStatusView : null] as const;
   })));
-  return { ...identity, details, reviews, commands };
+  return { ...identity, details, reviews, commands, channelAccounts };
+}
+
+export async function saveContentVersion(brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; content: string }): Promise<CampaignDetailView> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to save this content.");
+  return bodyOrError<CampaignDetailView>(await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(campaignId)}/assets/${encodeURIComponent(assetId)}/versions`, { method: "POST", body: JSON.stringify(input) }), "Kairo could not save this content version.");
+}
+
+export async function reviewContentVersion(brandId: string, campaignId: string, assetId: string, expectedVersion: number) {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to review this content.");
+  return bodyOrError<ContentReviewStatusView["review"]>(await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(campaignId)}/assets/${encodeURIComponent(assetId)}/review`, { method: "POST", body: JSON.stringify({ expectedVersion, brandContextVersion: `${brandId}@current`, revisionCycle: 0 }) }), "Kairo could not review this content version.");
+}
+
+export async function approveContentVersion(brandId: string, campaignId: string, assetId: string, input: { expectedVersion: number; destination: ChannelAccountView }) {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to approve this content.");
+  return bodyOrError<ContentReviewStatusView["approval"]>(await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(campaignId)}/assets/${encodeURIComponent(assetId)}/approve`, { method: "POST", body: JSON.stringify({ expectedVersion: input.expectedVersion, destination: { channel: input.destination.channel, accountRef: input.destination.accountRef } }) }), "Kairo could not approve this content version.");
+}
+
+export async function scheduleContentVersion(brandId: string, campaignId: string, assetId: string, input: { channelAccountId: string; contentType: "text" | "image" | "video" | "carousel"; scheduledFor: string }) {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to schedule this content.");
+  return bodyOrError<PublishCommandView>(await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/campaigns/${encodeURIComponent(campaignId)}/assets/${encodeURIComponent(assetId)}/schedule`, { method: "POST", body: JSON.stringify(input) }), "Kairo could not schedule this content.");
 }
 
 export async function startHomeCreation(input: {
