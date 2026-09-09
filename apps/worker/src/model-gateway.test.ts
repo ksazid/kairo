@@ -99,7 +99,7 @@ describe("OpenAICompatibleModelGateway", () => {
       fetchImpl, sleep,
     });
 
-    await expect(gateway.generate(request)).rejects.toMatchObject({ message: expect.stringMatching(/returned 400/), kind: "invalid-response" });
+    await expect(gateway.generate(request)).rejects.toMatchObject({ message: expect.stringMatching(/returned 400/), kind: "invalid-response", statusCode: 400 });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(sleep).not.toHaveBeenCalled();
   });

@@ -29,7 +29,7 @@ class FakeTools implements ToolGatewayPort {
   ) {}
   async invoke<TOutput>(request: ToolRequest): Promise<ToolResult<TOutput>> {
     this.requests.push(request);
-    if (request.capability === "public-content-fetch") return { output: { document: { canonicalUrl: String(request.input.url), platform: "web", sourceType: "article", title: evidence[0]!.title, body: this.documentBody, retrievedAt: evidence[0]!.retrievedAt, contentHash: "sha256:" + "a".repeat(64), provider: "website", providerVersion: "v1", parserVersion: "v1", provenance: [{ provider: "website", sourceUrl: String(request.input.url), retrievedAt: evidence[0]!.retrievedAt }], confidence: 1, extractionWarnings: [], trust: "untrusted-evidence" } } as TOutput, provenance: [] };
+    if (request.capability === "public-content-fetch") return { output: { document: { canonicalUrl: String(request.input.url), platform: "web", sourceType: "article", title: evidence[0]!.title, body: this.documentBody, transcript: this.documentBody, retrievedAt: evidence[0]!.retrievedAt, contentHash: "sha256:" + "a".repeat(64), provider: "website", providerVersion: "v1", parserVersion: "v1", provenance: [{ provider: "website", sourceUrl: String(request.input.url), retrievedAt: evidence[0]!.retrievedAt }], confidence: 1, extractionWarnings: [], trust: "untrusted-evidence" } } as TOutput, provenance: [] };
     const output = this.handler ? await this.handler(request) : this.output;
     return { output: output as TOutput, provenance: [] };
   }
@@ -146,6 +146,18 @@ describe("Hunter orchestration", () => {
 
     const record = sink.records[0] as { signal: { summary: string } };
     expect(record.signal.summary).toHaveLength(2_000);
+  });
+
+  it("bounds fetched transcript text at the model boundary", async () => {
+    const runtime = new FakeRuntime({ candidates: [] });
+    const hunter = new HunterOrchestrator(new FakeTools(evidence, undefined, "x".repeat(100_000)), runtime, new FakeSink() as never);
+
+    await hunter.runForAuthorizedBrand({ accountId: "account-1", brand, query: "AI agents" });
+
+    const context = runtime.lastRequest?.task.context as { evidence?: Array<{ summary?: string; transcript?: string }> } | undefined;
+    expect(context?.evidence?.[0]?.summary).toHaveLength(2_400);
+    expect(context?.evidence?.[0]).not.toHaveProperty("transcript");
+    expect(JSON.stringify(context?.evidence)).not.toContain("x".repeat(2_401));
   });
 
   it("executes materially different multi-source plans for AI and Umrah through the same Hunter", async () => {
