@@ -177,6 +177,44 @@ const CRITIC_REVIEW_SCHEMA = Object.freeze({
   additionalProperties: false,
 });
 
+const hunterScoreSchema = Object.freeze({ type: "number", minimum: 0, maximum: 1 });
+const HUNTER_OPPORTUNITIES_SCHEMA = Object.freeze({
+  type: "object",
+  properties: {
+    candidates: {
+      type: "array",
+      maxItems: 12,
+      items: {
+        type: "object",
+        properties: {
+          sourceUrl: { type: "string", minLength: 8, maxLength: 2_000 },
+          title: { type: "string", minLength: 1, maxLength: 500 },
+          rationale: { type: "string", minLength: 1, maxLength: 2_000 },
+          whyNow: { type: "string", minLength: 1, maxLength: 2_000 },
+          developmentDirection: { type: "string", minLength: 1, maxLength: 2_000 },
+          scores: {
+            type: "object",
+            properties: {
+              relevance: hunterScoreSchema,
+              evidence: hunterScoreSchema,
+              novelty: hunterScoreSchema,
+              timeliness: hunterScoreSchema,
+              brandAuthority: hunterScoreSchema,
+              audienceFit: hunterScoreSchema,
+            },
+            required: ["relevance", "evidence", "novelty", "timeliness", "brandAuthority", "audienceFit"],
+            additionalProperties: false,
+          },
+        },
+        required: ["sourceUrl", "title", "rationale", "whyNow", "developmentDirection", "scores"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["candidates"],
+  additionalProperties: false,
+});
+
 const qualityScoresSchema = Object.freeze({
   type: "object",
   properties: {
@@ -268,6 +306,16 @@ export function responseFormatForOutputSchema(
           name: "critic_review_1",
           strict: true,
           schema: CRITIC_REVIEW_SCHEMA,
+        },
+      };
+    }
+    if (outputSchema.name === "hunter-opportunities" && outputSchema.version === "2") {
+      return {
+        type: "json_schema",
+        json_schema: {
+          name: "hunter_opportunities_2",
+          strict: true,
+          schema: HUNTER_OPPORTUNITIES_SCHEMA,
         },
       };
     }
