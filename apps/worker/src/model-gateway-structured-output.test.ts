@@ -167,6 +167,25 @@ describe("strict structured model output", () => {
       type: "json_schema",
       json_schema: { name: "critic_review_1", strict: true },
     });
+    expect(responseFormatForOutputSchema("groq", "openai/gpt-oss-120b", { name: "hunter-opportunities", version: "2" })).toMatchObject({
+      type: "json_schema",
+      json_schema: {
+        name: "hunter_opportunities_2",
+        strict: true,
+        schema: {
+          properties: {
+            candidates: {
+              maxItems: 12,
+              items: {
+                required: ["sourceUrl", "title", "rationale", "whyNow", "developmentDirection", "scores"],
+                additionalProperties: false,
+              },
+            },
+          },
+          additionalProperties: false,
+        },
+      },
+    });
   });
 
   it("uses strict production project schemas for carousel and Reel generation", () => {
