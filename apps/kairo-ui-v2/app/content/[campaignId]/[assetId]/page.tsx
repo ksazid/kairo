@@ -18,8 +18,6 @@ export default async function ContentPreviewPage({ params, searchParams }: { par
   const item = items.find((candidate) => candidate.id === assetId && candidate.campaignId === campaignId);
   if (!item) notFound();
   const contentHref = data.brandId ? `/content?brand=${encodeURIComponent(data.brandId)}` : "/content";
-  const webUrl = (process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app").replace(/\/$/, "");
-  const legacyHref = data.brandId ? `${webUrl}/brands/${encodeURIComponent(data.brandId)}/content/${encodeURIComponent(item.campaignId)}/${encodeURIComponent(item.id)}` : webUrl;
   const ChannelIcon = item.channel === "Facebook" ? Facebook : item.channel === "LinkedIn" ? Linkedin : Instagram;
   const FormatIcon = item.format === "carousel" ? Grid2X2 : item.format === "reel" ? PlaySquare : undefined;
 
@@ -27,9 +25,9 @@ export default async function ContentPreviewPage({ params, searchParams }: { par
     <Link className="content-preview-back" href={contentHref}><ArrowLeft aria-hidden="true"/>Back to Content</Link>
     <header className="content-preview-header">
       <div><h1>{item.title}</h1><p>{item.summary}</p><div className="content-preview-meta"><span><ChannelIcon aria-hidden="true"/>{item.channel}</span><span>{FormatIcon ? <FormatIcon aria-hidden="true"/> : null}{item.formatLabel}</span><span className={`content-status status-${item.status}`}><i/>{item.statusLabel}</span><small>Last updated {formatDate(item.updatedAt)} by Kairo</small></div></div>
-      {data.authenticated ? <a href={legacyHref}>Open full editor</a> : <Link href="/">Create content</Link>}
+      {data.authenticated ? <a href="#preview-heading">Edit in preview</a> : <Link href="/">Create content</Link>}
     </header>
-    <ContentPreviewClient item={item} authenticated={data.authenticated} legacyHref={legacyHref}/>
+    <ContentPreviewClient item={item} authenticated={data.authenticated}/>
   </KairoShell>;
 }
 
