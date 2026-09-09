@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { oidcAudience, oidcClient, oidcClientSecret, oidcConfiguration } from "../../../lib/auth";
+import { oidcAudience, oidcClient, oidcClientSecret, oidcConfiguration, oidcFailureDiagnostic } from "../../../lib/auth";
 import { encodeOidcTransaction, OIDC_TRANSACTION_COOKIE, OIDC_TRANSACTION_MAX_AGE_SECONDS, safeReturnTo } from "../../../lib/auth-session";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
     });
     return response;
   } catch {
+    console.error("OIDC authentication failure", oidcFailureDiagnostic("login"));
     return authFailure(request, "Authentication service is temporarily unavailable. Please try again.");
   }
 }

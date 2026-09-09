@@ -24,7 +24,7 @@ describe("RetryingDiscoverySourceProvider", () => {
       .mockRejectedValueOnce(new ResearchEvidenceAdapterError("rate-limited", "slow down"))
       .mockResolvedValueOnce(evidence);
     const sleep = vi.fn(async (_ms: number) => undefined);
-    const provider = new RetryingDiscoverySourceProvider({ discover } as DiscoverySourceProvider, { sleep });
+    const provider = new RetryingDiscoverySourceProvider({ discover } as DiscoverySourceProvider, { sleep, now: () => 0 });
 
     await expect(provider.discover(request)).resolves.toEqual(evidence);
     expect(discover).toHaveBeenCalledTimes(2);
@@ -49,6 +49,38 @@ describe("RetryingDiscoverySourceProvider", () => {
     const provider = new RetryingDiscoverySourceProvider({ discover } as DiscoverySourceProvider, { sleep });
 
     await expect(provider.discover(request)).rejects.toMatchObject({ kind: "invalid-response" });
+    expect(discover).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
+  it("shares one timeout budget across attempts and retry delays", async () => {
+    let now = 0;
+    const discover = vi.fn(async (_request: DiscoveryRequest) => {
+      if (discover.mock.calls.length === 1) {
+        now += 3_000;
+        throw new ResearchEvidenceAdapterError("upstream", "unavailable");
+      }
+      return evidence;
+    });
+    const provider = new RetryingDiscoverySourceProvider({ discover }, {
+      now: () => now,
+      sleep: async (ms) => { now += ms; },
+    });
+
+    await expect(provider.discover(request)).resolves.toEqual(evidence);
+    expect(discover).toHaveBeenNthCalledWith(2, { ...request, timeoutMs: 1_750 });
+  });
+
+  it("does not sleep or retry when the remaining budget cannot fit a valid attempt", async () => {
+    let now = 0;
+    const discover = vi.fn(async () => {
+      now += 4_800;
+      throw new ResearchEvidenceAdapterError("upstream", "unavailable");
+    });
+    const sleep = vi.fn(async (_ms: number) => undefined);
+    const provider = new RetryingDiscoverySourceProvider({ discover }, { now: () => now, sleep });
+
+    await expect(provider.discover(request)).rejects.toMatchObject({ kind: "upstream" });
     expect(discover).toHaveBeenCalledTimes(1);
     expect(sleep).not.toHaveBeenCalled();
   });

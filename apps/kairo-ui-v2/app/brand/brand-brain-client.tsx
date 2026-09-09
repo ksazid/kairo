@@ -49,6 +49,7 @@ import {
   type BrandLearningUi,
   type BrandSourceUi,
 } from "../../lib/brand-brain-runtime";
+import { discoveryRefreshNotice, refreshDiscovery } from "../../lib/discovery-refresh";
 
 type TabId = "overview" | "dna" | "discovery" | "sources" | "learning";
 
@@ -179,12 +180,26 @@ export function BrandBrainClient({ brandId, activation }: { brandId?: string; ac
     if (next) startFieldEdit(next);
   }
 
-  function discoveryAction() {
+  async function discoveryAction() {
     if (!runtime?.hunterReady) {
       setNotice("Discovery cannot start until the required Brand context is ready.");
       return;
     }
-    setNotice(runtime.discoveryRun ? "Discovery refresh will use the persisted run contract in the Hunter flow." : "Brand is ready. The first Hunter run will populate run history; Flow 1B does not start Hunter automatically.");
+    if (!brandId) {
+      setNotice("Choose a Brand before refreshing Discovery.");
+      return;
+    }
+    setSaving(true);
+    setNotice("Discovery is running across the configured public sources…");
+    try {
+      const result = await refreshDiscovery(brandId);
+      applyRuntime(result.activation);
+      setNotice(discoveryRefreshNotice(result.run));
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Kairo could not refresh discovery.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return <section id="brand-brain" className="brand-brain" aria-labelledby="brand-brain-title">
@@ -198,8 +213,8 @@ export function BrandBrainClient({ brandId, activation }: { brandId?: string; ac
         <button className="brand-secondary-button" type="button" onClick={reviewSuggestions} disabled={!pending || saving}>
           <ListChecks aria-hidden="true"/>Review {pending} suggestion{pending === 1 ? "" : "s"}
         </button>
-        <button className="brand-primary-button" type="button" onClick={discoveryAction} disabled={saving}>
-          <Play aria-hidden="true" fill="currentColor"/>{runtime?.discoveryRun ? "Refresh Discovery" : "Discovery not started"}
+        <button className="brand-primary-button" type="button" onClick={() => void discoveryAction()} disabled={saving || !runtime?.hunterReady || !brandId}>
+          {saving ? <RefreshCw aria-hidden="true"/> : <Play aria-hidden="true" fill="currentColor"/>}{saving ? "Refreshing…" : runtime?.discoveryRun ? "Refresh Discovery" : "Run Discovery"}
         </button>
       </div>
     </header>

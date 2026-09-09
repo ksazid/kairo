@@ -37,6 +37,8 @@ Stop and record a blocker when authoritative sources conflict. Never invent prod
 - Runtime work requires approved `scope` and `implementation` records.
 - Certification, release and production enablement approvals must bind an exact 40-character commit SHA.
 - Release requires passed certification for the same SHA.
+- When non-production authentication cannot faithfully reproduce the deployed system, a candidate may use the controlled `production-certification` lifecycle before release. This is not a release or general production enablement.
+- Production certification requires a separate human approval bound to the exact candidate SHA, owner-only access, disposable test data, a time limit, and rollback readiness. Failure or expiry requires immediate rollback or removal of the candidate deployment.
 - Medium and high-risk releases require rollback readiness.
 - Released slices require an expected outcome, metric and post-release review date.
 - Preserve rejected, superseded, revoked and rolled-back records; do not rewrite history to look successful.

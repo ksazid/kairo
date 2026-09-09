@@ -23,3 +23,17 @@
 21. Implement local inline Edit, Save and Cancel for Brand DNA and Discovery Intelligence rows with accessible labels and focus states.
 22. Keep Discovery Intelligence user-facing while preserving Hunter only as internal terminology.
 23. Add deterministic interaction tests, responsive browser verification and mockup-to-implementation design QA before handoff.
+24. Recover the clean-brand E2E path: remove authenticated demo fallbacks from Home and Opportunity Preview and render truthful empty states.
+25. Connect Brand Brain Refresh Discovery to the persisted manual Hunter route, then reload the activation projection after completion.
+26. Tighten website extraction and Brand DNA readiness so locale redirects and generic fallback prose cannot create false Hunter eligibility.
+27. Build the runtime Hunter source registry from configured capabilities and add bounded retry wrappers for transient public-provider failures.
+28. Rename simulated captured-page coverage so it cannot be mistaken for a live public/deployed certification, then run targeted and repository-wide verification.
+29. Clear the newly published dependency audit gate with patched Next.js, Fastify and Vitest releases, and add non-secret OIDC failure classification before repeating preview certification.
+# Runtime certification follow-up
+
+The follow-up preserves the approved readiness and evidence gates. A generic Brand DNA rejection is intentional and is not evidence that extraction regressed. Production provider failures still require live diagnosis.
+
+- Reproduced retry timeout multiplication with deterministic clock tests; provider attempts and backoff now share one timeout budget.
+- Added bounded failure categories for Hunter discovery, enrichment and model judgment to server logs. Raw errors, source bodies, URLs and private Brand context are excluded. Diagnostic failures cannot fail Hunter.
+- Integrated the latest main-branch planning/design authority documents without changing UI layout or terminology.
+- Local verification: 198 test files / 974 tests passed; 18 integration-test files / 40 tests skipped without a test database. Repository-wide typechecks, production builds, and preflight passed. These checks do not certify production providers or the authenticated flow through Concept Mockup.

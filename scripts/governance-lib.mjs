@@ -9,13 +9,14 @@ const ACTIVE_LIFECYCLES = new Set([
   'implementing',
   'testing',
   'certification',
+  'production-certification',
   'certified',
   'release-pending',
   'released',
   'observed',
   'validated'
 ]);
-const CERTIFICATION_STAGE_LIFECYCLES = new Set(['certification','certified','release-pending','released','observed','validated']);
+const CERTIFICATION_STAGE_LIFECYCLES = new Set(['certification','production-certification','certified','release-pending','released','observed','validated']);
 const CERTIFICATION_REQUIRED_LIFECYCLES = new Set(['certified','release-pending','released','observed','validated']);
 const RELEASE_STAGE_LIFECYCLES = new Set(['release-pending','released','observed','validated']);
 const RELEASE_AUTHORIZED_LIFECYCLES = new Set(['released','observed','validated']);
@@ -60,6 +61,11 @@ function isNonEmpty(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function timestamp(value) {
+  const parsed = Date.parse(value ?? '');
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function record(errors, condition, message) {
   if (!condition) errors.push(message);
 }
@@ -71,13 +77,14 @@ function warn(warnings, condition, message) {
 function validateApproval(item, model, label, errors) {
   record(errors, item && typeof item === 'object', `${label}: approval must be an object`);
   if (!item || typeof item !== 'object') return;
-  record(errors, model.approvalTypes.includes(item.type), `${label}: unknown approval type ${item.type}`);
+  const knownApprovalTypes = [...model.approvalTypes, ...(model.optionalApprovalTypes ?? [])];
+  record(errors, knownApprovalTypes.includes(item.type), `${label}: unknown approval type ${item.type}`);
   record(errors, model.approvalStatuses.includes(item.status), `${label}: invalid approval status ${item.status}`);
   if (item.status === 'approved') {
     record(errors, isNonEmpty(item.by), `${label}: approved ${item.type} approval requires by`);
     record(errors, isNonEmpty(item.at), `${label}: approved ${item.type} approval requires at`);
     record(errors, isNonEmpty(item.rationale), `${label}: approved ${item.type} approval requires rationale`);
-    if (['certification','release','production-enable'].includes(item.type)) {
+    if (['certification','release','production-enable','production-certification'].includes(item.type)) {
       record(errors, SHA_PATTERN.test(item.commitSha ?? ''), `${label}: approved ${item.type} approval requires an exact 40-character commit SHA`);
     } else {
       record(errors, isNonEmpty(item.version) || SHA_PATTERN.test(item.commitSha ?? ''), `${label}: approved ${item.type} approval requires a version or exact commit SHA`);
@@ -168,6 +175,33 @@ function validateSlice(slice, delivery, label, errors, warnings) {
   }
   if (CERTIFICATION_REQUIRED_LIFECYCLES.has(slice.lifecycle)) {
     record(errors, slice.certification?.status === 'passed', `${label}: lifecycle ${slice.lifecycle} requires passed certification`);
+  }
+
+  if (slice.lifecycle === 'production-certification') {
+    const productionApproval = approval(slice,'production-certification');
+    const productionCertification = slice.productionCertification;
+    record(errors, productionApproval?.status === 'approved', `${label}: production-certification lifecycle requires production-certification approval`);
+    record(errors, productionCertification && typeof productionCertification === 'object', `${label}: production-certification contract is required`);
+    if (productionCertification && typeof productionCertification === 'object') {
+      record(errors, model.productionCertificationStatuses.includes(productionCertification.status), `${label}: invalid production-certification status ${productionCertification.status}`);
+      record(errors, ['approved','deploying','testing'].includes(productionCertification.status), `${label}: production-certification lifecycle requires an active production-certification status`);
+      record(errors, SHA_PATTERN.test(productionCertification.commitSha ?? ''), `${label}: production-certification requires an exact commit SHA`);
+      record(errors, productionApproval?.commitSha === productionCertification.commitSha, `${label}: production-certification approval must bind the candidate SHA`);
+      record(errors, slice.certification?.status === 'running', `${label}: production-certification requires running certification`);
+      record(errors, slice.rollback?.status === 'ready', `${label}: production-certification requires rollback readiness`);
+      record(errors, productionCertification.audience === 'owner-only', `${label}: production-certification audience must be owner-only`);
+      record(errors, productionCertification.disposableDataOnly === true, `${label}: production-certification requires disposable test data`);
+      const approvedAt = timestamp(productionApproval?.at);
+      const expiresAt = timestamp(productionCertification.expiresAt);
+      record(errors, expiresAt !== null, `${label}: production-certification requires a valid expiry`);
+      record(errors, Number.isInteger(productionCertification.maxDurationMinutes) && productionCertification.maxDurationMinutes > 0 && productionCertification.maxDurationMinutes <= 240, `${label}: production-certification duration must be 1-240 minutes`);
+      if (approvedAt !== null && expiresAt !== null && Number.isInteger(productionCertification.maxDurationMinutes)) {
+        const durationMs = expiresAt - approvedAt;
+        record(errors, durationMs > 0 && durationMs <= productionCertification.maxDurationMinutes * 60_000, `${label}: production-certification expiry exceeds its approved duration`);
+      }
+      record(errors, SHA_PATTERN.test(productionCertification.rollbackTargetSha ?? ''), `${label}: production-certification requires an exact rollback target SHA`);
+      record(errors, isNonEmpty(productionCertification.rollbackProcedure), `${label}: production-certification requires a rollback procedure`);
+    }
   }
 
   record(errors, model.releaseStatuses.includes(slice.release?.status), `${label}: invalid release status ${slice.release?.status}`);
@@ -267,7 +301,7 @@ export function validateDelivery(delivery = loadDelivery()) {
   const warnings = [];
   const model = delivery.governance;
   record(errors, model.schemaVersion === 1, 'delivery/governance.json: schemaVersion must be 1');
-  for (const key of ['lifecycleStates','approvalTypes','approvalStatuses','decisionStatuses','implementationModes','riskLevels','impactAreas','decisionBlockTargets','certificationStatuses','releaseStatuses','rollbackStatuses','postReleaseStatuses']) {
+  for (const key of ['lifecycleStates','approvalTypes','optionalApprovalTypes','approvalStatuses','decisionStatuses','implementationModes','riskLevels','impactAreas','decisionBlockTargets','certificationStatuses','productionCertificationStatuses','releaseStatuses','rollbackStatuses','postReleaseStatuses']) {
     record(errors, Array.isArray(model[key]) && model[key].length > 0, `delivery/governance.json: ${key} must be a non-empty array`);
   }
   for (const [from,targets] of Object.entries(model.transitions ?? {})) {

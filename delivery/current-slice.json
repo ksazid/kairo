@@ -3,7 +3,7 @@
   "sliceId": "VS-107",
   "title": "VS-107 — Complete Kairo V2 Product Flow",
   "status": "active",
-  "lifecycle": "certified",
+  "lifecycle": "testing",
   "riskLevel": "medium",
   "implementationMode": "runtime-enabled",
   "requirements": [
@@ -25,39 +25,35 @@
   "blockers": [],
   "allowedPaths": [
     "apps/kairo-ui-v2/**",
-    "package-lock.json",
-    "deployment/dependency-lock.sha256",
-    "apps/web/app/page.tsx",
-    "apps/web/app/layout.tsx",
-    "apps/web/app/theme-toggle.tsx",
-    "apps/web/app/home-format-picker.tsx",
-    "apps/web/app/home-vs85.module.css",
-    "apps/web/app/opportunity-list.tsx",
-    "apps/web/app/brands/[brandId]/opportunities/[opportunityId]/page.tsx",
-    "apps/web/app/brands/[brandId]/content/**",
-    "apps/web/app/brands/[brandId]/campaigns/**",
-    "apps/web/app/discovery.css",
-    "apps/web/app/studio.css",
-    "apps/web/app/flow-pages.module.css",
-    "apps/web/app/kairo-icons.tsx",
-    "apps/web/app/kairo-product-shell.tsx",
-    "apps/web/app/shell-baseline.css",
-    "apps/web/src/lib/home-intelligence.ts",
-    "apps/web/src/lib/home-intelligence.test.ts",
-    "apps/web/src/lib/product-navigation.ts",
-    "apps/web/src/lib/product-navigation.test.ts",
+    "apps/api/src/**",
+    "apps/api/package.json",
+    "apps/web/package.json",
+    "apps/worker/**",
+    "packages/domain/**",
+    "package.json",
     "docs/slices/VS-107.md",
     "docs/plans/VS-107-implementation.md",
-    "delivery/**"
+    "docs/plans/HUNTER-CHUNK-5-FREEZE.md",
+    "AGENTS.md",
+    "docs/governance/END-TO-END.md",
+    "scripts/governance-lib.mjs",
+    "delivery/**",
+    "package-lock.json",
+    "deployment/dependency-lock.sha256"
   ],
   "protectedPaths": [
-    ".github/workflows/release.yml"
+    ".github/workflows/release.yml",
+    "infrastructure/**",
+    "apps/api/migrations/**"
   ],
   "impact": {
     "areas": [
       "frontend",
       "authentication",
-      "customer-flow"
+      "customer-flow",
+      "api",
+      "architecture",
+      "operations-support"
     ],
     "notes": [
       "Reframes Home around one next creation action.",
@@ -71,91 +67,89 @@
       "Adds the approved v2 Brand Brain experience with Overview, Brand DNA, Discovery Intelligence, Sources and Learning tabs.",
       "Uses Discovery Intelligence in creator-facing language while keeping Hunter as the internal background engine.",
       "Keeps Brand DNA review local through inline Edit, Save and Cancel interactions with visible evidence and confirmation state.",
-      "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling."
+      "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling.",
+      "VS-107@1.8 recovers the clean authenticated Brand E2E flow by removing demo fallbacks, executing manual Hunter from Brand Brain, tightening extraction/readiness quality, and aligning source planning with configured runtime capabilities.",
+      "The approved repair pass upgrades audited runtime/test dependencies and emits non-secret OIDC failure categories so preview configuration failures are actionable without exposing credentials."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-107@1.7",
+      "version": "VS-107@1.8",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-31T21:21:29Z",
-      "rationale": "Product Owner approved the combined Brand Brain v2 direction: readiness-first Overview, inline-editable Brand DNA and a transparent Discovery Intelligence search plan, with Sources and Learning in the same design system."
+      "at": "2026-09-08T00:00:00Z",
+      "rationale": "Product Owner approved the bounded clean-brand E2E recovery slice after production certification exposed truthful-data, refresh execution, extraction quality and provider-configuration gaps."
     },
     {
       "type": "policy",
-      "status": "not-required",
-      "version": "VS-107@1.7",
+      "status": "approved",
+      "version": "GOV-PCERT@1",
       "commitSha": null,
-      "by": null,
-      "at": null,
-      "rationale": "The existing Brand Brain, Source, Learning and Discovery contracts remain authoritative; the change is frontend-only and introduces no new provider, data authority, credential, scheduling or publishing policy."
+      "by": "Sazid Khan",
+      "at": "2026-09-08T00:00:00Z",
+      "rationale": "Product Owner approved a separate, controlled production-certification policy so deployment-bound authentication can be tested on the main hostname without treating an uncertified candidate as released."
     },
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-107@1.7",
+      "version": "VS-107@1.8",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-08-31T21:21:29Z",
-      "rationale": "Product Owner explicitly instructed the approved Brand Brain mockup to proceed and approved the combined implementation direction with local inline editing."
+      "at": "2026-09-08T00:00:00Z",
+      "rationale": "Product Owner approved the bounded clean-brand E2E recovery slice after production certification exposed truthful-data, refresh execution, extraction quality and provider-configuration gaps."
     },
     {
       "type": "certification",
-      "status": "approved",
-      "version": "VS-107@1.7",
-      "commitSha": "f0f87f9415d28eceaeb13961bcf7560fd31978f0",
-      "by": "Sazid Khan",
-      "at": "2026-09-01T04:08:33Z",
-      "rationale": "Product Owner approved certification of the exact VS-107@1.7 Brand Brain candidate after CI, Security, Product Intake, runtime verification, UI tests and deployed preview browser QA passed."
+      "status": "pending",
+      "version": "VS-107@1.8",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "VS-107@1.8 requires a new immutable candidate and passing evidence."
     },
     {
       "type": "release",
-      "status": "approved",
-      "version": "VS-107@1.7",
-      "commitSha": "f0f87f9415d28eceaeb13961bcf7560fd31978f0",
-      "by": "Sazid Khan",
-      "at": "2026-09-01T04:08:33Z",
-      "rationale": "Product Owner explicitly instructed merging PR #261 after exact-SHA certification; production deployment remains manual."
+      "status": "pending",
+      "version": "VS-107@1.8",
+      "commitSha": null,
+      "by": null,
+      "at": null,
+      "rationale": "Not authorized by implementation approval."
     },
     {
       "type": "production-enable",
       "status": "pending",
-      "version": "VS-107@1.7",
+      "version": "VS-107@1.8",
       "commitSha": null,
       "by": null,
       "at": null,
-      "rationale": "Awaiting certified release approval and a separate production-enable decision."
+      "rationale": "Not authorized by implementation approval."
     }
   ],
-  "decisionIds": [],
+  "decisionIds": ["DEC-013"],
   "progress": {
     "discovery": 100,
     "decisions": 100,
     "implementation": 100,
     "testing": 100,
-    "certification": 100,
+    "certification": 0,
     "release": 0,
     "validation": 0
   },
   "certification": {
-    "status": "passed",
-    "commitSha": "f0f87f9415d28eceaeb13961bcf7560fd31978f0",
+    "status": "stale",
+    "commitSha": null,
     "evidence": [
-      "VS-107@1.6 remains certified and released through PR #256; that evidence does not certify the new VS-107@1.7 Brand Brain changes.",
-      "VS-107@1.7 rebased candidate: 9 Kairo UI v2 test files / 37 tests passed, TypeScript passed, Next.js production build passed and repository preflight passed.",
-      "Browser QA passed all five tabs, Brand DNA and Discovery Intelligence Save/Cancel flows, Refresh Discovery, responsive no-overflow checks and application-console checks.",
-      "Post-fix mockup comparison passed for Overview, Brand DNA and Discovery Intelligence on Vercel preview dpl_DZ9Z9uLpdiV8bkJib5Apjr9uwdtR.",
-      "GitHub Actions CI run 33460565978 passed.",
-      "GitHub Actions Security baseline run 33460566141 passed.",
-      "GitHub Actions Product Intake run 33460565976 passed.",
-      "Product Owner approved exact candidate f0f87f9415d28eceaeb13961bcf7560fd31978f0 and instructed merge on 2026-09-01."
+      "VS-107@1.7 certification does not cover the @1.8 recovery changes.",
+      "VS-107@1.8 repaired local candidate: 198 test files / 970 tests passed; 18 files / 40 environment-dependent integration tests remained skipped.",
+      "Production dependency audit reports zero vulnerabilities; repository-wide TypeScript, builds, governance validation and preflight passed.",
+      "Deployed authenticated browser certification remains pending and must run against the exact immutable candidate after preview deployment."
     ]
   },
   "release": {
-    "status": "pending",
+    "status": "not-authorized",
     "releaseId": null
   },
   "rollback": {
@@ -165,12 +159,16 @@
   "postRelease": {
     "status": "not-started",
     "reviewAt": null,
-    "expectedOutcome": null,
-    "metrics": []
+    "expectedOutcome": "A disposable authenticated Brand completes onboarding through persisted Hunter discovery and Concept Mockup without demo data.",
+    "metrics": [
+      "No authenticated demo fallback",
+      "Manual Hunter run persists",
+      "At least one real Opportunity can enter creation when providers return qualifying evidence"
+    ]
   },
   "links": {
     "specification": "docs/slices/VS-107.md",
-    "implementationPr": "https://github.com/ksazid/kairo/pull/261",
+    "implementationPr": "https://github.com/ksazid/kairo/pull/275",
     "evidence": [
       "apps/kairo-ui-v2/design-qa.md",
       "VS-107@1.7 approved Brand Brain Overview, Brand DNA and Discovery Intelligence mockups",

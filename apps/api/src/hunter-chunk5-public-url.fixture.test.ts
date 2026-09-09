@@ -30,7 +30,7 @@ import { createSourceIntelligenceRouter, SourceIntelligenceBrandReferenceReader 
 import { MemoryDiscoveryRepository } from "./discovery-store";
 import { MemoryKairoRepository } from "./store";
 
-const CERTIFICATION = process.env.KAIRO_CHUNK5_LIVE_CERTIFICATION === "1";
+const FIXTURE_CERTIFICATION = process.env.KAIRO_CHUNK5_FIXTURE_CERTIFICATION === "1";
 const PUBLIC_URL = process.env.KAIRO_CHUNK5_PUBLIC_URL?.trim() || "https://smartmobilitymalta.com/";
 const AUTH = { authorization: "Bearer test:chunk5-certification" };
 
@@ -186,13 +186,13 @@ function deterministicRuntime(): AgentRuntimePort {
             scores: { relevance: 0.96, evidence: 0.94, novelty: 0.82, timeliness: 0.78, brandAuthority: 0.88, audienceFit: 0.94 },
           }],
         } as TOutput,
-        metadata: { runtime: "chunk5-deterministic-certification", runtimeVersion: "1", latencyMs: 1 },
+        metadata: { runtime: "chunk5-deterministic-fixture", runtimeVersion: "1", latencyMs: 1 },
       };
     },
   };
 }
 
-describe.skipIf(!CERTIFICATION)("Hunter Chunk 5 captured public-URL certification", () => {
+describe.skipIf(!FIXTURE_CERTIFICATION)("Hunter Chunk 5 captured-page fixture coverage", () => {
   it("runs onboarding through a manual Hunter execution while production cron remains frozen", async () => {
     const capturedReader = new PublicBrandReferenceHttpReader({
       resolveHost: async () => [{ address: "8.8.8.8", family: 4 }],

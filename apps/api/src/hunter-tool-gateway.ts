@@ -8,6 +8,8 @@ import {
   YouTubeDiscoveryProvider,
 } from "@kairo/worker/public-discovery-adapters";
 import { createSourceIntelligenceRouter } from "./source-intelligence";
+import { RetryingDiscoverySourceProvider } from "@kairo/worker/retrying-discovery-provider";
+import { DEFAULT_SOURCE_REGISTRY } from "@kairo/domain/source-registry";
 
 /**
  * Runtime discovery wiring for Home recommendations.
@@ -17,13 +19,13 @@ import { createSourceIntelligenceRouter } from "./source-intelligence";
  * real provider provenance. Named source plans still route directly to their matching provider.
  */
 export function createHunterToolGateway(env: NodeJS.ProcessEnv = process.env) {
-  const hackerNews = new HackerNewsDiscoveryProvider();
-  const bluesky = new BlueskyDiscoveryProvider();
-  const github = new GitHubDiscoveryProvider();
+  const hackerNews = new RetryingDiscoverySourceProvider(new HackerNewsDiscoveryProvider());
+  const bluesky = new RetryingDiscoverySourceProvider(new BlueskyDiscoveryProvider());
+  const github = new RetryingDiscoverySourceProvider(new GitHubDiscoveryProvider());
   const feeds = rssFeedsFromEnv(env.KAIRO_HUNTER_RSS_FEEDS_JSON);
-  const rss = new RssAtomDiscoveryProvider({ feeds });
+  const rss = new RetryingDiscoverySourceProvider(new RssAtomDiscoveryProvider({ feeds }));
   const youtubeKey = env.YOUTUBE_API_KEY?.trim();
-  const youtube = youtubeKey ? new YouTubeDiscoveryProvider({ apiKey: youtubeKey }) : undefined;
+  const youtube = youtubeKey ? new RetryingDiscoverySourceProvider(new YouTubeDiscoveryProvider({ apiKey: youtubeKey })) : undefined;
 
   const publicFallback = {
     async discover(request: Parameters<HackerNewsDiscoveryProvider["discover"]>[0]) {
@@ -50,6 +52,17 @@ export function createHunterToolGateway(env: NodeJS.ProcessEnv = process.env) {
     rss,
     ...(youtube ? { youtube } : {}),
   }, createSourceIntelligenceRouter());
+}
+
+export function configuredHunterSourceRegistry(env: NodeJS.ProcessEnv = process.env) {
+  const hasYouTube = Boolean(env.YOUTUBE_API_KEY?.trim());
+  const hasRssFeeds = rssFeedsFromEnv(env.KAIRO_HUNTER_RSS_FEEDS_JSON).length > 0;
+  return DEFAULT_SOURCE_REGISTRY.map((source) => ({
+    ...source,
+    enabled: source.enabled
+      && (source.key !== "youtube" || hasYouTube)
+      && (source.key !== "rss" || hasRssFeeds),
+  }));
 }
 
 function rssFeedsFromEnv(value: string | undefined): RssFeedDefinition[] {

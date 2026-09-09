@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { oidcClient, oidcClientSecret, oidcConfiguration } from "../../../lib/auth";
+import { oidcClient, oidcClientSecret, oidcConfiguration, oidcFailureDiagnostic } from "../../../lib/auth";
 import { decodeOidcTransaction, jwtSecondsRemaining, KAIRO_ACCESS_TOKEN_COOKIE, OIDC_TRANSACTION_COOKIE } from "../../../lib/auth-session";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     clearTransaction(response);
     return response;
   } catch {
+    console.error("OIDC authentication failure", oidcFailureDiagnostic("callback"));
     return failure(request, "Authentication failed. Please try again.");
   }
 }

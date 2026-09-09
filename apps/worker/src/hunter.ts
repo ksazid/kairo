@@ -11,6 +11,7 @@ import {
   planSourceQueries,
   resolveBrandSourcePolicy,
   type BrandIntelligenceProfile,
+  type DiscoverySourceDefinition,
 } from "@kairo/domain/source-policy";
 import { SECTOR_INTELLIGENCE_PACKS, selectSectorIntelligencePack } from "@kairo/domain/sector-packs";
 import { DEFAULT_SOURCE_REGISTRY } from "@kairo/domain/source-registry";
@@ -81,6 +82,12 @@ export interface HunterRunResult {
   degradedSources?: string[];
 }
 
+export interface HunterFailureDiagnostic {
+  phase: "discovery" | "enrichment" | "judgment";
+  source: string;
+  kind: string;
+}
+
 interface ExecutableDiscoveryPlan {
   source: string;
   query: string;
@@ -92,11 +99,20 @@ export class HunterOrchestrator {
     private readonly tools: ToolGatewayPort,
     private readonly runtime: AgentRuntimePort,
     private readonly opportunities: Pick<DiscoveryService, "recordCandidate">,
+    private readonly sourceRegistry: readonly DiscoverySourceDefinition[] = DEFAULT_SOURCE_REGISTRY,
+    private readonly reportFailure?: (diagnostic: HunterFailureDiagnostic) => void,
   ) {}
+
+  private diagnose(phase: HunterFailureDiagnostic["phase"], source: string, error: unknown): void {
+    const kind = error && typeof error === "object" ? (error as { kind?: unknown }).kind : undefined;
+    const safeKind = typeof kind === "string" && ["unavailable", "rate-limited", "upstream", "invalid-response", "timeout"].includes(kind)
+      ? kind : "unknown";
+    try { this.reportFailure?.({ phase, source, kind: safeKind }); } catch { /* Diagnostics must not fail the run. */ }
+  }
 
   async runForAuthorizedBrand(input: HunterRunInput): Promise<HunterRunResult> {
     const maxEvidence = normalizeMaxEvidence(input.maxEvidence);
-    const plans = executablePlans(input);
+    const plans = executablePlans(input, this.sourceRegistry);
     if (!plans.length) return { evidenceCount: 0, candidateCount: 0, opportunityCount: 0 };
 
     // Source Registry/query planning owns the provider request ceilings. maxEvidence bounds the
@@ -120,10 +136,11 @@ export class HunterOrchestrator {
       try {
         const discovery = await this.tools.invoke<DiscoveryEvidence[]>(toolRequest);
         discovered.push(...discovery.output);
-      } catch {
+      } catch (error) {
         // A provider is degraded for the rest of this run. Other providers continue; failure is
         // surfaced in the run result rather than fabricated as successful empty evidence.
         degradedSources.add(plan.source);
+        this.diagnose("discovery", plan.source, error);
       }
     }
 
@@ -137,7 +154,7 @@ export class HunterOrchestrator {
         }));
         enrichedDocuments.set(item.sourceUrl, fetched.output.document);
         evidence.push(enrichDiscoveryEvidence(item, fetched.output.document));
-      } catch { evidence.push(item); }
+      } catch (error) { this.diagnose("enrichment", "public-content-fetch", error); evidence.push(item); }
     }
     if (!evidence.length) return withDegraded({ evidenceCount: 0, candidateCount: 0, opportunityCount: 0 }, degradedSources);
 
@@ -172,7 +189,8 @@ export class HunterOrchestrator {
     let judgment: Awaited<ReturnType<AgentRuntimePort["invoke"]>>;
     try {
       judgment = await this.runtime.invoke<HunterJudgmentOutput>(invocation);
-    } catch {
+    } catch (error) {
+      this.diagnose("judgment", "hunter-model", error);
       // A provider/model contract failure must not turn a recommendation refresh into a
       // server error. The evidence fetch was still useful, but no trustworthy opportunities
       // can be persisted without a valid judgment.
@@ -183,6 +201,7 @@ export class HunterOrchestrator {
       }, new Set([...degradedSources, "hunter-model"]));
     }
     if (!isHunterJudgmentOutput(judgment.output)) {
+      this.diagnose("judgment", "hunter-model", { kind: "invalid-response" });
       return withDegraded({
         evidenceCount: evidence.length,
         candidateCount: 0,
@@ -246,15 +265,15 @@ export function isHunterJudgmentOutput(value: unknown): value is HunterJudgmentO
   );
 }
 
-function executablePlans(input: HunterRunInput): ExecutableDiscoveryPlan[] {
+function executablePlans(input: HunterRunInput, sourceRegistry: readonly DiscoverySourceDefinition[] = DEFAULT_SOURCE_REGISTRY): ExecutableDiscoveryPlan[] {
   const explicit = input.query?.trim();
   if (explicit) return [{ source: "agent-reach", query: explicit, explicit: true }];
   if (input.query !== undefined && !explicit) throw new Error("Hunter query is required");
   if (!input.intelligenceProfile) throw new Error("Hunter requires an explicit query or Brand Intelligence Profile");
 
   const pack = selectSectorIntelligencePack(input.intelligenceProfile, Object.values(SECTOR_INTELLIGENCE_PACKS));
-  const policy = resolveBrandSourcePolicy(input.intelligenceProfile, pack, DEFAULT_SOURCE_REGISTRY);
-  const base = planSourceQueries(input.intelligenceProfile, pack, policy, DEFAULT_SOURCE_REGISTRY);
+  const policy = resolveBrandSourcePolicy(input.intelligenceProfile, pack, sourceRegistry);
+  const base = planSourceQueries(input.intelligenceProfile, pack, policy, sourceRegistry);
   return expandIntentPlans(base, input).slice(0, 16);
 }
 

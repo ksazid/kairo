@@ -94,6 +94,12 @@ main { min-width: 0; margin-left: 218px; }
 .viral-concept > button:disabled { opacity: .62; cursor: default; }
 
 .recommendation { margin-top: 12px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(105deg, #0d151f, #0b121b); padding: 14px 23px 18px; overflow: hidden; }
+.home-opportunity-empty { min-height: 190px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 20px; padding: 30px; }
+.home-opportunity-empty > svg { width: 34px; height: 34px; color: var(--violet-2); }
+.home-opportunity-empty h2 { margin: 0 0 6px; font-size: 22px; }
+.home-opportunity-empty p { max-width: 720px; margin: 0; color: var(--muted); }
+.home-opportunity-empty > a { min-height: 44px; border-radius: 8px; background: linear-gradient(115deg, #7047f2, #8c62ff); padding: 0 18px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+.home-opportunity-empty > a svg { width: 16px; }
 .recommend-head { min-height: 40px; display: flex; justify-content: space-between; align-items: flex-start; }
 .recommend-head h2, .bottom-grid article > header h2 { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 560; }
 .recommend-head h2 svg { width: 22px; color: #cbb9ff; }
@@ -147,6 +153,7 @@ main { min-width: 0; margin-left: 218px; }
 .draft:hover { border-color: #534275; background: #131e2b; }
 .draft-thumb { width: 60px; height: 57px; border-radius: 7px; background: center 24% / cover no-repeat url('/malta-drive.webp'); }
 .draft-thumb.second { background-image: url('/malta-car.webp'); background-position: center 65%; }
+.draft-thumb.neutral { background-image: none; background: linear-gradient(145deg, #292044, #17263b); }
 .draft p { min-width: 0; margin: 0; display: grid; gap: 1px; }
 .draft small { width: fit-content; color: #c1a9ff; background: rgba(116, 81, 210, .17); border-radius: 4px; padding: 1px 5px; font-size: 9px; }
 .draft strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 550; }
@@ -1333,6 +1340,8 @@ main { min-width: 0; margin-left: 218px; }
   .viral-concept { align-items: stretch; flex-direction: column; }
   .viral-concept > button { width: 100%; }
   .recommendation { padding: 14px; }
+  .home-opportunity-empty { grid-template-columns: 1fr; align-items: start; padding: 22px; }
+  .home-opportunity-empty > a { width: 100%; justify-content: center; }
   .recommend-head { flex-direction: column; gap: 10px; padding-bottom: 12px; }
   .hero-image { min-height: 330px; }
   .image-copy { left: 20px; font-size: 25px; }

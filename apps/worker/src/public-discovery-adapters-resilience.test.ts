@@ -5,6 +5,7 @@ import {
   HackerNewsDiscoveryProvider,
   RssAtomDiscoveryProvider,
 } from "./public-discovery-adapters";
+import { RetryingDiscoverySourceProvider } from "./retrying-discovery-provider";
 
 const request: DiscoveryRequest = {
   query: "AI",
@@ -16,6 +17,18 @@ const request: DiscoveryRequest = {
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 
 describe("VS-13 public discovery resilience", () => {
+  it("retries transient failures from public discovery adapters", async () => {
+    let calls = 0;
+    const provider = new RetryingDiscoverySourceProvider(new BlueskyDiscoveryProvider({
+      fetchImpl: async () => {
+        calls += 1;
+        return calls === 1 ? json({ error: "temporary" }, 500) : json({ posts: [] });
+      },
+    }), { sleep: async () => undefined });
+    await expect(provider.discover(request)).resolves.toEqual([]);
+    expect(calls).toBe(2);
+  });
+
   it("rejects unsafe RSS feed locations before any network call", () => {
     let calls = 0;
     expect(() => new RssAtomDiscoveryProvider({
