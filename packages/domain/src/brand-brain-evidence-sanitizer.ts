@@ -72,6 +72,9 @@ export function sanitizeBrandEvidenceReference(
   trustLevel: EvidenceTrustLevel = "untrusted_external",
 ): SanitizedBrandEvidenceReference {
   assertBrandEvidenceInput(input);
+  assertEvidenceTextIsNotCorrupt(input.title);
+  assertEvidenceTextIsNotCorrupt(input.summary);
+  assertEvidenceTextIsNotCorrupt(input.excerpt);
   const issues: EvidenceSanitizationIssue[] = [];
   const canonicalUrl = canonicalizeHttpUrl(input.url);
   if (!canonicalUrl || canonicalUrl.length > LIMITS.link) throw new Error("Brand evidence URL must be a valid HTTP(S) URL");
@@ -102,6 +105,16 @@ export function sanitizeBrandEvidenceReference(
       issues: coalesceIssues(issues),
     },
   };
+}
+
+function assertEvidenceTextIsNotCorrupt(value: string | undefined): void {
+  if (!value) return;
+  const replacementCount = (value.match(/\uFFFD/g) ?? []).length;
+  const binaryControlCount = (value.match(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g) ?? []).length;
+  const limit = Math.max(2, Math.floor(value.length * 0.005));
+  if (replacementCount > limit || binaryControlCount > limit) {
+    throw new Error("Brand evidence contains corrupt or binary text");
+  }
 }
 
 export function assertSanitizedBrandEvidenceReference(value: unknown): asserts value is SanitizedBrandEvidenceReference {

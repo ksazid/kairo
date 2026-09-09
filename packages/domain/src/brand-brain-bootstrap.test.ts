@@ -140,6 +140,18 @@ describe("BrandBrainBootstrapService", () => {
     expect(repository.fields.find((field) => field.fieldKey === "identity.products-services")?.value).not.toMatch(/vehicle|rental|fleet/i);
   });
 
+  it("never labels a generic website without a title as a GitHub repository", async () => {
+    const repository = new FakeRepository();
+    repository.brand = { id: "brand-1", workspaceId: "workspace-1", name: "Python", publicSourceUrl: "https://www.python.org/" };
+    const service = new BrandBrainBootstrapService(repository, undefined, { read: async (url) => ({
+      url, excerpt: "Python is a programming language for developers and software teams.", retrievedAt: NOW,
+    }) });
+
+    await service.build("account-1", "brand-1", {});
+    expect(repository.fields.find((field) => field.fieldKey === "identity.description")?.value).toMatch(/^Public Brand website\./);
+    expect(repository.fields.find((field) => field.fieldKey === "identity.description")?.value).not.toMatch(/GitHub repository/i);
+  });
+
   it("fails closed when a persisted Brand URL is malformed", async () => {
     const repository = new FakeRepository();
     repository.brand = { ...repository.brand, publicProfileUrl: "javascript:alert(1)" };
