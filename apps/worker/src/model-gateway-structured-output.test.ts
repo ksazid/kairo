@@ -175,7 +175,6 @@ describe("strict structured model output", () => {
         schema: {
           properties: {
             candidates: {
-              maxItems: 12,
               items: {
                 required: ["sourceUrl", "title", "rationale", "whyNow", "developmentDirection", "scores"],
                 additionalProperties: false,
