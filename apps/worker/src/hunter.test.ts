@@ -8,7 +8,7 @@ import type {
   ToolRequest,
   ToolResult,
 } from "@kairo/agent-contracts";
-import { HunterOrchestrator, type HunterJudgmentOutput } from "./hunter";
+import { HunterOrchestrator, type HunterJudgmentOutput, type HunterFailureDiagnostic } from "./hunter";
 
 const evidence = [{
   title: "Persistent agents",
@@ -84,6 +84,26 @@ const umrahProfile = {
 };
 
 describe("Hunter orchestration", () => {
+  it("reports safe provider failure categories without logging raw errors or private context", async () => {
+    const diagnostics: HunterFailureDiagnostic[] = [];
+    const tools = new FakeTools([], () => {
+      throw Object.assign(new Error("secret query, token and upstream response"), { kind: "rate-limited" });
+    });
+    const result = await new HunterOrchestrator(tools, new FakeRuntime({ candidates: [] }), new FakeSink() as never,
+      undefined, (event) => { diagnostics.push(event); }).runForAuthorizedBrand({
+      accountId: "account-1", brand, query: "private Brand query",
+    });
+    expect(result.degradedSources).toEqual(["agent-reach"]);
+    expect(diagnostics).toEqual([{ phase: "discovery", source: "agent-reach", kind: "rate-limited" }]);
+  });
+
+  it("isolates diagnostic failures from a Hunter run", async () => {
+    const tools = new FakeTools([], () => { throw new Error("unavailable"); });
+    await expect(new HunterOrchestrator(tools, new FakeRuntime({ candidates: [] }), new FakeSink() as never,
+      undefined, () => { throw new Error("logger failed"); }).runForAuthorizedBrand({
+      accountId: "account-1", brand, query: "AI agents",
+    })).resolves.toMatchObject({ evidenceCount: 0, degradedSources: ["agent-reach"] });
+  });
   it("preserves the existing explicit-query path as one Agent Reach ToolGateway request", async () => {
     const runtime = new FakeRuntime({ candidates: [{
       sourceUrl: evidence[0]!.sourceUrl,

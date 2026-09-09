@@ -41,6 +41,15 @@ export async function getBrandBrainData(requestedBrandId?: string): Promise<Bran
   return { authenticated: true, brandId: identity.brandId, brandName: identity.brandName, activation };
 }
 
+export async function getBrandBrainActivation(brandId: string): Promise<BrandBrainRuntimeData> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to refresh Brand Brain.");
+  return bodyOrError<BrandBrainRuntimeData>(
+    await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/brain/activation`),
+    "Kairo could not refresh Brand Brain.",
+  );
+}
+
 export async function saveBrandBrainField(input: {
   brandId: string;
   fieldKey: string;

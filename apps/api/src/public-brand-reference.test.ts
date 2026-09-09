@@ -5,6 +5,30 @@ import { PublicBrandReferenceError, PublicBrandReferenceHttpReader } from "./pub
 const publicHost = async () => [{ address: "93.184.216.34", family: 4 as const }];
 
 describe("PublicBrandReferenceHttpReader", () => {
+  it("requests a stable English representation from public websites", async () => {
+    let requestHeaders: Record<string, string> | undefined;
+    const reader = new PublicBrandReferenceHttpReader({
+      resolveHost: publicHost,
+      transport: async (request) => {
+        requestHeaders = request.headers;
+        return { status: 200, headers: { "content-type": "text/html" }, body: "<main>English Brand description</main>" };
+      },
+    });
+    await reader.read("https://example.com");
+    expect(requestHeaders?.["accept-language"]).toMatch(/^en-US/);
+  });
+
+  it("prefers primary main content over unrelated page chrome", async () => {
+    const reader = new PublicBrandReferenceHttpReader({
+      resolveHost: publicHost,
+      transport: async () => ({ status: 200, headers: { "content-type": "text/html" }, body: `<html><body><div>Worldwide offices Berlin Paris Tokyo Singapore</div><main><h1>Payments infrastructure for the internet</h1><p>Accept payments and grow revenue.</p></main><footer>Founders and office directory</footer></body></html>` }),
+    });
+    const result = await reader.read("https://example.com");
+    expect(result.excerpt).toContain("Payments infrastructure");
+    expect(result.excerpt).not.toContain("Worldwide offices");
+    expect(result.excerpt).not.toContain("office directory");
+  });
+
   it("rejects local/private literal targets before network access", async () => {
     let resolved = false;
     const reader = new PublicBrandReferenceHttpReader({
