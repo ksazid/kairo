@@ -70,6 +70,21 @@ describe("PublicBrandReferenceHttpReader", () => {
     });
   });
 
+  it("removes known no-JavaScript fallback boilerplate from primary evidence", async () => {
+    const reader = new PublicBrandReferenceHttpReader({
+      resolveHost: publicHost,
+      transport: async () => ({
+        status: 200,
+        headers: { "content-type": "text/html" },
+        body: "<main>Python programming for developers. Notice: This page displays a fallback because interactive scripts did not run. Possible causes include disabled JavaScript or failure to load scripts or stylesheets. Beginner tutorials and documentation.</main>",
+      }),
+    });
+    const result = await reader.read("https://example.com/");
+    expect(result.excerpt).toContain("Python programming for developers");
+    expect(result.excerpt).toContain("Beginner tutorials and documentation");
+    expect(result.excerpt).not.toMatch(/interactive scripts|disabled JavaScript/);
+  });
+
   it("rejects local/private literal targets before network access", async () => {
     let resolved = false;
     const reader = new PublicBrandReferenceHttpReader({

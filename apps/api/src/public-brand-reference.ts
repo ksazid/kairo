@@ -342,10 +342,17 @@ function extractHtmlContext(html: string, pageUrl: URL): { title?: string; summa
   const body = firstMatch(withoutNoise, /<main\b[^>]*>([\s\S]*?)<\/main>/i)
     || firstMatch(withoutNoise, /<body\b[^>]*>([\s\S]*?)<\/body>/i)
     || withoutNoise;
-  const visible = normalizeWhitespace(decodeEntities(body.replace(/<[^>]+>/g, " ")));
+  const visible = normalizeWhitespace(removeKnownFallbackBoilerplate(decodeEntities(body.replace(/<[^>]+>/g, " "))));
   const excerpt = joinUnique([title, summary, structured, visible]).slice(0, MAX_EXCERPT);
   const links = extractSameDomainLinks(html, pageUrl);
   return { ...(title ? { title } : {}), ...(summary ? { summary } : {}), excerpt, ...(links.length ? { links } : {}) };
+}
+
+function removeKnownFallbackBoilerplate(value: string): string {
+  return value.replace(
+    /Notice:\s*This page displays a fallback because interactive scripts did not run\.\s*Possible causes include disabled JavaScript or failure to load scripts or stylesheets\.?/gi,
+    " ",
+  );
 }
 
 function extractSameDomainLinks(html: string, pageUrl: URL): string[] {

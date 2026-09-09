@@ -154,6 +154,9 @@ describe("BrandBrainBootstrapService", () => {
     expect(repository.fields.find((field) => field.fieldKey === "identity.products-services")?.value).toMatch(/programming language|developer tooling/i);
     expect(repository.fields.find((field) => field.fieldKey === "audience.primary")?.value).toMatch(/software developers/i);
     expect(repository.fields.find((field) => field.fieldKey === "content.pillars")?.value).toMatch(/programming tutorials|documentation/i);
+    expect(repository.fields.find((field) => field.fieldKey === "identity.category")?.value).toMatch(/software|developer tools/i);
+    expect(repository.fields.find((field) => field.fieldKey === "content.preferred-topics")?.value).toMatch(/programming capabilities|ecosystem news/i);
+    expect(repository.fields.find((field) => field.fieldKey === "content.preferred-topics")?.value).not.toMatch(/What the Brand offers/i);
     expect(evaluateBrandDnaReadiness(repository.fields).gaps).toEqual(["boundaries"]);
   });
 
