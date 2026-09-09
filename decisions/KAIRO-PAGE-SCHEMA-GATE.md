@@ -59,6 +59,44 @@ Create an inventory from the approved mockup and current V2 page. Every item mus
 
 A page contract fails if a visible property/control has no backend source or explicitly documented derived source.
 
+## Gate B1 — Terminology preservation
+
+- Existing product terminology is frozen unless a change is required by an approved functional extension.
+- Do not rename current labels, filters, statuses, buttons, sections, navigation items, or content-type names for stylistic preference.
+- New terminology may be introduced only for genuinely new capabilities or data that cannot be expressed using existing terminology.
+- When an extension fits an existing term, extend that term/control instead of introducing a parallel concept.
+
+## Gate B2 — Strict minimal-change rule
+
+- Every mockup and implementation must make the minimum viable UI/control change necessary to expose the approved capability.
+- Existing layout, interaction pattern, component, filter, menu, table, card, button, or status must be reused wherever logically possible.
+- A new control is forbidden when an existing control can be extended without making the user experience less clear.
+- Visual or structural cleanup that is unrelated to the approved capability is out of scope.
+
+## Gate B3 — Existing-control extension rule
+
+New capability must attach to the existing control that already owns the same user decision.
+
+Examples:
+
+- A new content format such as YouTube Video must extend the existing **Format** filter/options rather than add a second format filter.
+- A new channel must extend the existing **Channel** selector rather than add a new channel control.
+- A new opportunity status must extend the existing status/filter model where semantically correct.
+- Additional intelligence for an existing Discover card/table row must extend that card/row rather than add a parallel discovery widget.
+
+A separate control requires evidence that the existing control cannot logically or accessibly represent the new capability.
+
+## Gate B4 — User-minimal control test
+
+For every proposed control ask, in order:
+
+1. Can the user complete the task with an existing control unchanged?
+2. If not, can the existing control be extended with one option/value/state?
+3. If not, can the capability be exposed through progressive disclosure inside the existing component?
+4. Only if all three fail may a new standalone control be proposed.
+
+Choose the smallest control surface that preserves clarity, discoverability, accessibility, and the existing Kairo interaction model.
+
 ## Gate C — Existing-schema-first
 
 Before adding any field/table/type/endpoint, search current migrations, domain types, repositories and routes for the same business concept.
