@@ -7,7 +7,11 @@ import { responseFormatForOutputSchema } from "./model-output-schemas";
 
 export class ModelGatewayError extends Error {
   readonly code = "model_gateway_error";
-  constructor(message: string, readonly kind: "unknown" | "rate-limited" | "upstream" | "invalid-response" | "timeout" = "unknown") {
+  constructor(
+    message: string,
+    readonly kind: "unknown" | "rate-limited" | "upstream" | "invalid-response" | "timeout" = "unknown",
+    readonly statusCode?: number,
+  ) {
     super(message);
   }
 }
@@ -84,7 +88,7 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
       this.maxRetryDelayMs,
       this.sleep,
     );
-    if (!response.ok) throw new ModelGatewayError(`Model provider returned ${response.status}`, statusFailureKind(response.status));
+    if (!response.ok) throw new ModelGatewayError(`Model provider returned ${response.status}`, statusFailureKind(response.status), response.status);
     const payload = await response.json() as {
       model?: string;
       choices?: Array<{ message?: { content?: string } }>;
