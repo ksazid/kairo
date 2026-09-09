@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { InMemoryNormalizedSourceCache } from "@kairo/agent-contracts";
+import { InMemoryNormalizedSourceCache, type NormalizedSourceDocument } from "@kairo/agent-contracts";
 import type { PublicBrandReferenceReader } from "@kairo/domain/brand-brain-bootstrap";
 import {
   PublicBrandReferenceHttpReader,
@@ -12,6 +12,35 @@ import {
 } from "./source-intelligence";
 
 describe("VS-99 secure HTTP source adapter", () => {
+  it("ignores malformed external links during onboarding sampling", async () => {
+    const makeDocument = (url: string, externalLinks: string[] = []): NormalizedSourceDocument => ({
+      canonicalUrl: url,
+      platform: "website",
+      sourceType: "website",
+      title: "Acme software",
+      body: "Acme builds software applications for small businesses and technical teams.",
+      retrievedAt: "2026-08-26T07:00:00.000Z",
+      contentHash: "sha256:acme",
+      provider: "fixture",
+      providerVersion: "1",
+      parserVersion: "1",
+      provenance: [],
+      confidence: 1,
+      extractionWarnings: [],
+      trust: "untrusted-evidence",
+      ...(externalLinks.length ? { externalLinks } : {}),
+    });
+    const fetch = vi.fn(async ({ url }: { url: string }) => ({
+      document: makeDocument(url, url === "https://example.com/" ? ["not a URL", "javascript:alert(1)", "https://example.com/about"] : []),
+    }));
+    const reader = new SourceIntelligenceBrandReferenceReader({ fetch } as never);
+
+    await expect(reader.read("https://example.com/")).resolves.toMatchObject({
+      url: "https://example.com/",
+      links: ["https://example.com/about"],
+    });
+  });
+
   it("bridges the existing reader into normalized untrusted evidence", async () => {
     let calls = 0;
     const reader = new PublicBrandReferenceHttpReader({

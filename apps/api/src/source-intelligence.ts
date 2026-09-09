@@ -36,7 +36,10 @@ export class SourceIntelligenceBrandReferenceReader implements PublicBrandRefere
     const initial = (await this.router.fetch({ url, scope: { visibility: "global-public" }, timeoutMs: 10_000 })).document;
     const candidates: OnboardingEvidenceCandidate[] = [
       { url: initial.canonicalUrl, contentHash: initial.contentHash, kind: "initial" },
-      ...(initial.externalLinks ?? []).map((link): OnboardingEvidenceCandidate => ({ url: link, kind: classifyOnboardingLink(link) })),
+      ...(initial.externalLinks ?? []).flatMap((link): OnboardingEvidenceCandidate[] => {
+        const kind = classifyOnboardingLink(link);
+        return kind ? [{ url: link, kind }] : [];
+      }),
     ];
     const selected = selectOnboardingEvidence(candidates, { recent: this.limits.recent, deep: this.limits.deep, total: this.limits.total });
     const documents = [initial]; let usedBytes = Buffer.byteLength(initial.body ?? initial.description ?? initial.title ?? "");
@@ -55,11 +58,22 @@ export class SourceIntelligenceBrandReferenceReader implements PublicBrandRefere
       .filter((value): value is string => Boolean(value?.trim())).join("\n\n").slice(0, this.limits.maxBytes);
     if (!excerpt) throw new Error("Public Brand reference contained no usable text");
     return { url: initial.canonicalUrl, ...(initial.title ? { title: initial.title } : {}), ...(initial.description ? { summary: initial.description } : {}), excerpt, retrievedAt: initial.retrievedAt,
-      links: documents.flatMap((document) => document.externalLinks ?? []).slice(0, 100) };
+      links: documents.flatMap((document) => document.externalLinks ?? []).filter(isHttpUrl).slice(0, 100) };
   }
 }
 function compactReference(reference: PublicBrandReference) { return { ...(reference.title ? { title: reference.title } : {}), ...(reference.summary ? { summary: reference.summary } : {}), excerpt: reference.excerpt, ...(reference.contentType ? { contentType: reference.contentType } : {}), ...(reference.sizeBytes !== undefined ? { sizeBytes: reference.sizeBytes } : {}), ...(reference.links?.length ? { links: reference.links } : {}) }; }
-function classifyOnboardingLink(value: string): OnboardingEvidenceCandidate["kind"] { const path = new URL(value).pathname; if (/\babout\b/i.test(path)) return "about"; if (/\b(products?|services?|pricing)\b/i.test(path)) return "product"; if (/\b(blog|news|resources?|insights?|reel|shorts?)\b/i.test(path)) return "recent"; return "deep"; }
+function classifyOnboardingLink(value: string): OnboardingEvidenceCandidate["kind"] | undefined {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return undefined;
+    const path = url.pathname;
+    if (/\babout\b/i.test(path)) return "about";
+    if (/\b(products?|services?|pricing)\b/i.test(path)) return "product";
+    if (/\b(blog|news|resources?|insights?|reel|shorts?)\b/i.test(path)) return "recent";
+    return "deep";
+  } catch { return undefined; }
+}
+function isHttpUrl(value: string): boolean { try { const url = new URL(value); return url.protocol === "http:" || url.protocol === "https:"; } catch { return false; } }
 function onboardingLimitsFromEnv() {
   const integer = (name: string, fallback: number, min: number, max: number) => { const parsed = Number(process.env[name] ?? fallback); return Number.isInteger(parsed) && parsed >= min && parsed <= max ? parsed : fallback; };
   const recent = integer("BRAND_ONBOARDING_MAX_RECENT_ITEMS", 20, 0, 50); const deep = integer("BRAND_ONBOARDING_MAX_DEEP_ITEMS", 5, 0, 20);
