@@ -65,6 +65,13 @@ const NAMED_ENTITIES: Record<string, string> = {
   lt: "<",
   nbsp: " ",
   quot: '"',
+  lsquo: "'",
+  rsquo: "'",
+  ldquo: '"',
+  rdquo: '"',
+  ndash: "–",
+  mdash: "—",
+  hellip: "…",
 };
 
 export function sanitizeBrandEvidenceReference(

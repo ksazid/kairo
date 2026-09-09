@@ -12,7 +12,7 @@ describe("Flow 1A evidence sanitization gate", () => {
       url: "HTTPS://Example.COM:443/about#team",
       title: "Acme &amp; Co",
       summary: "Restaurant ordering &amp; payments.",
-      excerpt: "Acme helps restaurant teams manage ordering and payments.",
+      excerpt: "Acme&rsquo;s platform &mdash; ordering and payments&hellip;",
       retrievedAt: "2026-09-01T00:00:00+02:00",
       links: ["https://EXAMPLE.com/contact#top", "https://example.com/contact"],
     });
@@ -20,6 +20,7 @@ describe("Flow 1A evidence sanitization gate", () => {
     expect(result.url).toBe("https://example.com/about");
     expect(result.title).toBe("Acme & Co");
     expect(result.summary).toBe("Restaurant ordering & payments.");
+    expect(result.excerpt).toBe("Acme's platform — ordering and payments…");
     expect(result.links).toEqual(["https://example.com/contact"]);
     expect(result.trustLevel).toBe("untrusted_external");
     expect(result.sanitization.rejectedInstructionCount).toBe(0);
