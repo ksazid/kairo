@@ -1,4 +1,4 @@
-import { deflateSync } from "node:zlib";
+import { brotliCompressSync, deflateSync, gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { PublicBrandReferenceError, PublicBrandReferenceHttpReader } from "./public-brand-reference";
 
@@ -16,6 +16,37 @@ describe("PublicBrandReferenceHttpReader", () => {
     });
     await reader.read("https://example.com");
     expect(requestHeaders?.["accept-language"]).toMatch(/^en-US/);
+    expect(requestHeaders?.["accept-encoding"]).toBe("identity");
+  });
+
+  it.each([
+    ["gzip", gzipSync],
+    ["br", brotliCompressSync],
+    ["deflate", deflateSync],
+  ])("decodes %s-compressed website evidence before HTML extraction", async (encoding, compress) => {
+    const body = compress(Buffer.from("<html><head><title>Python</title></head><body><main>Python is a programming language for developers.</main></body></html>"));
+    const reader = new PublicBrandReferenceHttpReader({
+      resolveHost: publicHost,
+      transport: async () => ({ status: 200, headers: { "content-type": "text/html", "content-encoding": encoding }, body }),
+    });
+
+    await expect(reader.read("https://www.python.org/")).resolves.toMatchObject({
+      title: "Python",
+      excerpt: expect.stringContaining("programming language for developers"),
+    });
+  });
+
+  it("rejects compressed or binary bytes that are mislabeled as decoded text", async () => {
+    const reader = new PublicBrandReferenceHttpReader({
+      resolveHost: publicHost,
+      transport: async () => ({
+        status: 200,
+        headers: { "content-type": "text/html" },
+        body: gzipSync(Buffer.from("<main>Python developer platform</main>")),
+      }),
+    });
+
+    await expect(reader.read("https://www.python.org/")).rejects.toMatchObject({ kind: "invalid-response" });
   });
 
   it("prefers primary main content over unrelated page chrome", async () => {

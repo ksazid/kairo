@@ -83,6 +83,14 @@ describe("Flow 1A evidence sanitization gate", () => {
     })).toThrow(/optional fields must be text/);
   });
 
+  it("hard-rejects corrupt decoded bytes before they can enter Brand DNA", () => {
+    expect(() => sanitizeBrandEvidenceReference({
+      url: "https://python.example/",
+      excerpt: `Python language ${"\uFFFD".repeat(20)} ${"\u0001".repeat(20)}`,
+      retrievedAt: "2026-09-01T00:00:00Z",
+    })).toThrow(/corrupt or binary text/);
+  });
+
   it("isolates malformed JSON-LD without throwing", () => {
     expect(safeParseJsonLd('{"@context":"https://schema.org",')).toEqual({ values: [], malformed: true });
     expect(safeParseJsonLd('{"@type":"Organization","name":"Acme"}')).toEqual({

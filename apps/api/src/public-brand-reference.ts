@@ -2,7 +2,7 @@ import { lookup } from "node:dns/promises";
 import http from "node:http";
 import https from "node:https";
 import { isIP } from "node:net";
-import { inflateSync } from "node:zlib";
+import { brotliDecompressSync, gunzipSync, inflateSync } from "node:zlib";
 import type { PublicBrandReference, PublicBrandReferenceReader } from "@kairo/domain/brand-brain-bootstrap";
 
 export type PublicBrandReferenceFailureKind =
@@ -83,7 +83,7 @@ export class PublicBrandReferenceHttpReader implements PublicBrandReferenceReade
         family: target.family,
         timeoutMs: this.timeoutMs,
         maxBytes: this.maxBytes,
-        headers: { "accept-language": "en-US,en;q=0.8" },
+        headers: { "accept-language": "en-US,en;q=0.8", "accept-encoding": "identity" },
       });
     } catch (error) {
       if (error instanceof PublicBrandReferenceError) throw error;
@@ -101,7 +101,7 @@ export class PublicBrandReferenceHttpReader implements PublicBrandReferenceReade
       throw new PublicBrandReferenceError("unavailable", `Public Brand reference returned ${response.status}`);
     }
 
-    const rawBody = asBuffer(response.body);
+    const rawBody = decodeResponseBody(asBuffer(response.body), response.headers["content-encoding"], this.maxBytes, response.truncated);
     const contentType = mediaType(response.headers["content-type"]);
     const pdf = contentType === "application/pdf" || looksLikePdf(rawBody);
     const oversized = rawBody.length > this.maxBytes;
@@ -129,6 +129,7 @@ export class PublicBrandReferenceHttpReader implements PublicBrandReferenceReade
     }
 
     const text = body.toString("utf8");
+    assertUsableDecodedText(text);
     const context = contentType === "application/json" || contentType.endsWith("+json")
       ? extractJsonContext(text)
       : contentType && contentType.startsWith("text/") && contentType !== "text/html"
@@ -200,7 +201,9 @@ function nodeTransport(request: PublicBrandReferenceTransportRequest): Promise<P
       let size = 0;
       let settled = false;
       const responseHeaders = Object.fromEntries(Object.entries(incoming.headers).map(([key, value]) => [key.toLowerCase(), Array.isArray(value) ? value[0] : value]));
-      const truncatableText = isTruncatableTextContentType(mediaType(responseHeaders["content-type"]));
+      const contentEncoding = responseHeaders["content-encoding"]?.trim().toLowerCase();
+      const truncatableText = isTruncatableTextContentType(mediaType(responseHeaders["content-type"]))
+        && (!contentEncoding || contentEncoding === "identity");
       const resolveResponse = (truncated = false) => {
         if (settled) return;
         settled = true;
@@ -239,6 +242,40 @@ function nodeTransport(request: PublicBrandReferenceTransportRequest): Promise<P
     outgoing.on("error", reject);
     outgoing.end();
   });
+}
+
+function decodeResponseBody(body: Buffer, header: string | undefined, maxBytes: number, truncated = false): Buffer {
+  const encodings = (header ?? "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter((value) => value && value !== "identity");
+  if (!encodings.length) return body;
+  if (truncated) throw new PublicBrandReferenceError("too-large", "Compressed public Brand reference was truncated");
+  if (encodings.length > 2) throw new PublicBrandReferenceError("unsupported-content", "Public Brand reference used too many content encodings");
+
+  let decoded = body;
+  try {
+    for (const encoding of [...encodings].reverse()) {
+      if (encoding === "gzip" || encoding === "x-gzip") decoded = gunzipSync(decoded, { maxOutputLength: maxBytes + 1 });
+      else if (encoding === "deflate") decoded = inflateSync(decoded, { maxOutputLength: maxBytes + 1 });
+      else if (encoding === "br") decoded = brotliDecompressSync(decoded, { maxOutputLength: maxBytes + 1 });
+      else throw new PublicBrandReferenceError("unsupported-content", `Public Brand reference used unsupported content encoding: ${encoding}`);
+      if (decoded.length > maxBytes) throw new PublicBrandReferenceError("too-large", "Decoded public Brand reference exceeded the response limit");
+    }
+  } catch (error) {
+    if (error instanceof PublicBrandReferenceError) throw error;
+    throw new PublicBrandReferenceError("invalid-response", "Public Brand reference compression could not be decoded safely");
+  }
+  return decoded;
+}
+
+function assertUsableDecodedText(value: string): void {
+  const replacementCount = (value.match(/\uFFFD/g) ?? []).length;
+  const binaryControlCount = (value.match(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g) ?? []).length;
+  const limit = Math.max(2, Math.floor(value.length * 0.005));
+  if (replacementCount > limit || binaryControlCount > limit) {
+    throw new PublicBrandReferenceError("invalid-response", "Public Brand reference did not decode to usable text");
+  }
 }
 
 function normalizeUrl(input: string): URL {

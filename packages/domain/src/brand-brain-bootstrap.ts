@@ -395,7 +395,12 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   if (!reference) return [];
   const isSocial = reference === social;
   const isSubstack = reference === substack;
-  const title = reference.title?.trim() || (isSocial ? "Public social profile" : "Public GitHub repository");
+  const isGithub = reference === github;
+  const title = reference.title?.trim()
+    || (isSocial ? "Public social profile"
+      : isSubstack ? "Public newsletter"
+        : isGithub ? "Public GitHub repository"
+          : "Public Brand website");
   const excerpt = reference.excerpt.trim().replace(/\s+/g, " ").slice(0, 800);
   const sourceIds = [reference.sourceId];
   if (isSocial) return [
