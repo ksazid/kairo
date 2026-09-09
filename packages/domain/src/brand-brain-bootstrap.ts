@@ -153,23 +153,27 @@ export class BrandBrainBootstrapService {
     successfulReferences.push(...privateExtracts);
     let syntheticFallback = false;
     const fallbackUrl = brand.publicProfileUrl || brand.publicSourceUrl;
-    const fallbackHost = fallbackUrl ? new URL(fallbackUrl).hostname.toLowerCase() : "";
+    const fallbackHost = publicHostname(fallbackUrl);
     const isSocialFallback = fallbackHost === "instagram.com" || fallbackHost === "www.instagram.com"
       || fallbackHost === "facebook.com" || fallbackHost === "www.facebook.com";
     const isSubstackFallback = fallbackHost === "substack.com" || fallbackHost === "www.substack.com"
       || fallbackHost === "on.substack.com" || fallbackHost.endsWith(".substack.com");
-    if (!successfulReferences.length && fallbackUrl) {
-      const fallbackReference = sanitizeBrandEvidenceAtBoundary({
-        url: fallbackUrl,
-        title: brand.name,
-        excerpt: `Public reference for ${brand.name}. Detailed source evidence is unavailable until the source is connected or refreshed.`,
-        retrievedAt: new Date().toISOString(),
-      });
-      // Keep conservative fallback proposals source-backed so PostgreSQL can
-      // persist them and the Brand Brain UI can render them as suggestions.
-      const source = await this.ensureSource(accountId, brandId, fallbackReference, await this.repository.listKnowledgeSources(accountId, brandId));
-      successfulReferences.push({ ...fallbackReference, sourceId: source.id });
-      syntheticFallback = true;
+    if (!successfulReferences.length && fallbackUrl && fallbackHost) {
+      try {
+        const fallbackReference = sanitizeBrandEvidenceAtBoundary({
+          url: fallbackUrl,
+          title: brand.name,
+          excerpt: `Public reference for ${brand.name}. Detailed source evidence is unavailable until the source is connected or refreshed.`,
+          retrievedAt: new Date().toISOString(),
+        });
+        // Keep conservative fallback proposals source-backed so PostgreSQL can
+        // persist them and the Brand Brain UI can render them as suggestions.
+        const source = await this.ensureSource(accountId, brandId, fallbackReference, await this.repository.listKnowledgeSources(accountId, brandId));
+        successfulReferences.push({ ...fallbackReference, sourceId: source.id });
+        syntheticFallback = true;
+      } catch {
+        // A malformed persisted URL must not prevent the owner from continuing setup.
+      }
     }
 
     if (!this.generator) {
@@ -437,9 +441,9 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
 
 function deriveWebsiteOfferings(title: string, excerpt: string): string {
   const text = `${title} ${excerpt}`;
-  if (/rental|fleet|vehicle|car|motorcycle/i.test(text)) return "Vehicle rental and fleet booking services, including online reservations";
-  if (/software|platform|api|saas|app/i.test(text)) return "Software products and online platform services described in the public reference";
-  if (/restaurant|menu|food|cafe|dining/i.test(text)) return "Food, dining and restaurant services described in the public reference";
+  if (/\b(?:rental|rentals|fleet|fleets|vehicle|vehicles|car|cars|motorcycle|motorcycles)\b/i.test(text)) return "Vehicle rental and fleet booking services, including online reservations";
+  if (/\b(?:software|platform|platforms|api|apis|saas|app|apps|application|applications)\b/i.test(text)) return "Software products and online platform services described in the public reference";
+  if (/\b(?:restaurant|restaurants|menu|menus|food|cafe|cafes|dining)\b/i.test(text)) return "Food, dining and restaurant services described in the public reference";
   return `${title} products or services described in the public reference: ${excerpt.slice(0, 300)}`;
 }
 
@@ -450,9 +454,17 @@ function deriveWebsitePositioning(title: string, excerpt: string): string {
 
 function deriveWebsiteAudience(title: string, excerpt: string): string {
   const text = `${title} ${excerpt}`;
-  if (/rental|fleet|vehicle|car|motorcycle/i.test(text)) return "People and businesses seeking vehicle rental, mobility or fleet services";
-  if (/software|platform|api|saas|app/i.test(text)) return "Teams and practitioners seeking the software or platform capabilities described";
+  if (/\b(?:rental|rentals|fleet|fleets|vehicle|vehicles|car|cars|motorcycle|motorcycles)\b/i.test(text)) return "People and businesses seeking vehicle rental, mobility or fleet services";
+  if (/\b(?:software|platform|platforms|api|apis|saas|app|apps|application|applications)\b/i.test(text)) return "Teams and practitioners seeking the software or platform capabilities described";
   return `Customers seeking ${title.toLowerCase()} products or services`;
+}
+
+function publicHostname(value: string | undefined): string {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.hostname.toLowerCase() : "";
+  } catch { return ""; }
 }
 
 function optionalUrl(value: unknown): string | undefined {
