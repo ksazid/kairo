@@ -7,6 +7,9 @@ import { responseFormatForOutputSchema } from "./model-output-schemas";
 
 export class ModelGatewayError extends Error {
   readonly code = "model_gateway_error";
+  constructor(message: string, readonly kind: "unknown" | "rate-limited" | "upstream" | "invalid-response" | "timeout" = "unknown") {
+    super(message);
+  }
 }
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -81,20 +84,20 @@ export class OpenAICompatibleModelGateway implements ModelGatewayPort {
       this.maxRetryDelayMs,
       this.sleep,
     );
-    if (!response.ok) throw new ModelGatewayError(`Model provider returned ${response.status}`);
+    if (!response.ok) throw new ModelGatewayError(`Model provider returned ${response.status}`, statusFailureKind(response.status));
     const payload = await response.json() as {
       model?: string;
       choices?: Array<{ message?: { content?: string } }>;
       usage?: { prompt_tokens?: number; completion_tokens?: number };
     };
     const content = payload.choices?.[0]?.message?.content;
-    if (!content) throw new ModelGatewayError("Model provider returned no content");
+    if (!content) throw new ModelGatewayError("Model provider returned no content", "invalid-response");
     const inputTokens = usageInt(payload.usage?.prompt_tokens, "prompt_tokens");
     const outputTokens = usageInt(payload.usage?.completion_tokens, "completion_tokens");
     const costUsd = calculateCostUsd(inputTokens, outputTokens, this.pricing);
     let output: TOutput;
     try { output = JSON.parse(content) as TOutput; }
-    catch { throw new ModelGatewayError("Model provider returned invalid JSON"); }
+    catch { throw new ModelGatewayError("Model provider returned invalid JSON", "invalid-response"); }
     return {
       output,
       metadata: {
@@ -153,7 +156,7 @@ async function fetchWithRetry(
     try {
       response = await fetchImpl(input, init);
     } catch {
-      if (attempt >= maxAttempts) throw new ModelGatewayError("Model provider request failed");
+      if (attempt >= maxAttempts) throw new ModelGatewayError("Model provider request failed", "upstream");
       await sleep(Math.min(maxRetryDelayMs, 250 * (2 ** (attempt - 1))));
       continue;
     }
@@ -161,7 +164,15 @@ async function fetchWithRetry(
     try { await response.body?.cancel(); } catch { /* best-effort cleanup */ }
     await sleep(retryDelayMs(response.headers.get("retry-after"), attempt, maxRetryDelayMs));
   }
-  throw new ModelGatewayError("Model provider request failed");
+  throw new ModelGatewayError("Model provider request failed", "upstream");
+}
+
+function statusFailureKind(status: number): ModelGatewayError["kind"] {
+  if (status === 408) return "timeout";
+  if (status === 429) return "rate-limited";
+  if (status >= 500) return "upstream";
+  if (status >= 400) return "invalid-response";
+  return "unknown";
 }
 
 function retryableStatus(status: number): boolean {
