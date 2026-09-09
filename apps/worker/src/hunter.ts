@@ -86,6 +86,7 @@ export interface HunterFailureDiagnostic {
   phase: "discovery" | "enrichment" | "judgment";
   source: string;
   kind: string;
+  statusCode?: number;
 }
 
 interface ExecutableDiscoveryPlan {
@@ -105,9 +106,12 @@ export class HunterOrchestrator {
 
   private diagnose(phase: HunterFailureDiagnostic["phase"], source: string, error: unknown): void {
     const kind = error && typeof error === "object" ? (error as { kind?: unknown }).kind : undefined;
+    const statusCode = error && typeof error === "object" ? (error as { statusCode?: unknown }).statusCode : undefined;
     const safeKind = typeof kind === "string" && ["unavailable", "rate-limited", "upstream", "invalid-response", "timeout"].includes(kind)
       ? kind : "unknown";
-    try { this.reportFailure?.({ phase, source, kind: safeKind }); } catch { /* Diagnostics must not fail the run. */ }
+    const safeStatusCode = typeof statusCode === "number" && Number.isInteger(statusCode) && statusCode >= 400 && statusCode <= 599
+      ? statusCode : undefined;
+    try { this.reportFailure?.({ phase, source, kind: safeKind, ...(safeStatusCode ? { statusCode: safeStatusCode } : {}) }); } catch { /* Diagnostics must not fail the run. */ }
   }
 
   async runForAuthorizedBrand(input: HunterRunInput): Promise<HunterRunResult> {
@@ -169,17 +173,7 @@ export class HunterOrchestrator {
           brand: compactBrand(input.brand),
           ...(input.intelligenceProfile ? { intelligenceProfile: compactIntelligenceProfile(input.intelligenceProfile) } : {}),
           ...(input.intelligenceGraph ? { topicGraph: compactTopicGraph(input.intelligenceGraph), intelligenceVersion: input.intelligenceVersion } : {}),
-          evidence: evidence.map((item) => ({
-            title: item.title,
-            ...(item.summary ? { summary: item.summary } : {}),
-            sourceUrl: item.sourceUrl,
-            platform: item.platform,
-            ...(item.publisher ? { publisher: item.publisher } : {}),
-            ...(item.publishedAt ? { publishedAt: item.publishedAt } : {}),
-            retrievedAt: item.retrievedAt,
-            ...(enrichedDocuments.get(item.sourceUrl)?.transcript ? { transcript: enrichedDocuments.get(item.sourceUrl)!.transcript } : {}),
-            ...(enrichedDocuments.get(item.sourceUrl)?.tags?.length ? { tags: enrichedDocuments.get(item.sourceUrl)!.tags } : {}),
-          })),
+          evidence: compactHunterEvidence(evidence, enrichedDocuments),
         },
       },
       outputSchema: { name: "hunter-opportunities", version: "2" },
@@ -350,6 +344,33 @@ function compactIntelligenceProfile(profile: BrandIntelligenceProfile) {
     excludedTopics: profile.excludedTopics,
     goals: profile.goals,
   };
+}
+
+const HUNTER_EVIDENCE_TEXT_CHARS = 2_400;
+const HUNTER_EVIDENCE_TOTAL_TEXT_CHARS = 48_000;
+
+function compactHunterEvidence(
+  evidence: readonly DiscoveryEvidence[],
+  documents: ReadonlyMap<string, NormalizedSourceDocument>,
+) {
+  let remainingTextChars = HUNTER_EVIDENCE_TOTAL_TEXT_CHARS;
+  return evidence.map((item) => {
+    const document = documents.get(item.sourceUrl);
+    const sourceText = item.summary ?? document?.transcript ?? document?.body ?? document?.description;
+    const textBudget = Math.min(HUNTER_EVIDENCE_TEXT_CHARS, remainingTextChars);
+    const summary = sourceText?.trim().slice(0, textBudget);
+    remainingTextChars -= summary?.length ?? 0;
+    return {
+      title: item.title.slice(0, 500),
+      ...(summary ? { summary } : {}),
+      sourceUrl: item.sourceUrl,
+      platform: item.platform,
+      ...(item.publisher ? { publisher: item.publisher.slice(0, 300) } : {}),
+      ...(item.publishedAt ? { publishedAt: item.publishedAt } : {}),
+      retrievedAt: item.retrievedAt,
+      ...(document?.tags?.length ? { tags: document.tags.slice(0, 20).map((tag) => tag.slice(0, 120)) } : {}),
+    };
+  });
 }
 
 const QUERY_INTENTS = ["latest developments", "new release", "trend", "debate", "benchmark", "audience pain", "regulation", "new research", "tutorial", "misconception", "contrarian viewpoint"] as const;
