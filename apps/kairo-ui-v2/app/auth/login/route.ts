@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { oidcAudience, oidcClient, oidcClientSecret, oidcConfiguration } from "../../../lib/auth";
+import { oidcAudience, oidcBootstrapFailure, oidcClient, oidcClientSecret, oidcConfiguration } from "../../../lib/auth";
 import { encodeOidcTransaction, OIDC_TRANSACTION_COOKIE, OIDC_TRANSACTION_MAX_AGE_SECONDS, safeReturnTo } from "../../../lib/auth-session";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,9 @@ export async function GET(request: NextRequest) {
       maxAge: OIDC_TRANSACTION_MAX_AGE_SECONDS,
     });
     return response;
-  } catch {
+  } catch (error) {
+    const failure = oidcBootstrapFailure(error);
+    console.error("kairo_ui_v2_oidc_bootstrap_failed", failure);
     return authFailure(request, "Authentication service is temporarily unavailable. Please try again.");
   }
 }
