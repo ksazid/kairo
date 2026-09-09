@@ -155,9 +155,10 @@ describe("Hunter orchestration", () => {
     await hunter.runForAuthorizedBrand({ accountId: "account-1", brand, query: "AI agents" });
 
     const context = runtime.lastRequest?.task.context as { evidence?: Array<{ summary?: string; transcript?: string }> } | undefined;
-    expect(context?.evidence?.[0]?.summary).toHaveLength(2_400);
+    expect(context?.evidence?.[0]?.summary).toHaveLength(1_200);
     expect(context?.evidence?.[0]).not.toHaveProperty("transcript");
-    expect(JSON.stringify(context?.evidence)).not.toContain("x".repeat(2_401));
+    expect(JSON.stringify(context)).not.toContain("x".repeat(1_201));
+    expect(JSON.stringify(context).length).toBeLessThanOrEqual(32_000);
   });
 
   it("executes materially different multi-source plans for AI and Umrah through the same Hunter", async () => {

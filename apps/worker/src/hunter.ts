@@ -3,6 +3,7 @@ import {
   prepareToolRequest,
   type AgentRuntimePort,
   type DiscoveryEvidence,
+  type JsonValue,
   type ToolGatewayPort,
   type NormalizedSourceDocument,
 } from "@kairo/agent-contracts";
@@ -169,12 +170,7 @@ export class HunterOrchestrator {
       capabilities: ["public-content-search", "public-content-fetch"],
       task: {
         instruction: "Evaluate the supplied public evidence for this Brand. Return only genuinely worthwhile, evidence-linked opportunities; returning zero candidates is preferred to filler.",
-        context: {
-          brand: compactBrand(input.brand),
-          ...(input.intelligenceProfile ? { intelligenceProfile: compactIntelligenceProfile(input.intelligenceProfile) } : {}),
-          ...(input.intelligenceGraph ? { topicGraph: compactTopicGraph(input.intelligenceGraph), intelligenceVersion: input.intelligenceVersion } : {}),
-          evidence: compactHunterEvidence(evidence, enrichedDocuments),
-        },
+        context: compactHunterContext(input, evidence, enrichedDocuments),
       },
       outputSchema: { name: "hunter-opportunities", version: "2" },
       budget: { maxOutputTokens: 4_000, maxToolCalls: 0, maxCostUsd: 0.12, timeoutMs: 30_000 },
@@ -324,43 +320,63 @@ function withDegraded(result: Omit<HunterRunResult, "degradedSources">, degraded
 
 function compactBrand(brand: BrandContextProjection) {
   return {
-    brandName: brand.brandName,
-    ...(brand.positioning ? { positioning: brand.positioning } : {}),
-    ...(brand.audience ? { audience: brand.audience } : {}),
-    ...(brand.voice ? { voice: brand.voice } : {}),
-    ...(brand.goals ? { goals: brand.goals } : {}),
-    ...(brand.boundaries ? { boundaries: brand.boundaries } : {}),
+    brandName: brand.brandName.slice(0, 300),
+    ...(brand.positioning ? { positioning: brand.positioning.slice(0, 1_000) } : {}),
+    ...(brand.audience ? { audience: brand.audience.slice(0, 1_000) } : {}),
+    ...(brand.voice ? { voice: brand.voice.slice(0, 1_000) } : {}),
+    ...(brand.goals ? { goals: brand.goals.slice(0, 1_000) } : {}),
+    ...(brand.boundaries ? { boundaries: brand.boundaries.slice(0, 1_000) } : {}),
   };
 }
 
 function compactIntelligenceProfile(profile: BrandIntelligenceProfile) {
   return {
-    ...(profile.sector ? { sector: profile.sector } : {}),
-    ...(profile.subsector ? { subsector: profile.subsector } : {}),
-    geographies: profile.geographies,
-    languages: profile.languages,
-    audiences: profile.audiences,
-    topics: profile.topics,
-    excludedTopics: profile.excludedTopics,
-    goals: profile.goals,
+    ...(profile.sector ? { sector: profile.sector.slice(0, 200) } : {}),
+    ...(profile.subsector ? { subsector: profile.subsector.slice(0, 200) } : {}),
+    geographies: boundedStrings(profile.geographies, 10, 120),
+    languages: boundedStrings(profile.languages, 10, 120),
+    audiences: boundedStrings(profile.audiences, 12, 300),
+    topics: boundedStrings(profile.topics, 20, 300),
+    excludedTopics: boundedStrings(profile.excludedTopics, 20, 300),
+    goals: boundedStrings(profile.goals, 12, 500),
   };
 }
 
-const HUNTER_EVIDENCE_TEXT_CHARS = 2_400;
-const HUNTER_EVIDENCE_TOTAL_TEXT_CHARS = 48_000;
+const HUNTER_CONTEXT_MAX_CHARS = 32_000;
+const HUNTER_EVIDENCE_TEXT_CHARS = 1_200;
+
+function compactHunterContext(
+  input: HunterRunInput,
+  evidence: readonly DiscoveryEvidence[],
+  documents: ReadonlyMap<string, NormalizedSourceDocument>,
+) {
+  const base = {
+    brand: compactBrand(input.brand),
+    ...(input.intelligenceProfile ? { intelligenceProfile: compactIntelligenceProfile(input.intelligenceProfile) } : {}),
+    ...(input.intelligenceGraph ? {
+      topicGraph: compactTopicGraph(input.intelligenceGraph),
+      ...(input.intelligenceVersion !== undefined ? { intelligenceVersion: input.intelligenceVersion } : {}),
+    } : {}),
+  };
+  const compactedEvidence = compactHunterEvidence(evidence, documents, base);
+  const context = { ...base, evidence: compactedEvidence };
+  if (JSON.stringify(context).length > HUNTER_CONTEXT_MAX_CHARS) {
+    throw new Error("Hunter model context exceeded its deterministic serialization budget");
+  }
+  return context;
+}
 
 function compactHunterEvidence(
   evidence: readonly DiscoveryEvidence[],
   documents: ReadonlyMap<string, NormalizedSourceDocument>,
+  baseContext: Record<string, JsonValue>,
 ) {
-  let remainingTextChars = HUNTER_EVIDENCE_TOTAL_TEXT_CHARS;
-  return evidence.map((item) => {
+  const result: Array<Record<string, JsonValue>> = [];
+  for (const item of evidence) {
     const document = documents.get(item.sourceUrl);
     const sourceText = item.summary ?? document?.transcript ?? document?.body ?? document?.description;
-    const textBudget = Math.min(HUNTER_EVIDENCE_TEXT_CHARS, remainingTextChars);
-    const summary = sourceText?.trim().slice(0, textBudget);
-    remainingTextChars -= summary?.length ?? 0;
-    return {
+    const summary = sourceText?.trim().slice(0, HUNTER_EVIDENCE_TEXT_CHARS);
+    const candidate: Record<string, JsonValue> = {
       title: item.title.slice(0, 500),
       ...(summary ? { summary } : {}),
       sourceUrl: item.sourceUrl,
@@ -370,7 +386,23 @@ function compactHunterEvidence(
       retrievedAt: item.retrievedAt,
       ...(document?.tags?.length ? { tags: document.tags.slice(0, 20).map((tag) => tag.slice(0, 120)) } : {}),
     };
-  });
+    if (JSON.stringify({ ...baseContext, evidence: [...result, candidate] }).length <= HUNTER_CONTEXT_MAX_CHARS) {
+      result.push(candidate);
+      continue;
+    }
+    const metadataOnly = { ...candidate };
+    delete (metadataOnly as { summary?: unknown }).summary;
+    if (JSON.stringify({ ...baseContext, evidence: [...result, metadataOnly] }).length <= HUNTER_CONTEXT_MAX_CHARS) {
+      result.push(metadataOnly);
+      continue;
+    }
+    break;
+  }
+  return result;
+}
+
+function boundedStrings(values: readonly string[], count: number, chars: number): string[] {
+  return values.slice(0, count).map((value) => value.slice(0, chars));
 }
 
 const QUERY_INTENTS = ["latest developments", "new release", "trend", "debate", "benchmark", "audience pain", "regulation", "new research", "tutorial", "misconception", "contrarian viewpoint"] as const;
@@ -396,7 +428,7 @@ function refreshRotationOffset(seed: string | undefined): number {
   if (!seed) return 0;
   return [...seed].reduce((total, character) => total + character.charCodeAt(0), 0) % QUERY_INTENTS.length;
 }
-function compactTopicGraph(graph: BrandIntelligenceTopicGraph) { return { schemaVersion: graph.schemaVersion, sectorPack: graph.sectorPack, fingerprint: graph.fingerprint, nodes: graph.nodes.slice(0, 30).map((node) => ({ topic: node.topic, aliases: node.aliases, ...(node.parent ? { parent: node.parent } : {}), priority: node.priority, ...(node.confidence !== undefined ? { confidence: node.confidence } : {}), sourceIds: node.sourceIds, freshness: node.freshness, preferred: node.preferred, excluded: node.excluded, authority: node.authority, origin: node.origin })) }; }
+function compactTopicGraph(graph: BrandIntelligenceTopicGraph) { return { schemaVersion: graph.schemaVersion, sectorPack: graph.sectorPack.slice(0, 200), fingerprint: graph.fingerprint.slice(0, 200), nodes: graph.nodes.slice(0, 12).map((node) => ({ topic: node.topic.slice(0, 300), aliases: boundedStrings(node.aliases, 3, 120), ...(node.parent ? { parent: node.parent.slice(0, 300) } : {}), priority: node.priority, ...(node.confidence !== undefined ? { confidence: node.confidence } : {}), sourceIds: boundedStrings(node.sourceIds, 5, 120), freshness: node.freshness, preferred: node.preferred, excluded: node.excluded, authority: node.authority, origin: node.origin })) }; }
 function enrichDiscoveryEvidence(item: DiscoveryEvidence, document: NormalizedSourceDocument): DiscoveryEvidence {
   const summary = document.transcript ?? document.body ?? document.description ?? item.summary;
   return { ...item, ...(summary ? { summary: summary.slice(0, 8_000) } : {}), contentHash: document.contentHash, providerVersion: document.providerVersion };
