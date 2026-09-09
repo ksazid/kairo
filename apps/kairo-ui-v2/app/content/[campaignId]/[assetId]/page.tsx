@@ -17,6 +17,11 @@ export default async function ContentPreviewPage({ params, searchParams }: { par
   const items = projected.length ? projected : [...contentFallback(), ...campaignFallback().flatMap((campaign) => campaign.assets)];
   const item = items.find((candidate) => candidate.id === assetId && candidate.campaignId === campaignId);
   if (!item) notFound();
+  const review = data.reviews[item.id]?.review;
+  const approval = data.reviews[item.id]?.approval;
+  const currentVersionId = data.details.flatMap((detail) => detail.assets).find((entry) => entry.asset.id === item.id)?.versions.at(-1)?.id;
+  const eligibleAccounts = data.channelAccounts.filter((account) => account.channel === item.rawChannel && account.status === "connected");
+  const approvedAccount = approval?.destination ? eligibleAccounts.find((account) => account.channel === approval.destination!.channel && account.accountRef === approval.destination!.accountRef) : undefined;
   const contentHref = data.brandId ? `/content?brand=${encodeURIComponent(data.brandId)}` : "/content";
   const ChannelIcon = item.channel === "Facebook" ? Facebook : item.channel === "LinkedIn" ? Linkedin : Instagram;
   const FormatIcon = item.format === "carousel" ? Grid2X2 : item.format === "reel" ? PlaySquare : undefined;
@@ -25,9 +30,9 @@ export default async function ContentPreviewPage({ params, searchParams }: { par
     <Link className="content-preview-back" href={contentHref}><ArrowLeft aria-hidden="true"/>Back to Content</Link>
     <header className="content-preview-header">
       <div><h1>{item.title}</h1><p>{item.summary}</p><div className="content-preview-meta"><span><ChannelIcon aria-hidden="true"/>{item.channel}</span><span>{FormatIcon ? <FormatIcon aria-hidden="true"/> : null}{item.formatLabel}</span><span className={`content-status status-${item.status}`}><i/>{item.statusLabel}</span><small>Last updated {formatDate(item.updatedAt)} by Kairo</small></div></div>
-      {data.authenticated ? <a href="#preview-heading">Edit in preview</a> : <Link href="/">Create content</Link>}
+      {data.authenticated ? <a href="#caption-editor">Edit in preview</a> : <Link href="/">Create content</Link>}
     </header>
-    <ContentPreviewClient item={item} authenticated={data.authenticated}/>
+    <ContentPreviewClient item={item} authenticated={data.authenticated} actionContext={data.brandId ? { brandId: data.brandId, reviewStatus: review && review.versionId === currentVersionId ? review.status : null, approved: Boolean(approval && approval.versionId === currentVersionId), eligibleAccounts, ...(approvedAccount ? { approvedAccountId: approvedAccount.id } : {}) } : undefined}/>
   </KairoShell>;
 }
 

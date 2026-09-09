@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { contentFallback, contentPreviewHref, filterContent, toContentItems } from "./content";
+import { contentFallback, contentPreviewHref, contentWithCaption, filterContent, toContentItems } from "./content";
 import type { CampaignDetailView, ContentReviewStatusView, PublishCommandView } from "./api";
 
 describe("Kairo UI v2 Content behavior", () => {
+  it("updates captions without discarding structured generation data", () => {
+    expect(contentWithCaption('{"caption":"Old","scenes":[{"id":"one"}]}', "  New caption  ")).toBe('{"caption":"New caption","scenes":[{"id":"one"}]}');
+    expect(contentWithCaption("Old caption", "New caption")).toBe("New caption");
+    expect(() => contentWithCaption("Old caption", "   ")).toThrow(/empty/i);
+  });
   it("provides the four approved preview items without sharing mutable media arrays", () => {
     const first = contentFallback();
     const second = contentFallback();

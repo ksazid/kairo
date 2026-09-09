@@ -6,11 +6,12 @@ describe("content preview routing", () => {
     const page = readFileSync(new URL("./[campaignId]/[assetId]/page.tsx", import.meta.url), "utf8");
     const client = readFileSync(new URL("./[campaignId]/[assetId]/content-preview-client.tsx", import.meta.url), "utf8");
 
-    expect(page).toContain('href="#preview-heading"');
+    expect(page).toContain('href="#caption-editor"');
     expect(page).toContain("Back to Content");
     expect(page).not.toContain("NEXT_PUBLIC_KAIRO_WEB_URL");
     expect(page).not.toContain("legacyHref");
     expect(client).not.toContain("legacyHref");
     expect(client).not.toContain("window.location.assign");
+    expect(client).toContain('fetch("/api/content/action"');
   });
 });
