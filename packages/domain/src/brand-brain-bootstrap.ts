@@ -423,13 +423,13 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
   ];
   if (!isSocial && !isSubstack && !github) return [
     { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
-    { section: "identity", fieldKey: "identity.category", value: "Business or organization website", sourceIds },
+    { section: "identity", fieldKey: "identity.category", value: deriveWebsiteCategory(title, excerpt), sourceIds },
     { section: "identity", fieldKey: "identity.products-services", value: deriveWebsiteOfferings(title, excerpt), sourceIds },
     { section: "positioning", fieldKey: "positioning.value-proposition", value: deriveWebsitePositioning(title, excerpt), sourceIds },
     { section: "audience", fieldKey: "audience.primary", value: deriveWebsiteAudience(title, excerpt), sourceIds },
     { section: "voice", fieldKey: "voice.tone", value: "Clear, useful and audience-focused", sourceIds },
     { section: "content-strategy", fieldKey: "content.pillars", value: deriveWebsitePillars(title, excerpt), sourceIds },
-    { section: "content-strategy", fieldKey: "content.preferred-topics", value: "What the Brand offers, customer questions, useful advice and relevant updates", sourceIds },
+    { section: "content-strategy", fieldKey: "content.preferred-topics", value: deriveWebsitePreferredTopics(title, excerpt), sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Website, email, social communities and relevant professional channels", sourceIds },
     { section: "boundaries", fieldKey: "boundaries.excluded-topics", value: "No excluded topics identified in the public reference; confirm before Hunter activation", sourceIds },
   ];
@@ -451,6 +451,15 @@ function deriveWebsiteOfferings(title: string, excerpt: string): string {
   if (isDeveloperSoftwareText(text)) return "Programming language, developer tooling, documentation and software ecosystem resources";
   if (isFoodHospitalityText(text)) return "Food, dining, menu and restaurant services for customers and guests";
   return `${title} products or services described in the public reference: ${excerpt.slice(0, 300)}`;
+}
+
+function deriveWebsiteCategory(title: string, excerpt: string): string {
+  const text = `${title} ${excerpt}`;
+  if (isVehicleRentalText(text)) return "Vehicle rental, fleet and mobility services";
+  if (isAutomotiveText(text)) return "Automotive, vehicles and mobility";
+  if (isDeveloperSoftwareText(text)) return "Software, developer tools and technology";
+  if (isFoodHospitalityText(text)) return "Restaurant, food and hospitality";
+  return "Business or organization website";
 }
 
 function deriveWebsitePositioning(title: string, excerpt: string): string {
@@ -479,6 +488,15 @@ function deriveWebsitePillars(title: string, excerpt: string): string {
   if (isAutomotiveText(text)) return "Vehicles, ownership guidance, driving or riding insights and mobility updates";
   if (isFoodHospitalityText(text)) return "Menus, food, dining experiences, customer guidance and venue updates";
   return "Brand story, products or services, practical guidance and customer value";
+}
+
+function deriveWebsitePreferredTopics(title: string, excerpt: string): string {
+  const text = `${title} ${excerpt}`;
+  if (isDeveloperSoftwareText(text)) return "Programming capabilities, developer tutorials, documentation, releases and ecosystem news";
+  if (isVehicleRentalText(text)) return "Vehicle availability, rental booking, trip planning, mobility guidance and fleet updates";
+  if (isAutomotiveText(text)) return "Vehicle features, ownership, maintenance, driving or riding guidance and mobility news";
+  if (isFoodHospitalityText(text)) return "Menus, seasonal food, dining guidance, customer questions and restaurant updates";
+  return "What the Brand offers, customer questions, useful advice and relevant updates";
 }
 
 function isDeveloperSoftwareText(value: string): boolean {
