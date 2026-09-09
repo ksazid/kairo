@@ -99,9 +99,19 @@ describe("OpenAICompatibleModelGateway", () => {
       fetchImpl, sleep,
     });
 
-    await expect(gateway.generate(request)).rejects.toThrow(/returned 400/);
+    await expect(gateway.generate(request)).rejects.toMatchObject({ message: expect.stringMatching(/returned 400/), kind: "invalid-response" });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(sleep).not.toHaveBeenCalled();
+  });
+
+  it("classifies exhausted rate limits without exposing provider response bodies", async () => {
+    const fetchImpl = vi.fn(async () => new Response("private provider detail", { status: 429 }));
+    const gateway = new OpenAICompatibleModelGateway({
+      provider: "openai", baseUrl: "https://models.example.test/v1", apiKey: "secret", model: "test-model", pricing,
+      fetchImpl, sleep: async () => undefined, maxAttempts: 1,
+    });
+
+    await expect(gateway.generate(request)).rejects.toMatchObject({ message: "Model provider returned 429", kind: "rate-limited" });
   });
 
   it("records a defensible zero cost when configured rates are zero", async () => {
