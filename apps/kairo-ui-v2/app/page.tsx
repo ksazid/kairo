@@ -5,6 +5,7 @@ import { ConceptMockupPreview } from "../components/concept-mockup";
 import { getHomeData } from "../lib/api";
 import type { ConceptMockupView } from "../lib/concept-mockup";
 import { creationFormatLabel, normalizeCreationFormat, selectHomeOpportunities } from "../lib/home";
+import { requirePageAuthentication } from "../lib/page-auth";
 import { CreateButton, HeroControls } from "./home-controls";
 import { KairoShell } from "./kairo-shell";
 
@@ -20,7 +21,7 @@ type OpportunityWithConcept = (typeof fallback)[number] & { conceptMockup?: Conc
 
 export default async function Home({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const data = await getHomeData(params.brand);
+  const data = requirePageAuthentication(await getHomeData(params.brand), "/");
   const opportunities = selectHomeOpportunities(data.authenticated, data.opportunities, fallback);
   const selectedFormat = normalizeCreationFormat(params.format);
   if (data.authenticated && opportunities.length === 0) {

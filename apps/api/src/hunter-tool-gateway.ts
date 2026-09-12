@@ -1,4 +1,4 @@
-import { SourceRoutingToolGateway } from "@kairo/worker/discovery-provider";
+import { AgentReachDiscoveryProvider, DiscoveryProviderError, SourceRoutingToolGateway } from "@kairo/worker/discovery-provider";
 import {
   BlueskyDiscoveryProvider,
   GitHubDiscoveryProvider,
@@ -10,13 +10,13 @@ import {
 import { createSourceIntelligenceRouter } from "./source-intelligence";
 import { RetryingDiscoverySourceProvider } from "@kairo/worker/retrying-discovery-provider";
 import { DEFAULT_SOURCE_REGISTRY } from "@kairo/domain/source-registry";
+import { agentReachSearchBackendFromEnv } from "./agent-reach-exa-backend";
 
 /**
  * Runtime discovery wiring for Home recommendations.
  *
- * The API deployment does not currently provide an Agent Reach backend. For that compatibility
- * slot we use Kairo-owned zero-credential public providers while preserving each evidence item's
- * real provider provenance. Named source plans still route directly to their matching provider.
+ * Agent Reach is available only when its approved server-side Exa binding is configured. Public
+ * providers are independently routed; they are never presented as Agent Reach evidence.
  */
 export function createHunterToolGateway(env: NodeJS.ProcessEnv = process.env) {
   const hackerNews = new RetryingDiscoverySourceProvider(new HackerNewsDiscoveryProvider());
@@ -26,26 +26,13 @@ export function createHunterToolGateway(env: NodeJS.ProcessEnv = process.env) {
   const rss = new RetryingDiscoverySourceProvider(new RssAtomDiscoveryProvider({ feeds }));
   const youtubeKey = env.YOUTUBE_API_KEY?.trim();
   const youtube = youtubeKey ? new RetryingDiscoverySourceProvider(new YouTubeDiscoveryProvider({ apiKey: youtubeKey })) : undefined;
+  const agentReachBackend = agentReachSearchBackendFromEnv(env);
+  const agentReach = agentReachBackend
+    ? new RetryingDiscoverySourceProvider(new AgentReachDiscoveryProvider(agentReachBackend))
+    : new UnavailableDiscoverySourceProvider("Agent Reach is not configured");
 
-  const publicFallback = {
-    async discover(request: Parameters<HackerNewsDiscoveryProvider["discover"]>[0]) {
-      const settled = await Promise.allSettled([
-        hackerNews.discover(request),
-        bluesky.discover(request),
-        github.discover(request),
-        rss.discover(request),
-      ]);
-      const evidence = settled.flatMap((result) => result.status === "fulfilled" ? result.value : []);
-      const unique = [...new Map(evidence.map((item) => [item.sourceUrl, item])).values()]
-        .slice(0, request.maxResults);
-      if (unique.length) return unique;
-      const failure = settled.find((result) => result.status === "rejected");
-      if (failure?.status === "rejected") throw failure.reason;
-      return [];
-    },
-  };
-
-  return new SourceRoutingToolGateway(publicFallback, {
+  return new SourceRoutingToolGateway(agentReach, {
+    "agent-reach": agentReach,
     "hacker-news": hackerNews,
     bluesky,
     github,
@@ -57,12 +44,21 @@ export function createHunterToolGateway(env: NodeJS.ProcessEnv = process.env) {
 export function configuredHunterSourceRegistry(env: NodeJS.ProcessEnv = process.env) {
   const hasYouTube = Boolean(env.YOUTUBE_API_KEY?.trim());
   const hasRssFeeds = rssFeedsFromEnv(env.KAIRO_HUNTER_RSS_FEEDS_JSON).length > 0;
+  const hasAgentReach = Boolean(env.EXA_API_KEY?.trim());
   return DEFAULT_SOURCE_REGISTRY.map((source) => ({
     ...source,
     enabled: source.enabled
+      && (source.key !== "agent-reach" || hasAgentReach)
       && (source.key !== "youtube" || hasYouTube)
       && (source.key !== "rss" || hasRssFeeds),
   }));
+}
+
+class UnavailableDiscoverySourceProvider {
+  constructor(private readonly message: string) {}
+  async discover(): Promise<never> {
+    throw new DiscoveryProviderError(this.message);
+  }
 }
 
 function rssFeedsFromEnv(value: string | undefined): RssFeedDefinition[] {

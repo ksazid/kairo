@@ -4,6 +4,7 @@ import { ArrowLeft, Facebook, Grid2X2, Instagram, Linkedin, PlaySquare } from "l
 import { getContentData } from "../../../../lib/api";
 import { contentFallback, toContentItems } from "../../../../lib/content";
 import { campaignFallback } from "../../../../lib/campaigns";
+import { requirePageAuthentication } from "../../../../lib/page-auth";
 import { KairoShell } from "../../../kairo-shell";
 import { ContentPreviewClient } from "./content-preview-client";
 
@@ -12,7 +13,7 @@ type SearchParams = Promise<{ brand?: string }>;
 
 export default async function ContentPreviewPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ campaignId, assetId }, query] = await Promise.all([params, searchParams]);
-  const data = await getContentData(query.brand);
+  const data = requirePageAuthentication(await getContentData(query.brand), `/content/${encodeURIComponent(campaignId)}/${encodeURIComponent(assetId)}`);
   const projected = toContentItems(data.details, data.reviews, data.commands);
   const items = projected.length ? projected : [...contentFallback(), ...campaignFallback().flatMap((campaign) => campaign.assets)];
   const item = items.find((candidate) => candidate.id === assetId && candidate.campaignId === campaignId);

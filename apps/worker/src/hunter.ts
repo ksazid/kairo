@@ -134,7 +134,7 @@ export class HunterOrchestrator {
         input: {
           query: plan.query,
           maxResults: maxResultsPerQuery,
-          ...(plan.explicit ? {} : { source: plan.source }),
+          ...(plan.explicit && plan.source === "agent-reach" ? {} : { source: plan.source }),
         },
         timeoutMs: 20_000,
       });
@@ -257,7 +257,15 @@ export function isHunterJudgmentOutput(value: unknown): value is HunterJudgmentO
 
 function executablePlans(input: HunterRunInput, sourceRegistry: readonly DiscoverySourceDefinition[] = DEFAULT_SOURCE_REGISTRY): ExecutableDiscoveryPlan[] {
   const explicit = input.query?.trim();
-  if (explicit) return [{ source: "agent-reach", query: explicit, explicit: true }];
+  if (explicit) {
+    const agentReach = sourceRegistry.find((source) => source.key === "agent-reach" && source.enabled && source.capabilities.includes("discovery"));
+    if (agentReach) return [{ source: "agent-reach", query: explicit, explicit: true }];
+    const sources = sourceRegistry
+      .filter((source) => source.enabled && source.capabilities.includes("discovery"))
+      .map((source) => source.key)
+      .slice(0, 6);
+    return sources.map((source) => ({ source, query: explicit, explicit: true }));
+  }
   if (input.query !== undefined && !explicit) throw new Error("Hunter query is required");
   if (!input.intelligenceProfile) throw new Error("Hunter requires an explicit query or Brand Intelligence Profile");
 

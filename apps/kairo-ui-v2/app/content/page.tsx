@@ -1,5 +1,6 @@
 import { getContentData } from "../../lib/api";
 import { contentFallback, toContentItems } from "../../lib/content";
+import { requirePageAuthentication } from "../../lib/page-auth";
 import { KairoShell } from "../kairo-shell";
 import { ContentClient } from "./content-client";
 
@@ -7,7 +8,7 @@ type SearchParams = Promise<{ brand?: string; authError?: string }>;
 
 export default async function ContentPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const data = await getContentData(params.brand);
+  const data = requirePageAuthentication(await getContentData(params.brand), "/content");
   const projected = toContentItems(data.details, data.reviews, data.commands);
   const items = projected.length ? projected : contentFallback();
 

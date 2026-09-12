@@ -37,3 +37,4 @@ The follow-up preserves the approved readiness and evidence gates. A generic Bra
 - Added bounded failure categories for Hunter discovery, enrichment and model judgment to server logs. Raw errors, source bodies, URLs and private Brand context are excluded. Diagnostic failures cannot fail Hunter.
 - Integrated the latest main-branch planning/design authority documents without changing UI layout or terminology.
 - Local verification: 198 test files / 974 tests passed; 18 integration-test files / 40 tests skipped without a test database. Repository-wide typechecks, production builds, and preflight passed. These checks do not certify production providers or the authenticated flow through Concept Mockup.
+30. Add the approved bounded Agent Reach public-search binding, expose it only when the server-side credential is configured, and preserve actual provider provenance when unavailable.

@@ -67,20 +67,20 @@
       "Adds the approved v2 Brand Brain experience with Overview, Brand DNA, Discovery Intelligence, Sources and Learning tabs.",
       "Uses Discovery Intelligence in creator-facing language while keeping Hunter as the internal background engine.",
       "Keeps Brand DNA review local through inline Edit, Save and Cancel interactions with visible evidence and confirmation state.",
-      "Does not change Hunter algorithms, API contracts, providers, publishing authority or autonomous scheduling.",
       "VS-107@1.8 recovers the clean authenticated Brand E2E flow by removing demo fallbacks, executing manual Hunter from Brand Brain, tightening extraction/readiness quality, and aligning source planning with configured runtime capabilities.",
-      "The approved repair pass upgrades audited runtime/test dependencies and emits non-secret OIDC failure categories so preview configuration failures are actionable without exposing credentials."
+      "The approved repair pass upgrades audited runtime/test dependencies and emits non-secret OIDC failure categories so preview configuration failures are actionable without exposing credentials.",
+      "VS-107@1.9 adds the approved bounded Agent Reach public-search binding, disables it when its server-side credential is absent, and prevents public-provider fallback from being mislabelled as Agent Reach."
     ]
   },
   "approvals": [
     {
       "type": "scope",
       "status": "approved",
-      "version": "VS-107@1.8",
+      "version": "VS-107@1.9",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-09-08T00:00:00Z",
-      "rationale": "Product Owner approved the bounded clean-brand E2E recovery slice after production certification exposed truthful-data, refresh execution, extraction quality and provider-configuration gaps."
+      "at": "2026-09-12T00:00:00Z",
+      "rationale": "Product Owner approved the bounded clean-brand E2E recovery slice after production certification exposed truthful-data, refresh execution, extraction quality and provider-configuration gaps. Extended by Product Owner on 2026-09-12 for the bounded Agent Reach runtime binding, truthful capability reporting and Hunter regression coverage."
     },
     {
       "type": "policy",
@@ -94,16 +94,16 @@
     {
       "type": "implementation",
       "status": "approved",
-      "version": "VS-107@1.8",
+      "version": "VS-107@1.9",
       "commitSha": null,
       "by": "Sazid Khan",
-      "at": "2026-09-08T00:00:00Z",
-      "rationale": "Product Owner approved the bounded clean-brand E2E recovery slice after production certification exposed truthful-data, refresh execution, extraction quality and provider-configuration gaps."
+      "at": "2026-09-12T00:00:00Z",
+      "rationale": "Product Owner approved the bounded clean-brand E2E recovery slice after production certification exposed truthful-data, refresh execution, extraction quality and provider-configuration gaps. Extended by Product Owner on 2026-09-12 for the bounded Agent Reach runtime binding, truthful capability reporting and Hunter regression coverage."
     },
     {
       "type": "certification",
       "status": "pending",
-      "version": "VS-107@1.8",
+      "version": "VS-107@1.9",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -112,7 +112,7 @@
     {
       "type": "release",
       "status": "pending",
-      "version": "VS-107@1.8",
+      "version": "VS-107@1.9",
       "commitSha": null,
       "by": null,
       "at": null,
@@ -121,14 +121,16 @@
     {
       "type": "production-enable",
       "status": "pending",
-      "version": "VS-107@1.8",
+      "version": "VS-107@1.9",
       "commitSha": null,
       "by": null,
       "at": null,
       "rationale": "Not authorized by implementation approval."
     }
   ],
-  "decisionIds": ["DEC-013"],
+  "decisionIds": [
+    "DEC-013"
+  ],
   "progress": {
     "discovery": 100,
     "decisions": 100,
@@ -145,7 +147,8 @@
       "VS-107@1.7 certification does not cover the @1.8 recovery changes.",
       "VS-107@1.8 repaired local candidate: 198 test files / 970 tests passed; 18 files / 40 environment-dependent integration tests remained skipped.",
       "Production dependency audit reports zero vulnerabilities; repository-wide TypeScript, builds, governance validation and preflight passed.",
-      "Deployed authenticated browser certification remains pending and must run against the exact immutable candidate after preview deployment."
+      "Deployed authenticated browser certification remains pending and must run against the exact immutable candidate after preview deployment.",
+      "VS-107@1.9 changes Hunter provider wiring and requires a new exact-SHA candidate, configured Agent Reach credential and authenticated E2E evidence."
     ]
   },
   "release": {

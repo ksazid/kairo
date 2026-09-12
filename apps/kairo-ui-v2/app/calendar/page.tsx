@@ -1,6 +1,7 @@
 import { getContentData } from "../../lib/api";
 import { calendarFallback, toCalendarItems } from "../../lib/calendar";
 import { contentFallback, toContentItems } from "../../lib/content";
+import { requirePageAuthentication } from "../../lib/page-auth";
 import { KairoShell } from "../kairo-shell";
 import { CalendarClient } from "./calendar-client";
 
@@ -8,7 +9,7 @@ type SearchParams = Promise<{ brand?: string; authError?: string }>;
 
 export default async function CalendarPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const data = await getContentData(params.brand);
+  const data = requirePageAuthentication(await getContentData(params.brand), "/calendar");
   const projected = toContentItems(data.details, data.reviews, data.commands);
   const items = projected.length ? toCalendarItems(projected, data.commands) : calendarFallback();
 
