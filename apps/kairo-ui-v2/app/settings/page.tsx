@@ -1,5 +1,6 @@
 import { getSettingsData } from "../../lib/api";
 import { isSettingsTabId } from "../../lib/settings";
+import { requirePageAuthentication } from "../../lib/page-auth";
 import { KairoShell } from "../kairo-shell";
 import { SettingsClient } from "./settings-client";
 import styles from "./settings-page-header.module.css";
@@ -8,7 +9,7 @@ type SearchParams = Promise<{ brand?: string; authError?: string; tab?: string }
 
 export default async function SettingsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const data = await getSettingsData(params.brand);
+  const data = requirePageAuthentication(await getSettingsData(params.brand), "/settings");
 
   return <KairoShell
     active="Settings"

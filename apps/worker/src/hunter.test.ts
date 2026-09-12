@@ -9,6 +9,7 @@ import type {
   ToolResult,
 } from "@kairo/agent-contracts";
 import { HunterOrchestrator, type HunterJudgmentOutput, type HunterFailureDiagnostic } from "./hunter";
+import type { DiscoverySourceDefinition } from "@kairo/domain/source-policy";
 
 const evidence = [{
   title: "Persistent agents",
@@ -128,6 +129,19 @@ describe("Hunter orchestration", () => {
     expect(sink.records[0]).toMatchObject({ details: { topic: "Persistent agents change SaaS architecture", proposedAngle: "Explain multi-tenant architecture tradeoffs", intelligenceVersion: 4 } });
     expect(runtime.lastRequest?.scope).toEqual({ visibility: "brand-private", workspaceId: "workspace-1", brandId: "brand-1" });
     expect(runtime.lastRequest?.budget.maxToolCalls).toBe(0);
+  });
+
+  it("routes explicit queries to configured public sources when Agent Reach is unavailable", async () => {
+    const registry: DiscoverySourceDefinition[] = [
+      { key: "agent-reach", capabilities: ["discovery"], enabled: false, requiresCredential: false, maxQueriesPerRun: 2 },
+      { key: "github", capabilities: ["discovery"], enabled: true, requiresCredential: false, maxQueriesPerRun: 2 },
+    ];
+    const tools = new FakeTools([]);
+    const result = await new HunterOrchestrator(tools, new FakeRuntime({ candidates: [] }), new FakeSink() as never, registry)
+      .runForAuthorizedBrand({ accountId: "account-1", brand, query: "AI agents" });
+
+    expect(result).toMatchObject({ evidenceCount: 0, candidateCount: 0, opportunityCount: 0 });
+    expect(tools.requests.filter((request) => request.capability === "public-content-search").map((request) => request.input.source)).toEqual(["github"]);
   });
 
   it("bounds enriched evidence summaries before persistence", async () => {

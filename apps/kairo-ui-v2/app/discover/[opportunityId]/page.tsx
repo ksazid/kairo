@@ -18,6 +18,7 @@ import {
 import { ConceptMockupPreview } from "../../../components/concept-mockup";
 import { getHomeData } from "../../../lib/api";
 import { discoverFallback, toDiscoverCards } from "../../../lib/discover";
+import { requirePageAuthentication } from "../../../lib/page-auth";
 import { KairoShell } from "../../kairo-shell";
 import { DiscoverPreviewActions } from "./discover-preview-actions";
 
@@ -26,7 +27,7 @@ type SearchParams = Promise<{ brand?: string }>;
 
 export default async function DiscoverPreviewPage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   const [{ opportunityId }, query] = await Promise.all([params, searchParams]);
-  const data = await getHomeData(query.brand);
+  const data = requirePageAuthentication(await getHomeData(query.brand), `/discover/${encodeURIComponent(opportunityId)}`);
   const cards = toDiscoverCards(data.authenticated ? data.opportunities : discoverFallback);
   const card = cards.find((item) => item.id === opportunityId);
   if (!card) notFound();
