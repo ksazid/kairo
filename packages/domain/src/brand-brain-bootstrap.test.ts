@@ -160,6 +160,20 @@ describe("BrandBrainBootstrapService", () => {
     expect(evaluateBrandDnaReadiness(repository.fields).gaps).toEqual(["boundaries"]);
   });
 
+  it("keeps generic website descriptions concise instead of persisting whole-page copy", async () => {
+    const repository = new FakeRepository();
+    repository.brand = { id: "brand-1", workspaceId: "workspace-1", name: "Notion", publicSourceUrl: "https://www.notion.so/" };
+    const repeated = "The AI workspace that works for you. ".repeat(25);
+    const service = new BrandBrainBootstrapService(repository, undefined, { read: async (url) => ({
+      url, title: "Notion", excerpt: `${repeated}Build custom agents, search across connected apps, and automate busywork.`, retrievedAt: NOW,
+    }) });
+
+    await service.build("account-1", "brand-1", {});
+    const description = repository.fields.find((field) => field.fieldKey === "identity.description")?.value ?? "";
+    expect(description).toBe("Notion. The AI workspace that works for you.");
+    expect(description.length).toBeLessThan(120);
+  });
+
   it.each([
     ["vehicle rental", "Malta Cars", "Car rental with online booking and a flexible vehicle fleet.", /vehicle rental/i, /rental booking/i],
     ["automotive owner content", "The Duke 390", "Motorcycle rides, ownership notes and maintenance advice for riders.", /automotive|vehicle|mobility/i, /ownership guidance/i],

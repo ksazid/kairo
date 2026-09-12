@@ -422,7 +422,7 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     { section: "content-strategy", fieldKey: "content.channels", value: "Substack, email newsletters, web articles and social communities", sourceIds },
   ];
   if (!isSocial && !isSubstack && !github) return [
-    { section: "identity", fieldKey: "identity.description", value: excerpt ? `${title}. ${excerpt}` : title, sourceIds },
+    { section: "identity", fieldKey: "identity.description", value: conciseWebsiteDescription(title, excerpt), sourceIds },
     { section: "identity", fieldKey: "identity.category", value: deriveWebsiteCategory(title, excerpt), sourceIds },
     { section: "identity", fieldKey: "identity.products-services", value: deriveWebsiteOfferings(title, excerpt), sourceIds },
     { section: "positioning", fieldKey: "positioning.value-proposition", value: deriveWebsitePositioning(title, excerpt), sourceIds },
@@ -442,6 +442,23 @@ function fallbackProposals(references: Array<PublicBrandReference & { sourceId: 
     { section: "content-strategy", fieldKey: "content.preferred-topics", value: "Repository capabilities, APIs, usage examples, releases and developer workflows", sourceIds },
     { section: "content-strategy", fieldKey: "content.channels", value: "Developer communities, technical blogs, LinkedIn and YouTube", sourceIds },
   ];
+}
+
+function conciseWebsiteDescription(title: string, excerpt: string): string {
+  const normalized = excerpt.replace(/\s+/g, " ").trim();
+  if (!normalized) return title;
+  const firstUsefulSentence = normalized
+    .split(/(?<=[.!?])\s+/)
+    .find((sentence) => sentence.length >= 24 && sentence.length <= 280) ?? normalized.slice(0, 260);
+  const withoutRepeatedTitle = firstUsefulSentence
+    .replace(new RegExp(`^${escapeRegExp(title)}[.!|:\\-–— ]*`, "i"), "")
+    .trim();
+  const description = withoutRepeatedTitle || firstUsefulSentence;
+  return `${title}. ${description}`.slice(0, 320).replace(/\s+([,.;:!?])/g, "$1").trim();
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function deriveWebsiteOfferings(title: string, excerpt: string): string {

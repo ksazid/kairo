@@ -4,7 +4,7 @@ import { getBrandBrainActivation, type BrandBrainActivationView } from "../../..
 import { KairoLogo } from "../../../../kairo-icons";
 import styles from "../../../../onboarding/onboarding.module.css";
 import confirmStyles from "./confirm.module.css";
-import { confirmOnboardingBrandAction, enrichOnboardingBrandAction } from "../actions";
+import { enrichOnboardingBrandAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +40,7 @@ export default async function ConfirmBrandPage({ params, searchParams }: { param
 
   const readiness = activation?.readiness;
   const enrichment = nextEnrichment(activation);
-  const action = confirmOnboardingBrandAction.bind(null, brand.id);
+  const handoffHref = kairoV2Handoff(brand.id);
   const limited = query.notice === "learning-limited" || summaries.length === 0;
   const statusText = activation?.hunterReady
     ? "Ready for Hunter"
@@ -78,12 +78,15 @@ export default async function ConfirmBrandPage({ params, searchParams }: { param
         {readiness ? <section className={confirmStyles.intelligenceCard} aria-label="Brand Intelligence readiness"><div className={confirmStyles.scoreRow}><div><strong>Brand Intelligence</strong><span>{statusText}</span></div><b>{readiness.brandIntelligenceScore}%</b></div><div className={confirmStyles.meter} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={readiness.brandIntelligenceScore}><span className={confirmStyles.meterFill} style={{ width: `${readiness.brandIntelligenceScore}%` }} /></div><div className={confirmStyles.scoreMeta}><span>Evidence {readiness.evidenceCoverage}%</span><span>Confidence {readiness.confidence}%</span></div></section> : null}
         {activation?.hunterReady ? <p className={confirmStyles.readiness} role="status">✓ Brand Brain ready for Discovery</p> : enrichment ? <div className={confirmStyles.readinessNotice} role="status"><strong>{activation?.status === "needs-review" ? "Confirm one important detail before Discovery." : "Kairo needs one more useful signal before Discovery."}</strong><p>{enrichment.prompt}</p><form action={enrichOnboardingBrandAction.bind(null, brand.id)} className={confirmStyles.enrichmentForm}>{enrichment.kind === "source" ? <><input type="hidden" name="kind" value="source" /><input name="publicReferenceUrl" type="url" required placeholder="https://yourbrand.com" aria-label="Public Brand link" /><button className="secondary-button" type="submit">Add source</button></> : enrichment.kind === "none" ? <><input type="hidden" name="kind" value="none" /><button className="secondary-button" type="submit">Confirm none</button></> : <><input type="hidden" name="kind" value="field" /><input type="hidden" name="fieldKey" value={enrichment.fieldKey} /><input name="value" required placeholder="Type your answer" aria-label={enrichment.prompt} /><button className="secondary-button" type="submit">Save answer</button></>}</form></div> : null}
 
-        <form action={action} className={confirmStyles.confirmForm}>
-          <button className={`${styles.primaryAction} primary-button`} type="submit" disabled={!activation?.hunterReady}>
+        <div className={confirmStyles.confirmForm}>
+          {activation?.hunterReady ? <a className={`${styles.primaryAction} primary-button`} href={handoffHref}>
             <span>{activation?.hunterReady ? "Looks right · Continue" : "Continue"}</span>
             <span className={styles.buttonArrow} aria-hidden="true">→</span>
-          </button>
-        </form>
+          </a> : <button className={`${styles.primaryAction} primary-button`} type="button" disabled>
+            <span>Continue</span>
+            <span className={styles.buttonArrow} aria-hidden="true">→</span>
+          </button>}
+        </div>
 
         <p className={confirmStyles.footnote}>Onboarding stops at Ready for Hunter. Discovery run history and Learning appear only after those lifecycle steps actually run.</p>
       </section>
@@ -114,4 +117,13 @@ function first(values: Map<string, string>, ...keys: string[]): string | undefin
     if (value) return value;
   }
   return undefined;
+}
+
+function kairoV2Handoff(brandId: string): string {
+  const configured = process.env.KAIRO_UI_V2_URL?.trim() || "https://kairo-ui-v2.vercel.app";
+  const base = new URL(configured);
+  const returnTo = `/brand?brand=${encodeURIComponent(brandId)}&onboarding=complete`;
+  const login = new URL("/auth/login", base);
+  login.searchParams.set("returnTo", returnTo);
+  return login.toString();
 }
