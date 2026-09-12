@@ -1341,6 +1341,7 @@ main { min-width: 0; margin-left: 218px; }
 
 @media (max-width: 620px) {
   .workspace { padding-bottom: 96px; }
+  .discover-workspace { padding-bottom: 110px; }
 
   button, input, select { min-height: 44px; }
   .bell, .mobile-classic { min-width: 44px; min-height: 44px; }
@@ -1388,6 +1389,7 @@ main { min-width: 0; margin-left: 218px; }
   .listing-view-toggle button { flex: 1; justify-content: center; }
   .discover-filter-row > label { flex-basis: calc(50% - 5px); }
   .discover-result-line { align-items: flex-start; flex-direction: column; gap: 2px; padding: 10px 1px; }
+  .discover-empty { padding-bottom: 120px; }
   .discover-table-scroll { overflow-x: visible; padding-bottom: 0; }
   .discover-table { min-width: 0; }
   .discover-table-head { display: none; }
