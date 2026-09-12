@@ -1341,12 +1341,12 @@ main { min-width: 0; margin-left: 218px; }
 
 @media (max-width: 620px) {
   .workspace { padding-bottom: 96px; }
-  .discover-workspace { padding-bottom: 110px; }
+  .discover-workspace, .discover-preview-workspace { padding-bottom: calc(160px + env(safe-area-inset-bottom)); }
 
   button, input, select { min-height: 44px; }
   .bell, .mobile-classic { min-width: 44px; min-height: 44px; }
   .discover-pills button, .discover-filter-row > label { min-height: 44px; }
-  .sidebar { position: fixed; inset: auto 0 0 0; width: auto; height: 66px; border: 0; border-top: 1px solid var(--line); padding: 7px 8px; }
+  .sidebar { position: fixed; inset: auto 0 0 0; width: auto; height: 66px; border: 0; border-top: 1px solid var(--line); padding: 7px 8px; background: var(--bg); box-shadow: 0 -10px 28px rgba(0, 0, 0, .28); }
   .brand-logo, .pro-tip, .classic-link { display: none; }
   .sidebar nav { width: 100%; height: 100%; margin: 0; grid-template-columns: repeat(7, 1fr); gap: 2px; }
   .sidebar nav a { width: auto; height: 50px; border-radius: 9px; }
