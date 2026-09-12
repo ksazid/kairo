@@ -59,7 +59,9 @@ export function discoveryRefreshMessage(run: HunterRefreshRun) {
     return `Hunter found ${run.opportunityCount} new ${run.opportunityCount === 1 ? "opportunity" : "opportunities"}.`;
   }
   if (run.degradedSources?.length) {
-    return `Hunter completed with no strong new opportunities. ${run.degradedSources.length} ${run.degradedSources.length === 1 ? "source was" : "sources were"} unavailable.`;
+    const sources = run.degradedSources.map((source) => source.replaceAll("-", " ")).join(", ");
+    return `Hunter completed with no strong new opportunities. ${run.degradedSources.length} ${run.degradedSources.length === 1 ? "source was" : "sources were"} unavailable: ${sources}.`;
   }
   return "Hunter completed successfully with no strong new opportunities.";
 }
+

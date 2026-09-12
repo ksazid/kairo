@@ -1340,6 +1340,8 @@ main { min-width: 0; margin-left: 218px; }
 }
 
 @media (max-width: 620px) {
+  .workspace { padding-bottom: 96px; }
+
   button, input, select { min-height: 44px; }
   .bell, .mobile-classic { min-width: 44px; min-height: 44px; }
   .discover-pills button, .discover-filter-row > label { min-height: 44px; }
@@ -1386,6 +1388,23 @@ main { min-width: 0; margin-left: 218px; }
   .listing-view-toggle button { flex: 1; justify-content: center; }
   .discover-filter-row > label { flex-basis: calc(50% - 5px); }
   .discover-result-line { align-items: flex-start; flex-direction: column; gap: 2px; padding: 10px 1px; }
+  .discover-table-scroll { overflow-x: visible; padding-bottom: 0; }
+  .discover-table { min-width: 0; }
+  .discover-table-head { display: none; }
+  .discover-table-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 0; padding: 0; gap: 0; overflow: hidden; }
+  .discover-opportunity-cell { grid-column: 1 / -1; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; padding: 14px; align-items: start; }
+  .discover-opportunity-cell > a { width: 88px; height: 78px; }
+  .discover-opportunity-cell > span { gap: 6px; }
+  .discover-opportunity-cell strong { font-size: 15px; }
+  .discover-opportunity-cell small { font-size: 11px; }
+  .discover-reason-cell, .discover-trend-cell { grid-column: 1 / -1; border-top: 1px solid var(--line-soft); padding: 12px 14px; gap: 5px; }
+  .discover-reason-cell p, .discover-trend-cell p { font-size: 12px; }
+  .discover-format-cell { border-top: 1px solid var(--line-soft); padding: 11px 14px; gap: 4px; }
+  .discover-source-cell { border-top: 1px solid var(--line-soft); padding: 11px 14px; text-align: right; }
+  .discover-confidence-cell { border-top: 1px solid var(--line-soft); padding: 11px 14px; display: flex; align-items: center; gap: 8px; }
+  .discover-confidence-cell .confidence-ring { width: 42px; height: 42px; }
+  .discover-table-row .discover-card-actions { grid-column: 1 / -1; border-top: 1px solid var(--line-soft); padding: 10px 14px 12px; }
+  .discover-table-row .discover-card-actions > a { min-width: 0; }
   .discover-card-grid { grid-template-columns: 1fr; }
   .discover-card-media { height: 210px; }
   .discover-card h2, .discover-card-body > p { min-height: 0; }
@@ -1501,3 +1520,4 @@ main { min-width: 0; margin-left: 218px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
