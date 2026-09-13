@@ -1408,7 +1408,15 @@ main { min-width: 0; margin-left: 218px; }
   .discover-table-row .discover-card-actions { grid-column: 1 / -1; border-top: 1px solid var(--line-soft); padding: 10px 14px 12px; }
   .discover-table-row .discover-card-actions > a { min-width: 0; }
   .discover-card-grid { grid-template-columns: 1fr; }
-  .discover-card-media { height: 210px; }
+  .discover-card-media { height: 210px; overflow: hidden; }
+  .discover-card-media.discover-card-concept { height: 220px; }
+  .discover-card-media.discover-card-concept > .concept-mockup { height: 100%; overflow: hidden; padding: .7rem .7rem 2.8rem; gap: .4rem; }
+  .discover-card-media.discover-card-concept > .concept-mockup .concept-artboard { min-height: 6rem; }
+  .discover-badges { max-width: calc(100% - 20px); flex-wrap: wrap; }
+  .discover-channel { max-width: calc(100% - 20px); white-space: nowrap; }
+  .discover-card-body { position: relative; z-index: 1; background: var(--panel); }
+  .discover-card h2 { font-size: 17px; line-height: 1.2; }
+  .discover-card-body > p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .discover-card h2, .discover-card-body > p { min-height: 0; }
   .discover-preview-header h1 { font-size: 32px; }
   .discover-preview-panel { padding: 12px; }
