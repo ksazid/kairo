@@ -48,7 +48,11 @@ export class OidcJwtVerifier implements IdentityVerifier {
         ...(typeof payload.email === "string" ? { email: payload.email } : {}),
         ...(typeof payload.name === "string" ? { displayName: payload.name } : {}),
       };
-    } catch {
+    } catch (error) {
+      if (process.env.KAIRO_AUTH_DIAGNOSTICS === "true") {
+        const reason = error instanceof Error ? error.name : "unknown";
+        console.warn(JSON.stringify({ event: "KAIRO_OIDC_TOKEN_REJECTED", reason, issuer: this.options.issuer, audience: this.options.audience }));
+      }
       return null;
     }
   }
