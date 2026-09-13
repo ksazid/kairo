@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { loadAccessibleBrandDirectory, resolveAccessibleBrand, workspaceForBrand } from "./brand-access";
 import { buildContinueItems, type CampaignSummary, type ContinueItem, type CreationFormat, type IdeaSummary } from "./home";
 import { settingsFallback, type PresenterResponse, type SettingsChannel, type SettingsData } from "./settings-data";
+import type { ConceptMockupView } from "./concept-mockup";
 
 export type HomeOpportunity = {
   id: string;
@@ -24,6 +25,8 @@ export type HomeOpportunity = {
     source?: string;
     evidenceSource?: string;
   };
+  conceptMockup?: ConceptMockupView;
+  conceptMockupGeneratedAt?: string;
 };
 
 export type HomeData = {
@@ -167,7 +170,14 @@ export async function getHomeData(requestedBrandId?: string): Promise<HomeData> 
     api(token, `${base}/ideas`),
     api(token, `${base}/learnings`),
   ]);
-  const opportunities = opportunitiesResponse.ok ? await opportunitiesResponse.json() as HomeOpportunity[] : [];
+  const rawOpportunities = opportunitiesResponse.ok ? await opportunitiesResponse.json() as HomeOpportunity[] : [];
+  const opportunities = await Promise.all(rawOpportunities.map(async (opportunity) => {
+    if (!opportunity.conceptMockup) return opportunity;
+    const assetsResponse = await api(token, `${base}/opportunities/${encodeURIComponent(opportunity.id)}/concept-assets`);
+    if (!assetsResponse.ok) return opportunity;
+    const assets = await assetsResponse.json() as NonNullable<ConceptMockupView["assets"]>;
+    return { ...opportunity, conceptMockup: { ...opportunity.conceptMockup, assets } };
+  }));
   const campaigns = campaignsResponse.ok ? await campaignsResponse.json() as CampaignSummary[] : [];
   const ideas = ideasResponse.ok ? await ideasResponse.json() as IdeaSummary[] : [];
   const learnings = learningsResponse.ok ? await learningsResponse.json() as Array<{ statement: string; interpretation?: string; status: string; createdAt: string }> : [];
@@ -317,6 +327,14 @@ export async function getHomeCreation(brandId: string, creationId: string): Prom
   const token = await accessToken();
   if (!token) throw new Error("Sign in to continue.");
   return bodyOrError<SimpleCreation>(await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/simple-creations/${encodeURIComponent(creationId)}`), "Kairo could not read this creation.");
+}
+
+export async function ensureConceptAssets(brandId: string, opportunityId: string): Promise<void> {
+  const token = await accessToken();
+  if (!token) return;
+  const response = await api(token, `/api/v1/brands/${encodeURIComponent(brandId)}/opportunities/${encodeURIComponent(opportunityId)}/concept-assets`, { method: "POST" });
+  // Rendering is useful but must not block a real idea/content creation if storage is briefly unavailable.
+  if (!response.ok && response.status !== 503) await bodyOrError(response, "Kairo could not prepare the concept visual.");
 }
 
 export async function actOnHomeOpportunity(brandId: string, opportunityId: string, action: "save" | "ignore"): Promise<HomeOpportunity> {

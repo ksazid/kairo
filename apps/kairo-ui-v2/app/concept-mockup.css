@@ -12,6 +12,10 @@
 .concept-mockup-compact .concept-artboard{min-height:6rem}
 .concept-mockup-full .concept-artboard{min-height:12rem}
 .concept-artboard>small{position:absolute;top:.55rem;right:.65rem;color:var(--lime,#c8ed47)}
+.concept-rendered-asset{position:relative;min-height:9rem;overflow:hidden;border:1px solid var(--line-soft,#1d2937);border-radius:.85rem;background:#101a29}
+.concept-rendered-asset img{object-fit:cover}
+.concept-mockup-compact .concept-rendered-asset{min-height:6rem}
+.concept-mockup-full .concept-rendered-asset{min-height:12rem}
 .concept-carousel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem}
 .concept-storyboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.55rem;padding:0;list-style:none}
 .concept-storyboard li{display:grid;gap:.25rem;padding:.7rem;border:1px solid var(--line,#263242);border-radius:.75rem;background:#0b121b}

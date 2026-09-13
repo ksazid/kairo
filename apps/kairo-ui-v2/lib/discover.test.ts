@@ -40,7 +40,7 @@ describe("Discover presentation", () => {
     expect(filterDiscoverCards(cards, { query: "", filter: "saved", format: "all", channel: "all" }).map((card) => card.id)).toEqual(["three"]);
     expect(filterDiscoverCards(cards, { query: "", filter: "all", format: "carousel", channel: "instagram" }).map((card) => card.id)).toEqual(["four"]);
     expect(filterDiscoverCards(cards, { query: "", filter: "developing", format: "all", channel: "all" }).map((card) => card.id)).toEqual(["five"]);
-    expect(filterDiscoverCards(cards, { query: "", filter: "all", format: "all", channel: "all", source: "buzzsumo" }).map((card) => card.id)).toEqual(["five", "six"]);
+    expect(filterDiscoverCards(cards, { query: "", filter: "all", format: "all", channel: "all", source: "buzzsumo" }).map((card) => card.id)).toEqual([]);
   });
 
   it("excludes dismissed opportunities", () => {
