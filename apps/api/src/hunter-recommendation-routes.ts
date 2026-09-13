@@ -41,6 +41,7 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
   discovery?: DiscoveryService;
   discoveryPlanStore?: BrandDiscoveryPlanRepository;
   hunterRunStore?: HunterRunRepository;
+  onOpportunityDeveloped?: (input: { accountId: string; brandId: string; opportunityId: string; ideaId: string }) => Promise<void>;
 }) {
   const core = new KairoService(options.store);
   const inFlight = new Map<string, Promise<HunterRunResult>>();
@@ -184,7 +185,13 @@ export function registerHunterRecommendationRoutes(app: FastifyInstance, options
       if (!account) return;
       await core.getBrand(account.id, request.params.brandId);
       if (!closedLoop) return unavailableClosedLoop(reply, request.id);
-      return closedLoop.developOpportunity(account.id, request.params.brandId, request.params.opportunityId);
+      const result = await closedLoop.developOpportunity(account.id, request.params.brandId, request.params.opportunityId);
+      // An idea is the explicit selection point. Asset rendering is best-effort here:
+      // it must never undo the persisted idea if storage is temporarily unavailable.
+      await options.onOpportunityDeveloped?.({ accountId: account.id, brandId: request.params.brandId, opportunityId: request.params.opportunityId, ideaId: result.ideaId }).catch((error) => {
+        request.log.warn({ err: error, opportunityId: request.params.opportunityId }, "Concept asset rendering deferred");
+      });
+      return result;
     },
   );
 }

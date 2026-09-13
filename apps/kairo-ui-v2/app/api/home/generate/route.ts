@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getHomeCreation, startHomeCreation } from "../../../../lib/api";
+import { ensureConceptAssets, getHomeCreation, startHomeCreation } from "../../../../lib/api";
 import { creationDestination, normalizeCreationFormat, viralConcept } from "../../../../lib/home";
 
 export async function POST(request: Request) {
@@ -9,10 +9,12 @@ export async function POST(request: Request) {
   const source = text(body?.source, 2000);
   try {
     if (source) viralConcept(source);
+    const opportunityId = text(body?.opportunityId, 200);
+    if (opportunityId) await ensureConceptAssets(brandId, opportunityId);
     const creation = await startHomeCreation({
       brandId,
       format: normalizeCreationFormat(text(body?.format, 30)),
-      ...(text(body?.opportunityId, 200) ? { opportunityId: text(body?.opportunityId, 200) } : {}),
+      ...(opportunityId ? { opportunityId } : {}),
       ...(text(body?.title, 4000) ? { title: text(body?.title, 4000) } : {}),
       ...(text(body?.direction, 4000) ? { direction: text(body?.direction, 4000) } : {}),
       ...(source ? { source } : {}),

@@ -79,6 +79,7 @@ import{BrandPresenterService}from"./brand-presenter";import{registerBrandPresent
 import{SimplePublishFlowService}from"@kairo/domain/simple-publish-flow";import{PgSimplePublishFlowRepository}from"./simple-publish-flow-postgres";import{registerSimplePublishFlowRoutes}from"./simple-publish-flow-routes";
 import{PgCommandSearchRepository}from"./command-search-postgres";import{registerCommandSearchRoutes}from"./command-search-routes";
 import{PgBrandNotificationRepository}from"./brand-notifications-postgres";import{registerBrandNotificationRoutes}from"./brand-notifications-routes";
+import{ConceptMockupAssetService}from"./concept-mockup-assets";import{registerConceptMockupAssetRoutes}from"./concept-mockup-asset-routes";
 
 function requiredEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -87,6 +88,9 @@ function requiredEnv(name: string): string {
 }
 
 const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
+const privateCarouselStorage=s3PrivateObjectStorageConfigFromEnv(process.env),legacyCarouselStorage=carouselObjectStorageConfig();
+const carouselSigner=privateCarouselStorage?new S3TemporaryObjectSigner(privateCarouselStorage):legacyCarouselStorage?new HmacObjectStorageTemporarySigner(legacyCarouselStorage.publicBaseUrl,legacyCarouselStorage.signingSecret):undefined;
+const conceptMockupAssets=new ConceptMockupAssetService(pool,privateCarouselStorage?new S3PrivateCreativeObjectStore(privateCarouselStorage):undefined,privateCarouselStorage?.provider,carouselSigner);
 const coreStore=new PgKairoRepository(pool);
 const discoveryStore=new PgDiscoveryRepository(pool);
 const discoveryService=new DiscoveryService(discoveryStore);
@@ -189,14 +193,13 @@ registerCommandSearchRoutes(app,{coreStore,identityVerifier,search:new PgCommand
 registerOperationsRoutes(app,{store:operationsStore,coreStore,identityVerifier});
 registerGuidedBrandBrainRoutes(app,{store:coreStore,identityVerifier,...(brandBrainGenerator?{generator:brandBrainGenerator}:{})});
 registerBrandDnaReadinessRoutes(app,{store:coreStore,identityVerifier});
-registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,graphStore:brandIntelligenceGraphStore,discovery:discoveryService,...(hunter?{runner:hunter}:{})});
+registerHunterRecommendationRoutes(app,{store:coreStore,identityVerifier,graphStore:brandIntelligenceGraphStore,discovery:discoveryService,onOpportunityDeveloped:async({accountId,brandId,opportunityId})=>{await conceptMockupAssets.generate(accountId,brandId,opportunityId);},...(hunter?{runner:hunter}:{})});
 registerChannelAccountGroupRoutes(app,{coreStore,groupStore,channelStore:publishingStore,identityVerifier});
 registerContentAssetLibraryRoutes(app,{coreStore,libraryStore:contentAssetLibraryStore,identityVerifier});
 registerContentAssetSelectionRoutes(app,{coreStore,campaignStore,libraryStore:contentAssetLibraryStore,identityVerifier});
-const privateCarouselStorage=s3PrivateObjectStorageConfigFromEnv(process.env),legacyCarouselStorage=carouselObjectStorageConfig();
-const carouselSigner=privateCarouselStorage?new S3TemporaryObjectSigner(privateCarouselStorage):legacyCarouselStorage?new HmacObjectStorageTemporarySigner(legacyCarouselStorage.publicBaseUrl,legacyCarouselStorage.signingSecret):undefined;
 const carouselStore=new PgCarouselStudioStore(pool,undefined,undefined,carouselSigner,(accountId,brandId)=>coreStore.listBrandBrainFields(accountId,brandId)),carouselRenderer=privateCarouselStorage?new CarouselRenderService(carouselStore,new S3PrivateCreativeObjectStore(privateCarouselStorage),privateCarouselStorage.provider):undefined;
 registerCarouselStudioRoutes(app,{coreStore,identityVerifier,store:carouselStore,...(carouselRenderer?{renderer:carouselRenderer}:{})});
+registerConceptMockupAssetRoutes(app,{store:coreStore,identityVerifier,service:conceptMockupAssets});
 registerSimplePublishFlowRoutes(app,{coreStore,identityVerifier,service:new SimplePublishFlowService(new PgSimplePublishFlowRepository(pool,carouselSigner))});
 registerBrandNotificationRoutes(app,{coreStore,identityVerifier,repository:new PgBrandNotificationRepository(pool)});
 

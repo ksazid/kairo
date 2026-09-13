@@ -43,4 +43,5 @@ export type ConceptMockupView = {
     voiceoverDirection?: string;
     endingCta?: string;
   };
+  assets?: Array<{ id: string; kind: "post" | "carousel-slide" | "reel-poster" | "reel-video"; position: number; status: "ready" | "failed"; mimeType: string; width: number; height: number; url?: string }>;
 };
