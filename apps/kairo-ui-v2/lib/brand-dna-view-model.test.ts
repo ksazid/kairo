@@ -15,6 +15,7 @@ describe("Flow 1A Brand DNA UI formatter", () => {
       field("audience.primary", "Restaurant teams"),
       field("positioning.value-proposition", "Simpler ordering and payments for restaurant operators."),
       field("content.pillars", "Restaurant growth, payments, ordering"),
+      field("content.visual-direction", "Clean editorial layouts with bold type"),
       field("boundaries.excluded-topics", "No excluded topics identified; confirm before Hunter activation."),
     ], { brandIntelligenceScore: 78 });
 
@@ -31,6 +32,10 @@ describe("Flow 1A Brand DNA UI formatter", () => {
 
     const products = result.sections.find((section) => section.id === "products-services");
     expect(products?.chips).toEqual(["Payments", "Online Ordering"]);
+    const content = result.sections.find((section) => section.id === "content");
+    expect(content?.fields).toEqual(expect.arrayContaining([
+      expect.objectContaining({ fieldKey: "content.visual-direction", label: "Visual direction", value: "Clean editorial layouts with bold type", editable: true }),
+    ]));
   });
 
   it("keeps sparse evidence unknown instead of fabricating UI values", () => {

@@ -59,6 +59,7 @@ const FIELD_DEFS: Array<{ key: string; label: string; description: string; secti
   { key: "positioning", label: "Positioning", description: "Why you are meaningfully different", section: "positioning", candidates: ["positioning.value-proposition", "positioning.differentiation", "positioning.market-position"] },
   { key: "voice", label: "Voice", description: "How your Brand communicates", section: "voice", candidates: ["voice.tone", "voice.vocabulary"] },
   { key: "content", label: "Content focus", description: "What you should talk about", section: "content-strategy", candidates: ["content.pillars", "content.preferred-topics", "content.core-topics", "content.authority-areas"] },
+  { key: "visual-direction", label: "Visual direction", description: "How content should look and feel", section: "content-strategy", candidates: ["content.visual-direction"] },
   { key: "goals", label: "Primary objective", description: "What content should accomplish", section: "goals", candidates: ["goals.objectives"] },
   { key: "boundaries", label: "Boundaries", description: "Topics and claims Kairo must avoid", section: "boundaries", candidates: ["boundaries.excluded-topics", "boundaries.claims-to-avoid", "boundaries.prohibited-subjects", "boundaries.owner-directive"] },
 ];

@@ -5,6 +5,7 @@ const activation: BrandBrainRuntimeData = {
   brain: [
     { fieldKey: "audience.primary", section: "audience", value: "Malta founders", state: "confirmed", sourceIds: [], version: 2, updatedAt: "2026-09-01T10:00:00.000Z" },
     { fieldKey: "content.preferred-topics", section: "content-strategy", value: "AI automation", state: "inferred", sourceIds: ["source-1"], version: 1, updatedAt: "2026-09-01T10:00:00.000Z" },
+    { fieldKey: "content.visual-direction", section: "content-strategy", value: "Clean editorial layouts with bold type", state: "confirmed", sourceIds: [], version: 3, updatedAt: "2026-09-01T10:00:00.000Z" },
   ],
   sources: [{ id: "source-1", type: "website", status: "active", title: "Kairo", sourceUrl: "https://example.com" }],
   status: "needs-enrichment",
@@ -14,6 +15,7 @@ const activation: BrandBrainRuntimeData = {
   fields: [
     { fieldKey: "audience.primary", origin: "user-confirmed", confidence: { score: 1, level: "high" }, sourceIds: [], critical: true, weak: false, updatedAt: "2026-09-01T10:00:00.000Z" },
     { fieldKey: "content.preferred-topics", origin: "source-backed", confidence: { score: .85, level: "high" }, sourceIds: ["source-1"], critical: true, weak: false, updatedAt: "2026-09-01T10:00:00.000Z" },
+    { fieldKey: "content.visual-direction", origin: "user-confirmed", confidence: { score: 1, level: "high" }, sourceIds: [], critical: true, weak: false, updatedAt: "2026-09-01T10:00:00.000Z" },
   ],
   weakFields: ["identity.description"],
   recommendedSources: [],
@@ -42,6 +44,7 @@ describe("Brand Brain runtime projection", () => {
     const fields = projectRuntimeFields(activation);
     expect(fields.find((field) => field.key === "audience")).toMatchObject({ value: "Malta founders", state: "confirmed", fieldKey: "audience.primary", version: 2 });
     expect(fields.find((field) => field.key === "content")).toMatchObject({ value: "AI automation", state: "suggested", evidence: ["Kairo"] });
+    expect(fields.find((field) => field.key === "visual-direction")).toMatchObject({ value: "Clean editorial layouts with bold type", state: "confirmed", fieldKey: "content.visual-direction", version: 3 });
     expect(fields.find((field) => field.key === "category")).toMatchObject({ value: "Not known yet", state: "review" });
     expect(projectRuntimeTopics(activation)).toEqual([expect.objectContaining({ name: "AI automation", audience: "Malta founders" })]);
     expect(projectRuntimeSources(activation)).toEqual([expect.objectContaining({ id: "source-1", title: "Kairo", status: "active" })]);
