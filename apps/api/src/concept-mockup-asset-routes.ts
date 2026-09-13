@@ -27,7 +27,7 @@ export function registerConceptMockupAssetRoutes(app: FastifyInstance, options: 
 async function authenticate(request: FastifyRequest, reply: FastifyReply, service: KairoService, verifier: IdentityVerifier) {
   const header = request.headers.authorization;
   if (!header?.startsWith("Bearer ")) { reply.status(401).send({ type: "about:blank", title: "Unauthorized", status: 401, detail: "Missing bearer token" }); return undefined; }
-  const identity = await verifier.verify(header.slice(7));
+  const identity = await verifier.verify(header);
   if (!identity) { reply.status(401).send({ type: "about:blank", title: "Unauthorized", status: 401, detail: "Authentication is required" }); return undefined; }
   return service.establishSession(identity);
 }
