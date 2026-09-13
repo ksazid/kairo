@@ -67,6 +67,7 @@ const FIELD_DEFINITIONS = [
   { fieldKey: "content.pillars", sectionId: "content", sectionTitle: "Content Intelligence", label: "Content pillars", critical: true, chips: true },
   { fieldKey: "content.preferred-topics", sectionId: "content", sectionTitle: "Content Intelligence", label: "Preferred topics", critical: false, chips: true },
   { fieldKey: "content.channels", sectionId: "content", sectionTitle: "Content Intelligence", label: "Channels", critical: false, chips: true },
+  { fieldKey: "content.visual-direction", sectionId: "content", sectionTitle: "Content Intelligence", label: "Visual direction", critical: true },
   { fieldKey: "boundaries.excluded-topics", sectionId: "boundaries", sectionTitle: "Boundaries", label: "Excluded topics", critical: true },
 ] as const;
 
