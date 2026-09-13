@@ -14,7 +14,7 @@ export type DiscoverCard = HomeOpportunity & {
   trend: "Trending" | "Rising";
   fit: "Great fit" | "Good fit";
   opportunity: "High opportunity" | "Medium opportunity";
-  source: "Google Trends" | "Semrush" | "BuzzSumo";
+  source: string;
   confidence: number;
 };
 
@@ -55,7 +55,7 @@ export function toDiscoverCards(opportunities: HomeOpportunity[]): DiscoverCard[
       trend: index % 4 === 3 ? "Rising" : "Trending",
       fit: score >= .8 ? "Great fit" : "Good fit",
       opportunity: score >= .8 ? "High opportunity" : "Medium opportunity",
-      source: index < 2 ? "Google Trends" : index < 4 ? "Semrush" : "BuzzSumo",
+      source: opportunity.details?.source?.trim() || opportunity.details?.evidenceSource?.trim() || "Hunter evidence",
       confidence: Math.round(score * 100),
     };
   });
