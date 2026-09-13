@@ -21,6 +21,8 @@ export type HomeOpportunity = {
     targetAudience?: string;
     objective?: string;
     confidence?: number;
+    source?: string;
+    evidenceSource?: string;
   };
 };
 
