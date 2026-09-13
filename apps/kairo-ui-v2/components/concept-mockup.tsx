@@ -15,7 +15,7 @@ function MockupFrame({ children, mode }: { children: ReactNode; mode: "compact" 
 
 function TextPreview({ mockup, mode }: { mockup: ConceptMockupView; mode: "compact" | "card" | "full" }) {
   const text = mockup.text;
-  return <MockupFrame mode={mode}><span className="concept-mockup-kicker">Text concept</span><strong>{text?.hook ?? mockup.hook}</strong>{mode !== "compact" && text?.opening ? <p>{text.opening}</p> : null}{mode === "full" && text?.keyPoints?.length ? <ul>{text.keyPoints.slice(0, 4).map((point) => <li key={point}>{point}</li>)}</ul> : null}{mockup.cta || text?.cta ? <small>{mockup.cta ?? text?.cta}</small> : null}</MockupFrame>;
+  return <MockupFrame mode={mode}><span className="concept-mockup-kicker">Text concept</span><div className="concept-artboard concept-text-artboard"><strong>{text?.hook ?? mockup.hook}</strong>{mode !== "compact" && text?.opening ? <p>{text.opening}</p> : null}</div>{mode === "full" && text?.keyPoints?.length ? <ul>{text.keyPoints.slice(0, 4).map((point) => <li key={point}>{point}</li>)}</ul> : null}{mockup.cta || text?.cta ? <small>{mockup.cta ?? text?.cta}</small> : null}</MockupFrame>;
 }
 
 function ImagePreview({ mockup, mode }: { mockup: ConceptMockupView; mode: "compact" | "card" | "full" }) {
