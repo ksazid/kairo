@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { BrandBrainSection } from "@kairo/contracts";
 import { getBrand, putBrandBrainField } from "../../../../src/lib/kairo-api";
@@ -40,7 +41,10 @@ export async function enrichOnboardingBrandAction(brandId: string, formData: For
       if (!section || !value) throw new Error("Enter a value to continue");
       await putBrandBrainField(brandId, fieldKey, { section, value });
     } else if (kind === "none") {
-      await putBrandBrainField(brandId, "boundaries.excluded-topics", { section: "boundaries", value: "None" });
+      const saved = await putBrandBrainField(brandId, "boundaries.excluded-topics", { section: "boundaries", value: "None" });
+      if (saved.state !== "confirmed" || saved.value.trim().toLowerCase() !== "none") {
+        throw new Error("Kairo could not confirm that there are no excluded topics");
+      }
     } else {
       throw new Error("Choose one enrichment action");
     }
@@ -48,6 +52,8 @@ export async function enrichOnboardingBrandAction(brandId: string, formData: For
     const message = error instanceof Error ? error.message : "Unable to update Brand DNA";
     redirect(`/brands/${encodeURIComponent(brandId)}/onboarding/confirm?error=${encodeURIComponent(message.slice(0, 180))}`);
   }
+
+  revalidatePath(`/brands/${brandId}/onboarding/confirm`);
   redirect(`/brands/${encodeURIComponent(brandId)}/onboarding/confirm?notice=${encodeURIComponent("Brand DNA updated. Review it once more before discovery.")}`);
 }
 
