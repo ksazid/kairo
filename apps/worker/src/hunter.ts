@@ -350,8 +350,12 @@ function compactIntelligenceProfile(profile: BrandIntelligenceProfile) {
   };
 }
 
-const HUNTER_CONTEXT_MAX_CHARS = 32_000;
-const HUNTER_EVIDENCE_TEXT_CHARS = 1_200;
+// The Hermes bridge and its upstream providers enforce a much smaller practical
+// request ceiling than the worker's original 32k serialization budget. Keep the
+// complete evidence set for provenance and quality checks, but send the model a
+// compact judgment packet that has reliable transport headroom.
+const HUNTER_CONTEXT_MAX_CHARS = 12_000;
+const HUNTER_EVIDENCE_TEXT_CHARS = 600;
 
 function compactHunterContext(
   input: HunterRunInput,
@@ -436,7 +440,7 @@ function refreshRotationOffset(seed: string | undefined): number {
   if (!seed) return 0;
   return [...seed].reduce((total, character) => total + character.charCodeAt(0), 0) % QUERY_INTENTS.length;
 }
-function compactTopicGraph(graph: BrandIntelligenceTopicGraph) { return { schemaVersion: graph.schemaVersion, sectorPack: graph.sectorPack.slice(0, 200), fingerprint: graph.fingerprint.slice(0, 200), nodes: graph.nodes.slice(0, 12).map((node) => ({ topic: node.topic.slice(0, 300), aliases: boundedStrings(node.aliases, 3, 120), ...(node.parent ? { parent: node.parent.slice(0, 300) } : {}), priority: node.priority, ...(node.confidence !== undefined ? { confidence: node.confidence } : {}), sourceIds: boundedStrings(node.sourceIds, 5, 120), freshness: node.freshness, preferred: node.preferred, excluded: node.excluded, authority: node.authority, origin: node.origin })) }; }
+function compactTopicGraph(graph: BrandIntelligenceTopicGraph) { return { schemaVersion: graph.schemaVersion, sectorPack: graph.sectorPack.slice(0, 120), fingerprint: graph.fingerprint.slice(0, 120), nodes: graph.nodes.slice(0, 6).map((node) => ({ topic: node.topic.slice(0, 180), aliases: boundedStrings(node.aliases, 2, 80), ...(node.parent ? { parent: node.parent.slice(0, 180) } : {}), priority: node.priority, ...(node.confidence !== undefined ? { confidence: node.confidence } : {}), sourceIds: boundedStrings(node.sourceIds, 3, 80), freshness: node.freshness, preferred: node.preferred, excluded: node.excluded, authority: node.authority, origin: node.origin })) }; }
 function enrichDiscoveryEvidence(item: DiscoveryEvidence, document: NormalizedSourceDocument): DiscoveryEvidence {
   const summary = document.transcript ?? document.body ?? document.description ?? item.summary;
   return { ...item, ...(summary ? { summary: summary.slice(0, 8_000) } : {}), contentHash: document.contentHash, providerVersion: document.providerVersion };

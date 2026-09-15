@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ensureConceptAssets, getHomeCreation, startHomeCreation } from "../../../../lib/api";
+import { getHomeCreation, startHomeCreation } from "../../../../lib/api";
 import { creationDestination, normalizeCreationFormat, viralConcept } from "../../../../lib/home";
 
 export async function POST(request: Request) {
@@ -10,7 +10,6 @@ export async function POST(request: Request) {
   try {
     if (source) viralConcept(source);
     const opportunityId = text(body?.opportunityId, 200);
-    if (opportunityId) await ensureConceptAssets(brandId, opportunityId);
     const creation = await startHomeCreation({
       brandId,
       format: normalizeCreationFormat(text(body?.format, 30)),

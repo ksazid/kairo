@@ -16,6 +16,7 @@
     "./hunter-run-record": "./src/hunter-run-record.ts",
     "./discovery": "./src/discovery.ts",
     "./discovery-service": "./src/discovery-service.ts",
+    "./concept-mockup": "./src/concept-mockup.ts",
     "./source-policy": "./src/source-policy.ts",
     "./sector-packs": "./src/sector-packs.ts",
     "./source-registry": "./src/source-registry.ts",

@@ -1,7 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { Pool } from "pg";
 import type { ConceptMockupAssetDto, ConceptMockupDto } from "@kairo/contracts/concept-mockup";
+import type { OpportunityDetailsDto } from "@kairo/contracts";
 import { ResourceNotFoundError } from "@kairo/domain";
+import { buildConceptMockup } from "@kairo/domain/concept-mockup";
 import type { TemporaryObjectSigner } from "./carousel-studio-postgres";
 
 const PROMPT_VERSION = "concept-svg-v1";
@@ -42,20 +44,38 @@ export class ConceptMockupAssetService {
   async generate(accountId: string, brandId: string, opportunityId: string): Promise<ConceptMockupAssetDto[]> {
     if (!this.objects || !this.storageProvider) throw new ConceptMockupAssetsUnavailableError();
     const scope = await this.scope(accountId, brandId, opportunityId);
-    const source = await this.pool.query<{ name: string; title: string; concept_mockup: ConceptMockupDto | null }>(
-      `select b.name,o.title,o.concept_mockup from brand_opportunities o
+    const source = await this.pool.query<{ name: string; title: string; rationale: string; why_now: string; development_direction: string; opportunity_details: OpportunityDetailsDto | null; concept_mockup: ConceptMockupDto | null }>(
+      `select b.name,o.title,o.rationale,o.why_now,o.development_direction,o.opportunity_details,o.concept_mockup from brand_opportunities o
          join brands b on b.workspace_id=o.workspace_id and b.id=o.brand_id
         where o.workspace_id=$1 and o.brand_id=$2 and o.id=$3`,
       [scope.workspaceId, brandId, opportunityId],
     );
     const row = source.rows[0];
     if (!row) throw new ResourceNotFoundError("Opportunity not found");
-    if (!row.concept_mockup) throw new Error("Concept mockup is not ready yet");
+    const mockup = row.concept_mockup ?? buildConceptMockup({
+      title: row.title,
+      rationale: row.rationale,
+      whyNow: row.why_now,
+      developmentDirection: row.development_direction,
+      ...(row.opportunity_details?.hook ? { hook: row.opportunity_details.hook } : {}),
+      ...(row.opportunity_details?.proposedAngle ? { proposedAngle: row.opportunity_details.proposedAngle } : {}),
+      ...(row.opportunity_details?.targetAudience ? { targetAudience: row.opportunity_details.targetAudience } : {}),
+      ...(row.opportunity_details?.objective ? { objective: row.opportunity_details.objective } : {}),
+      ...(row.opportunity_details?.recommendedFormat ? { recommendedFormat: row.opportunity_details.recommendedFormat } : {}),
+    });
+    if (!row.concept_mockup) {
+      await this.pool.query(
+        `update brand_opportunities
+            set concept_mockup=$4,concept_mockup_version=$5,concept_mockup_generated_at=now(),updated_at=now()
+          where workspace_id=$1 and brand_id=$2 and id=$3`,
+        [scope.workspaceId, brandId, opportunityId, JSON.stringify(mockup), mockup.version],
+      );
+    }
 
     const existing = await this.list(accountId, brandId, opportunityId);
     if (existing.some((asset) => asset.status === "ready")) return existing;
 
-    const specs = renderSpecs(row.name, row.title, row.concept_mockup);
+    const specs = renderSpecs(row.name, row.title, mockup);
     for (const spec of specs) {
       const id = randomUUID();
       const bytes = new TextEncoder().encode(spec.svg);
