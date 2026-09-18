@@ -17,6 +17,13 @@ export type MetaConnectionResult =
   | { status: "connected"; intentId: string; brandId: string }
   | { status: "no-eligible-account"; intentId: string; brandId: string };
 
+export type InstagramCandidate = { id: string; pageRef: string; pageName: string; accountRef: string; displayName: string; username?: string };
+
+export type InstagramConnectionResult =
+  | { status: "selection-required"; intentId: string; brandId: string; candidates: InstagramCandidate[] }
+  | { status: "connected"; intentId: string; brandId: string }
+  | { status: "no-eligible-account"; intentId: string; brandId: string };
+
 const apiBase = () => (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
@@ -53,6 +60,22 @@ export function getMetaCandidates(brandId: string, intentId: string) {
 
 export function selectMetaCandidate(brandId: string, intentId: string, candidateId: string) {
   return call(`/api/v1/brands/${encodeURIComponent(brandId)}/channels/meta/intents/${encodeURIComponent(intentId)}/select`, { method: "POST", body: JSON.stringify({ candidateId }) });
+}
+
+export function beginInstagramConnection(brandId: string) {
+  return call<{ authorizationUrl: string }>(`/api/v1/brands/${encodeURIComponent(brandId)}/channels/instagram/connect`, { method: "POST" });
+}
+
+export function completeInstagramConnection(code: string, state: string) {
+  return call<InstagramConnectionResult>("/api/v1/channels/instagram/callback", { method: "POST", body: JSON.stringify({ code, state }) });
+}
+
+export function getInstagramCandidates(brandId: string, intentId: string) {
+  return call<InstagramCandidate[]>(`/api/v1/brands/${encodeURIComponent(brandId)}/channels/instagram/intents/${encodeURIComponent(intentId)}/candidates`);
+}
+
+export function selectInstagramCandidate(brandId: string, intentId: string, candidateId: string) {
+  return call(`/api/v1/brands/${encodeURIComponent(brandId)}/channels/instagram/intents/${encodeURIComponent(intentId)}/select`, { method: "POST", body: JSON.stringify({ candidateId }) });
 }
 
 export function v2ChannelsHref(brandId: string) {
