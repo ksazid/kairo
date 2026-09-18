@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canPublish, legacyChannelHref, presenterDraft, settingsFallback } from "./settings-data";
+import { canPublish, channelSettingsHref, presenterDraft, settingsFallback } from "./settings-data";
 
 describe("Settings production projection", () => {
   it("uses a truthful signed-out fallback", () => {
@@ -20,8 +20,8 @@ describe("Settings production projection", () => {
     expect(canPublish({ ...channel, capabilities: [] })).toBe(false);
   });
 
-  it("builds scoped legacy routes and presenter drafts", () => {
-    expect(legacyChannelHref("https://app.example/", "brand / 1")).toBe("https://app.example/brands/brand%20%2F%201/channels");
+  it("builds scoped v2 routes and presenter drafts", () => {
+    expect(channelSettingsHref("brand / 1")).toBe("/settings?tab=channels&brand=brand%20%2F%201");
     expect(presenterDraft({ brandName: " Kairo ", look: "Professional", background: "Studio", voiceEnabled: true, expectedVersion: 3 })).toEqual({
       displayName: "Kairo Creator",
       status: "draft",

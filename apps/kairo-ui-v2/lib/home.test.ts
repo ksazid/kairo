@@ -40,10 +40,9 @@ describe("Kairo UI v2 Home behavior", () => {
   });
 
   it("routes generated assets and campaigns into their v2 previews", () => {
-    const base = "https://kairo.example";
-    expect(creationDestination(base, "brand 1", { campaignId: "campaign 1", assetId: "asset 1" }))
+    expect(creationDestination("brand 1", { campaignId: "campaign 1", assetId: "asset 1" }))
       .toBe("/content/campaign%201/asset%201?brand=brand%201");
-    expect(creationDestination(base, "brand 1", { campaignId: "campaign 1" }))
+    expect(creationDestination("brand 1", { campaignId: "campaign 1" }))
       .toBe("/campaigns/campaign%201?brand=brand%201");
   });
 

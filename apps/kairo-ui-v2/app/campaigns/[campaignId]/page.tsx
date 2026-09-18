@@ -16,8 +16,6 @@ export default async function CampaignPreviewPage({ params, searchParams }: { pa
   const campaign = campaigns.find((candidate) => candidate.id === campaignId);
   if (!campaign) notFound();
   const campaignsHref = data.brandId ? `/campaigns?brand=${encodeURIComponent(data.brandId)}` : "/campaigns";
-  const webUrl = (process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app").replace(/\/$/, "");
-  const legacyHref = data.brandId ? `${webUrl}/brands/${encodeURIComponent(data.brandId)}/campaigns/${encodeURIComponent(campaign.id)}` : webUrl;
 
   return <KairoShell
     active="Campaigns"
@@ -29,6 +27,6 @@ export default async function CampaignPreviewPage({ params, searchParams }: { pa
     proTipAction="Learn more"
     proTipHref="#campaign-overview"
   >
-    <CampaignPreviewClient campaign={campaign} brandId={data.brandId} authenticated={data.authenticated} campaignsHref={campaignsHref} legacyHref={legacyHref}/>
+    <CampaignPreviewClient campaign={campaign} brandId={data.brandId} authenticated={data.authenticated} campaignsHref={campaignsHref}/>
   </KairoShell>;
 }

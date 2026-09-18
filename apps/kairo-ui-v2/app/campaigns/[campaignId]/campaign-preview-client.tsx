@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -30,7 +31,8 @@ import { contentPreviewHref, type ContentItem } from "../../../lib/content";
 
 type CampaignPhase = "draft" | "scheduled" | "published";
 
-export function CampaignPreviewClient({ campaign, brandId, authenticated, campaignsHref, legacyHref }: { campaign: CampaignItem; brandId?: string; authenticated: boolean; campaignsHref: string; legacyHref: string }) {
+export function CampaignPreviewClient({ campaign, brandId, authenticated, campaignsHref }: { campaign: CampaignItem; brandId?: string; authenticated: boolean; campaignsHref: string }) {
+  const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [channel, setChannel] = useState<"Instagram" | "LinkedIn">("Instagram");
   const [phase, setPhase] = useState<CampaignPhase>(campaign.status === "published" ? "published" : campaign.status === "scheduled" ? "scheduled" : "draft");
@@ -38,37 +40,33 @@ export function CampaignPreviewClient({ campaign, brandId, authenticated, campai
   const [notice, setNotice] = useState("");
   const visibleAssets = campaign.assets.slice(0, 3);
 
-  function continueCampaign() {
-    if (authenticated) {
-      window.location.assign(legacyHref);
+  function openCampaignContent(action: "continue" | "schedule" | "publish") {
+    const asset = campaign.assets[0];
+    if (!asset) {
+      setNotice("Add content before continuing this campaign.");
       return;
     }
-    setNotice("Campaign workspace is ready. Choose an asset or add the next one.");
+    if (!authenticated) {
+      setNotice("Choose an asset to continue in the v2 content workspace.");
+      return;
+    }
+    router.push(contentPreviewHref(asset, brandId));
+    if (action !== "continue") setNotice(`${action === "schedule" ? "Scheduling" : "Publishing"} is available after this asset passes review and is approved.`);
   }
 
   function schedule() {
-    if (authenticated) {
-      window.location.assign(`${legacyHref}#schedule`);
-      return;
-    }
-    setPhase("scheduled");
-    setNotice("Campaign scheduled across its selected channels.");
+    openCampaignContent("schedule");
   }
 
   function publish() {
-    if (authenticated) {
-      window.location.assign(`${legacyHref}#publish`);
-      return;
-    }
-    setPhase("published");
-    setNotice("Campaign published in preview mode.");
+    openCampaignContent("publish");
   }
 
   return <>
     <Link className="campaign-preview-back" href={campaignsHref}><ArrowLeft aria-hidden="true"/>Back to Campaigns</Link>
     <header className="campaign-preview-header">
       <div><span className={`campaign-preview-state state-${phase}`}>{phase === "draft" ? "DRAFT" : phase.toUpperCase()}</span><h1>{campaign.name}</h1><p><Crosshair aria-hidden="true"/>{campaign.previewObjective}</p><div><span><CalendarDays aria-hidden="true"/>{formatDate(campaign.startsAt)} – {formatDate(campaign.previewEndsAt)}</span><i>•</i><span className="campaign-preview-readiness"><b style={{ "--campaign-progress": `${Math.round((campaign.readyAssets / campaign.totalAssets) * 100)}%` } as React.CSSProperties}/>{campaign.readyAssets} of {campaign.totalAssets} assets ready</span></div></div>
-      <aside><button className="campaign-continue" type="button" onClick={continueCampaign}><Rocket/>Continue campaign</button><button type="button" aria-pressed={saved} onClick={() => setSaved((value) => !value)}>{saved ? <Save/> : <Bookmark/>}{saved ? "Saved" : "Save"}</button></aside>
+      <aside><button className="campaign-continue" type="button" onClick={() => openCampaignContent("continue")}><Rocket/>Continue campaign</button><button type="button" aria-pressed={saved} onClick={() => setSaved((value) => !value)}>{saved ? <Save/> : <Bookmark/>}{saved ? "Saved" : "Save"}</button></aside>
     </header>
 
     {notice ? <p className="campaign-notice" role="status">{notice}</p> : null}
@@ -99,8 +97,8 @@ export function CampaignPreviewClient({ campaign, brandId, authenticated, campai
 
     <section className="campaign-publish-actions" aria-label="Campaign publishing actions">
       <button type="button" onClick={() => setNotice("All campaign assets are open for review.")}><FileCheck2/><span><strong>Review all</strong><small>Review assets and details</small></span></button>
-      <button type="button" onClick={schedule}><CalendarDays/><span><strong>{phase === "scheduled" ? "Campaign scheduled" : "Schedule campaign"}</strong><small>Confirm dates and timing</small></span></button>
-      <button className="publish" type="button" onClick={publish}><Rocket/><span><strong>{phase === "published" ? "Campaign published" : "Publish campaign"}</strong><small>Go live across channels</small></span></button>
+      <button type="button" onClick={schedule}><CalendarDays/><span><strong>Schedule assets</strong><small>Review and schedule each approved asset</small></span></button>
+      <button className="publish" type="button" onClick={publish}><Rocket/><span><strong>Publish assets</strong><small>Open each asset's publishing workflow</small></span></button>
     </section>
   </>;
 }

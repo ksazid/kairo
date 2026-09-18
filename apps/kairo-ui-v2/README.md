@@ -2,7 +2,7 @@
 
 This is an isolated Next.js frontend for the approved Kairo interface. It does not import components, stylesheets, design tokens, or layout code from `apps/web`.
 
-It reads the existing `kairo_access_token` cookie and calls the existing API through `KAIRO_API_URL`. Actions that are not yet reimplemented in v2 hand off to the current application through `NEXT_PUBLIC_KAIRO_WEB_URL`.
+It reads the existing `kairo_access_token` cookie and calls the existing API through `KAIRO_API_URL`. Navigation and content workflows remain within this application.
 
 ## Local development
 
@@ -15,6 +15,6 @@ npm run dev --workspace @kairo/ui-v2 -- --hostname 0.0.0.0 --port 4173
 - Root directory: `apps/kairo-ui-v2`
 - Framework: Next.js
 - Build command: `npm run build`
-- Environment: `KAIRO_API_URL`, `NEXT_PUBLIC_KAIRO_WEB_URL`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_AUDIENCE`
+- Environment: `KAIRO_API_URL`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_AUDIENCE`
 
 Register `https://<v2-production-domain>/auth/callback` as an allowed callback URL and `https://<v2-production-domain>` as an allowed logout URL with the existing identity provider. Until that is configured, the page deliberately renders approved concept data when no access-token cookie is available.

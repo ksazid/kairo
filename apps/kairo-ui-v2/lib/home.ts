@@ -97,12 +97,10 @@ export function buildContinueItems(brandId: string, campaigns: CampaignSummary[]
 }
 
 export function creationDestination(
-  legacyBaseUrl: string,
   brandId: string,
   creation: { campaignId?: string; assetId?: string },
 ): string | null {
   if (!creation.campaignId) return null;
-  void legacyBaseUrl;
   const brand = encodeURIComponent(brandId);
   const campaign = encodeURIComponent(creation.campaignId);
   if (creation.assetId) return `/content/${campaign}/${encodeURIComponent(creation.assetId)}?brand=${brand}`;

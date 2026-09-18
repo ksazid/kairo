@@ -7,7 +7,6 @@ import {
   BrainCircuit,
   CalendarDays,
   Compass,
-  ExternalLink,
   FileText,
   Home as HomeIcon,
   Megaphone,
@@ -43,9 +42,8 @@ export async function KairoShell({
   proTipHref?: string;
   statusLabel?: string;
 }) {
-  const webUrl = (process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app").replace(/\/$/, "");
-  const brandBase = brandId ? `${webUrl}/brands/${encodeURIComponent(brandId)}` : webUrl;
   const discoverQuery = brandId ? `?brand=${encodeURIComponent(brandId)}` : "";
+  const channelsHref = brandId ? `/settings?tab=channels&brand=${encodeURIComponent(brandId)}` : "/settings?tab=channels";
   const brandOptions = authenticated ? await getShellBrandOptions() : [];
   const nav = [
     { label: "Home" as const, Icon: HomeIcon, href: brandId ? `/?brand=${encodeURIComponent(brandId)}` : "/" },
@@ -62,17 +60,15 @@ export async function KairoShell({
     <aside className="sidebar">
       <Link className="brand-logo" href={brandId ? `/?brand=${encodeURIComponent(brandId)}` : "/"}><Image src="/kairo-logo.svg" alt="" width="48" height="48" priority/><span>Kairo</span></Link>
       <nav aria-label="Primary navigation">{nav.map(({ label, Icon, href }) => href.startsWith("/") ? <Link key={label} className={active === label ? "active" : ""} href={href}><Icon aria-hidden="true"/>{label}</Link> : <a key={label} className={active === label ? "active" : ""} href={href}><Icon aria-hidden="true"/>{label}</a>)}</nav>
-      <a className="classic-link" href={webUrl}><ExternalLink aria-hidden="true"/>Back to Classic Kairo</a>
-      <div className="pro-tip"><span><Sparkles aria-hidden="true"/>Pro tip</span><p>{proTip}</p><a href={proTipHref ?? (brandId ? `${brandBase}/channels` : webUrl)}>{proTipAction} <span>›</span></a></div>
+      <div className="pro-tip"><span><Sparkles aria-hidden="true"/>Pro tip</span><p>{proTip}</p><Link href={proTipHref ?? channelsHref}>{proTipAction} <span>›</span></Link></div>
     </aside>
     <main>
       <header className="topbar">
         <BrandSwitcher authenticated={authenticated} brandId={brandId} brandName={brandName} brands={brandOptions}/>
         <span className="ready-dot"><i/>{statusLabel ?? (authenticated ? "Brand ready" : "Preview mode")}</span>
         <div className="top-spacer"/>
-        <a className="mobile-classic" href={webUrl} aria-label="Back to Classic Kairo"><ExternalLink aria-hidden="true"/></a>
         <button className="bell" type="button" aria-label="Notifications"><Bell aria-hidden="true"/><b>3</b></button>
-        {authenticated ? <UserMenu brandId={brandId} addBrandHref={`${webUrl}/brands/new`}/> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
+        {authenticated ? <UserMenu brandId={brandId}/> : <a className="profile auth-profile" href="/auth/login"><span>SK</span><strong>Sign in</strong></a>}
       </header>
       <div className={`workspace ${workspaceClassName}`.trim()}>{children}</div>
     </main>

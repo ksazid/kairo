@@ -31,13 +31,12 @@ export async function GET(request: Request) {
   if (!brandId || !creationId) return NextResponse.json({ error: "Brand and creation are required." }, { status: 400 });
   try {
     const creation = await getHomeCreation(brandId, creationId);
-    const legacyUrl = process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app";
     return NextResponse.json({
       status: creation.status,
       message: creation.status === "needs-attention" ? creation.failureReason ?? creation.progress.message : creation.progress.message,
       ...(creation.campaignId ? { campaignId: creation.campaignId } : {}),
       ...(creation.assetId ? { assetId: creation.assetId } : {}),
-      ...(creation.status === "ready" ? { destination: creationDestination(legacyUrl, brandId, creation) } : {}),
+      ...(creation.status === "ready" ? { destination: creationDestination(brandId, creation) } : {}),
     });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Kairo could not read this creation." }, { status: 502 });

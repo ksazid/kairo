@@ -5,7 +5,7 @@ import { KairoShell } from "../kairo-shell";
 import { SettingsClient } from "./settings-client";
 import styles from "./settings-page-header.module.css";
 
-type SearchParams = Promise<{ brand?: string; authError?: string; tab?: string }>;
+type SearchParams = Promise<{ brand?: string; authError?: string; error?: string; notice?: string; tab?: string }>;
 
 export default async function SettingsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
@@ -22,18 +22,15 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
     proTipHref="#settings-content"
     statusLabel="Discovery ready"
   >
-    {params.authError ? <p className="auth-error" role="alert">{params.authError}</p> : null}
+    {params.authError || params.error ? <p className="auth-error" role="alert">{params.authError ?? params.error}</p> : null}
+    {params.notice ? <p className="auth-notice" role="status">{params.notice}</p> : null}
     <div className={styles.settingsPage}>
       <header className={styles.pageHeader}>
         <h1>Settings</h1>
         <p>Manage your account, workspace, channels, AI providers, and team access.</p>
       </header>
       <div className={styles.client}>
-        <SettingsClient
-          data={data}
-          initialTab={params.tab && isSettingsTabId(params.tab) ? params.tab : "account"}
-          legacyWebUrl={process.env.NEXT_PUBLIC_KAIRO_WEB_URL ?? "https://kairo-two-plum.vercel.app"}
-        />
+        <SettingsClient data={data} initialTab={params.tab && isSettingsTabId(params.tab) ? params.tab : "account"}/>
       </div>
     </div>
   </KairoShell>;

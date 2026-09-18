@@ -74,8 +74,8 @@ export function canPublish(channel: SettingsChannel): boolean {
   return channel.status === "connected" && channel.capabilities.includes("content-publishing");
 }
 
-export function legacyChannelHref(legacyBase: string, brandId: string): string {
-  return `${legacyBase.replace(/\/$/, "")}/brands/${encodeURIComponent(brandId)}/channels`;
+export function channelSettingsHref(brandId: string): string {
+  return `/settings?tab=channels&brand=${encodeURIComponent(brandId)}`;
 }
 
 export function presenterDraft(input: {

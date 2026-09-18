@@ -123,6 +123,12 @@ export type ManualHunterRun = {
   degradedSources?: string[];
 };
 
+export type CreatedBrand = {
+  id: string;
+  name: string;
+  workspaceId: string;
+};
+
 const apiBase = () => (process.env.KAIRO_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
 
 async function accessToken() {
@@ -190,6 +196,29 @@ export async function getHomeData(requestedBrandId?: string): Promise<HomeData> 
     continueItems: buildContinueItems(brand.id, campaigns, ideas),
     ...(learning ? { learning: { statement: learning.statement, ...(learning.interpretation ? { interpretation: learning.interpretation } : {}) } } : {}),
   };
+}
+
+export async function createBrand(input: { brandName: string; publicSourceUrl: string }): Promise<CreatedBrand> {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to add a Brand.");
+  const directory = await loadAccessibleBrandDirectory({ token, apiBase: apiBase() });
+  const workspace = directory.workspaces[0];
+  if (!directory.authenticated || !workspace) throw new Error("Choose a workspace before adding a Brand.");
+  const brand = await bodyOrError<CreatedBrand>(
+    await api(token, `/api/v1/workspaces/${encodeURIComponent(workspace.id)}/brands`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+    "Kairo could not create this Brand.",
+  );
+  await bodyOrError(
+    await api(token, `/api/v1/brands/${encodeURIComponent(brand.id)}/brain/bootstrap`, {
+      method: "POST",
+      body: JSON.stringify({ publicReferenceUrl: input.publicSourceUrl }),
+    }),
+    "The Brand was created, but Kairo could not build its Brand Brain.",
+  );
+  return brand;
 }
 
 export async function getSettingsData(requestedBrandId?: string): Promise<SettingsData> {

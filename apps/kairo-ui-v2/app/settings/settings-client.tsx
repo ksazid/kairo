@@ -37,7 +37,7 @@ import {
   Youtube,
 } from "lucide-react";
 import { SETTINGS_TABS, type SettingsTabId } from "../../lib/settings";
-import { canPublish, legacyChannelHref, type SettingsData } from "../../lib/settings-data";
+import { canPublish, channelSettingsHref, type SettingsData } from "../../lib/settings-data";
 import { AvatarSettingsClient } from "./avatar-settings-client";
 import styles from "./settings-system.module.css";
 
@@ -51,7 +51,7 @@ const tabCopy: Record<Exclude<SettingsTabId, "avatar">, { title: string; descrip
 
 type EditableKey = "name" | "email" | "timezone" | "language";
 
-export function SettingsClient({ data, initialTab = "account", legacyWebUrl }: { data: SettingsData; initialTab?: SettingsTabId; legacyWebUrl: string }) {
+export function SettingsClient({ data, initialTab = "account" }: { data: SettingsData; initialTab?: SettingsTabId }) {
   const [activeTab, setActiveTab] = useState<SettingsTabId>(initialTab);
   const [notice, setNotice] = useState(`${SETTINGS_TABS.find((item) => item.id === initialTab)?.label ?? "Settings"} opened.`);
 
@@ -75,7 +75,7 @@ export function SettingsClient({ data, initialTab = "account", legacyWebUrl }: {
     {!data.authenticated ? <p className={styles.runtimeNotice}><LockKeyhole aria-hidden="true"/>Sign in to load your account and workspace settings.</p> : null}
     {activeTab === "account" ? <AccountPanel data={data} onNotice={setNotice}/> : null}
     {activeTab === "workspace" ? <WorkspacePanel data={data} onNotice={setNotice}/> : null}
-    {activeTab === "channels" ? <ChannelsPanel data={data} legacyWebUrl={legacyWebUrl} onNotice={setNotice}/> : null}
+    {activeTab === "channels" ? <ChannelsPanel data={data} onNotice={setNotice}/> : null}
     {activeTab === "providers" ? <ProvidersPanel data={data} onNotice={setNotice}/> : null}
     {activeTab === "team" ? <TeamPanel data={data} onNotice={setNotice}/> : null}
   </section>;
@@ -151,14 +151,16 @@ function WorkspacePanel({ data, onNotice }: { data: SettingsData; onNotice: (mes
   </div>;
 }
 
-function ChannelsPanel({ data, legacyWebUrl, onNotice }: { data: SettingsData; legacyWebUrl: string; onNotice: (message: string) => void }) {
-  const canonicalHref = data.brand ? legacyChannelHref(legacyWebUrl, data.brand.id) : undefined;
+function ChannelsPanel({ data, onNotice }: { data: SettingsData; onNotice: (message: string) => void }) {
+  const canonicalHref = data.brand ? channelSettingsHref(data.brand.id) : undefined;
+  const instagramConnectHref = data.brand ? `/channels/meta/instagram/start?brand=${encodeURIComponent(data.brand.id)}` : undefined;
+  const facebookInstagramConnectHref = data.brand ? `/channels/meta/facebook-instagram/start?brand=${encodeURIComponent(data.brand.id)}` : undefined;
   const channels = data.channels;
   return <div className={styles.stackPanel} role="tabpanel">
-    <section className={styles.formPanel}><header className={styles.panelHeader}><div><h2>Connected channels</h2><p>Connection, health, and publishing capability come from the authenticated channel API.</p></div>{canonicalHref ? <Link className={styles.primaryButton} href={canonicalHref}><Plus aria-hidden="true"/>Manage channels</Link> : <button className={styles.primaryButton} type="button" disabled><Plus aria-hidden="true"/>Choose a Brand</button>}</header>{channels.length ? <div className={styles.channelList}>{channels.map((channel) => {
+    <section className={styles.formPanel}><header className={styles.panelHeader}><div><h2>Connected channels</h2><p>Connection, health, and publishing capability come from the authenticated channel API.</p></div>{instagramConnectHref ? <span><Link className={styles.primaryButton} href={instagramConnectHref}><Plus aria-hidden="true"/>Connect Instagram</Link><Link className={styles.rowButton} href={facebookInstagramConnectHref!}>Connect Facebook + Instagram</Link></span> : <button className={styles.primaryButton} type="button" disabled><Plus aria-hidden="true"/>Choose a Brand</button>}</header>{channels.length ? <div className={styles.channelList}>{channels.map((channel) => {
       const Icon = channel.channel === "instagram" ? Instagram : channel.channel === "linkedin" ? Linkedin : Globe2;
       const status = channel.status === "connected" ? "Connected" : channel.status === "reconnect-required" ? "Reconnect required" : "Disabled";
-      return <article key={channel.id}><span><Icon aria-hidden="true"/></span><div><strong>{channel.displayName || channel.channel}</strong><small>{channel.accountRef}</small></div><b data-connected={channel.status === "connected"}>{status}</b><label><span>Can publish</span><button className={styles.switch} type="button" role="switch" aria-checked={canPublish(channel)} aria-label={`${channel.displayName} publishing capability`} disabled><span/></button></label>{canonicalHref ? <Link className={styles.rowButton} href={canonicalHref}>Manage</Link> : <button className={styles.rowButton} type="button" disabled>Unavailable</button>}</article>;
+      return <article key={channel.id}><span><Icon aria-hidden="true"/></span><div><strong>{channel.displayName || channel.channel}</strong><small>{channel.accountRef}</small></div><b data-connected={channel.status === "connected"}>{status}</b><label><span>Can publish</span><button className={styles.switch} type="button" role="switch" aria-checked={canPublish(channel)} aria-label={`${channel.displayName} publishing capability`} disabled><span/></button></label>{canonicalHref ? <Link className={styles.rowButton} href={canonicalHref}>View</Link> : <button className={styles.rowButton} type="button" disabled>Unavailable</button>}</article>;
     })}</div> : <p className={styles.emptyState}>No connected channel accounts were returned for this Brand.</p>}</section>
     <div className={styles.twoColumns}>
       <section className={styles.formPanel}><header><h2>Publishing safeguards</h2><p>Existing immutable approval and destination checks remain enforced.</p></header><ToggleRow icon={ShieldCheck} label="Require approval before publishing" detail="Locked on by Kairo's publishing contract." checked disabled onChange={() => undefined}/><ToggleRow icon={CloudCog} label="Use best-time recommendations" detail="No workspace preference contract exists yet." checked={false} disabled onChange={() => undefined}/><ActionRow icon={CircleAlert} title="Failure handling" detail="Failures remain visible in Kairo's operational notifications." action="System managed" disabled onAction={() => onNotice("Failure handling is system-managed.")}/></section>
