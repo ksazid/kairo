@@ -16,6 +16,7 @@ import {
   Youtube,
 } from "lucide-react";
 import { ConceptMockupPreview } from "../../../components/concept-mockup";
+import { compactOpportunityText, compactOpportunityTitle } from "../../../lib/opportunity-copy";
 import { getHomeData } from "../../../lib/api";
 import { discoverFallback, toDiscoverCards } from "../../../lib/discover";
 import { requirePageAuthentication } from "../../../lib/page-auth";
@@ -39,19 +40,19 @@ export default async function DiscoverPreviewPage({ params, searchParams }: { pa
     <Link className="discover-back" href={discoverHref}><ArrowLeft aria-hidden="true"/>Back to Discover</Link>
     <header className="discover-preview-header">
       <span><Sparkles aria-hidden="true"/>Concept preview · not generated content</span>
-      <h1>{card.title}</h1>
+      <h1>{compactOpportunityTitle(card.title)}</h1>
       <p>Review the Brand fit, timing and recommended format before Kairo creates the final content.</p>
     </header>
     <section className="discover-preview-panel">
       <div className={`discover-preview-media${card.conceptMockup ? " discover-preview-concept" : ""}`}>
-        {card.conceptMockup ? <ConceptMockupPreview mockup={card.conceptMockup} mode="full"/> : <><Image src={card.image} alt={card.title} fill priority sizes="(max-width: 900px) 100vw, 46vw"/><span className="discover-media-shade"/><div className="discover-badges"><i><TrendingUp aria-hidden="true"/>{card.trend}</i><i><ShieldCheck aria-hidden="true"/>{card.fit}</i></div><div className="discover-preview-image-copy"><strong>{card.title}</strong><small><ChannelIcon aria-hidden="true"/>{card.channel} · {card.formatLabel}</small></div></>}
+        {card.conceptMockup ? <ConceptMockupPreview mockup={card.conceptMockup} mode="full"/> : <><Image src={card.image} alt={compactOpportunityTitle(card.title)} fill priority sizes="(max-width: 900px) 100vw, 46vw"/><span className="discover-media-shade"/><div className="discover-badges"><i><TrendingUp aria-hidden="true"/>{card.trend}</i><i><ShieldCheck aria-hidden="true"/>{card.fit}</i></div><div className="discover-preview-image-copy"><strong>{compactOpportunityTitle(card.title)}</strong><small><ChannelIcon aria-hidden="true"/>{card.channel} · {card.formatLabel}</small></div></>}
       </div>
       <div className="discover-preview-copy">
         <div className="discover-preview-label"><Sparkles aria-hidden="true"/>Kairo recommends</div>
-        <h2>{card.title}</h2>
-        <div className="discover-reason"><h3><ShieldCheck aria-hidden="true"/>Why this fits your Brand</h3><p>{card.rationale ?? "This direction fits your Brand and audience."}</p></div>
-        <div className="discover-reason trend"><h3><TrendingUp aria-hidden="true"/>Why it is trending</h3><p>{card.whyNow ?? "Public interest is growing around this topic."}</p></div>
-        <DiscoverPreviewActions brandId={data.brandId} opportunityId={card.id} title={card.title} direction={card.developmentDirection ?? card.rationale} format={card.format} initiallySaved={card.status === "saved"}/>
+        <h2>{compactOpportunityTitle(card.title)}</h2>
+        <div className="discover-reason"><h3><ShieldCheck aria-hidden="true"/>Why this fits your Brand</h3><p>{compactOpportunityText(card.rationale, "This direction fits your Brand and audience.", 28)}</p></div>
+        <div className="discover-reason trend"><h3><TrendingUp aria-hidden="true"/>Why it is trending</h3><p>{compactOpportunityText(card.whyNow, "Public interest is growing around this topic.", 28)}</p></div>
+        <DiscoverPreviewActions brandId={data.brandId} opportunityId={card.id} title={compactOpportunityTitle(card.title)} direction={card.developmentDirection ?? card.rationale} format={card.format} initiallySaved={card.status === "saved"}/>
       </div>
       <aside className="discover-preview-meta">
         <small>Recommended format</small>
@@ -67,8 +68,8 @@ export default async function DiscoverPreviewPage({ params, searchParams }: { pa
       </aside>
     </section>
     <section className="discover-evidence" id="public-evidence">
-      <div><span>01</span><h2>Public momentum</h2><p>{card.whyNow ?? "The topic is showing timely public interest."}</p></div>
-      <div><span>02</span><h2>Brand relevance</h2><p>{card.rationale ?? "The topic fits your Brand context and audience."}</p></div>
+      <div><span>01</span><h2>Public momentum</h2><p>{compactOpportunityText(card.whyNow, "The topic is showing timely public interest.", 24)}</p></div>
+      <div><span>02</span><h2>Brand relevance</h2><p>{compactOpportunityText(card.rationale, "The topic fits your Brand context and audience.", 24)}</p></div>
       <div><span>03</span><h2>Creation direction</h2><p>{card.developmentDirection ?? card.details?.proposedAngle ?? "Turn the strongest insight into a clear, useful piece of content."}</p></div>
     </section>
   </KairoShell>;
